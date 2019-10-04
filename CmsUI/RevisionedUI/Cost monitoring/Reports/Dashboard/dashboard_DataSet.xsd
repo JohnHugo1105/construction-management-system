@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="dashboard_DataSet" targetNamespace="http://tempuri.org/dashboard_DataSet.xsd" xmlns:mstns="http://tempuri.org/dashboard_DataSet.xsd" xmlns="http://tempuri.org/dashboard_DataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections>
+          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="construction_management_systemConnectionString1" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="construction_management_systemConnectionString1 (Settings)" PropertyReference="ApplicationSettings.GSG_Builders.Properties.Settings.GlobalReference.Default.construction_management_systemConnectionString1" Provider="System.Data.Odbc" />
+        </Connections>
+        <Tables>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="bill_matTableAdapter" GeneratorDataComponentClassName="bill_matTableAdapter" Name="bill_mat" UserDataComponentName="bill_matTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="construction_management_systemConnectionString1 (Settings)" DbObjectName="" DbObjectType="Unknown" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="true" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="false">
+                    <CommandText>SELECT * FROM `bill_mat`</CommandText>
+                    <Parameters />
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+            <Mappings>
+              <Mapping SourceColumn="bill_mat_id" DataSetColumn="bill_mat_id" />
+              <Mapping SourceColumn="main_project_id" DataSetColumn="main_project_id" />
+              <Mapping SourceColumn="sub_project_id" DataSetColumn="sub_project_id" />
+              <Mapping SourceColumn="main_project" DataSetColumn="main_project" />
+              <Mapping SourceColumn="sub_project" DataSetColumn="sub_project" />
+              <Mapping SourceColumn="date_purchased" DataSetColumn="date_purchased" />
+              <Mapping SourceColumn="date_for_sorting" DataSetColumn="date_for_sorting" />
+              <Mapping SourceColumn="DivisionNum" DataSetColumn="DivisionNum" />
+              <Mapping SourceColumn="wbs_code" DataSetColumn="wbs_code" />
+              <Mapping SourceColumn="material_labor" DataSetColumn="material_labor" />
+              <Mapping SourceColumn="main_scope_description" DataSetColumn="main_scope_description" />
+              <Mapping SourceColumn="sub_scope_description" DataSetColumn="sub_scope_description" />
+              <Mapping SourceColumn="item_description" DataSetColumn="item_description" />
+              <Mapping SourceColumn="unit" DataSetColumn="unit" />
+              <Mapping SourceColumn="quantity" DataSetColumn="quantity" />
+              <Mapping SourceColumn="unit_cost" DataSetColumn="unit_cost" />
+              <Mapping SourceColumn="total_amount" DataSetColumn="total_amount" />
+              <Mapping SourceColumn="remarks" DataSetColumn="remarks" />
+            </Mappings>
+            <Sources />
+          </TableAdapter>
+        </Tables>
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="dashboard_DataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="dashboard_DataSet" msprop:Generator_UserDSName="dashboard_DataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="variance_report_DataTable" msprop:Generator_TableClassName="variance_report_DataTableDataTable" msprop:Generator_TableVarName="tablevariance_report_DataTable" msprop:Generator_TablePropName="variance_report_DataTable" msprop:Generator_RowDeletingName="variance_report_DataTableRowDeleting" msprop:Generator_RowChangingName="variance_report_DataTableRowChanging" msprop:Generator_RowEvHandlerName="variance_report_DataTableRowChangeEventHandler" msprop:Generator_RowDeletedName="variance_report_DataTableRowDeleted" msprop:Generator_UserTableName="variance_report_DataTable" msprop:Generator_RowChangedName="variance_report_DataTableRowChanged" msprop:Generator_RowEvArgName="variance_report_DataTableRowChangeEvent" msprop:Generator_RowClassName="variance_report_DataTableRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Main_x0020_scope_x0020_description_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnMain_scope_description_bm" msprop:Generator_ColumnPropNameInRow="Main_scope_description_bm" msprop:Generator_ColumnPropNameInTable="Main_scope_description_bmColumn" msprop:Generator_UserColumnName="Main scope description bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Sub_x0020_scope_x0020_description_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnSub_scope_description_bm" msprop:Generator_ColumnPropNameInRow="Sub_scope_description_bm" msprop:Generator_ColumnPropNameInTable="Sub_scope_description_bmColumn" msprop:Generator_UserColumnName="Sub scope description bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Item_x0020_description_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnItem_description_bm" msprop:Generator_ColumnPropNameInRow="Item_description_bm" msprop:Generator_ColumnPropNameInTable="Item_description_bmColumn" msprop:Generator_UserColumnName="Item description bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Unit_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnUnit_bm" msprop:Generator_ColumnPropNameInRow="Unit_bm" msprop:Generator_ColumnPropNameInTable="Unit_bmColumn" msprop:Generator_UserColumnName="Unit bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Quantity_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnQuantity_bm" msprop:Generator_ColumnPropNameInRow="Quantity_bm" msprop:Generator_ColumnPropNameInTable="Quantity_bmColumn" msprop:Generator_UserColumnName="Quantity bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Unit_x0020_cost_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnUnit_cost_bm" msprop:Generator_ColumnPropNameInRow="Unit_cost_bm" msprop:Generator_ColumnPropNameInTable="Unit_cost_bmColumn" msprop:Generator_UserColumnName="Unit cost bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Total_x0020_amount_x0020_bm" msprop:Generator_ColumnVarNameInTable="columnTotal_amount_bm" msprop:Generator_ColumnPropNameInRow="Total_amount_bm" msprop:Generator_ColumnPropNameInTable="Total_amount_bmColumn" msprop:Generator_UserColumnName="Total amount bm" type="xs:string" minOccurs="0" />
+              <xs:element name="Main_x0020_scope_x0020_description_x0020_j" msprop:Generator_ColumnVarNameInTable="columnMain_scope_description_j" msprop:Generator_ColumnPropNameInRow="Main_scope_description_j" msprop:Generator_ColumnPropNameInTable="Main_scope_description_jColumn" msprop:Generator_UserColumnName="Main scope description j" type="xs:string" minOccurs="0" />
+              <xs:element name="Sub_x0020_scope_x0020_description_x0020_j" msprop:Generator_ColumnVarNameInTable="columnSub_scope_description_j" msprop:Generator_ColumnPropNameInRow="Sub_scope_description_j" msprop:Generator_ColumnPropNameInTable="Sub_scope_description_jColumn" msprop:Generator_UserColumnName="Sub scope description j" type="xs:string" minOccurs="0" />
+              <xs:element name="Item_x0020_description_x0020_j" msprop:Generator_ColumnVarNameInTable="columnItem_description_j" msprop:Generator_ColumnPropNameInRow="Item_description_j" msprop:Generator_ColumnPropNameInTable="Item_description_jColumn" msprop:Generator_UserColumnName="Item description j" type="xs:string" minOccurs="0" />
+              <xs:element name="Unit_x0020_j" msprop:Generator_ColumnVarNameInTable="columnUnit_j" msprop:Generator_ColumnPropNameInRow="Unit_j" msprop:Generator_ColumnPropNameInTable="Unit_jColumn" msprop:Generator_UserColumnName="Unit j" type="xs:string" minOccurs="0" />
+              <xs:element name="Avg_x0020_unit_x0020_cost_x0020_j" msprop:Generator_ColumnVarNameInTable="columnAvg_unit_cost_j" msprop:Generator_ColumnPropNameInRow="Avg_unit_cost_j" msprop:Generator_ColumnPropNameInTable="Avg_unit_cost_jColumn" msprop:Generator_UserColumnName="Avg unit cost j" type="xs:string" minOccurs="0" />
+              <xs:element name="Total_x0020_amount_x0020_j" msprop:Generator_ColumnVarNameInTable="columnTotal_amount_j" msprop:Generator_ColumnPropNameInRow="Total_amount_j" msprop:Generator_ColumnPropNameInTable="Total_amount_jColumn" msprop:Generator_UserColumnName="Total amount j" type="xs:string" minOccurs="0" />
+              <xs:element name="Quantity_x0020_v" msprop:Generator_ColumnVarNameInTable="columnQuantity_v" msprop:Generator_ColumnPropNameInRow="Quantity_v" msprop:Generator_ColumnPropNameInTable="Quantity_vColumn" msprop:Generator_UserColumnName="Quantity v" type="xs:string" minOccurs="0" />
+              <xs:element name="Unit_x0020_v" msprop:Generator_ColumnVarNameInTable="columnUnit_v" msprop:Generator_ColumnPropNameInRow="Unit_v" msprop:Generator_ColumnPropNameInTable="Unit_vColumn" msprop:Generator_UserColumnName="Unit v" type="xs:string" minOccurs="0" />
+              <xs:element name="Unit_x0020_cost_x0020_v" msprop:Generator_ColumnVarNameInTable="columnUnit_cost_v" msprop:Generator_ColumnPropNameInRow="Unit_cost_v" msprop:Generator_ColumnPropNameInTable="Unit_cost_vColumn" msprop:Generator_UserColumnName="Unit cost v" type="xs:string" minOccurs="0" />
+              <xs:element name="Variance" msprop:Generator_ColumnVarNameInTable="columnVariance" msprop:Generator_ColumnPropNameInRow="Variance" msprop:Generator_ColumnPropNameInTable="VarianceColumn" msprop:Generator_UserColumnName="Variance" type="xs:string" minOccurs="0" />
+              <xs:element name="Quantity_x0020_j" msprop:Generator_ColumnVarNameInTable="columnQuantity_j" msprop:Generator_ColumnPropNameInRow="Quantity_j" msprop:Generator_ColumnPropNameInTable="Quantity_jColumn" msprop:Generator_UserColumnName="Quantity j" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="grand_total_DataTable" msprop:Generator_TableClassName="grand_total_DataTableDataTable" msprop:Generator_TableVarName="tablegrand_total_DataTable" msprop:Generator_TablePropName="grand_total_DataTable" msprop:Generator_RowDeletingName="grand_total_DataTableRowDeleting" msprop:Generator_RowChangingName="grand_total_DataTableRowChanging" msprop:Generator_RowEvHandlerName="grand_total_DataTableRowChangeEventHandler" msprop:Generator_RowDeletedName="grand_total_DataTableRowDeleted" msprop:Generator_UserTableName="grand_total_DataTable" msprop:Generator_RowChangedName="grand_total_DataTableRowChanged" msprop:Generator_RowEvArgName="grand_total_DataTableRowChangeEvent" msprop:Generator_RowClassName="grand_total_DataTableRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Main_x0020_scope_x0020_description" msprop:Generator_ColumnVarNameInTable="columnMain_scope_description" msprop:Generator_ColumnPropNameInRow="Main_scope_description" msprop:Generator_ColumnPropNameInTable="Main_scope_descriptionColumn" msprop:Generator_UserColumnName="Main scope description" type="xs:string" minOccurs="0" />
+              <xs:element name="Sub_x0020_scope_x0020_description" msprop:Generator_ColumnVarNameInTable="columnSub_scope_description" msprop:Generator_ColumnPropNameInRow="Sub_scope_description" msprop:Generator_ColumnPropNameInTable="Sub_scope_descriptionColumn" msprop:Generator_UserColumnName="Sub scope description" type="xs:string" minOccurs="0" />
+              <xs:element name="item_x0020_description" msprop:Generator_ColumnVarNameInTable="columnitem_description" msprop:Generator_ColumnPropNameInRow="item_description" msprop:Generator_ColumnPropNameInTable="item_descriptionColumn" msprop:Generator_UserColumnName="item description" type="xs:string" minOccurs="0" />
+              <xs:element name="Main_x0020_scope_x0020_description_x0020_total_x0020_amount_x0020_actual" msdata:Caption="Main scope description total amount budget" msprop:Generator_ColumnVarNameInTable="columnMain_scope_description_total_amount_actual" msprop:Generator_ColumnPropNameInRow="Main_scope_description_total_amount_actual" msprop:Generator_ColumnPropNameInTable="Main_scope_description_total_amount_actualColumn" msprop:Generator_UserColumnName="Main scope description total amount actual" type="xs:string" minOccurs="0" />
+              <xs:element name="Main_x0020_scope_x0020_description_x0020_total_x0020_amount_x0020_budget" msprop:Generator_ColumnVarNameInTable="columnMain_scope_description_total_amount_budget" msprop:Generator_ColumnPropNameInRow="Main_scope_description_total_amount_budget" msprop:Generator_ColumnPropNameInTable="Main_scope_description_total_amount_budgetColumn" msprop:Generator_UserColumnName="Main scope description total amount budget" type="xs:string" minOccurs="0" />
+              <xs:element name="Sub_x0020_scope_x0020_description_x0020_total_x0020_amount_x0020_actual" msdata:Caption="Sub scope description total amount budget" msprop:Generator_ColumnVarNameInTable="columnSub_scope_description_total_amount_actual" msprop:Generator_ColumnPropNameInRow="Sub_scope_description_total_amount_actual" msprop:Generator_ColumnPropNameInTable="Sub_scope_description_total_amount_actualColumn" msprop:Generator_UserColumnName="Sub scope description total amount actual" type="xs:string" minOccurs="0" />
+              <xs:element name="Sub_x0020_scope_x0020_description_x0020_total_x0020_amount_x0020_budget" msprop:Generator_ColumnVarNameInTable="columnSub_scope_description_total_amount_budget" msprop:Generator_ColumnPropNameInRow="Sub_scope_description_total_amount_budget" msprop:Generator_ColumnPropNameInTable="Sub_scope_description_total_amount_budgetColumn" msprop:Generator_UserColumnName="Sub scope description total amount budget" type="xs:string" minOccurs="0" />
+              <xs:element name="item_x0020_description_x0020_total_x0020_amount_x0020_actual" msdata:Caption="item description total amount budget" msprop:Generator_ColumnVarNameInTable="columnitem_description_total_amount_actual" msprop:Generator_ColumnPropNameInRow="item_description_total_amount_actual" msprop:Generator_ColumnPropNameInTable="item_description_total_amount_actualColumn" msprop:Generator_UserColumnName="item description total amount actual" type="xs:string" minOccurs="0" />
+              <xs:element name="item_x0020_description_x0020_total_x0020_amount_x0020_budget" msprop:Generator_ColumnVarNameInTable="columnitem_description_total_amount_budget" msprop:Generator_ColumnPropNameInRow="item_description_total_amount_budget" msprop:Generator_ColumnPropNameInTable="item_description_total_amount_budgetColumn" msprop:Generator_UserColumnName="item description total amount budget" type="xs:string" minOccurs="0" />
+              <xs:element name="total_x0020_quantity_x0020_budget" msprop:Generator_ColumnVarNameInTable="columntotal_quantity_budget" msprop:Generator_ColumnPropNameInRow="total_quantity_budget" msprop:Generator_ColumnPropNameInTable="total_quantity_budgetColumn" msprop:Generator_UserColumnName="total quantity budget" type="xs:string" minOccurs="0" />
+              <xs:element name="total_x0020_quantity_x0020_actual" msprop:Generator_ColumnVarNameInTable="columntotal_quantity_actual" msprop:Generator_ColumnPropNameInRow="total_quantity_actual" msprop:Generator_ColumnPropNameInTable="total_quantity_actualColumn" msprop:Generator_UserColumnName="total quantity actual" type="xs:string" minOccurs="0" />
+              <xs:element name="Avg_x0020_unit_x0020_cost_x0020_budget" msprop:Generator_ColumnVarNameInTable="columnAvg_unit_cost_budget" msprop:Generator_ColumnPropNameInRow="Avg_unit_cost_budget" msprop:Generator_ColumnPropNameInTable="Avg_unit_cost_budgetColumn" msprop:Generator_UserColumnName="Avg unit cost budget" type="xs:string" minOccurs="0" />
+              <xs:element name="Avg_x0020_unit_x0020_cost_x0020_actual" msprop:Generator_ColumnVarNameInTable="columnAvg_unit_cost_actual" msprop:Generator_ColumnPropNameInRow="Avg_unit_cost_actual" msprop:Generator_ColumnPropNameInTable="Avg_unit_cost_actualColumn" msprop:Generator_UserColumnName="Avg unit cost actual" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="bill_mat" msprop:Generator_TableClassName="bill_matDataTable" msprop:Generator_TableVarName="tablebill_mat" msprop:Generator_TablePropName="bill_mat" msprop:Generator_RowDeletingName="bill_matRowDeleting" msprop:Generator_RowChangingName="bill_matRowChanging" msprop:Generator_RowEvHandlerName="bill_matRowChangeEventHandler" msprop:Generator_RowDeletedName="bill_matRowDeleted" msprop:Generator_UserTableName="bill_mat" msprop:Generator_RowChangedName="bill_matRowChanged" msprop:Generator_RowEvArgName="bill_matRowChangeEvent" msprop:Generator_RowClassName="bill_matRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="bill_mat_id" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columnbill_mat_id" msprop:Generator_ColumnPropNameInRow="bill_mat_id" msprop:Generator_ColumnPropNameInTable="bill_mat_idColumn" msprop:Generator_UserColumnName="bill_mat_id" type="xs:long" minOccurs="0" />
+              <xs:element name="main_project_id" msprop:Generator_ColumnVarNameInTable="columnmain_project_id" msprop:Generator_ColumnPropNameInRow="main_project_id" msprop:Generator_ColumnPropNameInTable="main_project_idColumn" msprop:Generator_UserColumnName="main_project_id" type="xs:int" />
+              <xs:element name="sub_project_id" msprop:Generator_ColumnVarNameInTable="columnsub_project_id" msprop:Generator_ColumnPropNameInRow="sub_project_id" msprop:Generator_ColumnPropNameInTable="sub_project_idColumn" msprop:Generator_UserColumnName="sub_project_id" type="xs:int" />
+              <xs:element name="main_project" msprop:Generator_ColumnVarNameInTable="columnmain_project" msprop:Generator_ColumnPropNameInRow="main_project" msprop:Generator_ColumnPropNameInTable="main_projectColumn" msprop:Generator_UserColumnName="main_project">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="sub_project" msprop:Generator_ColumnVarNameInTable="columnsub_project" msprop:Generator_ColumnPropNameInRow="sub_project" msprop:Generator_ColumnPropNameInTable="sub_projectColumn" msprop:Generator_UserColumnName="sub_project" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="date_purchased" msprop:Generator_ColumnVarNameInTable="columndate_purchased" msprop:Generator_ColumnPropNameInRow="date_purchased" msprop:Generator_ColumnPropNameInTable="date_purchasedColumn" msprop:Generator_UserColumnName="date_purchased">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="date_for_sorting" msprop:Generator_ColumnVarNameInTable="columndate_for_sorting" msprop:Generator_ColumnPropNameInRow="date_for_sorting" msprop:Generator_ColumnPropNameInTable="date_for_sortingColumn" msprop:Generator_UserColumnName="date_for_sorting">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="DivisionNum" msprop:Generator_ColumnVarNameInTable="columnDivisionNum" msprop:Generator_ColumnPropNameInRow="DivisionNum" msprop:Generator_ColumnPropNameInTable="DivisionNumColumn" msprop:Generator_UserColumnName="DivisionNum">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="wbs_code" msprop:Generator_ColumnVarNameInTable="columnwbs_code" msprop:Generator_ColumnPropNameInRow="wbs_code" msprop:Generator_ColumnPropNameInTable="wbs_codeColumn" msprop:Generator_UserColumnName="wbs_code">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="material_labor" msprop:Generator_ColumnVarNameInTable="columnmaterial_labor" msprop:Generator_ColumnPropNameInRow="material_labor" msprop:Generator_ColumnPropNameInTable="material_laborColumn" msprop:Generator_UserColumnName="material_labor">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="main_scope_description" msprop:Generator_ColumnVarNameInTable="columnmain_scope_description" msprop:Generator_ColumnPropNameInRow="main_scope_description" msprop:Generator_ColumnPropNameInTable="main_scope_descriptionColumn" msprop:Generator_UserColumnName="main_scope_description">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="sub_scope_description" msprop:Generator_ColumnVarNameInTable="columnsub_scope_description" msprop:Generator_ColumnPropNameInRow="sub_scope_description" msprop:Generator_ColumnPropNameInTable="sub_scope_descriptionColumn" msprop:Generator_UserColumnName="sub_scope_description" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="item_description" msprop:Generator_ColumnVarNameInTable="columnitem_description" msprop:Generator_ColumnPropNameInRow="item_description" msprop:Generator_ColumnPropNameInTable="item_descriptionColumn" msprop:Generator_UserColumnName="item_description">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="unit" msprop:Generator_ColumnVarNameInTable="columnunit" msprop:Generator_ColumnPropNameInRow="unit" msprop:Generator_ColumnPropNameInTable="unitColumn" msprop:Generator_UserColumnName="unit" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="20" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="quantity" msprop:Generator_ColumnVarNameInTable="columnquantity" msprop:Generator_ColumnPropNameInRow="quantity" msprop:Generator_ColumnPropNameInTable="quantityColumn" msprop:Generator_UserColumnName="quantity" type="xs:double" />
+              <xs:element name="unit_cost" msprop:Generator_ColumnVarNameInTable="columnunit_cost" msprop:Generator_ColumnPropNameInRow="unit_cost" msprop:Generator_ColumnPropNameInTable="unit_costColumn" msprop:Generator_UserColumnName="unit_cost">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="total_amount" msprop:Generator_ColumnVarNameInTable="columntotal_amount" msprop:Generator_ColumnPropNameInRow="total_amount" msprop:Generator_ColumnPropNameInTable="total_amountColumn" msprop:Generator_UserColumnName="total_amount">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="remarks" msprop:Generator_ColumnVarNameInTable="columnremarks" msprop:Generator_ColumnPropNameInRow="remarks" msprop:Generator_ColumnPropNameInTable="remarksColumn" msprop:Generator_UserColumnName="remarks">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1">
+      <xs:selector xpath=".//mstns:bill_mat" />
+      <xs:field xpath="mstns:bill_mat_id" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

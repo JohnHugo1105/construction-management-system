@@ -1,0 +1,119 @@
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\John11\Desktop\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-14-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-15-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 02-23-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+D:\HARD DISK J FILES\programs PJ\From MyLaptop\C# Projects\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+D:\PJ\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\PJ\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csprojResolveAssemblyReference.cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.csproj.GenerateResource.Cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\WpfApplication1.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\WpfApplication1.pdb

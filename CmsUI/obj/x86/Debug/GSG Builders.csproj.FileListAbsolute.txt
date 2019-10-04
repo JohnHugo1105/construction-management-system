@@ -1,0 +1,1034 @@
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\WpfApplication1.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\bin\Debug\WpfApplication1.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 05-25-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\WpfApplication1.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\WpfApplication1.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS 11-18-2016\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+G:\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Payroll.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+E:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+C:\Users\Pj\My Programming\Programs Developed\MyLaptop\C#\Windows Forms\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RldcReport.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ReportPreviewCrystal.resources
+G:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.lblSearch.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+D:\MY PROGRAMMING\myPrograms(C#&VB.NET)\Projects\C#\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+D:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Loading.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+F:\Programming\Programs Developed\Backup GSG BUILDERS PROGRAM\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+F:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+D:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+E:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+E:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\Programming\Programs Developed\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\Office\c# Projects\GSG BUILDERS(server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+D:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\Pj\My Programming\Programs Developed\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+F:\Programming\GSG (4-7-2017 - Jobsite Server)\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+G:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+G:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+G:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+G:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+G:\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+G:\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+G:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+G:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+G:\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+G:\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+E:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+E:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+E:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+E:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+E:\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+E:\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+E:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+E:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+E:\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+E:\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+E:\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+H:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+H:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+H:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+H:\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+H:\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+H:\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+H:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+H:\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+H:\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+H:\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+H:\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+C:\Users\john11\Desktop\Jobsite GSG System\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Inventory_EquipmentsTools.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.cache
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\RdlCompile.compiled
+H:\GSG SYSTEM WITH MP REPORT\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.WinForms.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\System.Data.SqlServerCe.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\de\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\es\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\fr\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\it\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ja\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ko\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\pt\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ru\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHS\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHT\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormToolsHistory.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.NewEntryForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.TransferringToolsequipments.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\John\Desktop\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.Common.resources.dll
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryEditForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsNewEntryForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsTransferring.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+F:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.Common.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.WinForms.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\System.Data.SqlServerCe.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\de\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\es\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\fr\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\it\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ja\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ko\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\pt\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ru\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHS\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHT\Microsoft.ReportViewer.WinForms.resources.dll
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainUIUserControl.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryEditForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsNewEntryForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsTransferring.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+C:\Users\John\Desktop\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainUIUserControl.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryEditForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsNewEntryForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsTransferring.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.resx
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.cs
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.Designer.cs
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.Common.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.WinForms.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\System.Data.SqlServerCe.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\de\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\es\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\fr\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\it\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ja\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ko\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\pt\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ru\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHS\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHT\Microsoft.ReportViewer.WinForms.resources.dll
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Tulpep.NotificationWindow.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.resx
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.cs
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.Designer.cs
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.Common.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\Tulpep.NotificationWindow.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\de\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\es\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\fr\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\it\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ja\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ko\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\pt\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\ru\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHS\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\bin\Debug\zh-CHT\Microsoft.ReportViewer.WinForms.resources.dll
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainUIUserControl.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryEditForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsNewEntryForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsTransferring.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+H:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+G:\SCHOOL\THESIS SYSTDOC\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainUIUserControl.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RevisionedUI.Login.LoginCreateForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryEditForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsNewEntryForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsTransferring.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.resx
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.cs
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.Designer.cs
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MetroFramework.Design.dll
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MetroFramework.dll
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MetroFramework.Fonts.dll
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+G:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\Tulpep.NotificationWindow.dll
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+G:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportOthers.rdlc
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportPayMisc.rdlc
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\LedgerRLDCReportTools.rdlc
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\EquipmentMachineryReport.rdlc
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ToolsScaffoldingReportForm.rdlc
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.resx
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.cs
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ManpowerReportForm.Designer.cs
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe.config
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.exe
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\GSG Builders.pdb
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\Bunifu_UI_v1.5.3.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MetroFramework.Design.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MetroFramework.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MetroFramework.Fonts.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\Microsoft.ReportViewer.WinForms.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MySql.Data.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\MySqlBackup.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\System.Data.SqlServerCe.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\Tulpep.NotificationWindow.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\de\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\es\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\fr\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\it\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ja\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ko\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\pt\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\ru\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\zh-CHS\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\bin\Debug\zh-CHT\Microsoft.ReportViewer.WinForms.resources.dll
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.EditFormNewEntry.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainUIUserControl.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RevisionedUI.Login.LoginCreateForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RevisionedUI.AccessibilityFeaturesControl.UCAccessibilityFeatures.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryEditForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ItemTypeEditAdd.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Journal.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Ledger.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.LedgerRLDCReport.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MainRecordsMultipleAssignmentForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerReportForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MENU.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.MpNewWorkerEntryForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsNewEntryForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PasswordForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ManpowerForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectAssignmentForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ProjectNameEditForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.PromDemForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.RecycledBinForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.JournalRLDCReport.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentHistoryForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsMENU.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsRecycledBin.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsReportForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.ToolsEquipmentsTransferring.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG_Builders.WorkerCaseForm.resources
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csproj.GenerateResource.Cache
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.exe
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.pdb
+H:\THESIS\GSG_Builders\GSG_Builders\obj\x86\Debug\GSG Builders.csprojResolveAssemblyReference.cache

@@ -1,0 +1,350 @@
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\CmsUI.csprojResolveAssemblyReference.cache
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\Interop.WMPLib.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\AxInterop.WMPLib.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\CmsUI.csproj.ResolveComReference.cache
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Form1.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives_loading_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives.Archives_reason_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.BillMat_Form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.bill_mat_UserControl.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.New_project_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Home.Home_Form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.AccessibilityFeaturesControl.UCAccessibilityFeatures.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.HR_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Change_designation_rate_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Individual_assignment_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.multiple_assignment.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Workers_case_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.maximizing_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Journal.Journal_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Journal.UCjournal.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Project_Price_Form.Project_price_Form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Project_Selection.Project_selection_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Reports.Dashboard.Chart_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Reports.Dashboard.Dashboard_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Software_icon_label.CMS_label_icon.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Wait_UI.On_process_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.History_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.inventory_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.Outgoing_form.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.CreateAccountsForm.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\CmsUI.csproj.GenerateResource.Cache
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Construction Management System.exe.config
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Construction Management System.exe.manifest
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Construction Management System.application
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Construction Management System.exe
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Construction Management System.pdb
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Bunifu_UI_v1.5.3.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CmsLibrary.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.CrystalReports.Engine.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportSource.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.Shared.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.Windows.Forms.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\FlashControlV71.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\MetroFramework.Design.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\MetroFramework.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\MetroFramework.Fonts.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.Data.Tools.Schema.Sql.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.Data.Tools.Utilities.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ConnectionInfo.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ConnectionInfoExtended.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Management.Sdk.Sfc.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Smo.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SmoExtended.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTask.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.TransferDatabasesTask.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\System.Data.SqlServerCe.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataDefModel.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ClientDoc.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ReportDefModel.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.Controllers.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommLayer.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataSetConversion.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.Prompting.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.XmlSerialize.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CubeDefModel.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommonObjectModel.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ObjectFactory.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ShockwaveFlashObjects.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.TransactSql.ScriptDom.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Types.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SqlEnum.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dmf.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ServiceBrokerEnum.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.RegSvrEnum.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTaskConnectionsWrap.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ManagedDTS.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.DTSRuntimeWrap.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommonControls.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\stdole.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.PipelineHost.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.DTSPipelineWrap.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\CmsLibrary.pdb
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.xml
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.xml
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\de\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\es\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\fr\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\it\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ja\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ko\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\pt\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ru\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\zh-Hans\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\zh-Hant\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\de\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\es\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\fr\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\it\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ja\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ko\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\pt\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\ru\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\zh-Hans\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\zh-Hant\Microsoft.SqlServer.Types.resources.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\Interop.WMPLib.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\bin\Debug\AxInterop.WMPLib.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\Construction Management System.exe.manifest
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\Construction Management System.application
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\Construction Management System.exe
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsUI\obj\x86\Debug\Construction Management System.pdb
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Construction Management System.exe.config
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Construction Management System.exe.manifest
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Construction Management System.application
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Construction Management System.exe
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Construction Management System.pdb
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Bunifu_UI_v1.5.3.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CmsLibrary.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.CrystalReports.Engine.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportSource.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.Shared.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.Windows.Forms.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\FlashControlV71.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\MetroFramework.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.Data.Tools.Schema.Sql.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.Data.Tools.Utilities.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ConnectionInfo.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ConnectionInfoExtended.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Management.Sdk.Sfc.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Smo.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SmoExtended.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTask.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.TransferDatabasesTask.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\System.Data.SqlServerCe.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataDefModel.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ClientDoc.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ReportDefModel.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.Controllers.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommLayer.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataSetConversion.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.Prompting.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.XmlSerialize.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CubeDefModel.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommonObjectModel.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ObjectFactory.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ShockwaveFlashObjects.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.TransactSql.ScriptDom.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Types.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SqlEnum.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dmf.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ServiceBrokerEnum.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.RegSvrEnum.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTaskConnectionsWrap.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.ManagedDTS.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.DTSRuntimeWrap.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommonControls.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\stdole.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.PipelineHost.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.DTSPipelineWrap.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.xml
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.xml
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\de\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\es\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\fr\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\it\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ja\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ko\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\pt\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ru\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\zh-Hans\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\zh-Hant\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\de\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\es\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\fr\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\it\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ja\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ko\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\pt\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\ru\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\zh-Hans\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\zh-Hant\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\Interop.WMPLib.dll
+H:\Software Projects\CMS\Project1\CmsUI\bin\Debug\AxInterop.WMPLib.dll
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\CmsUI.csprojResolveAssemblyReference.cache
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\Interop.WMPLib.dll
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\AxInterop.WMPLib.dll
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\CmsUI.csproj.ResolveComReference.cache
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Form1.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives_loading_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives.Archives_reason_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.BillMat_Form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.bill_mat_UserControl.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.New_project_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Home.Home_Form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.AccessibilityFeaturesControl.UCAccessibilityFeatures.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.HR_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Change_designation_rate_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Individual_assignment_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.multiple_assignment.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Workers_case_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.maximizing_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Journal.Journal_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Journal.UCjournal.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Project_Price_Form.Project_price_Form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Project_Selection.Project_selection_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Reports.Dashboard.Chart_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Reports.Dashboard.Dashboard_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Software_icon_label.CMS_label_icon.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Wait_UI.On_process_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.History_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.inventory_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.Outgoing_form.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.CreateAccountsForm.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\CmsUI.csproj.GenerateResource.Cache
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\Construction Management System.exe.manifest
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\Construction Management System.application
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\Construction Management System.exe
+H:\Software Projects\CMS\Project1\CmsUI\obj\x86\Debug\Construction Management System.pdb
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Construction Management System.exe.config
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Interop.WMPLib.dll
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\AxInterop.WMPLib.dll
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\CmsUI.csproj.ResolveComReference.cache
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.exe
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Construction Management System.exe.config
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Interop.WMPLib.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\AxInterop.WMPLib.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\CmsUI.csproj.ResolveComReference.cache
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.exe
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Construction Management System.exe.manifest
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Construction Management System.application
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Construction Management System.exe
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Construction Management System.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Bunifu_UI_v1.5.3.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CmsLibrary.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.CrystalReports.Engine.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportSource.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.Shared.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.Windows.Forms.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\FlashControlV71.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\MetroFramework.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.Data.Tools.Schema.Sql.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.Data.Tools.Utilities.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.ConnectionInfo.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.ConnectionInfoExtended.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Management.Sdk.Sfc.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Smo.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.SmoExtended.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTask.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.TransferDatabasesTask.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\System.Data.SqlServerCe.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataDefModel.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ClientDoc.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ReportDefModel.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.Controllers.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommLayer.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataSetConversion.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.Prompting.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.XmlSerialize.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CubeDefModel.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommonObjectModel.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ObjectFactory.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ShockwaveFlashObjects.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.TransactSql.ScriptDom.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Types.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.SqlEnum.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dmf.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.ServiceBrokerEnum.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.RegSvrEnum.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTaskConnectionsWrap.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.ManagedDTS.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.DTSRuntimeWrap.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.CommonControls.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\stdole.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.PipelineHost.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.DTSPipelineWrap.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.xml
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.xml
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\de\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\es\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\fr\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\it\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ja\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ko\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\pt\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ru\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\zh-Hans\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\zh-Hant\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\de\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\es\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\fr\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\it\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ja\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ko\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\pt\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\ru\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\zh-Hans\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\zh-Hant\Microsoft.SqlServer.Types.resources.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Interop.WMPLib.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\bin\Debug\AxInterop.WMPLib.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\CmsUI.csprojResolveAssemblyReference.cache
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.Form1.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.Login.AdminControlForm.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.Login.AdminVerificationPasswordForm.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.Login.CreateAdminAccountForm.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives_loading_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives.Archives_reason_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.BillMat_Form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.bill_mat_UserControl.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.New_project_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Home.Home_Form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.AccessibilityFeaturesControl.UCAccessibilityFeatures.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.HR_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Change_designation_rate_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Individual_assignment_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.multiple_assignment.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.Manpower.Workers_information.Workers_case_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.maximizing_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Journal.Journal_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Journal.UCjournal.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Project_Price_Form.Project_price_Form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Project_Selection.Project_selection_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Reports.Dashboard.Chart_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Reports.Dashboard.Dashboard_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Software_icon_label.CMS_label_icon.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Wait_UI.On_process_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.History_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.inventory_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Warehouse_inventory.Outgoing_form.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.CreateAccountsForm.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.Properties.Resources.resources
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\CmsUI.csproj.GenerateResource.Cache
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.exe.manifest
+H:\Software Projects\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.application

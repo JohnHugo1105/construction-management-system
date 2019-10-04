@@ -1,0 +1,19 @@
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsLibrary\bin\Debug\CmsLibrary.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsLibrary\bin\Debug\CmsLibrary.pdb
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsLibrary\obj\Debug\CmsLibrary.dll
+C:\Users\John\Documents\Visual Studio 2015\Projects\Project1\CmsLibrary\obj\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\CmsLibrary\bin\Debug\CmsLibrary.dll
+H:\Software Projects\CMS\Project1\CmsLibrary\bin\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
+H:\Software Projects\CMS\Project1\CmsLibrary\obj\Debug\CmsLibrary.dll
+H:\Software Projects\CMS\Project1\CmsLibrary\obj\Debug\CmsLibrary.pdb
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsLibrary\bin\Debug\CmsLibrary.dll
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsLibrary\bin\Debug\CmsLibrary.pdb
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.dll
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\bin\Debug\CmsLibrary.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\bin\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.dll
+H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.pdb
+H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
