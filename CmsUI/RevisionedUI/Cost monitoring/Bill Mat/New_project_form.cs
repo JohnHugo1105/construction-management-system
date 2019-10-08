@@ -11,6 +11,10 @@ using GSG_Builders.RevisionedUI.Database_connection;
 //using MySql.Data.MySqlClient;
 using GSG_Builders.RevisionedUI.Reusable_codes;
 using System.Data.SqlClient;
+using CmsLibrary.Model.SpEvents;
+using CmsLibrary.Model.CostMonitoring;
+using CmsLibrary;
+using CmsLibrary.BusinessLogic.SpEvents;
 
 namespace GSG_Builders.RevisionedUI.Bill_Mat {
     public partial class New_project_form : Form {    
@@ -73,31 +77,36 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
      
 
         private void save_btn_Click(object sender, EventArgs e) {
-            if( project_name_txt.Text==string.Empty )
-            {
-                MessageBox.Show( "Project name field empty!","Empty field",MessageBoxButtons.OK,MessageBoxIcon.Exclamation );
-            }          
-           else if(Main_Project_Count() == 0 )
-            {                
-                if( sub_project_name_txt.Text == string.Empty )
-                {
+            DateTime date = Convert.ToDateTime( date_started_dtp.Text );
+            MainProjectsModel credential = new MainProjectsModel(project_name_txt.Text, date  );
+            GlobalConfig.MainProjectConfig.CreateMainProject( credential , SpProjectsEventsList.spMainProjectCreate , "MainProjects" );
+
+
+           // if( project_name_txt.Text==string.Empty )
+           // {
+           //     MessageBox.Show( "Project name field empty!","Empty field",MessageBoxButtons.OK,MessageBoxIcon.Exclamation );
+           // }          
+           //else if(Main_Project_Count() == 0 )
+           // {                
+           //     if( sub_project_name_txt.Text == string.Empty )
+           //     {
                   
                     
-                    MessageBox.Show( project_name_txt.Text.ToUpper( ) + " successfully created as main project! use add sub-project to add more sub-projects" , "Creating main project" , MessageBoxButtons.OK , MessageBoxIcon.Information );
-                }
-                else
-                {
+           //         MessageBox.Show( project_name_txt.Text.ToUpper( ) + " successfully created as main project! use add sub-project to add more sub-projects" , "Creating main project" , MessageBoxButtons.OK , MessageBoxIcon.Information );
+           //     }
+           //     else
+           //     {
                  
-                    MessageBox.Show( project_name_txt.Text.ToUpper( ) + " successfully added as main-project" , "Adding main-project" , MessageBoxButtons.OK , MessageBoxIcon.Information );
+           //         MessageBox.Show( project_name_txt.Text.ToUpper( ) + " successfully added as main-project" , "Adding main-project" , MessageBoxButtons.OK , MessageBoxIcon.Information );
 
 
-                    //MessageBox.Show( project_name_txt.Text.ToUpper( ) + " (main project), " + sub_project_name_txt.Text.ToUpper( ) + " (sub-project)" + " successfully added" , "Adding main & sub-project" , MessageBoxButtons.OK , MessageBoxIcon.Information );
-                }
-            }
-            else
-            {
-                MessageBox.Show( "Project : " + project_name_txt.Text + " already exist!" , "Duplicate project" , MessageBoxButtons.OK , MessageBoxIcon.Exclamation );
-            }          
+           //         //MessageBox.Show( project_name_txt.Text.ToUpper( ) + " (main project), " + sub_project_name_txt.Text.ToUpper( ) + " (sub-project)" + " successfully added" , "Adding main & sub-project" , MessageBoxButtons.OK , MessageBoxIcon.Information );
+           //     }
+           // }
+           // else
+           // {
+           //     MessageBox.Show( "Project : " + project_name_txt.Text + " already exist!" , "Duplicate project" , MessageBoxButtons.OK , MessageBoxIcon.Exclamation );
+           // }          
         }
         private void add_sub_project_btn_Click(object sender, EventArgs e) {
              

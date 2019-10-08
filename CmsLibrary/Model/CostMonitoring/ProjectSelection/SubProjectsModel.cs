@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmsLibrary.Model.CostMonitoring.ProjectSelection {
     public class SubProjectsModel : IProjectsCredentials {
-        public string DateStarted {
+        public DateTime DateStarted {
             get; set;
         }
 

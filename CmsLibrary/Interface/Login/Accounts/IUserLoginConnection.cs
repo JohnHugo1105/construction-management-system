@@ -11,7 +11,6 @@ namespace CmsLibrary.Interface.Login {
     /// </summary>
     public interface IUserLoginConnection  {
 
-
         /// <summary>
         /// Creates account
         /// </summary>

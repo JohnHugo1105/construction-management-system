@@ -15,12 +15,12 @@ namespace CmsLibrary.BusinessLogic.SpEvents {
         /// <summary>
         /// Sets the event in the stored procedure for creating a account 
         /// </summary>
-        public static string spCreate =GlobalConfig.LoginSpEvents.spCreate;
+        public static string spAccountCreate =GlobalConfig.LoginSpEvents.spAccountCreate;
 
         /// <summary>
         /// Sets the event in the stored procedure for updating a account 
         /// </summary>
-        public static string spUpdate = GlobalConfig.LoginSpEvents.spUpdate;
+        public static string spAccountUpdate = GlobalConfig.LoginSpEvents.spAccountUpdate;
 
         /// <summary>
         /// Sets the event in the stored procedure for getting all the accounts, admin and user 

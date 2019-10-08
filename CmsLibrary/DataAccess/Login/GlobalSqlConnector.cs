@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CmsLibrary.DataAccess.Login {
     /// <summary>
-    /// Connection to database that disregards whatever table to interact with
+    /// Connection to database that disregards whatever table to interact with, this derives from ISystemConstract>IAccountLoginConnection
     /// </summary>
     public class GlobalSqlConnector : IAccountLoginConnection {
 

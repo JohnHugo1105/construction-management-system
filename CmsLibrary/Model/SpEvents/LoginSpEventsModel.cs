@@ -6,15 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CmsLibrary {
-    public class LoginSpEventsModel : ISpEvents {       
+    public class LoginSpEventsModel : ILoginSpEvents {       
 
-        public string spCreate {
+        public string spAccountCreate {
             get {
                 return "AccountCreate";
             }
         }
 
-        public string spUpdate {
+        public string spAccountUpdate {
             get {
                 return "AccountUpdate";
             }

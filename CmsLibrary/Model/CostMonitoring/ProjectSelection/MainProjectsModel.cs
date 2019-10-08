@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmsLibrary.Model.CostMonitoring {
     public class MainProjectsModel : IProjectsCredentials {
-        public string DateStarted {
+        public DateTime DateStarted {
             get; set;
         }
 
@@ -21,6 +21,23 @@ namespace CmsLibrary.Model.CostMonitoring {
 
         public string SubProjectName {
             get; set;
+        }
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public MainProjectsModel( ) {
+
+        }
+
+        /// <summary>
+        /// To create Main project
+        /// </summary>
+        /// <param name="projectName">name of the project</param>
+        /// <param name="dateStarted">date when it started</param>
+        public MainProjectsModel(string projectName, DateTime dateStarted ) {
+            ProjectName = projectName;
+            DateStarted = dateStarted;
         }
 
 

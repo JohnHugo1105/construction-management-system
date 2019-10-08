@@ -79,7 +79,7 @@ namespace GSG_Builders {
         private void PasswordForm_MouseUp(object sender, MouseEventArgs e) {
           
         }
-        private void btnLogin_Click(object sender, EventArgs e) {          
+        private void btnLogin_Click(object sender, EventArgs e) {
             LoginToSystem( );
         }
         public static string AccessCode = "";

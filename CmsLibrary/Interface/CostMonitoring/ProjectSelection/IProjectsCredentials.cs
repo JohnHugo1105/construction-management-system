@@ -14,7 +14,7 @@ namespace CmsLibrary.Interface.CostMonitoring {
             get; set;
         }        
 
-         string DateStarted {
+         DateTime DateStarted {
             get; set;
         }
 

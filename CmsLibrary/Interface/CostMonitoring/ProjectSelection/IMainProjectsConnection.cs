@@ -6,8 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CmsLibrary.Interface.CostMonitoring.ProjectSelection {
-    interface IMainProjectsConnection : IProjectsConnection {
-        void AddMainProject( MainProjectsModel credentials );
-        void Update( MainProjectsModel credentials );
+
+  public interface IMainProjectsConnection : IProjectsConnection {
+        void CreateMainProject( MainProjectsModel credentials, string events, string tableName );
+        void UpdateMainProject( MainProjectsModel credentials );
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmsLibrary {
     /// <summary>
-    /// Credentials or Account informations are declared here
+    /// Credentials or Account informations are declared here, Admin and User models derives from here
     /// </summary>
    public interface IAccountCredentials {
         /// <summary>

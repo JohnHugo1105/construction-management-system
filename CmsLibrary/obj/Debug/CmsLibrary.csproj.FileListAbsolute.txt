@@ -17,3 +17,4 @@ H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\bin\
 H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.dll
 H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.pdb
 H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
