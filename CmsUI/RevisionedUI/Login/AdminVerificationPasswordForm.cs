@@ -87,13 +87,13 @@ namespace GSG_Builders.Login {
         private void CreateAdmin( ) {
             AdminModel credentials = new AdminModel( username.Replace( "'" , "''" ) , password.Replace( "'" , "''" ) ,
                    accountType );
-            GlobalConfig.LoginAdminConnection.Create( SpLoginEventsList.spCreate , credentials , "AdminAccount" );
+            GlobalConfig.LoginAdminConnection.Create( SpLoginEventsList.spAccountCreate , credentials , "AdminAccount" );
         }
 
         private void CreateUser( ) {
             UserModel credentials = new UserModel( username.Replace( "'" , "''" ) , password.Replace( "'" , "''" ) ,
                    accountType , userAccessCode );
-            GlobalConfig.LoginUserConnection.Create( SpLoginEventsList.spCreate , credentials , "UserAccount" );
+            GlobalConfig.LoginUserConnection.Create( SpLoginEventsList.spAccountCreate , credentials , "UserAccount" );
         }
 
     }

@@ -64,7 +64,7 @@ namespace GSG_Builders.Login {
         private void Create( ) {
             AdminModel model = new AdminModel( txtUsername.Text.Replace( "'" , "''" ) , txtPassword.Text.Replace( "'" , "''" ) ,
                 "Admin" );
-            GlobalConfig.LoginAdminConnection.Create( SpLoginEventsList.spCreate , model , "AdminAccount" );
+            GlobalConfig.LoginAdminConnection.Create( SpLoginEventsList.spAccountCreate , model , "AdminAccount" );
         }
 
         private void txtPassword_TextChanged(object sender, EventArgs e) {

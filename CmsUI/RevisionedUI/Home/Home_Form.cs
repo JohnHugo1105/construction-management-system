@@ -596,7 +596,6 @@ namespace GSG_Builders.RevisionedUI.Home {
         }
 
         private void Home_Form_Load( object sender , EventArgs e ) {
-            Console.WriteLine("asdasdasdsa");
             AccessRestriction( ); //this is the if else condition that will read the string value of string variable user_privilege_code
 
             //cost_monitoring_timer.Start( );

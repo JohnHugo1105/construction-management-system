@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 
 namespace CmsLibrary.DataAccess.Login {
     public class AdminSqlConnector : IAdminLoginConnection {
+
         public DataTable AdminGetAccounts( string events ) {
             using( SqlConnection connection = new SqlConnection( GlobalConfig.ConnString ) )
             {

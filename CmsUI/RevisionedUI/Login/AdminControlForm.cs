@@ -503,12 +503,12 @@ namespace GSG_Builders.Login {
         }
         private void AdminUpdate( ) {
             AdminModel credentials = new AdminModel( txtUsername.Text.Replace( "'" , "''" ) , txtPassword.Text.Replace( "'" , "''" ),account_type_textBox.Text , Convert.ToInt32( dgvAccounts.CurrentRow.Cells[ "id" ].Value ) );
-            GlobalConfig.LoginAdminConnection.Update( SpLoginEventsList.spUpdate , credentials, "AdminAccount" );            
+            GlobalConfig.LoginAdminConnection.Update( SpLoginEventsList.spAccountUpdate , credentials, "AdminAccount" );            
         }
 
         private void UserUpdate( ) {
             UserModel credentials = new UserModel( txtUsername.Text.Replace( "'" , "''" ) , txtPassword.Text.Replace( "'" , "''" ),account_type_textBox.Text.Replace("'","''"), Convert.ToInt32( dgvAccounts.CurrentRow.Cells[ "id" ].Value ), UserAccessCode( ) );
-            GlobalConfig.LoginUserConnection.Update( SpLoginEventsList.spUpdate , credentials , "UserAccount" );
+            GlobalConfig.LoginUserConnection.Update( SpLoginEventsList.spAccountUpdate , credentials , "UserAccount" );
         }
         private bool AdminUsernameExist( ) {
             AdminModel credentials = new AdminModel(txtUsername.Text.Replace("'","''") );
@@ -522,12 +522,12 @@ namespace GSG_Builders.Login {
         private void CreateAdmin( ) {
             AdminModel model = new AdminModel( txtUsername.Text.Replace( "'" , "''" ) , txtPassword.Text.Replace( "'" , "''" ) ,
                  account_type_textBox.Text.Replace( "'" , "''" ) );
-            GlobalConfig.LoginAdminConnection.Create( SpLoginEventsList.spCreate , model ,  "AdminAccount" );
+            GlobalConfig.LoginAdminConnection.Create( SpLoginEventsList.spAccountCreate , model ,  "AdminAccount" );
         }
         private void CreateUser( ) {
             UserModel model = new UserModel( txtUsername.Text.Replace( "'" , "''" ) , txtPassword.Text.Replace( "'" , "''" ) ,
                account_type_textBox.Text.Replace( "'" , "''" ),UserAccessCode() );
-            GlobalConfig.LoginUserConnection.Create( SpLoginEventsList.spCreate , model ,  "UserAccount" );
+            GlobalConfig.LoginUserConnection.Create( SpLoginEventsList.spAccountCreate , model ,  "UserAccount" );
         }
        
         private string AccountTableName( ) {
