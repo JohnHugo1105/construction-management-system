@@ -491,7 +491,7 @@ namespace GSG_Builders.RevisionedUI.Home {
 
         private void settings_ToolStripMenuItem_Click ( object sender, EventArgs e ) {
             home_toolStripButton.BackColor = Color.SteelBlue;
-            New_project_form New = new New_project_form( );
+            ProjectConfigForm New = new ProjectConfigForm( );
             New.Show( );
         }
 

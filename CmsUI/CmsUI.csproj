@@ -229,12 +229,6 @@
     <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\BillMat_Form.Designer.cs">
       <DependentUpon>BillMat_Form.cs</DependentUpon>
     </Compile>
-    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\bill_mat_UserControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\bill_mat_UserControl.Designer.cs">
-      <DependentUpon>bill_mat_UserControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="RevisionedUI\Cost monitoring\Reports\Dashboard\cost_monitoring_DataSet.cs">
       <DependentUpon>cost_monitoring_DataSet.xsd</DependentUpon>
     </Compile>
@@ -368,11 +362,11 @@
     <Compile Include="RevisionedUI\Reusable_codes\Remove_record.cs" />
     <Compile Include="RevisionedUI\Reusable_codes\Search.cs" />
     <Compile Include="RevisionedUI\Reusable_codes\selection_automation.cs" />
-    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\New_project_form.cs">
+    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\ProjectConfigForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\New_project_form.Designer.cs">
-      <DependentUpon>New_project_form.cs</DependentUpon>
+    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\ProjectConfigForm.Designer.cs">
+      <DependentUpon>ProjectConfigForm.cs</DependentUpon>
     </Compile>
     <Compile Include="RevisionedUI\Database connection\MySQL_connection.cs" />
     <Compile Include="RevisionedUI\Home\Home_Form.cs">
@@ -500,11 +494,8 @@
     <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\BillMat_Form.resx">
       <DependentUpon>BillMat_Form.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\bill_mat_UserControl.resx">
-      <DependentUpon>bill_mat_UserControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\New_project_form.resx">
-      <DependentUpon>New_project_form.cs</DependentUpon>
+    <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\ProjectConfigForm.resx">
+      <DependentUpon>ProjectConfigForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RevisionedUI\Cost monitoring\Reports\Dashboard\Summary_variance_report.rpt">
       <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>

@@ -294,7 +294,7 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }      
      
         private void newProjectToolStripMenuItem_Click ( object sender , EventArgs e ) {
-            New_project_form proj = new New_project_form( );
+            ProjectConfigForm proj = new ProjectConfigForm( );
             proj.ShowDialog( );
         }
 
@@ -812,7 +812,7 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void project_toolStripDropDownButton_Click ( object sender , EventArgs e ) {
-            New_project_form New = new New_project_form( );
+            ProjectConfigForm New = new ProjectConfigForm( );
             New.ShowDialog( );
         }
         Home_Form Home_form;
@@ -991,7 +991,7 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void addToolStripMenuItem_Click( object sender , EventArgs e ) {
-            New_project_form New = new New_project_form( );
+            ProjectConfigForm New = new ProjectConfigForm( );
             New.Show( );
         }
 

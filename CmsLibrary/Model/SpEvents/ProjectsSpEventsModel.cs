@@ -25,6 +25,12 @@ namespace CmsLibrary.Model.SpEvents {
             }
         }
 
+        public string spLatestIdentifier {
+            get {
+                return "LatestIdentifier";
+            }
+        }
+
         public string spMainProjectCreate {
             get {
                 return "MainProjectCreate";

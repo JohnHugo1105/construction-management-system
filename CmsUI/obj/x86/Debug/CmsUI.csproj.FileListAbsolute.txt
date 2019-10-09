@@ -430,8 +430,6 @@ C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives_loading_form.resources
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Archives.Archives_reason_form.resources
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.BillMat_Form.resources
-C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.bill_mat_UserControl.resources
-C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.New_project_form.resources
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Home.Home_Form.resources
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.AccessibilityFeaturesControl.UCAccessibilityFeatures.resources
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.HR.HR_form.resources
@@ -456,3 +454,4 @@ C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\CmsUI.csproj.GenerateResource.Cache
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.exe.manifest
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.application
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.ProjectConfigForm.resources

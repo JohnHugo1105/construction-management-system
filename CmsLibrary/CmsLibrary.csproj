@@ -50,8 +50,9 @@
     <Compile Include="DataAccess\CostMonitoring\BillMat\BillMatConnector.cs" />
     <Compile Include="DataAccess\CostMonitoring\Journal\JournalConnector.cs" />
     <Compile Include="DataAccess\CostMonitoring\ProjectSelection\MainProjectsSqlConnector.cs" />
+    <Compile Include="DataAccess\CostMonitoring\ProjectSelection\ProjectsGlobalSqlConnector.cs" />
     <Compile Include="DataAccess\CostMonitoring\ProjectSelection\SubProjectsSqlConnector.cs" />
-    <Compile Include="DataAccess\Login\GlobalSqlConnector.cs" />
+    <Compile Include="DataAccess\Login\AccountGlobalSqlConnector.cs" />
     <Compile Include="DataAccess\Login\AdminSqlConnector.cs" />
     <Compile Include="DataAccess\Login\UserSqlConnector.cs" />
     <Compile Include="GlobalConfig.cs" />

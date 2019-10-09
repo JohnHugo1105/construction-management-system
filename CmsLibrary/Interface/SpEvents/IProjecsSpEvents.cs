@@ -38,6 +38,9 @@ namespace CmsLibrary.Interface.CostMonitoring.ProjectSelection {
             get;
         }
 
+         string spLatestIdentifier {
+            get; 
+        }
 
 
     }
