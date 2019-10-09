@@ -77,26 +77,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="31744">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="32256">
       <assemblyIdentity name="CmsLibrary" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>Gs9WarvswUqW+649Uwsq1Fkm0gSsmFP9OVtcpyCQkLE=</dsig:DigestValue>
+        <dsig:DigestValue>UUrobVzDSSghhJNZOuxpCyO2x13QrHgIuQe7nUzcmx8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13815192">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13815704">
       <assemblyIdentity name="Construction Management System" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>tU4WfE/wJBH+ItWAlxleyypSRfxCJ6n9e3Pafo4HWEg=</dsig:DigestValue>
+        <dsig:DigestValue>p1ynpRVVZNj0jhztTKv193poSG7JVGHLGsT8nQKj1Oc=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -1000,7 +1000,7 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>30gFZXmIWO4VTN/GJa1ofUX0kyOw1rXFLuZrg7iaeHk=</dsig:DigestValue>
+      <dsig:DigestValue>/Mp3vOiGk55y2bdgTLWdHcB1fBsSouynwA1WjN0J6Bs=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Construction Management Transparent.ico" size="16958">

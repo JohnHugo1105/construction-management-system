@@ -27,6 +27,7 @@ namespace CmsLibrary.BusinessLogic.SpEvents {
 
         public static string spSubProjectUpdate = GlobalConfig.ProjectsSpEvents.spSubProjectUpdate;
 
+        public static string spLatestIdentifier = GlobalConfig.ProjectsSpEvents.spLatestIdentifier;
 
     }
 }
