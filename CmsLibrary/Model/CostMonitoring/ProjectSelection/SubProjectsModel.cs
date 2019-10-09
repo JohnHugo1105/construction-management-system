@@ -22,5 +22,17 @@ namespace CmsLibrary.Model.CostMonitoring.ProjectSelection {
         public string ProjectName {
             get; set;
         }
+
+        public SubProjectsModel( ) {
+
+        }
+
+        public SubProjectsModel( string projectName , DateTime dateStarted ) {
+           
+            ProjectName = projectName;
+            DateStarted = dateStarted;
+
+        }
+
     }
 }

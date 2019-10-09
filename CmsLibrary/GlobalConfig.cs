@@ -85,7 +85,7 @@ namespace CmsLibrary {
         /// </summary>
         public static void InitializeConnections( ) {
            
-            GlobalSqlConnector sql = new GlobalSqlConnector( );
+            AccountGlobalSqlConnector sql = new AccountGlobalSqlConnector( );
             LoginGlobalConnection = sql;
 
             AdminSqlConnector adminSql = new AdminSqlConnector( );

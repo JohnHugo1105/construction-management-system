@@ -57,11 +57,13 @@ namespace CmsLibrary {
     ///  Interface contract for the Project Selection functionality
     /// </summary>
     public interface IProjectsConnection {
-        DataTable tableProjects( );
+        //DataTable tableMainProjects( );
 
-        DataTable tableSubProjects( );
+        //DataTable tableSubProjects( );
 
-        void RemoveProject( IProjectsCredentials Id);
+        int GetLatestIdentifier( string tableName, string events);
+
+        void RemoveProject( IProjectsCredentials Id, string tableName, string events);
      
     }
    

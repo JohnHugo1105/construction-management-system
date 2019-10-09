@@ -844,7 +844,7 @@ namespace GSG_Builders.RevisionedUI.Journal {
         }
 
         private void removeProject_ToolStripMenuItem_Click ( object sender, EventArgs e ) {
-            New_project_form New = new New_project_form( );
+            ProjectConfigForm New = new ProjectConfigForm( );
             New.Add_toolStripButton.Visible = false;
             New.toolStripSeparator11.Visible = false;
             New.ShowDialog( );

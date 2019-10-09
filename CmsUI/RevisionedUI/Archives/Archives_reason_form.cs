@@ -44,12 +44,12 @@ namespace GSG_Builders.RevisionedUI.Archives {
 
             Archiving ar = new Archiving( );
 
-            if( Bill_Mat.New_project_form.main_project_selected_clicked == true )
+            if( Bill_Mat.ProjectConfigForm.main_project_selected_clicked == true )
             {
                 ar.bill_mat_main_project_move_to_archives_main( main_project_selected );
                 ar.main_sub_project_move_to_archives( main_project_selected , date_started , reason_result );
             }
-            else if( Bill_Mat.New_project_form.sub_project_selected_clicked == true )
+            else if( Bill_Mat.ProjectConfigForm.sub_project_selected_clicked == true )
             {
                 ar.bill_mat_sub_project_move_to_archives_main( main_project_selected , sub_project_selected );
                 ar.sub_project_move_to_archives( main_project_selected , date_started , reason_result );

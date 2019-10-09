@@ -84,19 +84,19 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>QNaY96sK9oLRboG5CVlGtnt4I2QRpzjAEDxO05lObI4=</dsig:DigestValue>
+        <dsig:DigestValue>Gs9WarvswUqW+649Uwsq1Fkm0gSsmFP9OVtcpyCQkLE=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13850520">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13815192">
       <assemblyIdentity name="Construction Management System" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>Gs0KxYfVxwpatO5G68QoL5hHTnKK6Sjala511pcRFjk=</dsig:DigestValue>
+        <dsig:DigestValue>tU4WfE/wJBH+ItWAlxleyypSRfxCJ6n9e3Pafo4HWEg=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -994,13 +994,13 @@
       <dsig:DigestValue>46+6WJWEWjw/iF2+eWfQCkSoVOyH2syNBEVAGryy5fM=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Construction Management System.pdb" size="1308160">
+  <file name="Construction Management System.pdb" size="1295872">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>gZ6qeqGAhTpCSiwpUC/BvWlTgZErrGn3g++vxXGnSWI=</dsig:DigestValue>
+      <dsig:DigestValue>30gFZXmIWO4VTN/GJa1ofUX0kyOw1rXFLuZrg7iaeHk=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Construction Management Transparent.ico" size="16958">
