@@ -2,6 +2,7 @@
 using CmsLibrary.BusinessLogic.Login;
 using CmsLibrary.DataAccess;
 using CmsLibrary.DataAccess.CostMonitoring;
+using CmsLibrary.DataAccess.CostMonitoring.ProjectSelection;
 using CmsLibrary.DataAccess.Login;
 using CmsLibrary.Interface.CostMonitoring.ProjectSelection;
 using CmsLibrary.Interface.Login;
@@ -68,6 +69,10 @@ namespace CmsLibrary {
             get; private set;
         }
 
+        public static IProjectsConnection ProjectsGlobalConfig {
+            get; private set;
+        }
+
         /// <summary>
         /// Static access to ISpEvents interface methods and its dependencies 
         /// </summary>
@@ -117,6 +122,9 @@ namespace CmsLibrary {
 
             SubProjectsSqlConnector subProject = new SubProjectsSqlConnector( );
             SubProjectConfig = subProject;
+
+            ProjectsGlobalSqlConnector GlobalProject = new ProjectsGlobalSqlConnector( );
+            ProjectsGlobalConfig = GlobalProject;
         }
 
         /// <summary>

@@ -86,6 +86,10 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
             GlobalConfig.SubProjectConfig.CreateSubProject( credential , SpProjectsEventsList.spSubProjectCreate , "MainProjects" );
         }
 
+        private int GetLatestIdentifier( string tableName) {            
+            return GlobalConfig.ProjectsGlobalConfig.GetLatestIdentifier( tableName , SpProjectsEventsList.spLatestIdentifier );
+        }
+
 
         private void save_btn_Click(object sender, EventArgs e) {
            
@@ -278,7 +282,7 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void addBothToolStripMenuItem_Click( object sender , EventArgs e ) {
-
+            Console.WriteLine( GetLatestIdentifier("MainProjects" ).ToString());
         }
 
         private void CreateMainProjectBtn_Click( object sender , EventArgs e ) {
