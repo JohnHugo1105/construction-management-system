@@ -7,7 +7,9 @@ using CmsLibrary.DataAccess.Login;
 using CmsLibrary.Interface.CostMonitoring.ProjectSelection;
 using CmsLibrary.Interface.Login;
 using CmsLibrary.Interface.Login.SpEvents;
+using CmsLibrary.Interface.SpParameters;
 using CmsLibrary.Model.SpEvents;
+using CmsLibrary.Model.SpParameters;
 using System.Configuration;
 using System.Windows.Forms;
 
@@ -84,6 +86,10 @@ namespace CmsLibrary {
             get; private set;
         }
 
+        public static IProjectsSpParamName ProjectsSpParamName {
+            get; private set;
+        }
+
 
         /// <summary>
         /// Initializing the instance of the classes that implements methods
@@ -125,6 +131,10 @@ namespace CmsLibrary {
 
             ProjectsGlobalSqlConnector GlobalProject = new ProjectsGlobalSqlConnector( );
             ProjectsGlobalConfig = GlobalProject;
+
+            ProjectsSpParamNameModel spParamName = new ProjectsSpParamNameModel( );
+            ProjectsSpParamName = spParamName;
+
         }
 
         /// <summary>

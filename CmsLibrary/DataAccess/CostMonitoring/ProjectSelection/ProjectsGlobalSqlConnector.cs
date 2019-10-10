@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CmsLibrary.Interface.CostMonitoring;
 using System.Data.SqlClient;
 using System.Data;
+using CmsLibrary.BusinessLogic.SpParameters;
 
 namespace CmsLibrary.DataAccess.CostMonitoring.ProjectSelection {
 
@@ -32,7 +33,20 @@ namespace CmsLibrary.DataAccess.CostMonitoring.ProjectSelection {
         }
 
         public void RemoveProject( IProjectsCredentials Id , string tableName , string events ) {
-            throw new NotImplementedException( );
+            using( SqlConnection connection = new SqlConnection(GlobalConfig.ConnString) )
+            {
+                using( SqlCommand cmd = new SqlCommand("spProjects",connection) )
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue(ProjectsSpParamNameList.events, events);
+                    cmd.Parameters.AddWithValue( ProjectsSpParamNameList.TableName,tableName);
+                    cmd.Parameters.AddWithValue(ProjectsSpParamNameList.Id, Id );
+
+
+                    cmd.Connection.Open( );
+                    cmd.ExecuteNonQuery( );
+                }
+            }
         }
     }
 }

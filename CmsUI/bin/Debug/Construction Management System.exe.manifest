@@ -77,14 +77,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="32256">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="33280">
       <assemblyIdentity name="CmsLibrary" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>UUrobVzDSSghhJNZOuxpCyO2x13QrHgIuQe7nUzcmx8=</dsig:DigestValue>
+        <dsig:DigestValue>GPID0DXD4xoyqgz0GP3X8Iyo0YAnHMND1SFo5/qMQuA=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -96,7 +96,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>p1ynpRVVZNj0jhztTKv193poSG7JVGHLGsT8nQKj1Oc=</dsig:DigestValue>
+        <dsig:DigestValue>w1J/Vr7/ChAJ5yxhHvP7VhO5xKYG62fNPJgQQLVVzrI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -1000,7 +1000,7 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>/Mp3vOiGk55y2bdgTLWdHcB1fBsSouynwA1WjN0J6Bs=</dsig:DigestValue>
+      <dsig:DigestValue>mdsvSRLFSsu8DNxmh79vlFKBjUXDaZjlOAWgz6FMK70=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Construction Management Transparent.ico" size="16958">
