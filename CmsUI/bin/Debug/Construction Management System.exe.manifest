@@ -84,7 +84,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>GPID0DXD4xoyqgz0GP3X8Iyo0YAnHMND1SFo5/qMQuA=</dsig:DigestValue>
+        <dsig:DigestValue>M8wLDsVZ81vJX+5PCirIKOCYWL0Ulntb4KP4OaHFwWc=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -96,7 +96,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>w1J/Vr7/ChAJ5yxhHvP7VhO5xKYG62fNPJgQQLVVzrI=</dsig:DigestValue>
+        <dsig:DigestValue>02j2cdWTKWWpBxTp+fqEXpqhdw3Xf4FrEVOJQkWbXB8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -1000,7 +1000,7 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>mdsvSRLFSsu8DNxmh79vlFKBjUXDaZjlOAWgz6FMK70=</dsig:DigestValue>
+      <dsig:DigestValue>+X20+OwXsSOFrrxZEY7txeKOV6md7CeNmXoyGOGq72M=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Construction Management Transparent.ico" size="16958">
