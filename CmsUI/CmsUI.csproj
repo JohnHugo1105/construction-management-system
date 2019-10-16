@@ -284,6 +284,12 @@
     <Compile Include="RevisionedUI\Project Price Form\Project_price_Form.Designer.cs">
       <DependentUpon>Project_price_Form.cs</DependentUpon>
     </Compile>
+    <Compile Include="RevisionedUI\ProjectConfiguration\CreaProjectsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RevisionedUI\ProjectConfiguration\CreaProjectsForm.Designer.cs">
+      <DependentUpon>CreaProjectsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="RevisionedUI\Project_Selection\Project_selection_form.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -362,10 +368,10 @@
     <Compile Include="RevisionedUI\Reusable_codes\Remove_record.cs" />
     <Compile Include="RevisionedUI\Reusable_codes\Search.cs" />
     <Compile Include="RevisionedUI\Reusable_codes\selection_automation.cs" />
-    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\ProjectConfigForm.cs">
+    <Compile Include="RevisionedUI\ProjectConfiguration\ProjectConfigForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RevisionedUI\Cost monitoring\Bill Mat\ProjectConfigForm.Designer.cs">
+    <Compile Include="RevisionedUI\ProjectConfiguration\ProjectConfigForm.Designer.cs">
       <DependentUpon>ProjectConfigForm.cs</DependentUpon>
     </Compile>
     <Compile Include="RevisionedUI\Database connection\MySQL_connection.cs" />
@@ -494,7 +500,10 @@
     <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\BillMat_Form.resx">
       <DependentUpon>BillMat_Form.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\ProjectConfigForm.resx">
+    <EmbeddedResource Include="RevisionedUI\ProjectConfiguration\CreaProjectsForm.resx">
+      <DependentUpon>CreaProjectsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RevisionedUI\ProjectConfiguration\ProjectConfigForm.resx">
       <DependentUpon>ProjectConfigForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RevisionedUI\Cost monitoring\Reports\Dashboard\Summary_variance_report.rpt">

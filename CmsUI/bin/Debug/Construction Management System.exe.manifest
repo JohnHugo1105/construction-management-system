@@ -77,26 +77,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="33280">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="33792">
       <assemblyIdentity name="CmsLibrary" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>M8wLDsVZ81vJX+5PCirIKOCYWL0Ulntb4KP4OaHFwWc=</dsig:DigestValue>
+        <dsig:DigestValue>+gwzBhgwu15NKRw3SVd3XRsrNWKVRYIZ3HtCbE0xSaU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13815704">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13820312">
       <assemblyIdentity name="Construction Management System" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>02j2cdWTKWWpBxTp+fqEXpqhdw3Xf4FrEVOJQkWbXB8=</dsig:DigestValue>
+        <dsig:DigestValue>1LD44rn6zTh5sdFXCfE9JriMT4gvBNfx5XMxNlrKGok=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -994,13 +994,13 @@
       <dsig:DigestValue>46+6WJWEWjw/iF2+eWfQCkSoVOyH2syNBEVAGryy5fM=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Construction Management System.pdb" size="1295872">
+  <file name="Construction Management System.pdb" size="1302016">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>+X20+OwXsSOFrrxZEY7txeKOV6md7CeNmXoyGOGq72M=</dsig:DigestValue>
+      <dsig:DigestValue>AA6pIWESAVMzrgJTbHFV4tmqHlwwLGDCzdu+AoW/7hg=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Construction Management Transparent.ico" size="16958">

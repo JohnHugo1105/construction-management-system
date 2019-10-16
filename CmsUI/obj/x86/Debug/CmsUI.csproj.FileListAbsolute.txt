@@ -455,3 +455,4 @@ C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.exe.manifest
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.application
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.ProjectConfigForm.resources
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.ProjectConfiguration.CreaProjectsForm.resources
