@@ -61,7 +61,7 @@ namespace CmsLibrary {
 
         //DataTable tableSubProjects( );
 
-        int GetLatestIdentifier( string tableName, string events);
+        int GetLatestIdentifier( string tableName);
 
         void RemoveProject( IProjectsCredentials Id, string tableName, string events);
      

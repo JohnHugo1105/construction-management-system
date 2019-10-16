@@ -47,12 +47,12 @@
     <Compile Include="Login\BusinessLogic\ValidationInput\ValidationResult.cs" />
     <Compile Include="StoredProcedure\SpEvents\BusinessLogic\SpLoginEventsList.cs" />
     <Compile Include="StoredProcedure\SpEvents\BusinessLogic\SpProjectsEventsList.cs" />
-    <Compile Include="StoredProcedure\SpParameters\BusinessLogic\ProjectsSpParamNameList.cs" />
+    <Compile Include="StoredProcedure\SpParameters\BusinessLogic\SpProjectsParamNameList.cs" />
     <Compile Include="CostMonitoring\DataAccess\BillMat\BillMatConnector.cs" />
     <Compile Include="CostMonitoring\DataAccess\Journal\JournalConnector.cs" />
-    <Compile Include="CostMonitoring\DataAccess\ProjectSelection\MainProjectsSqlConnector.cs" />
-    <Compile Include="CostMonitoring\DataAccess\ProjectSelection\ProjectsGlobalSqlConnector.cs" />
-    <Compile Include="CostMonitoring\DataAccess\ProjectSelection\SubProjectsSqlConnector.cs" />
+    <Compile Include="ProjectConfiguration\DataAccess\MainProjectsSqlConnector.cs" />
+    <Compile Include="ProjectConfiguration\DataAccess\ProjectsGlobalSqlConnector.cs" />
+    <Compile Include="ProjectConfiguration\DataAccess\SubProjectsSqlConnector.cs" />
     <Compile Include="Login\DataAccess\AccountGlobalSqlConnector.cs" />
     <Compile Include="Login\DataAccess\AdminSqlConnector.cs" />
     <Compile Include="Login\DataAccess\UserSqlConnector.cs" />
@@ -60,10 +60,10 @@
     <Compile Include="CostMonitoring\Interface\BillMat\IBillMatConnection.cs" />
     <Compile Include="CostMonitoring\Interface\ICostCredentials.cs" />
     <Compile Include="CostMonitoring\Interface\Journal\IJournalConnection.cs" />
-    <Compile Include="CostMonitoring\Interface\ProjectSelection\IProjectsCredentials.cs" />
-    <Compile Include="CostMonitoring\Interface\ProjectSelection\IMainProjectsConnection.cs" />
+    <Compile Include="ProjectConfiguration\Interface\IProjectsCredentials.cs" />
+    <Compile Include="ProjectConfiguration\Interface\IMainProjectsConnection.cs" />
     <Compile Include="StoredProcedure\SpEvents\Interface\IProjecsSpEvents.cs" />
-    <Compile Include="CostMonitoring\Interface\ProjectSelection\ISubProjectsConnection.cs" />
+    <Compile Include="ProjectConfiguration\Interface\ISubProjectsConnection.cs" />
     <Compile Include="Login\Interface\AccessCodes\IAccessCodesCredentials.cs" />
     <Compile Include="Login\Interface\AccessCodes\IAccessCodesProcess.cs" />
     <Compile Include="Login\Interface\Accounts\IAdminLoginConnection.cs" />
@@ -72,8 +72,8 @@
     <Compile Include="Login\Interface\ValidationInput\IValidateInputCredentials.cs" />
     <Compile Include="Login\Interface\ValidationInput\IValidateInputProcess.cs" />
     <Compile Include="StoredProcedure\SpParameters\Interface\IProjectsSpParamName.cs" />
-    <Compile Include="CostMonitoring\Model\ProjectSelection\MainProjectsModel.cs" />
-    <Compile Include="CostMonitoring\Model\ProjectSelection\SubProjectsModel.cs" />
+    <Compile Include="ProjectConfiguration\Model\MainProjectsModel.cs" />
+    <Compile Include="ProjectConfiguration\Model\SubProjectsModel.cs" />
     <Compile Include="StoredProcedure\SpEvents\Model\LoginSpEventsModel.cs" />
     <Compile Include="CostMonitoring\Model\BillMat\BillMatModel.cs" />
     <Compile Include="CostMonitoring\Model\Journal\JournalModel.cs" />
@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CostMonitoring\BusinessLogic\" />
+    <Folder Include="ProjectConfiguration\BusinessLogic\" />
     <Folder Include="StoredProcedure\SpEvents\DataAccess\" />
     <Folder Include="StoredProcedure\SpParameters\DataAccess\" />
   </ItemGroup>

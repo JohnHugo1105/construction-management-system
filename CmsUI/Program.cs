@@ -24,9 +24,10 @@ namespace GSG_Builders
                                                    // this will help to make only one instantiation
                                                    //Application.Run( new Login.CreateAdminAccountForm() );
                                                    //Application.Run( new Login.AdminControlForm( ) );
-            //Application.Run( new CreateAccountsForm( ) );
-            //Application.Run( new RevisionedUI.Home.Home_Form( ) );
-            Application.Run( new RevisionedUI.Bill_Mat.ProjectConfigForm( ) );
+                                                   //Application.Run( new CreateAccountsForm( ) );
+                                                   //Application.Run( new RevisionedUI.Home.Home_Form( ) );
+                                                   //Application.Run( new RevisionedUI.Bill_Mat.ProjectConfigForm( ) );
+            Application.Run( new RevisionedUI.ProjectConfiguration.CreaProjectsForm( ) );
         }
     }
 }
