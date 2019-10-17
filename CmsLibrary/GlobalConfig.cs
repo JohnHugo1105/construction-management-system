@@ -10,6 +10,8 @@ using CmsLibrary.Interface.Login.SpEvents;
 using CmsLibrary.Interface.SpParameters;
 using CmsLibrary.Model.SpEvents;
 using CmsLibrary.Model.SpParameters;
+using CmsLibrary.ProjectConfiguration.BusinessLogic;
+using CmsLibrary.ProjectConfiguration.Interface;
 using System.Configuration;
 using System.Windows.Forms;
 
@@ -63,15 +65,19 @@ namespace CmsLibrary {
         /// <summary>
         /// Static access to IProjectsConnection interface methods and its dependencies for configuring projects and sub projects
         /// </summary>
-        public static IMainProjectsConnection MainProjectConfig {
+        public static IProjectsMainConnection MainProjectConfig {
             get; private set;
         }
 
-        public static ISubProjectsConnection SubProjectConfig {
+        public static IProjectsSubConnection SubProjectConfig {
             get; private set;
         }
 
         public static IProjectsConnection ProjectsGlobalConfig {
+            get; private set;
+        }
+
+        public static IProjectsSelectionCreateProcess ProjectsSelectionProcess {
             get; private set;
         }
 
@@ -123,10 +129,10 @@ namespace CmsLibrary {
             ProjectsSpEventsModel projectsEvents = new ProjectsSpEventsModel( );
             ProjectsSpEvents = projectsEvents;
 
-            MainProjectsSqlConnector project = new MainProjectsSqlConnector( );
+            ProjectsMainSqlConnector project = new ProjectsMainSqlConnector( );
             MainProjectConfig = project;
 
-            SubProjectsSqlConnector subProject = new SubProjectsSqlConnector( );
+            ProjectsSubSqlConnector subProject = new ProjectsSubSqlConnector( );
             SubProjectConfig = subProject;
 
             ProjectsGlobalSqlConnector GlobalProject = new ProjectsGlobalSqlConnector( );
@@ -135,6 +141,9 @@ namespace CmsLibrary {
             ProjectsSpParamNameModel spParamName = new ProjectsSpParamNameModel( );
             ProjectsSpParamName = spParamName;
 
+            ProjectsSelectionCreateValues projectSelectionValue = new ProjectsSelectionCreateValues( );
+
+            ProjectsSelectionProcess = projectSelectionValue;
         }
 
         /// <summary>

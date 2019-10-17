@@ -16,6 +16,8 @@ using CmsLibrary.Model.CostMonitoring;
 using CmsLibrary;
 using CmsLibrary.BusinessLogic.SpEvents;
 using CmsLibrary.Model.CostMonitoring.ProjectSelection;
+using CmsLibrary.ProjectConfiguration.Model;
+using GSG_Builders.RevisionedUI.ProjectConfiguration;
 
 namespace GSG_Builders.RevisionedUI.Bill_Mat {
     public partial class ProjectConfigForm : Form {    
@@ -76,13 +78,13 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
 
         private void CreateMainProject( ) {
             DateTime date = Convert.ToDateTime( date_started_dtp.Text );
-            MainProjectsModel credential = new MainProjectsModel( project_name_txt.Text , date );
+            ProjectsMainModel credential = new ProjectsMainModel( project_name_txt.Text , date );
             GlobalConfig.MainProjectConfig.CreateMainProject( credential , SpProjectsEventsList.spMainProjectCreate , "MainProjects" );
         }
 
         private void CreateSubProject( ) {
             DateTime date = Convert.ToDateTime( date_started_dtp.Text );
-            SubProjectsModel credential = new SubProjectsModel( sub_project_name_txt.Text , date );
+            ProjectsSubModel credential = new ProjectsSubModel( sub_project_name_txt.Text , date );
             GlobalConfig.SubProjectConfig.CreateSubProject( credential , SpProjectsEventsList.spSubProjectCreate , "MainProjects" );
         }
 
@@ -282,7 +284,7 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void addBothToolStripMenuItem_Click( object sender , EventArgs e ) {
-            Console.WriteLine( GetLatestIdentifier("MainProjects" ).ToString());
+            
         }
 
         private void CreateMainProjectBtn_Click( object sender , EventArgs e ) {
@@ -291,6 +293,87 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
 
         private void CreateSubProjectBtn_Click( object sender , EventArgs e ) {
             CreateSubProject( );
+        }
+
+        public static bool allProjectsSelected = false;
+        public static bool mainProjectsSelected = false;
+        public static bool subProjectsSelected = false;
+
+        //private bool Allprojects( ) {
+        //    ProjectsSelectionCreateModel select = new ProjectsSelectionCreateModel( allProjectsSelected , mainProjectsSelected , subProjectsSelected );
+
+        //    return GlobalConfig.ProjectsSelectionProcess.AllProjectsSelected( select.AllProjects );
+        //}
+
+        //private bool MainProjects( ) {
+        //    ProjectsSelectionCreateModel select = new ProjectsSelectionCreateModel( allProjectsSelected , mainProjectsSelected , subProjectsSelected );
+
+        // return   GlobalConfig.ProjectsSelectionProcess.AllProjectsSelected( select.MainProjects );
+        //}
+
+        //private bool SubProjects( ) {
+        //    ProjectsSelectionCreateModel select = new ProjectsSelectionCreateModel( allProjectsSelected , mainProjectsSelected , subProjectsSelected );
+
+        //   return GlobalConfig.ProjectsSelectionProcess.AllProjectsSelected( select.SubProjects );
+        //}
+
+        public static string Selection( ) {
+            string selectedValue = "";
+
+            bool[ ] arr = new bool[ 3];
+            arr[ 0] = allProjectsSelected;
+            arr[ 1] = mainProjectsSelected;
+            arr[ 2 ] = subProjectsSelected;
+
+            int num = 0;
+            foreach( var item in arr )
+            {
+                if( item==true )
+                {
+                    if( num ==0 )
+                    {
+                        selectedValue = "All";
+                    }
+                    else if( num==1 )
+                    {
+                        selectedValue = "Main";
+                    }
+                    else
+                    {
+                        selectedValue = "Sub";
+                    }
+                }
+                num++;
+            }
+            return selectedValue;
+
+        }
+
+        private void ProjectsCreateSelection( ) {
+            CreateProjectsForm create = new CreateProjectsForm( );
+            create.ShowDialog( );
+            Console.WriteLine($" { Selection( )}");
+        }
+
+        private void mainAndSubprojectsBtn_Click( object sender , EventArgs e ) {
+            allProjectsSelected = true;
+            mainProjectsSelected = false;
+            subProjectsSelected = false;
+            ProjectsCreateSelection( );
+        }
+
+        private void CreateMainProjectBtn_Click_1( object sender , EventArgs e ) {
+            allProjectsSelected = false;
+            mainProjectsSelected = true;
+            subProjectsSelected = false;
+            ProjectsCreateSelection( );
+        }
+
+        private void CreateSubProjectBtn_Click_1( object sender , EventArgs e ) {
+            allProjectsSelected = false;
+            mainProjectsSelected = false;
+            subProjectsSelected = true;
+            ProjectsCreateSelection( );
         }
     }
 }

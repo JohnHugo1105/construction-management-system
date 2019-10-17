@@ -25,8 +25,8 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.label3 = new System.Windows.Forms.Label();
             this.sub_project_name_txt = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -57,12 +57,13 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.Add_toolStripButton = new System.Windows.Forms.ToolStripDropDownButton();
             this.newProjectBtn = new System.Windows.Forms.ToolStripMenuItem();
+            this.CreateMainProjectBtn = new System.Windows.Forms.ToolStripMenuItem();
+            this.CreateSubProjectBtn = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.edit_toolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.remove_toolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.CreateMainProjectBtn = new System.Windows.Forms.ToolStripMenuItem();
-            this.CreateSubProjectBtn = new System.Windows.Forms.ToolStripMenuItem();
+            this.mainAndSubprojectsBtn = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.main_project_dataGridView)).BeginInit();
@@ -240,14 +241,14 @@
             this.main_project_dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.main_project_dataGridView.ColumnHeadersVisible = false;
             this.main_project_dataGridView.ContextMenuStrip = this.contextMenuStrip1;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.main_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.main_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle1;
             this.main_project_dataGridView.Location = new System.Drawing.Point(16, 23);
             this.main_project_dataGridView.Name = "main_project_dataGridView";
             this.main_project_dataGridView.ReadOnly = true;
@@ -298,14 +299,14 @@
             this.sub_project_dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.sub_project_dataGridView.ColumnHeadersVisible = false;
             this.sub_project_dataGridView.ContextMenuStrip = this.contextMenuStrip1;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.sub_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.sub_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle3;
             this.sub_project_dataGridView.Location = new System.Drawing.Point(16, 23);
             this.sub_project_dataGridView.Name = "sub_project_dataGridView";
             this.sub_project_dataGridView.ReadOnly = true;
@@ -401,12 +402,29 @@
             // newProjectBtn
             // 
             this.newProjectBtn.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mainAndSubprojectsBtn,
             this.CreateMainProjectBtn});
             this.newProjectBtn.Image = global::GSG_Builders.Properties.Resources.iconfinder_queue_326588;
             this.newProjectBtn.Name = "newProjectBtn";
             this.newProjectBtn.Size = new System.Drawing.Size(152, 22);
             this.newProjectBtn.Text = "New Project";
             this.newProjectBtn.Click += new System.EventHandler(this.addBothToolStripMenuItem_Click);
+            // 
+            // CreateMainProjectBtn
+            // 
+            this.CreateMainProjectBtn.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.CreateSubProjectBtn});
+            this.CreateMainProjectBtn.Name = "CreateMainProjectBtn";
+            this.CreateMainProjectBtn.Size = new System.Drawing.Size(206, 22);
+            this.CreateMainProjectBtn.Text = "Main project";
+            this.CreateMainProjectBtn.Click += new System.EventHandler(this.CreateMainProjectBtn_Click_1);
+            // 
+            // CreateSubProjectBtn
+            // 
+            this.CreateSubProjectBtn.Name = "CreateSubProjectBtn";
+            this.CreateSubProjectBtn.Size = new System.Drawing.Size(152, 22);
+            this.CreateSubProjectBtn.Text = "Sub-project";
+            this.CreateSubProjectBtn.Click += new System.EventHandler(this.CreateSubProjectBtn_Click_1);
             // 
             // toolStripSeparator2
             // 
@@ -451,19 +469,12 @@
             this.remove_toolStripButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.remove_toolStripButton.Click += new System.EventHandler(this.remove_toolStripButton_Click);
             // 
-            // CreateMainProjectBtn
+            // mainAndSubprojectsBtn
             // 
-            this.CreateMainProjectBtn.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.CreateSubProjectBtn});
-            this.CreateMainProjectBtn.Name = "CreateMainProjectBtn";
-            this.CreateMainProjectBtn.Size = new System.Drawing.Size(152, 22);
-            this.CreateMainProjectBtn.Text = "Main project";
-            // 
-            // CreateSubProjectBtn
-            // 
-            this.CreateSubProjectBtn.Name = "CreateSubProjectBtn";
-            this.CreateSubProjectBtn.Size = new System.Drawing.Size(152, 22);
-            this.CreateSubProjectBtn.Text = "Sub-project";
+            this.mainAndSubprojectsBtn.Name = "mainAndSubprojectsBtn";
+            this.mainAndSubprojectsBtn.Size = new System.Drawing.Size(206, 22);
+            this.mainAndSubprojectsBtn.Text = "Main and sub-projects";
+            this.mainAndSubprojectsBtn.Click += new System.EventHandler(this.mainAndSubprojectsBtn_Click);
             // 
             // ProjectConfigForm
             // 
@@ -543,5 +554,6 @@
         private System.Windows.Forms.ToolStripMenuItem newProjectBtn;
         private System.Windows.Forms.ToolStripMenuItem CreateMainProjectBtn;
         private System.Windows.Forms.ToolStripMenuItem CreateSubProjectBtn;
+        private System.Windows.Forms.ToolStripMenuItem mainAndSubprojectsBtn;
     }
 }

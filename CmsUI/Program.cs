@@ -27,7 +27,8 @@ namespace GSG_Builders
                                                    //Application.Run( new CreateAccountsForm( ) );
                                                    //Application.Run( new RevisionedUI.Home.Home_Form( ) );
                                                    //Application.Run( new RevisionedUI.Bill_Mat.ProjectConfigForm( ) );
-            Application.Run( new RevisionedUI.ProjectConfiguration.CreaProjectsForm( ) );
+                                                   //Application.Run( new RevisionedUI.ProjectConfiguration.CreateProjectsForm( ) );
+            Application.Run( new RevisionedUI.Bill_Mat.ProjectConfigForm( ) );
         }
     }
 }

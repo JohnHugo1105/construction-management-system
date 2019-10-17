@@ -284,11 +284,11 @@
     <Compile Include="RevisionedUI\Project Price Form\Project_price_Form.Designer.cs">
       <DependentUpon>Project_price_Form.cs</DependentUpon>
     </Compile>
-    <Compile Include="RevisionedUI\ProjectConfiguration\CreaProjectsForm.cs">
+    <Compile Include="RevisionedUI\ProjectConfiguration\CreateProjectsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RevisionedUI\ProjectConfiguration\CreaProjectsForm.Designer.cs">
-      <DependentUpon>CreaProjectsForm.cs</DependentUpon>
+    <Compile Include="RevisionedUI\ProjectConfiguration\CreateProjectsForm.Designer.cs">
+      <DependentUpon>CreateProjectsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="RevisionedUI\Project_Selection\Project_selection_form.cs">
       <SubType>Form</SubType>
@@ -500,8 +500,8 @@
     <EmbeddedResource Include="RevisionedUI\Cost monitoring\Bill Mat\BillMat_Form.resx">
       <DependentUpon>BillMat_Form.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RevisionedUI\ProjectConfiguration\CreaProjectsForm.resx">
-      <DependentUpon>CreaProjectsForm.cs</DependentUpon>
+    <EmbeddedResource Include="RevisionedUI\ProjectConfiguration\CreateProjectsForm.resx">
+      <DependentUpon>CreateProjectsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RevisionedUI\ProjectConfiguration\ProjectConfigForm.resx">
       <DependentUpon>ProjectConfigForm.cs</DependentUpon>
