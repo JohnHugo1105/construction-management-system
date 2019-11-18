@@ -50,9 +50,9 @@
     <Compile Include="StoredProcedure\SpParameters\BusinessLogic\SpProjectsParamNameList.cs" />
     <Compile Include="CostMonitoring\DataAccess\BillMat\BillMatConnector.cs" />
     <Compile Include="CostMonitoring\DataAccess\Journal\JournalConnector.cs" />
-    <Compile Include="ProjectConfiguration\DataAccess\MainProjectsSqlConnector.cs" />
+    <Compile Include="ProjectConfiguration\DataAccess\ProjectsMainSqlConnector.cs" />
     <Compile Include="ProjectConfiguration\DataAccess\ProjectsGlobalSqlConnector.cs" />
-    <Compile Include="ProjectConfiguration\DataAccess\SubProjectsSqlConnector.cs" />
+    <Compile Include="ProjectConfiguration\DataAccess\ProjectsSubSqlConnector.cs" />
     <Compile Include="Login\DataAccess\AccountGlobalSqlConnector.cs" />
     <Compile Include="Login\DataAccess\AdminSqlConnector.cs" />
     <Compile Include="Login\DataAccess\UserSqlConnector.cs" />
@@ -61,9 +61,9 @@
     <Compile Include="CostMonitoring\Interface\ICostCredentials.cs" />
     <Compile Include="CostMonitoring\Interface\Journal\IJournalConnection.cs" />
     <Compile Include="ProjectConfiguration\Interface\IProjectsCredentials.cs" />
-    <Compile Include="ProjectConfiguration\Interface\IMainProjectsConnection.cs" />
+    <Compile Include="ProjectConfiguration\Interface\IProjectsMainConnection.cs" />
     <Compile Include="StoredProcedure\SpEvents\Interface\IProjecsSpEvents.cs" />
-    <Compile Include="ProjectConfiguration\Interface\ISubProjectsConnection.cs" />
+    <Compile Include="ProjectConfiguration\Interface\IProjectsSubConnection.cs" />
     <Compile Include="Login\Interface\AccessCodes\IAccessCodesCredentials.cs" />
     <Compile Include="Login\Interface\AccessCodes\IAccessCodesProcess.cs" />
     <Compile Include="Login\Interface\Accounts\IAdminLoginConnection.cs" />
@@ -72,8 +72,8 @@
     <Compile Include="Login\Interface\ValidationInput\IValidateInputCredentials.cs" />
     <Compile Include="Login\Interface\ValidationInput\IValidateInputProcess.cs" />
     <Compile Include="StoredProcedure\SpParameters\Interface\IProjectsSpParamName.cs" />
-    <Compile Include="ProjectConfiguration\Model\MainProjectsModel.cs" />
-    <Compile Include="ProjectConfiguration\Model\SubProjectsModel.cs" />
+    <Compile Include="ProjectConfiguration\Model\ProjectsMainModel.cs" />
+    <Compile Include="ProjectConfiguration\Model\ProjectsSubModel.cs" />
     <Compile Include="StoredProcedure\SpEvents\Model\LoginSpEventsModel.cs" />
     <Compile Include="CostMonitoring\Model\BillMat\BillMatModel.cs" />
     <Compile Include="CostMonitoring\Model\Journal\JournalModel.cs" />

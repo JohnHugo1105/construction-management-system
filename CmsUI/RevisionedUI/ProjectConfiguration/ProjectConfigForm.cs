@@ -16,6 +16,7 @@ using CmsLibrary.Model.CostMonitoring;
 using CmsLibrary;
 using CmsLibrary.BusinessLogic.SpEvents;
 using CmsLibrary.Model.CostMonitoring.ProjectSelection;
+using GSG_Builders.RevisionedUI.ProjectConfiguration;
 
 namespace GSG_Builders.RevisionedUI.Bill_Mat {
     public partial class ProjectConfigForm : Form {    
@@ -33,31 +34,31 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
             BillMat_Form.new_project_form_count = 0;
         }
 
-        public int Main_Project_Count() {
+        //public int Main_Project_Count() {
 
-            int projcount = 0;
+            //int projcount = 0;
 
-            using( var con = new SqlConnection( MS_SQL_SERVER_connection.Get_connection_string( ) ) )
-            {
-                using( SqlCommand cmd = new SqlCommand( stored_procedures_list.stored_proc_all , con ) )
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Connection.Open( );
-                    cmd.Parameters.AddWithValue(Fields_reusable_base_class.event_parameter , Fields_reusable_base_class .select_event);
-                    cmd.Parameters.AddWithValue( Fields_reusable_base_class.table_parameter , Fields_reusable_base_class .main_project_table);
-                    cmd.Parameters.AddWithValue( Fields_reusable_base_class.col_select , "COUNT( *)" );
-                    cmd.Parameters.AddWithValue( Fields_reusable_base_class.other_query , "WHERE project_name='" + project_name_txt.Text.Replace( "'" , "''" ) + "' " );
+            //using( var con = new SqlConnection( MS_SQL_SERVER_connection.Get_connection_string( ) ) )
+            //{
+            //    using( SqlCommand cmd = new SqlCommand( stored_procedures_list.stored_proc_all , con ) )
+            //    {
+            //        cmd.CommandType = CommandType.StoredProcedure;
+            //        cmd.Connection.Open( );
+            //        cmd.Parameters.AddWithValue(Fields_reusable_base_class.event_parameter , Fields_reusable_base_class .select_event);
+            //        cmd.Parameters.AddWithValue( Fields_reusable_base_class.table_parameter , Fields_reusable_base_class .main_project_table);
+            //        cmd.Parameters.AddWithValue( Fields_reusable_base_class.col_select , "COUNT( *)" );
+            //        cmd.Parameters.AddWithValue( Fields_reusable_base_class.other_query , "WHERE project_name='" + project_name_txt.Text.Replace( "'" , "''" ) + "' " );
 
-                    SqlDataReader reader = cmd.ExecuteReader( );
+            //        SqlDataReader reader = cmd.ExecuteReader( );
 
-                    while( reader.Read( ) )
-                    {
-                        projcount = reader.GetInt32( 0 );
-                    }
-                    reader.Close( );
-                    return projcount;
-                }
-            }
+            //        while( reader.Read( ) )
+            //        {
+            //            projcount = reader.GetInt32( 0 );
+            //        }
+            //        reader.Close( );
+            //        return projcount;
+            //    }
+            //}
             #region old codes
             //cmd = new MySqlCommand();
             //cmd.Connection = MySQL_connection.GetConnection();
@@ -72,18 +73,18 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
             //reader.Close();
             //return projcount;
             #endregion
-        }
+        //}
 
         private void CreateMainProject( ) {
-            DateTime date = Convert.ToDateTime( date_started_dtp.Text );
-            MainProjectsModel credential = new MainProjectsModel( project_name_txt.Text , date );
-            GlobalConfig.MainProjectConfig.CreateMainProject( credential , SpProjectsEventsList.spMainProjectCreate , "MainProjects" );
+            //DateTime date = Convert.ToDateTime( date_started_dtp.Text );
+            //ProjectsMainModel credential = new ProjectsMainModel( project_name_txt.Text , date );
+            //GlobalConfig.MainProjectConfig.CreateMainProject( credential , SpProjectsEventsList.spMainProjectCreate , "MainProjects" );
         }
 
         private void CreateSubProject( ) {
-            DateTime date = Convert.ToDateTime( date_started_dtp.Text );
-            SubProjectsModel credential = new SubProjectsModel( sub_project_name_txt.Text , date );
-            GlobalConfig.SubProjectConfig.CreateSubProject( credential , SpProjectsEventsList.spSubProjectCreate , "MainProjects" );
+            //DateTime date = Convert.ToDateTime( date_started_dtp.Text );
+            //ProjectsSubModel credential = new ProjectsSubModel( sub_project_name_txt.Text , date );
+            //GlobalConfig.SubProjectConfig.CreateSubProject( credential , SpProjectsEventsList.spSubProjectCreate , "MainProjects" );
         }
 
         private int GetLatestIdentifier( string tableName) {            
@@ -155,10 +156,10 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void bill_mat_settings_sub_project_dataGridView_CellClick ( object sender , DataGridViewCellEventArgs e ) {
-            sub_project_name_txt.Text = sub_project_dataGridView.CurrentRow.Cells[ "sub_project_name" ].Value.ToString( );
-            sub_project_selected = sub_project_dataGridView.CurrentRow.Cells[ "sub_project_name" ].Value.ToString( );
-            main_project_selected_clicked = false;
-            sub_project_selected_clicked = true;
+            //sub_project_name_txt.Text = sub_project_dataGridView.CurrentRow.Cells[ "sub_project_name" ].Value.ToString( );
+            //sub_project_selected = sub_project_dataGridView.CurrentRow.Cells[ "sub_project_name" ].Value.ToString( );
+            //main_project_selected_clicked = false;
+            //sub_project_selected_clicked = true;
             
         }
        
@@ -221,14 +222,14 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void sub_project_dataGridView_CellMouseDown ( object sender , DataGridViewCellMouseEventArgs e ) {
-            if( e.Button == MouseButtons.Right )
-            {
-                sub_project_dataGridView.CurrentCell = sub_project_dataGridView.Rows[ e.RowIndex ].Cells[ e.ColumnIndex ];
-                sub_project_dataGridView.Rows[ e.RowIndex ].Selected = true;
-                main_project_selected_clicked = false;
-                sub_project_selected_clicked = true;
-                sub_project_name_txt.Text = sub_project_dataGridView.CurrentRow.Cells[ "sub_project_name" ].Value.ToString( );
-            }
+            //if( e.Button == MouseButtons.Right )
+            //{
+            //    sub_project_dataGridView.CurrentCell = sub_project_dataGridView.Rows[ e.RowIndex ].Cells[ e.ColumnIndex ];
+            //    sub_project_dataGridView.Rows[ e.RowIndex ].Selected = true;
+            //    main_project_selected_clicked = false;
+            //    sub_project_selected_clicked = true;
+            //    sub_project_name_txt.Text = sub_project_dataGridView.CurrentRow.Cells[ "sub_project_name" ].Value.ToString( );
+            //}
         }
 
         private void deleteToolStripMenuItem_Click ( object sender , EventArgs e ) {
@@ -282,7 +283,7 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
         }
 
         private void addBothToolStripMenuItem_Click( object sender , EventArgs e ) {
-            Console.WriteLine( GetLatestIdentifier("MainProjects" ).ToString());
+            
         }
 
         private void CreateMainProjectBtn_Click( object sender , EventArgs e ) {
@@ -291,6 +292,39 @@ namespace GSG_Builders.RevisionedUI.Bill_Mat {
 
         private void CreateSubProjectBtn_Click( object sender , EventArgs e ) {
             CreateSubProject( );
+        }
+
+        public static bool allProjectsSelected = false;
+        public static bool mainProjectsSelected = false;
+        public static bool subProjectsSelected = false;
+             
+      
+
+        private void ProjectsCreateSelection( ) {
+            CreateProjectsForm create = new CreateProjectsForm( );
+            create.ShowDialog( );
+          
+        }
+
+        private void mainAndSubprojectsBtn_Click( object sender , EventArgs e ) {
+            allProjectsSelected = true;
+            mainProjectsSelected = false;
+            subProjectsSelected = false;
+            ProjectsCreateSelection( );
+        }
+
+        private void CreateMainProjectBtn_Click_1( object sender , EventArgs e ) {
+            allProjectsSelected = false;
+            mainProjectsSelected = true;
+            subProjectsSelected = false;
+            ProjectsCreateSelection( );
+        }
+
+        private void CreateSubProjectBtn_Click_1( object sender , EventArgs e ) {
+            allProjectsSelected = false;
+            mainProjectsSelected = false;
+            subProjectsSelected = true;
+            ProjectsCreateSelection( );
         }
     }
 }

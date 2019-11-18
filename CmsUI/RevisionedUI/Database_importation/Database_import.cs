@@ -60,8 +60,8 @@ namespace GSG_Builders.RevisionedUI.Database_importation {
         }
 
         private void Bw_DoWork( object sender , DoWorkEventArgs e ) {
-            DacServices ds = new DacServices( MS_SQL_SERVER_connection.Get_connection_string( ) );
-            ds.ImportBacpac( BacPackage.Load( Path.Combine( folder_param ) ) , "construction_management_system" , new DacImportOptions( ) );
+            //DacServices ds = new DacServices( MS_SQL_SERVER_connection.Get_connection_string( ) );
+            //ds.ImportBacpac( BacPackage.Load( Path.Combine( folder_param ) ) , "construction_management_system" , new DacImportOptions( ) );
         }
     }
 }

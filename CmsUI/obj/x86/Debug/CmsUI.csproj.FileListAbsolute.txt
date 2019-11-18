@@ -371,7 +371,6 @@ C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debu
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.SmoExtended.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.SQLTask.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.TransferDatabasesTask.dll
-C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\System.Data.SqlServerCe.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.DataDefModel.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ClientDoc.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CrystalDecisions.ReportAppServer.ReportDefModel.dll
@@ -398,7 +397,6 @@ C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debu
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.PipelineHost.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.DTSPipelineWrap.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\CmsLibrary.pdb
-C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.xml
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\Microsoft.SqlServer.Dac.Extensions.xml
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\de\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\bin\Debug\es\Microsoft.SqlServer.TransactSql.ScriptDom.resources.dll
@@ -455,4 +453,4 @@ C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.exe.manifest
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\Construction Management System.application
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.Bill_Mat.ProjectConfigForm.resources
-C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.ProjectConfiguration.CreaProjectsForm.resources
+C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsUI\obj\x86\Debug\GSG_Builders.RevisionedUI.ProjectConfiguration.CreateProjectsForm.resources
