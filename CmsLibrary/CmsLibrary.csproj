@@ -45,10 +45,6 @@
   <ItemGroup>
     <Compile Include="Login\BusinessLogic\AccessCodes\AccessCodesValue.cs" />
     <Compile Include="Login\BusinessLogic\ValidationInput\ValidationResult.cs" />
-    <Compile Include="ProjectConfiguration\BusinessLogic\ProjectsSelectionCreateValues.cs" />
-    <Compile Include="ProjectConfiguration\Interface\IProjectsSelectionCreateProcess.cs" />
-    <Compile Include="ProjectConfiguration\Interface\IProjectsSelectionCreateCredentials.cs" />
-    <Compile Include="ProjectConfiguration\Model\ProjectsSelectionCreateModel.cs" />
     <Compile Include="StoredProcedure\SpEvents\BusinessLogic\SpLoginEventsList.cs" />
     <Compile Include="StoredProcedure\SpEvents\BusinessLogic\SpProjectsEventsList.cs" />
     <Compile Include="StoredProcedure\SpParameters\BusinessLogic\SpProjectsParamNameList.cs" />
@@ -93,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CostMonitoring\BusinessLogic\" />
+    <Folder Include="ProjectConfiguration\BusinessLogic\" />
     <Folder Include="StoredProcedure\SpEvents\DataAccess\" />
     <Folder Include="StoredProcedure\SpParameters\DataAccess\" />
   </ItemGroup>

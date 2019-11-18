@@ -10,8 +10,6 @@ using CmsLibrary.Interface.Login.SpEvents;
 using CmsLibrary.Interface.SpParameters;
 using CmsLibrary.Model.SpEvents;
 using CmsLibrary.Model.SpParameters;
-using CmsLibrary.ProjectConfiguration.BusinessLogic;
-using CmsLibrary.ProjectConfiguration.Interface;
 using System.Configuration;
 using System.Windows.Forms;
 
@@ -77,9 +75,7 @@ namespace CmsLibrary {
             get; private set;
         }
 
-        public static IProjectsSelectionCreateProcess ProjectsSelectionProcess {
-            get; private set;
-        }
+      
 
         /// <summary>
         /// Static access to ISpEvents interface methods and its dependencies 
@@ -140,10 +136,7 @@ namespace CmsLibrary {
 
             ProjectsSpParamNameModel spParamName = new ProjectsSpParamNameModel( );
             ProjectsSpParamName = spParamName;
-
-            ProjectsSelectionCreateValues projectSelectionValue = new ProjectsSelectionCreateValues( );
-
-            ProjectsSelectionProcess = projectSelectionValue;
+          
         }
 
         /// <summary>

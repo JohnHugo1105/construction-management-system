@@ -53,6 +53,11 @@
     </dependentAssembly>
   </dependency>
   <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="System.Data.SqlServerCe" version="4.0.0.0" publicKeyToken="89845DCD8080CC91" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AxInterop.WMPLib.dll" size="53760">
       <assemblyIdentity name="AxInterop.WMPLib" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
@@ -77,26 +82,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="35328">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CmsLibrary.dll" size="33792">
       <assemblyIdentity name="CmsLibrary" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>cMyBi0mSUwbjBs08W6CHLSjUsCfAHNpgaU1IdM6g6bg=</dsig:DigestValue>
+        <dsig:DigestValue>S7VRGZQOhUOvKxmKHZdnpifVWLLlk2Tn+/BTEpHQSfs=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13822360">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Construction Management System.exe" size="13818264">
       <assemblyIdentity name="Construction Management System" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>yNXkQcDPQz/Wzv99364pfSIomZUvskOCw00zdvB0kzM=</dsig:DigestValue>
+        <dsig:DigestValue>WPBSHObM7iAoDVhbDFbLqt1K9jESYCtOO0TE38eerTs=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -365,26 +370,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.Data.Tools.Schema.Sql.dll" size="9158304">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.Data.Tools.Schema.Sql.dll" size="8627392">
       <assemblyIdentity name="Microsoft.Data.Tools.Schema.Sql" version="12.0.0.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>xUDXEXNHqdz+RW/p2y8iHE5H115h5C/IP2tjOmucSQI=</dsig:DigestValue>
+        <dsig:DigestValue>NJeUxuh6BH4mzkanQHXXgxBRfWZNuB0BleQsXjWvt+o=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.Data.Tools.Utilities.dll" size="445600">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.Data.Tools.Utilities.dll" size="477888">
       <assemblyIdentity name="Microsoft.Data.Tools.Utilities" version="12.0.0.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>p+pejcIMC7YO7mPzD4N+MT7sxTvE5kZ792Ik3IHp8QE=</dsig:DigestValue>
+        <dsig:DigestValue>4eTLWuWVVK35fJdHljE2zQFqraD7A7IJ4ZZXR85w/Ko=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -413,26 +418,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.SqlServer.Dac.dll" size="293024">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.SqlServer.Dac.dll" size="268992">
       <assemblyIdentity name="Microsoft.SqlServer.Dac" version="12.0.0.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>mvAV91a9GEbqSdRYizCfSyOMWD2xvmlDYk1CPEabwoM=</dsig:DigestValue>
+        <dsig:DigestValue>FbEziXG1vt0R2zuEANAIE7k+/k9OBxl+vltFeJsXm90=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.SqlServer.Dac.Extensions.dll" size="685728">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Microsoft.SqlServer.Dac.Extensions.dll" size="547520">
       <assemblyIdentity name="Microsoft.SqlServer.Dac.Extensions" version="12.0.0.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>KI1MASvpw6upXtqDHsN1bsuOniwtMw0Zeg8hTw5YSXI=</dsig:DigestValue>
+        <dsig:DigestValue>xZHNRdeiNOSZikZC5QCPo+la8tDz1dbb0F3ivPZ5wGo=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -953,26 +958,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="stdole.dll" size="32192">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="stdole.dll" size="32416">
       <assemblyIdentity name="stdole" version="7.0.3300.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>cIq9imgoDt+GxOFQczv6npUQ3lA/YBrtHKrixl+0mfw=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="System.Data.SqlServerCe.dll" size="470240">
-      <assemblyIdentity name="System.Data.SqlServerCe" version="4.0.0.0" publicKeyToken="89845DCD8080CC91" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>fzAjKmnGW7OJ3tIr3/LRns9mJFYblHB1es3oCxTi/k0=</dsig:DigestValue>
+        <dsig:DigestValue>V7mfoRRmE6RC/ZLNxKdhZgTrwNymvx0W/KmNUJKMI7I=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -994,13 +987,13 @@
       <dsig:DigestValue>46+6WJWEWjw/iF2+eWfQCkSoVOyH2syNBEVAGryy5fM=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Construction Management System.pdb" size="1304064">
+  <file name="Construction Management System.pdb" size="1302016">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>q/GkaTxdlAV4Q8C/KYIgah6YjHdMn2mWAReBIj3utFs=</dsig:DigestValue>
+      <dsig:DigestValue>mRg/S+k6DWUPmyMAZcGyNFVf8Laa5VWAr7vmt+DnDG0=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Construction Management Transparent.ico" size="16958">

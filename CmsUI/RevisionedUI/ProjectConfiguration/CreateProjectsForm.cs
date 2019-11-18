@@ -1,5 +1,4 @@
 ﻿using CmsLibrary;
-using CmsLibrary.ProjectConfiguration.Model;
 using GSG_Builders.RevisionedUI.Bill_Mat;
 using System;
 using System.Collections.Generic;
@@ -18,19 +17,20 @@ namespace GSG_Builders.RevisionedUI.ProjectConfiguration {
         }
 
         private void CreateProjectsForm_Load( object sender , EventArgs e ) {
-            ProjectsSelectionCreateModel credential = new ProjectsSelectionCreateModel( ProjectConfigForm.Selection(), mainProjectNameTxt.Enabled, subProjectNameTxt.Enabled );
-
-            if(credential.Selection == "All" )
+            if( ProjectConfigForm.allProjectsSelected==true )
             {
-                GlobalConfig.ProjectsSelectionProcess.AllProjectsSelected( credential );
+                mainProjectNameTxt.Enabled = true;
+                subProjectNameTxt.Enabled = true;
             }
-            else if( credential.Selection == "Main" )
+            else if( ProjectConfigForm.mainProjectsSelected==true )
             {
-                GlobalConfig.ProjectsSelectionProcess.MainProjectsSelected( credential );
+                mainProjectNameTxt.Enabled = true;
+                subProjectNameTxt.Enabled = false;
             }
             else
             {
-                GlobalConfig.ProjectsSelectionProcess.SubProjectsSelected( credential );
+                mainProjectNameTxt.Enabled = false;
+                subProjectNameTxt.Enabled = true;
             }
 
         }

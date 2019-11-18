@@ -25,14 +25,8 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.label3 = new System.Windows.Forms.Label();
-            this.sub_project_name_txt = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.date_started_dtp = new System.Windows.Forms.DateTimePicker();
-            this.label1 = new System.Windows.Forms.Label();
-            this.project_name_txt = new System.Windows.Forms.TextBox();
             this.bunifuElipse1 = new Bunifu.Framework.UI.BunifuElipse(this.components);
             this.bunifuElipse2 = new Bunifu.Framework.UI.BunifuElipse(this.components);
             this.bunifuElipse3 = new Bunifu.Framework.UI.BunifuElipse(this.components);
@@ -43,7 +37,6 @@
             this.subprojectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.main_project_dataGridView = new System.Windows.Forms.DataGridView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -64,7 +57,6 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.remove_toolStripButton = new System.Windows.Forms.ToolStripButton();
             this.mainAndSubprojectsBtn = new System.Windows.Forms.ToolStripMenuItem();
-            this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.main_project_dataGridView)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -72,66 +64,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.sub_project_dataGridView)).BeginInit();
             this.BillMat_toolStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(346, 49);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(113, 16);
-            this.label3.TabIndex = 99;
-            this.label3.Text = "Sub-project name";
-            // 
-            // sub_project_name_txt
-            // 
-            this.sub_project_name_txt.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.sub_project_name_txt.Location = new System.Drawing.Point(346, 23);
-            this.sub_project_name_txt.Name = "sub_project_name_txt";
-            this.sub_project_name_txt.Size = new System.Drawing.Size(314, 23);
-            this.sub_project_name_txt.TabIndex = 98;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(676, 48);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(77, 16);
-            this.label2.TabIndex = 97;
-            this.label2.Text = "Date started";
-            // 
-            // date_started_dtp
-            // 
-            this.date_started_dtp.CalendarForeColor = System.Drawing.Color.DarkGray;
-            this.date_started_dtp.CalendarTitleForeColor = System.Drawing.Color.DimGray;
-            this.date_started_dtp.CustomFormat = "MMM. d, yyy";
-            this.date_started_dtp.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.date_started_dtp.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.date_started_dtp.Location = new System.Drawing.Point(676, 23);
-            this.date_started_dtp.Name = "date_started_dtp";
-            this.date_started_dtp.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.date_started_dtp.Size = new System.Drawing.Size(150, 22);
-            this.date_started_dtp.TabIndex = 96;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(16, 49);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(86, 16);
-            this.label1.TabIndex = 95;
-            this.label1.Text = "Project name";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // project_name_txt
-            // 
-            this.project_name_txt.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.project_name_txt.Location = new System.Drawing.Point(16, 23);
-            this.project_name_txt.Name = "project_name_txt";
-            this.project_name_txt.Size = new System.Drawing.Size(314, 23);
-            this.project_name_txt.TabIndex = 94;
             // 
             // bunifuElipse1
             // 
@@ -202,29 +134,13 @@
             this.toolStripSeparator12.Name = "toolStripSeparator12";
             this.toolStripSeparator12.Size = new System.Drawing.Size(6, 52);
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.project_name_txt);
-            this.groupBox1.Controls.Add(this.sub_project_name_txt);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.date_started_dtp);
-            this.groupBox1.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(12, 92);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(843, 78);
-            this.groupBox1.TabIndex = 103;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Project details";
-            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.main_project_dataGridView);
             this.groupBox2.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox2.Location = new System.Drawing.Point(12, 202);
+            this.groupBox2.Location = new System.Drawing.Point(12, 95);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(411, 169);
+            this.groupBox2.Size = new System.Drawing.Size(411, 338);
             this.groupBox2.TabIndex = 104;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Main project list";
@@ -241,20 +157,20 @@
             this.main_project_dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.main_project_dataGridView.ColumnHeadersVisible = false;
             this.main_project_dataGridView.ContextMenuStrip = this.contextMenuStrip1;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.main_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.main_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle2;
             this.main_project_dataGridView.Location = new System.Drawing.Point(16, 23);
             this.main_project_dataGridView.Name = "main_project_dataGridView";
             this.main_project_dataGridView.ReadOnly = true;
             this.main_project_dataGridView.RowHeadersVisible = false;
             this.main_project_dataGridView.RowHeadersWidth = 23;
-            this.main_project_dataGridView.Size = new System.Drawing.Size(379, 125);
+            this.main_project_dataGridView.Size = new System.Drawing.Size(379, 294);
             this.main_project_dataGridView.TabIndex = 0;
             this.main_project_dataGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.bill_mat_settings_main_project_dataGridView_CellClick);
             this.main_project_dataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.bill_mat_settings_main_project_dataGridView_CellContentDoubleClick);
@@ -280,9 +196,9 @@
             // 
             this.groupBox3.Controls.Add(this.sub_project_dataGridView);
             this.groupBox3.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox3.Location = new System.Drawing.Point(444, 202);
+            this.groupBox3.Location = new System.Drawing.Point(444, 95);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(411, 169);
+            this.groupBox3.Size = new System.Drawing.Size(411, 338);
             this.groupBox3.TabIndex = 105;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Sub-project list";
@@ -299,19 +215,19 @@
             this.sub_project_dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.sub_project_dataGridView.ColumnHeadersVisible = false;
             this.sub_project_dataGridView.ContextMenuStrip = this.contextMenuStrip1;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.sub_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.sub_project_dataGridView.DefaultCellStyle = dataGridViewCellStyle1;
             this.sub_project_dataGridView.Location = new System.Drawing.Point(16, 23);
             this.sub_project_dataGridView.Name = "sub_project_dataGridView";
             this.sub_project_dataGridView.ReadOnly = true;
             this.sub_project_dataGridView.RowHeadersVisible = false;
-            this.sub_project_dataGridView.Size = new System.Drawing.Size(379, 125);
+            this.sub_project_dataGridView.Size = new System.Drawing.Size(379, 294);
             this.sub_project_dataGridView.TabIndex = 0;
             this.sub_project_dataGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.bill_mat_settings_sub_project_dataGridView_CellClick);
             this.sub_project_dataGridView.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.sub_project_dataGridView_CellMouseDown);
@@ -322,24 +238,24 @@
             this.bunifuSeparator1.BackColor = System.Drawing.Color.Transparent;
             this.bunifuSeparator1.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.bunifuSeparator1.LineThickness = 2;
-            this.bunifuSeparator1.Location = new System.Drawing.Point(0, -78);
+            this.bunifuSeparator1.Location = new System.Drawing.Point(0, -48);
             this.bunifuSeparator1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.bunifuSeparator1.Name = "bunifuSeparator1";
-            this.bunifuSeparator1.Size = new System.Drawing.Size(742, 15);
+            this.bunifuSeparator1.Size = new System.Drawing.Size(636, 12);
             this.bunifuSeparator1.TabIndex = 106;
             this.bunifuSeparator1.Transparency = 255;
             this.bunifuSeparator1.Vertical = false;
             // 
             // bunifuSeparator2
             // 
-            this.bunifuSeparator2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.bunifuSeparator2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.bunifuSeparator2.BackColor = System.Drawing.Color.Transparent;
             this.bunifuSeparator2.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.bunifuSeparator2.LineThickness = 2;
             this.bunifuSeparator2.Location = new System.Drawing.Point(0, 76);
-            this.bunifuSeparator2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bunifuSeparator2.Name = "bunifuSeparator2";
-            this.bunifuSeparator2.Size = new System.Drawing.Size(867, 12);
+            this.bunifuSeparator2.Size = new System.Drawing.Size(867, 10);
             this.bunifuSeparator2.TabIndex = 107;
             this.bunifuSeparator2.Transparency = 255;
             this.bunifuSeparator2.Vertical = false;
@@ -481,11 +397,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(867, 385);
+            this.ClientSize = new System.Drawing.Size(867, 445);
             this.Controls.Add(this.BillMat_toolStrip);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.bunifuSeparator1);
             this.Controls.Add(this.bunifuSeparator2);
@@ -499,8 +414,6 @@
             this.Activated += new System.EventHandler(this.New_project_form_Activated);
             this.Deactivate += new System.EventHandler(this.New_project_form_Deactivate);
             this.Load += new System.EventHandler(this.New_project_form_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.main_project_dataGridView)).EndInit();
             this.contextMenuStrip1.ResumeLayout(false);
@@ -514,18 +427,11 @@
         }
 
         #endregion
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox sub_project_name_txt;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.DateTimePicker date_started_dtp;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox project_name_txt;
         private Bunifu.Framework.UI.BunifuElipse bunifuElipse1;
         private Bunifu.Framework.UI.BunifuElipse bunifuElipse2;
         private Bunifu.Framework.UI.BunifuElipse bunifuElipse3;
         private System.Windows.Forms.Panel panel2;
         private Bunifu.Framework.UI.BunifuDragControl bunifuDragControl1;
-        private System.Windows.Forms.GroupBox groupBox1;
      //   private System.Windows.Forms.ToolStripButton edit_toolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
        // private System.Windows.Forms.ToolStripButton remove_toolStripButton;
