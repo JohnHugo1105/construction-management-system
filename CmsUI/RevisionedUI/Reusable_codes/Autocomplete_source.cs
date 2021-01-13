@@ -23,7 +23,7 @@ namespace GSG_Builders.RevisionedUI.Reusable_codes {
             project_name_comboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             project_name_comboBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
             Collection = new AutoCompleteStringCollection();
-
+            //test
             using( var con = new SqlConnection( MS_SQL_SERVER_connection.Get_connection_string( ) ) )
             {
                 using( SqlCommand cmd = new SqlCommand( stored_procedures_list.select_records , con ) )
