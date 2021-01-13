@@ -115,7 +115,7 @@ namespace GSG_Builders.RevisionedUI.Home {
      
 
         public static  bool importing = false;
-        Server server = new Server( new ServerConnection( SystemInformation.ComputerName + @"\SQLEXPRESS" ) );
+        Server server = new Server(new ServerConnection(SystemInformation.ComputerName + @"\SQLEXPRESS"));
         Methods_return_type re = new Methods_return_type( );
         private void LoginCreateForm_Activated( object sender , EventArgs e ) {
          

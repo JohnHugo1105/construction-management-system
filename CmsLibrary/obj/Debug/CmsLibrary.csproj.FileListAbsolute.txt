@@ -18,3 +18,8 @@ H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\
 H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.pdb
 H:\Software Projects\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
 C:\Users\John\Desktop\CMS\Project1\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.csprojResolveAssemblyReference.cache
+F:\Project\CMS\construction-management-system\CmsLibrary\bin\Debug\CmsLibrary.dll
+F:\Project\CMS\construction-management-system\CmsLibrary\bin\Debug\CmsLibrary.pdb
+F:\Project\CMS\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.csproj.CoreCompileInputs.cache
+F:\Project\CMS\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.dll
+F:\Project\CMS\construction-management-system\CmsLibrary\obj\Debug\CmsLibrary.pdb

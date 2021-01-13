@@ -14,9 +14,9 @@ namespace GSG_Builders.RevisionedUI.Database_connection {
             string connection = "";         
                 try
                 {
-                //connection = @"Data Source=JOHN\SQLEXPRESS;Initial Catalog=construction_management_system;Integrated Security=True";
-                 connection = " SERVER="+ SystemInformation.ComputerName + ConfigurationManager.ConnectionStrings[ "connection" ].ConnectionString;
-              //  connection = @"Driver ={SQL Server Native Client 11.0}; Server=JOHNJOHN\SQLEXPRESS;Initial Catalog=construction_management_system;Integrated Security=True";
+                connection = @"Data Source=JOHNJASH\SQLEXPRESS2014;Initial Catalog=construction_management_system;Integrated Security=True";
+                //connection = " SERVER="+ SystemInformation.ComputerName + ConfigurationManager.ConnectionStrings[ "connection" ].ConnectionString;
+                //  connection = @"Driver ={SQL Server Native Client 11.0}; Server=JOHNJOHN\SQLEXPRESS;Initial Catalog=construction_management_system;Integrated Security=True";
             }
                 finally
                 {

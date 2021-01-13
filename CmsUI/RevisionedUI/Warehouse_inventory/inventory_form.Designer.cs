@@ -388,7 +388,6 @@
             this.report_bunifuTileButton.Name = "report_bunifuTileButton";
             this.report_bunifuTileButton.Size = new System.Drawing.Size(106, 151);
             this.report_bunifuTileButton.TabIndex = 9;
-            //this.report_bunifuTileButton.Click += new System.EventHandler(this.report_bunifuTileButton_Click);
             // 
             // tabControl1
             // 
@@ -422,7 +421,6 @@
             this.Add_item_equipment_tabPage.Size = new System.Drawing.Size(1250, 691);
             this.Add_item_equipment_tabPage.TabIndex = 0;
             this.Add_item_equipment_tabPage.Text = "Construction equipment";
-            //this.Add_item_equipment_tabPage.Click += new System.EventHandler(this.Add_item_equipment_tabPage_Click);
             // 
             // groupBox6
             // 
@@ -638,10 +636,6 @@
             this.search_metroTextBox.UseSelectable = true;
             this.search_metroTextBox.WaterMarkColor = System.Drawing.Color.DarkGray;
             this.search_metroTextBox.WaterMarkFont = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            //this.search_metroTextBox.ButtonClick += new MetroFramework.Controls.MetroTextBox.ButClick(this.search_metroTextBox_ButtonClick);
-            //this.search_metroTextBox.Click += new System.EventHandler(this.search_metroTextBox_Click);
-            //this.search_metroTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.search_metroTextBox_KeyDown);
-            //this.search_metroTextBox.Leave += new System.EventHandler(this.search_metroTextBox_Leave);
             // 
             // details_groupBox
             // 
@@ -728,7 +722,6 @@
             this.tool_metroRadioButton.TabIndex = 98;
             this.tool_metroRadioButton.Text = "tool";
             this.tool_metroRadioButton.UseSelectable = true;
-            //this.tool_metroRadioButton.CheckedChanged += new System.EventHandler(this.tool_metroRadioButton_CheckedChanged);
             // 
             // equipment_metroRadioButton
             // 
@@ -755,7 +748,6 @@
             this.machinery_metroRadioButton.TabIndex = 96;
             this.machinery_metroRadioButton.Text = "machinery";
             this.machinery_metroRadioButton.UseSelectable = true;
-            //this.machinery_metroRadioButton.CheckedChanged += new System.EventHandler(this.machinery_metroRadioButton_CheckedChanged);
             // 
             // label24
             // 
@@ -864,8 +856,6 @@
             this.unit_cost_textBox.Name = "unit_cost_textBox";
             this.unit_cost_textBox.Size = new System.Drawing.Size(267, 23);
             this.unit_cost_textBox.TabIndex = 2;
-            //this.unit_cost_textBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.unit_cost_textBox_KeyDown);
-            //this.unit_cost_textBox.Leave += new System.EventHandler(this.unit_cost_textBox_Leave);
             // 
             // label27
             // 
@@ -1076,7 +1066,6 @@
             this.invoice_number_textBox.Name = "invoice_number_textBox";
             this.invoice_number_textBox.Size = new System.Drawing.Size(195, 23);
             this.invoice_number_textBox.TabIndex = 0;
-            //this.invoice_number_textBox.MouseHover += new System.EventHandler(this.invoice_number_textBox_MouseHover);
             // 
             // label2
             // 
@@ -1088,7 +1077,6 @@
             this.label2.Size = new System.Drawing.Size(97, 14);
             this.label2.TabIndex = 1;
             this.label2.Text = "Sales invoice-#";
-            //this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // tableLayoutPanel5
             // 
@@ -1175,7 +1163,6 @@
             this.refresh_bunifuThinButton.Size = new System.Drawing.Size(85, 87);
             this.refresh_bunifuThinButton.TabIndex = 108;
             this.refresh_bunifuThinButton.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.refresh_bunifuThinButton.Click += new System.EventHandler(this.refresh_bunifuThinButton_Click);
             // 
             // remove_bunifuThinButton
             // 
@@ -1203,7 +1190,6 @@
             this.remove_bunifuThinButton.Size = new System.Drawing.Size(83, 87);
             this.remove_bunifuThinButton.TabIndex = 106;
             this.remove_bunifuThinButton.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.remove_bunifuThinButton.Click += new System.EventHandler(this.remove_bunifuThinButton_Click);
             // 
             // item_image_bunifuImageButton
             // 
@@ -1222,7 +1208,6 @@
             this.item_image_bunifuImageButton.TabStop = false;
             this.item_image_toolTip.SetToolTip(this.item_image_bunifuImageButton, "Upload new image");
             this.item_image_bunifuImageButton.Zoom = 5;
-            //this.item_image_bunifuImageButton.Click += new System.EventHandler(this.item_image_bunifuImageButton_Click);
             // 
             // item_image_contextMenuStrip
             // 
@@ -1238,7 +1223,6 @@
             this.updateNewToolStripMenuItem.Name = "updateNewToolStripMenuItem";
             this.updateNewToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.updateNewToolStripMenuItem.Text = "Upload new";
-            //this.updateNewToolStripMenuItem.Click += new System.EventHandler(this.updateNewToolStripMenuItem_Click);
             // 
             // save_bunifuThinButton
             // 
@@ -1266,7 +1250,6 @@
             this.save_bunifuThinButton.Size = new System.Drawing.Size(83, 87);
             this.save_bunifuThinButton.TabIndex = 105;
             this.save_bunifuThinButton.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.save_bunifuThinButton.Click += new System.EventHandler(this.save_bunifuThinButton_Click);
             // 
             // tableLayoutPanel4
             // 
@@ -1349,7 +1332,6 @@
             this.dateTimePicker2.Size = new System.Drawing.Size(171, 23);
             this.dateTimePicker2.TabIndex = 106;
             this.dateTimePicker2.Visible = false;
-            //this.dateTimePicker2.CloseUp += new System.EventHandler(this.dateTimePicker2_CloseUp);
             // 
             // panel1
             // 
@@ -1391,7 +1373,6 @@
             this.prev_page_toolStripButton.Name = "prev_page_toolStripButton";
             this.prev_page_toolStripButton.Size = new System.Drawing.Size(82, 19);
             this.prev_page_toolStripButton.Text = "Prev page";
-            //this.prev_page_toolStripButton.Click += new System.EventHandler(this.prev_page_toolStripButton_Click);
             // 
             // prev_record_toolStripButton
             // 
@@ -1400,7 +1381,6 @@
             this.prev_record_toolStripButton.Name = "prev_record_toolStripButton";
             this.prev_record_toolStripButton.Size = new System.Drawing.Size(90, 19);
             this.prev_record_toolStripButton.Text = "Prev record";
-            //this.prev_record_toolStripButton.Click += new System.EventHandler(this.prev_record_toolStripButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -1444,7 +1424,6 @@
             this.next_record_toolStripButton.Size = new System.Drawing.Size(91, 19);
             this.next_record_toolStripButton.Text = "Next record";
             this.next_record_toolStripButton.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
-            //this.next_record_toolStripButton.Click += new System.EventHandler(this.next_record_toolStripButton_Click);
             // 
             // next_page_toolStripButton
             // 
@@ -1454,7 +1433,6 @@
             this.next_page_toolStripButton.Size = new System.Drawing.Size(83, 19);
             this.next_page_toolStripButton.Text = "Next page";
             this.next_page_toolStripButton.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
-            //this.next_page_toolStripButton.Click += new System.EventHandler(this.next_page_toolStripButton_Click);
             // 
             // inventory_datagridView
             // 
@@ -1496,16 +1474,7 @@
             this.inventory_datagridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.inventory_datagridView.Size = new System.Drawing.Size(801, 543);
             this.inventory_datagridView.TabIndex = 94;
-            //this.inventory_datagridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.inventory_datagridView_CellClick);
-            //this.inventory_datagridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.inventory_datagridView_CellContentClick);
-            //this.inventory_datagridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.inventory_datagridView_CellEndEdit);
-            //this.inventory_datagridView.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.inventory_datagridView_CellMouseDown);
-            //this.inventory_datagridView.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.inventory_datagridView_CellMouseEnter);
-            //this.inventory_datagridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.inventory_datagridView_CellValueChanged);
-            //this.inventory_datagridView.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.inventory_datagridView_ColumnHeaderMouseClick);
-            //this.inventory_datagridView.CurrentCellDirtyStateChanged += new System.EventHandler(this.inventory_datagridView_CurrentCellDirtyStateChanged);
-            //this.inventory_datagridView.RowLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.inventory_datagridView_RowLeave);
-            //// 
+            // 
             // inventory_datagridview_contextMenuStrip
             // 
             this.bunifuTransition1.SetDecoration(this.inventory_datagridview_contextMenuStrip, BunifuAnimatorNS.DecorationType.None);
@@ -1522,7 +1491,6 @@
             this.outItem_ToolStripMenuItem.Name = "outItem_ToolStripMenuItem";
             this.outItem_ToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.outItem_ToolStripMenuItem.Text = "Out item";
-            //this.outItem_ToolStripMenuItem.Click += new System.EventHandler(this.outItem_ToolStripMenuItem_Click);
             // 
             // itemHistory_ToolStripMenuItem
             // 
@@ -1530,7 +1498,6 @@
             this.itemHistory_ToolStripMenuItem.Name = "itemHistory_ToolStripMenuItem";
             this.itemHistory_ToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.itemHistory_ToolStripMenuItem.Text = "Item history";
-            //this.itemHistory_ToolStripMenuItem.Click += new System.EventHandler(this.itemHistory_ToolStripMenuItem_Click);
             // 
             // edit_record_toolStripMenuItem
             // 
@@ -1538,7 +1505,6 @@
             this.edit_record_toolStripMenuItem.Name = "edit_record_toolStripMenuItem";
             this.edit_record_toolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.edit_record_toolStripMenuItem.Text = "Edit records";
-            //this.edit_record_toolStripMenuItem.Click += new System.EventHandler(this.edit_record_toolStripMenuItem_Click);
             // 
             // new_worker_entry_tabPage
             // 
@@ -2764,9 +2730,6 @@
             this.mtHeader_panel.VerticalScrollbarBarColor = true;
             this.mtHeader_panel.VerticalScrollbarHighlightOnWheel = false;
             this.mtHeader_panel.VerticalScrollbarSize = 10;
-            //this.mtHeader_panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.inventory_form_MouseDown);
-            //this.mtHeader_panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.inventory_form_MouseMove);
-            //this.mtHeader_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.inventory_form_MouseUp);
             // 
             // label3
             // 
@@ -2801,7 +2764,6 @@
             this.minimize_pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.minimize_pictureBox.TabIndex = 54;
             this.minimize_pictureBox.TabStop = false;
-            //this.minimize_pictureBox.Click += new System.EventHandler(this.minimize_pictureBox_Click_1);
             // 
             // close_pictureBox
             // 
@@ -2813,7 +2775,6 @@
             this.close_pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.close_pictureBox.TabIndex = 53;
             this.close_pictureBox.TabStop = false;
-            //this.close_pictureBox.Click += new System.EventHandler(this.close_pictureBox_Click_1);
             // 
             // bunifuDragControl3
             // 
@@ -2821,10 +2782,6 @@
             this.bunifuDragControl3.Horizontal = true;
             this.bunifuDragControl3.TargetControl = this.home_bunifuTileButton;
             this.bunifuDragControl3.Vertical = true;
-            // 
-            // timer_Fadeout
-            // 
-            //this.timer_Fadeout.Tick += new System.EventHandler(this.timer_Fadeout_Tick);
             // 
             // item_image_toolTip
             // 
@@ -2860,8 +2817,6 @@
             this.item_individual_count_});
             this.item_individual_count_contextMenuStrip.Name = "item_individual_count_contextMenuStrip";
             this.item_individual_count_contextMenuStrip.Size = new System.Drawing.Size(68, 26);
-            //this.item_individual_count_contextMenuStrip.Opened += new System.EventHandler(this.item_individual_count_contextMenuStrip_Opened);
-            //this.item_individual_count_contextMenuStrip.MouseUp += new System.Windows.Forms.MouseEventHandler(this.item_individual_count_contextMenuStrip_MouseUp);
             // 
             // item_individual_count_
             // 
@@ -2891,12 +2846,6 @@
             this.Name = "inventory_form";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "inventory_form";
-            //this.Activated += new System.EventHandler(this.inventory_form_Activated);
-            //this.Deactivate += new System.EventHandler(this.inventory_form_Deactivate);
-            //this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.inventory_form_MouseDown);
-            //this.MouseHover += new System.EventHandler(this.inventory_form_MouseHover);
-            //this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.inventory_form_MouseMove);
-            //this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.inventory_form_MouseUp);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.Add_item_equipment_tabPage.ResumeLayout(false);
