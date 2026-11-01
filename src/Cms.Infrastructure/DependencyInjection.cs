@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAuditTrail, AuditTrail>();
+        services.AddScoped<Seeding.DevelopmentSeeder>();
 
         var applicationAssembly = typeof(IClock).Assembly;
         var adapters = typeof(CmsDbContext).Assembly.GetTypes()

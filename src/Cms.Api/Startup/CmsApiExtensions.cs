@@ -153,5 +153,9 @@ public static class CmsApiExtensions
         // created straight from the model so the application can run; once any migration exists this always takes the migration path.
         if (db.Database.GetMigrations().Any()) await db.Database.MigrateAsync();
         else await db.Database.EnsureCreatedAsync();
+
+        // Demo data: development only, only when asked for, and only into an empty database.
+        if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seeding:Enabled", false))
+            await scope.ServiceProvider.GetRequiredService<Cms.Infrastructure.Seeding.DevelopmentSeeder>().SeedAsync();
     }
 }
