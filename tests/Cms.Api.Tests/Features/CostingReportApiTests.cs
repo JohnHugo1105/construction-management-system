@@ -6,6 +6,7 @@ using Cms.Application.Features.Projects;
 using Cms.Domain.Features.Identity;
 using Cms.TestSupport;
 using static Cms.Api.Tests.Features.CostingTestKit;
+using static Cms.Api.Tests.Features.PurchasingTestKit;
 
 namespace Cms.Api.Tests.Features;
 
@@ -303,8 +304,8 @@ public sealed class CostingReportApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(12 * 150_000, dashboard.Totals.BudgetMinor);
 
         Assert.Equal(small, large);
-        // The company, the projects, the budget sums and the actual sums.
-        Assert.Equal(4, large);
+        // The company, the projects, the budget sums, the actual sums, and one grouped statement for each commitment source.
+        Assert.Equal(4 + _factory.CommitmentSourceCount(), large);
     }
 
     [SqlServerFact]
@@ -335,8 +336,8 @@ public sealed class CostingReportApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(sevenCodes, summary.ByDivision.Sum(row => row.Wbs.Count));
 
         Assert.Equal(small, large);
-        // The project, the company, and three grouped sums each for budget and actual.
-        Assert.Equal(8, large);
+        // The project, the company, three grouped sums each for budget and actual, and one grouped statement for each commitment source.
+        Assert.Equal(8 + _factory.CommitmentSourceCount(), large);
     }
 
     [SqlServerFact]

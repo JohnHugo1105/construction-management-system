@@ -1,4 +1,4 @@
-import { Health, VarianceBasis } from '../costing/costing.models';
+import { CommitmentPosition, Health, VarianceBasis } from '../costing/costing.models';
 import { ProjectStatus } from '../projects/projects.models';
 
 // The dashboard report (`GET /api/reports/dashboard`, docs/api/costing.md). Budget and spent are compared on the basis the
@@ -20,6 +20,8 @@ export interface DashboardRow {
   /** Contract price minus what is spent, or null when the project has no contract price. */
   readonly marginAfterActualMinor: number | null;
   readonly budgetMarginMinor: number | null;
+  /** What is promised but not yet invoiced, and the forecast it gives; absent when nothing is committed. */
+  readonly commitments?: CommitmentPosition | null;
 }
 
 /** The overall row: it adds up every project in the list. */
@@ -33,6 +35,7 @@ export interface DashboardTotals {
   readonly health: Health;
   readonly marginAfterActualMinor: number | null;
   readonly budgetMarginMinor: number | null;
+  readonly commitments?: CommitmentPosition | null;
 }
 
 export interface Dashboard {

@@ -21,6 +21,22 @@
         (ngSubmit)="submit()"
         #formElement
       >
+        @if (isCost() && orderChoices().length > 0) {
+          <app-form-field
+            label="Against a purchase order"
+            [optional]="true"
+            hint="Choose one to take this invoice off what is still committed. It fills in the supplier and description."
+            [control]="form.controls.purchaseOrderLineId"
+          >
+            <select appControl formControlName="purchaseOrderLineId" (change)="orderLineChosen()">
+              <option value="">Not against an order</option>
+              @for (choice of orderChoices(); track choice.id) {
+                <option [value]="choice.id">{{ choice.label }}</option>
+              }
+            </select>
+          </app-form-field>
+        }
+
         @if (isCost()) {
           <div class="form__row">
             <app-form-field

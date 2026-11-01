@@ -89,19 +89,22 @@ public sealed record CostEntryFilter(Guid? SubProjectId, int? Division, ItemType
     string? Search, bool IncludeVoided);
 
 /// <param name="CanEdit">True for a manual entry that is still posted. System-made costs are corrected where they came from.</param>
+/// <param name="PurchaseOrderLineId">The purchase order line the invoice is matched to, if any; <c>PurchaseOrderNumber</c> is that order's number for display.</param>
 public sealed record CostEntryDto(Guid Id, Guid ProjectId, Guid? SubProjectId, string? SubProjectName, int? Division, string? MainScope,
     string? SubScope, string? WbsCode, string Description, string ItemType, decimal Quantity, string Unit, long UnitCostMinor,
     string VatTreatment, int VatRateBps, long NetMinor, long VatMinor, long GrossMinor, DateOnly EntryDate, string? Remarks, string Origin,
     Guid? OriginReferenceId, string SourceDealer, string? InvoiceNumber, string Status, DateTimeOffset CreatedAtUtc,
-    DateTimeOffset? VoidedAtUtc, string? VoidReason, bool CanEdit, int Version);
+    DateTimeOffset? VoidedAtUtc, string? VoidReason, bool CanEdit, int Version, Guid? PurchaseOrderLineId = null, string? PurchaseOrderNumber = null);
 
+/// <param name="PurchaseOrderLineId">Optional: the line of an approved purchase order (of the same project) this invoice is for.</param>
 public sealed record CreateCostEntryRequest(Guid? SubProjectId, int? Division, string? MainScope, string? SubScope, string? WbsCode,
     string? Description, string? ItemType, decimal Quantity, string? Unit, long UnitCostMinor, string? VatTreatment, DateOnly EntryDate,
-    string? Remarks, string? SourceDealer, string? InvoiceNumber, string? ClientRequestId);
+    string? Remarks, string? SourceDealer, string? InvoiceNumber, string? ClientRequestId, Guid? PurchaseOrderLineId = null);
 
+/// <param name="PurchaseOrderLineId">The line the invoice is matched to after the edit; null clears the match.</param>
 public sealed record UpdateCostEntryRequest(Guid? SubProjectId, int? Division, string? MainScope, string? SubScope, string? WbsCode,
     string? Description, string? ItemType, decimal Quantity, string? Unit, long UnitCostMinor, string? VatTreatment, DateOnly EntryDate,
-    string? Remarks, string? SourceDealer, string? InvoiceNumber, int Version);
+    string? Remarks, string? SourceDealer, string? InvoiceNumber, int Version, Guid? PurchaseOrderLineId = null);
 
 public sealed record VoidCostEntryRequest(string? Reason, int Version);
 
@@ -129,12 +132,12 @@ public static class CostingMapper
         line.VatMinor, line.GrossMinor, line.EntryDate, line.Remarks, line.Status.ToString(), line.CreatedAtUtc, line.RemovedAtUtc,
         line.RemovedReason, line.Version, line.ChangeOrderId, changeOrderNumber);
 
-    public static CostEntryDto ToDto(CostEntry entry, Project project) => new(entry.Id, entry.ProjectId, entry.SubProjectId,
+    public static CostEntryDto ToDto(CostEntry entry, Project project, string? purchaseOrderNumber = null) => new(entry.Id, entry.ProjectId, entry.SubProjectId,
         SubProjectName(project, entry.SubProjectId), entry.Division, entry.MainScope, entry.SubScope, entry.WbsCode, entry.Description,
         entry.ItemType.ToString(), entry.Quantity, entry.Unit, entry.UnitCostMinor, entry.VatTreatment.ToString(), entry.VatRateBps,
         entry.NetMinor, entry.VatMinor, entry.GrossMinor, entry.EntryDate, entry.Remarks, entry.Origin.ToString(), entry.OriginReferenceId,
         entry.SourceDealer, entry.InvoiceNumber, entry.Status.ToString(), entry.CreatedAtUtc, entry.VoidedAtUtc, entry.VoidReason,
-        entry.Origin == CostOrigin.Manual && !entry.IsVoided, entry.Version);
+        entry.Origin == CostOrigin.Manual && !entry.IsVoided, entry.Version, entry.PurchaseOrderLineId, purchaseOrderNumber);
 
     private static string? SubProjectName(Project project, Guid? subProjectId) =>
         subProjectId is null ? null : project.SubProjects.FirstOrDefault(sub => sub.Id == subProjectId)?.Name;

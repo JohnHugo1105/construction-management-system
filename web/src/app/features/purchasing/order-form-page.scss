@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.lines {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.lines__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.lines__list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lines__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.lines__text {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.lines__description {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lines__actions {
+  display: flex;
+  gap: var(--space-1);
+}

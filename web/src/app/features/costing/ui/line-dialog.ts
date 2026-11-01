@@ -35,6 +35,10 @@ import { FormField } from '../../../shared/ui/form-field/form-field';
 import { MoneyInput } from '../../../shared/ui/inputs/money-input';
 import { NumberInput } from '../../../shared/ui/inputs/number-input';
 import { Skeleton } from '../../../shared/ui/skeleton/skeleton';
+import { Permission } from '../../../core/session/permissions';
+import { PurchasingApi } from '../../purchasing/purchasing-api';
+import { openLineLabel } from '../../purchasing/purchasing-presentation';
+import { OpenPurchaseOrderLine } from '../../purchasing/purchasing.models';
 import { ProjectContext } from '../../projects/project-context';
 import { ClientRequestId } from '../client-request-id';
 import { CostingApi } from '../costing-api';
@@ -109,6 +113,7 @@ export class LineDialog implements OnInit {
   private readonly context = inject(ProjectContext);
   private readonly session = inject(SessionState);
   private readonly toast = inject(ToastService);
+  private readonly purchasing = inject(PurchasingApi);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   protected readonly referenceState = inject(CostingReferenceState);
@@ -120,6 +125,9 @@ export class LineDialog implements OnInit {
   protected form!: LineForm;
   protected readonly requestId = new ClientRequestId();
   protected readonly ids = { units: `line-units-${++nextDialogId}` };
+
+  /** The lines of the project's approved purchase orders, for the optional "Against a purchase order" choice. */
+  protected readonly openLines = signal<readonly OpenPurchaseOrderLine[]>([]);
 
   protected readonly saving = signal(false);
   protected readonly error = signal<ApiError | null>(null);
@@ -138,6 +146,20 @@ export class LineDialog implements OnInit {
   protected readonly reference = this.referenceState.reference;
   protected readonly isEdit = computed(() => this.line() !== null);
   protected readonly isCost = computed(() => this.kind() === 'cost');
+
+  /**
+   * What the "Against a purchase order" choice offers: the open lines of approved orders, plus the line this invoice is already
+   * matched to when its order has since been closed (so editing the invoice never silently drops the match).
+   */
+  protected readonly orderChoices = computed(() => {
+    const currency = this.session.currencyCode();
+    const choices = this.openLines().map((line) => ({ id: line.lineId, label: openLineLabel(line, currency) }));
+    const own = this.loaded();
+    const kept = own && 'purchaseOrderLineId' in own ? own : null;
+    if (kept?.purchaseOrderLineId && !choices.some((choice) => choice.id === kept.purchaseOrderLineId))
+      choices.unshift({ id: kept.purchaseOrderLineId, label: `${kept.purchaseOrderNumber ?? 'Purchase order'} (kept as recorded)` });
+    return choices;
+  });
   protected readonly today = todayIn(this.session.timeZoneId());
 
   protected readonly title = computed(() =>
@@ -210,12 +232,31 @@ export class LineDialog implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.duplicate.set(null));
 
+    if (this.isCost() && this.session.can(Permission.purchasingRead)) void this.loadOpenLines();
+
     const existing = this.line();
     if (existing) {
       this.loaded.set(existing);
       this.needsFilling = true;
       if (this.reference()) this.fill();
     }
+  }
+
+  /** The choice is an accelerator: if the lines can't be loaded the cost is recorded the usual way, without it. */
+  private async loadOpenLines(): Promise<void> {
+    try {
+      this.openLines.set(await firstValueFrom(this.purchasing.openLines(this.context.project().id)));
+    } catch {
+      this.openLines.set([]);
+    }
+  }
+
+  /** Choosing an order line names the supplier and, when the description is still empty, what was ordered. */
+  protected orderLineChosen(): void {
+    const chosen = this.openLines().find((line) => line.lineId === this.form.controls.purchaseOrderLineId.value);
+    if (!chosen) return;
+    this.form.controls.sourceDealer.setValue(chosen.supplierName);
+    if (this.form.controls.description.value.trim() === '') this.form.controls.description.setValue(chosen.description);
   }
 
   protected cancel(): void {

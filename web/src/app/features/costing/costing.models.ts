@@ -72,6 +72,9 @@ export interface CostEntry extends LineBase {
   readonly voidedAtUtc: string | null;
   readonly voidReason: string | null;
   readonly canEdit: boolean;
+  /** The purchase order line this invoice is matched to, and that order's number for display. */
+  readonly purchaseOrderLineId?: string | null;
+  readonly purchaseOrderNumber?: string | null;
 }
 
 // ---- What the forms send ---------------------------------------------------------------------------------------------------
@@ -96,6 +99,8 @@ export interface LineFields {
 export interface CostEntryFields extends LineFields {
   readonly sourceDealer: string;
   readonly invoiceNumber: string;
+  /** The approved purchase order line this invoice is for; left out when there is none (an edit then clears the match). */
+  readonly purchaseOrderLineId?: string;
 }
 
 // ---- Lists -----------------------------------------------------------------------------------------------------------------
@@ -194,6 +199,18 @@ export interface ItemTypeSummary extends Figures {
   readonly label: string;
 }
 
+/**
+ * Money promised but not yet invoiced (open purchase orders and subcontracts) and the forecast it gives: actual plus committed,
+ * judged against the budget. Absent when nothing is committed, so a project without orders shows no empty figures.
+ */
+export interface CommitmentPosition {
+  readonly committedMinor: number;
+  readonly forecastMinor: number;
+  /** Budget minus forecast: negative means the forecast is over budget. */
+  readonly forecastRemainingMinor: number;
+  readonly forecastHealth: Health;
+}
+
 export interface CostSummary {
   readonly projectId: string;
   readonly projectName: string;
@@ -206,4 +223,5 @@ export interface CostSummary {
   readonly byDivision: readonly DivisionSummary[];
   readonly bySubProject: readonly SubProjectSummary[];
   readonly byItemType: readonly ItemTypeSummary[];
+  readonly commitments?: CommitmentPosition | null;
 }

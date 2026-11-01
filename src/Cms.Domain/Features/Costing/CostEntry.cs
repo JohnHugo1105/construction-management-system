@@ -58,6 +58,9 @@ public sealed class CostEntry : AggregateRoot
     /// <summary>The payroll run or stock movement behind a system-made entry.</summary>
     public Guid? OriginReferenceId { get; private set; }
 
+    /// <summary>The purchase order line this supplier invoice is matched to, so the order's open commitment shrinks as invoices arrive. Manual entries only.</summary>
+    public Guid? PurchaseOrderLineId { get; private set; }
+
     public string SourceDealer { get; private set; } = "";
     public string NormalizedSourceDealer { get; private set; } = "";
     public string? InvoiceNumber { get; private set; }
@@ -148,6 +151,18 @@ public sealed class CostEntry : AggregateRoot
         Apply(values);
         SetSource(dealer, invoice);
         Touch(now);
+    }
+
+    /// <summary>
+    /// Matches this invoice to a purchase order line, or clears the match (null). The use case has already checked the line belongs to an
+    /// approved order of the same project. Only a hand-entered, still posted cost can be matched.
+    /// </summary>
+    public void LinkToPurchaseOrderLine(Guid? purchaseOrderLineId)
+    {
+        if (purchaseOrderLineId == Guid.Empty) throw new ArgumentException("A purchase order line needs its id.", nameof(purchaseOrderLineId));
+        if (purchaseOrderLineId is not null && Origin != CostOrigin.Manual)
+            throw new DomainRuleException("Only a supplier invoice recorded by hand can be matched to a purchase order.");
+        PurchaseOrderLineId = purchaseOrderLineId;
     }
 
     public void Void(Guid userId, string? reason, DateTimeOffset now)

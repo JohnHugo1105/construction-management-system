@@ -337,3 +337,36 @@ describe('DashboardPage', () => {
     expect(text(root, 'tbody th a')).toBe('Riverside Residences');
   });
 });
+
+describe('DashboardPage committed cost', () => {
+  const committed = {
+    committedMinor: 300000,
+    forecastMinor: 1180000,
+    forecastRemainingMinor: -180000,
+    forecastHealth: 'OverBudget' as const,
+  };
+
+  it('shows what is committed and the forecast on the project row, with the warning chip, and on the total', async () => {
+    const withOrders = row('p-orders', 'Tower B', 'OnTrack', { commitments: committed });
+    const data = dashboard([withOrders, fine], {
+      totals: { ...dashboard([]).totals, projectCount: 2, commitments: committed },
+    });
+    const { root } = await open({ data });
+
+    const tower = Array.from(root.querySelectorAll('tbody tr')).find((item) =>
+      item.textContent?.includes('Tower B'),
+    )!;
+    expect(text(tower, 'app-commitment-line')).toContain('Committed ₱3,000.00');
+    expect(text(tower, 'app-commitment-line')).toContain('Forecast ₱11,800.00');
+    expect(text(tower, 'app-commitment-line app-status-chip')).toBe('Forecast over budget');
+    expect(
+      text(root, 'section[aria-labelledby="band-heading"] app-commitment-line'),
+    ).toContain('Committed ₱3,000.00');
+  });
+
+  it('shows no commitment figures for a project with nothing committed', async () => {
+    const { root } = await open();
+
+    expect(root.querySelector('app-commitment-line .commitments')).toBeNull();
+  });
+});

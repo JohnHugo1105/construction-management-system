@@ -70,6 +70,8 @@ export function createLineForm(kind: LineKind, today: string) {
       nonNullable: true,
       validators: supplier ? [Validators.required, Validators.maxLength(60)] : [],
     }),
+    // The approved purchase order line this invoice is for ('' for none). Only a cost carries it.
+    purchaseOrderLineId: new FormControl('', { nonNullable: true }),
   });
 
   // The code and its names are checked against the division and the work item, so check them again when those change.
@@ -171,6 +173,7 @@ export function formValueFromLine(
     remarks: line.remarks ?? '',
     sourceDealer: 'sourceDealer' in line ? line.sourceDealer : '',
     invoiceNumber: 'invoiceNumber' in line ? (line.invoiceNumber ?? '') : '',
+    purchaseOrderLineId: 'purchaseOrderLineId' in line ? (line.purchaseOrderLineId ?? '') : '',
   };
 }
 
@@ -225,6 +228,7 @@ export function buildLineFields(
         ...fields,
         sourceDealer: value.sourceDealer.trim(),
         invoiceNumber: value.invoiceNumber.trim(),
+        ...(value.purchaseOrderLineId === '' ? {} : { purchaseOrderLineId: value.purchaseOrderLineId }),
       }
     : fields;
 }

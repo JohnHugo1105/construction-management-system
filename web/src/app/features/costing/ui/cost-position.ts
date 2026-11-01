@@ -2,9 +2,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { SessionState } from '../../../core/session/session-state';
 import { formatMoney } from '../../../shared/presentation/money';
 import { StatusChip } from '../../../shared/ui/status-chip/status-chip';
-import { Figures } from '../costing.models';
+import { CommitmentPosition, Figures } from '../costing.models';
 import { describeRemaining, describeUsed } from '../figures';
 import { presentHealth } from '../health';
+import { CommitmentLine } from './commitment-line';
 import { UsedBar } from './used-bar';
 
 /**
@@ -14,7 +15,7 @@ import { UsedBar } from './used-bar';
  */
 @Component({
   selector: 'app-cost-position',
-  imports: [StatusChip, UsedBar],
+  imports: [StatusChip, UsedBar, CommitmentLine],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <dl class="position">
@@ -50,6 +51,9 @@ import { UsedBar } from './used-bar';
         [usedBps]="figures().usedBps"
         [health]="figures().health"
       />
+    }
+    @if (commitments()) {
+      <app-commitment-line [commitments]="commitments()" />
     }
     <ng-content />
   `,
@@ -98,6 +102,8 @@ import { UsedBar } from './used-bar';
 })
 export class CostPosition {
   readonly figures = input.required<Figures>();
+  /** What is committed but not yet invoiced, with the forecast it gives; leave it out (or null) when nothing is. */
+  readonly commitments = input<CommitmentPosition | null | undefined>(null);
   /** Hide the bar when nothing is budgeted and nothing is spent: an empty bar says nothing. */
   readonly hideEmptyBar = input(true);
 

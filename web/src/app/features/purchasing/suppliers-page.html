@@ -1,0 +1,119 @@
+<app-page-header title="Purchasing" />
+<app-purchasing-tabs />
+
+<div class="stack">
+  @if (!bare()) {
+  <div class="filters">
+    <div class="toolbar">
+      <app-search-box
+        class="toolbar__search"
+        label="Search firms by name or contact person"
+        placeholder="Search suppliers"
+        [value]="state.query.values().search"
+        (searched)="state.query.set({ search: $event }, { replace: true })"
+      />
+      @if (canManage()) {
+        <a appButton variant="primary" routerLink="/purchasing/suppliers/new">
+          <app-icon name="plus" [size]="18" />
+          Add a firm
+        </a>
+      }
+    </div>
+
+    <div class="filter-chips" role="group" aria-label="Filter by kind of firm">
+      @for (kind of kinds; track kind) {
+        <button
+          type="button"
+          class="filter-chip"
+          [attr.aria-pressed]="state.query.values().kind === kind"
+          (click)="state.query.set({ kind: kind })"
+        >
+          {{ kind === 'All' ? 'All' : kind + 's' }}
+        </button>
+      }
+    </div>
+
+    <label class="toggle">
+      <input type="checkbox" [checked]="state.query.values().archived" (change)="archivedChanged($event)" />
+      <span>Show archived firms</span>
+    </label>
+  </div>
+
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert [error]="problem" [allowRetry]="true" reloadLabel="Try again" (reload)="state.reload()" />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading suppliers" />
+  } @else if (rows().length > 0) {
+    <div class="results" [class.results--refreshing]="state.refreshing()" [attr.aria-busy]="state.refreshing()">
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Suppliers" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Firm</th>
+                <th scope="col">Kind</th>
+                <th scope="col">Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/purchasing/suppliers', row.id]">{{ row.name }}</a>
+                    @if (row.archived) {
+                      <app-status-chip label="Archived" tone="neutral" icon="archive" />
+                    }
+                  </th>
+                  <td>{{ row.kind }}</td>
+                  <td>{{ row.contact }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a class="row-card__title row-link row-link--stretch" [routerLink]="['/purchasing/suppliers', row.id]">{{ row.name }}</a>
+                @if (row.archived) {
+                  <app-status-chip label="Archived" tone="neutral" icon="archive" />
+                }
+              </div>
+              <p class="text-muted text-small">{{ row.kind }}</p>
+              @if (row.contact) {
+                <p class="text-small">{{ row.contact }}</p>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager [page]="state.query.values().page" [pageSize]="state.pageSize" [total]="state.total()" noun="firms" (pageChange)="state.query.setPage($event)" />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state icon="search" title="No firms match" message="Try a different search or kind of firm.">
+        <button appButton type="button" (click)="state.query.reset()">Show all firms</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="building"
+        title="No firms yet"
+        [message]="canManage() ? 'Add the firms you buy from or hire, so orders and invoices always name them the same way.' : 'A cost engineer or accountant can add the first firm.'"
+      >
+        @if (canManage()) {
+          <a appButton variant="primary" routerLink="/purchasing/suppliers/new">
+            <app-icon name="plus" [size]="18" />
+            Add a firm
+          </a>
+        }
+      </app-empty-state>
+    }
+  }
+</div>

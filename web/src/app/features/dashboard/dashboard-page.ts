@@ -13,6 +13,7 @@ import { StatusChip } from '../../shared/ui/status-chip/status-chip';
 import { Viewport } from '../../shared/ui/viewport/viewport';
 import { describeBasis, describeRemaining, describeUsed } from '../costing/figures';
 import { presentHealth } from '../costing/health';
+import { CommitmentLine } from '../costing/ui/commitment-line';
 import { CostPosition } from '../costing/ui/cost-position';
 import { injectMinWidth } from '../costing/ui/container-width';
 import { ScrollRegion } from '../costing/ui/scroll-region';
@@ -37,6 +38,7 @@ import { leadFact, sortDashboardRows } from './dashboard-rows';
     Skeleton,
     StatusChip,
     CostPosition,
+    CommitmentLine,
     ScrollRegion,
     UsedBar,
   ],

@@ -1,0 +1,237 @@
+<app-page-header
+  [title]="order()?.number || 'Purchase order'"
+  [description]="order() ? order()!.supplierName : ''"
+  backLabel="All orders"
+  [backLink]="['/purchasing']"
+/>
+
+@if (loading() && !order()) {
+  <app-skeleton [lines]="5" label="Loading purchase order" />
+} @else if (loadError(); as problem) {
+  <div class="stack">
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="!problem.isNotFound"
+      reloadLabel="Try again"
+      (reload)="load()"
+    />
+    <p><a appButton routerLink="/purchasing">Back to purchase orders</a></p>
+  </div>
+} @else if (view(); as v) {
+  @if (order(); as o) {
+    <div class="stack">
+      @if (actionError(); as problem) {
+        <app-api-error-alert [error]="problem" reloadLabel="Reload order" (reload)="load()" />
+      }
+
+      @if (o.projectArchived && (o.status === 'Draft' || o.status === 'Approved')) {
+        <app-alert tone="warning" title="This project is archived">
+          Restore the project before approving, changing, cancelling or closing this order.
+        </app-alert>
+      }
+
+      <div class="summary">
+        <div class="summary__info">
+          <app-status-chip [label]="v.status.label" [tone]="v.status.tone" [icon]="v.status.icon" />
+          <p class="text-muted">{{ v.status.meaning }}</p>
+        </div>
+        @if (showApprove() || showEdit() || showCancel() || showClose()) {
+          <div class="summary__actions">
+            @if (showApprove()) {
+              <button appButton variant="primary" type="button" (click)="open('approve')">
+                Approve purchase order
+              </button>
+            }
+            @if (showEdit()) {
+              <a appButton [routerLink]="['/purchasing/orders', o.id, 'edit']">Edit draft</a>
+            }
+            @if (showClose()) {
+              <button appButton type="button" (click)="open('close')">Close order</button>
+            }
+            @if (showCancel()) {
+              <button appButton variant="ghost" type="button" (click)="open('cancel')">
+                Cancel order
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (v.reason) {
+        <p class="reason">Reason: {{ v.reason }}</p>
+      }
+
+
+      <section class="card" aria-labelledby="order-total">
+        <h2 id="order-total" class="card__title">Total</h2>
+        <dl class="def-list totals">
+          <div>
+            <dt>Before VAT</dt>
+            <dd class="money">{{ v.net }}</dd>
+          </div>
+          <div>
+            <dt>VAT</dt>
+            <dd class="money">{{ v.vat }}</dd>
+          </div>
+          <div class="totals__main">
+            <dt>Total with VAT</dt>
+            <dd class="money">{{ v.gross }}</dd>
+          </div>
+          @if (v.showInvoiced) {
+            <div>
+              <dt>Invoiced so far</dt>
+              <dd class="money">{{ v.invoiced }}</dd>
+            </div>
+          }
+          @if (v.showCommitted) {
+            <div>
+              <dt>Still committed</dt>
+              <dd class="money">{{ v.committed }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <section class="card" aria-labelledby="order-lines">
+        <h2 id="order-lines" class="card__title">Lines</h2>
+        <ol class="lines">
+          @for (line of v.lines; track line.id) {
+            <li class="line">
+              <div class="line__main">
+                <span class="line__number">{{ line.number }}</span>
+                <div class="line__text">
+                  <p class="line__description">{{ line.description }}</p>
+                  <p class="text-muted text-small">{{ line.detail }}</p>
+                  @if (line.standing) {
+                    <p class="text-small" [class.line__over]="line.over">{{ line.standing }}</p>
+                  }
+                </div>
+                <span class="money line__total">{{ line.total }}</span>
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+
+      @if (v.invoices.length > 0) {
+        <section class="card" aria-labelledby="order-invoices">
+          <h2 id="order-invoices" class="card__title">Invoices against this order</h2>
+          <ul class="lines">
+            @for (invoice of v.invoices; track invoice.id) {
+              <li class="line">
+                <div class="line__main">
+                  <div class="line__text">
+                    <p class="line__description">
+                      {{ invoice.supplier }}@if (invoice.number) {
+                        · {{ invoice.number }}
+                      }
+                    </p>
+                    <p class="text-muted text-small">
+                      {{ invoice.date }} · against line {{ invoice.line }}
+                    </p>
+                  </div>
+                  <span class="money line__total">{{ invoice.amount }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+          @if (v.moreInvoices > 0) {
+            <p class="text-muted text-small">
+              Showing the newest {{ v.invoices.length }}. {{ v.moreInvoices }} more are in the
+              project's Costs.
+            </p>
+          }
+        </section>
+      }
+
+      <section class="card" aria-labelledby="order-details">
+        <h2 id="order-details" class="card__title">Order details</h2>
+        <dl class="def-list">
+          <div>
+            <dt>Supplier</dt>
+            <dd>{{ o.supplierName }}</dd>
+          </div>
+          <div>
+            <dt>Project</dt>
+            <dd>
+              <a [routerLink]="['/projects', o.projectId]">{{ o.projectName }}</a
+              >@if (o.subProjectName) {
+                · {{ o.subProjectName }}
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>Order date</dt>
+            <dd>{{ v.orderDate }}</dd>
+          </div>
+          @if (v.expectedDate) {
+            <div>
+              <dt>Expected</dt>
+              <dd>{{ v.expectedDate }}</dd>
+            </div>
+          }
+          @if (o.supplierReference) {
+            <div>
+              <dt>Supplier's reference</dt>
+              <dd>{{ o.supplierReference }}</dd>
+            </div>
+          }
+          @if (o.notes) {
+            <div>
+              <dt>Notes</dt>
+              <dd>{{ o.notes }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <ul class="history text-muted text-small">
+        @for (entry of v.history; track entry) {
+          <li>{{ entry }}</li>
+        }
+      </ul>
+    </div>
+
+    @switch (dialog()) {
+      @case ('approve') {
+        <app-confirm-dialog
+          title="Approve this purchase order?"
+          [message]="
+            'Approving locks the lines. What has not been invoiced will count as committed cost in the project forecast. Total with VAT: ' +
+            v.gross +
+            '.'
+          "
+          confirmLabel="Approve purchase order"
+          [busy]="busy()"
+          (confirmed)="approve()"
+          (cancelled)="closeDialog()"
+        />
+      }
+      @case ('cancel') {
+        <app-reason-dialog
+          title="Cancel this order?"
+          [message]="
+            o.status === 'Draft'
+              ? 'The draft stays on record and is called off.'
+              : 'The order stays on record and its committed cost is released. An order with invoices against it can be closed instead.'
+          "
+          reasonLabel="Reason"
+          requiredMessage="Say why the order is being cancelled."
+          confirmLabel="Cancel order"
+          [perform]="cancelOrder"
+          (done)="finished('Purchase order cancelled.')"
+          (dismissed)="closeDialog()"
+          (reloadRequested)="reloadAfterConflict()"
+        />
+      }
+      @case ('close') {
+        <app-close-order-dialog
+          [order]="o"
+          (done)="finished('Purchase order closed.')"
+          (dismissed)="closeDialog()"
+          (reloadRequested)="reloadAfterConflict()"
+        />
+      }
+    }
+  }
+}

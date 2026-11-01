@@ -42,7 +42,7 @@
             <h2 id="band-heading" class="card__title">All projects</h2>
             <p class="text-muted text-small">{{ basisLine() }}</p>
           </div>
-          <app-cost-position [figures]="data.totals" />
+          <app-cost-position [figures]="data.totals" [commitments]="data.totals.commitments" />
         </section>
       }
 
@@ -100,6 +100,7 @@
                   <th scope="row">
                     <a class="row-link" [routerLink]="item.link">{{ item.row.name }}</a>
                     <span class="cell-sub">{{ item.status }}</span>
+                    <app-commitment-line [commitments]="item.row.commitments" />
                   </th>
                   <td>
                     <app-status-chip
@@ -169,6 +170,7 @@
                   >
                 </p>
               }
+              <app-commitment-line [commitments]="item.row.commitments" />
               @if (item.margin) {
                 <p class="text-small" [class.over]="item.margin.negative">
                   <span class="text-muted">Margin so far</span>

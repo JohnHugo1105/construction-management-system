@@ -3,6 +3,7 @@ using Cms.Application.Common;
 using Cms.Application.Features.Costing;
 using Cms.Domain.Features.Costing;
 using Cms.Domain.Features.Projects;
+using Cms.Domain.Features.Purchasing;
 using Cms.Infrastructure.Common;
 using Cms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -71,5 +72,6 @@ internal sealed class CostEntryReader(CmsDbContext db) : ICostEntryReader
         entry.UnitCostMinor, entry.VatTreatment.ToString(), entry.VatRateBps, entry.NetMinor, entry.VatMinor, entry.GrossMinor, entry.EntryDate,
         entry.Remarks, entry.Origin.ToString(), entry.OriginReferenceId, entry.SourceDealer, entry.InvoiceNumber, entry.Status.ToString(),
         entry.CreatedAtUtc, entry.VoidedAtUtc, entry.VoidReason,
-        entry.Origin == CostOrigin.Manual && entry.Status == CostEntryStatus.Posted, entry.Version));
+        entry.Origin == CostOrigin.Manual && entry.Status == CostEntryStatus.Posted, entry.Version, entry.PurchaseOrderLineId,
+        db.Set<PurchaseOrder>().Where(order => order.Lines.Any(line => line.Id == entry.PurchaseOrderLineId)).Select(order => order.Number).FirstOrDefault()));
 }

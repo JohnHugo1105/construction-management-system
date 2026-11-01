@@ -17,7 +17,7 @@
           <h2 id="position-heading" class="card__title">Where the project stands</h2>
           <p class="text-muted text-small">{{ basisLine() }}</p>
         </div>
-        <app-cost-position [figures]="summary.position">
+        <app-cost-position [figures]="summary.position" [commitments]="summary.commitments">
           @if (margins(); as margin) {
             <dl class="margins">
               <div>

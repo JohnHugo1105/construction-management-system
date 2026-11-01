@@ -1,5 +1,6 @@
 using Cms.Domain.Features.Costing;
 using Cms.Domain.Features.Projects;
+using Cms.Domain.Features.Purchasing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -63,10 +64,15 @@ internal sealed class CostEntryConfiguration : IEntityTypeConfiguration<CostEntr
 
         builder.HasOne<Project>().WithMany().HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<SubProject>().WithMany().HasForeignKey(item => item.SubProjectId).OnDelete(DeleteBehavior.Restrict);
+        // An invoice matched to an order line keeps pointing at it: the line is never deleted once approved.
+        builder.HasOne<PurchaseOrderLine>().WithMany().HasForeignKey(item => item.PurchaseOrderLineId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status });
         builder.HasIndex(item => new { item.ProjectId, item.Division, item.WbsCode });
         builder.HasIndex(item => new { item.TenantId, item.Origin, item.OriginReferenceId });
+        // What is invoiced against each order line, for the committed-cost sum and the order page: covering, so no row lookups.
+        builder.HasIndex(item => new { item.TenantId, item.PurchaseOrderLineId }).HasFilter("[PurchaseOrderLineId] IS NOT NULL")
+            .IncludeProperties(item => new { item.Status, item.NetMinor, item.GrossMinor });
         // The cost list reads one project newest first and filters by date range.
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.EntryDate });
         builder.HasIndex(item => new { item.TenantId, item.ClientRequestId }).IsUnique().HasFilter("[ClientRequestId] IS NOT NULL");
