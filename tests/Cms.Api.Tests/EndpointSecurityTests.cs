@@ -71,8 +71,6 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
     private static readonly HashSet<string> ExpectedUnusedWhileBuilding = new(StringComparer.Ordinal)
     {
         Permissions.PurchasingReceive,
-        Permissions.BondsRead,
-        Permissions.BondsManage,
         Permissions.PayrollRulesManage,
     };
 
