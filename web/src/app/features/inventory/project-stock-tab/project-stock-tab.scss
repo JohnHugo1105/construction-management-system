@@ -1,0 +1,24 @@
+:host {
+  display: block;
+}
+
+.row-card__quantity {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+// The card's title link stretches over the whole card (one big tap target); the shortcut sits above it so it stays clickable.
+.row-card__action {
+  position: relative;
+  z-index: 1;
+  display: flex;
+}
+
+.row-card__action .btn {
+  flex: 1 1 auto;
+}
+
+.results--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}

@@ -1,0 +1,86 @@
+:host {
+  display: block;
+}
+
+// The search, the category chips and the place and retired controls sit close together: one block above the list.
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.toolbar__search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toolbar .btn {
+  flex: none;
+}
+
+// The place and retired controls are secondary: one quiet row under the category chips.
+.more-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+}
+
+.place-filter {
+  display: flex;
+  flex: 1 1 10rem;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 24rem;
+}
+
+.place-filter__label {
+  flex: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.place-filter .input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggle input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-brand);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.row-card__quantity {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.results--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}

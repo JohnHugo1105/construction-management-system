@@ -1,0 +1,134 @@
+:host {
+  display: block;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+
+.summary__about {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.summary__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+@media (max-width: 47.99rem) {
+  .summary__actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+
+  .summary__actions .btn:first-child {
+    flex: 1 1 auto;
+  }
+}
+
+.total {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// Purchase details are one step away: a quiet disclosure with a visible marker and focus ring.
+.more-details {
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.more-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--touch-target);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.more-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-details summary app-icon {
+  color: var(--color-text-muted);
+  transition: transform var(--duration-fast);
+}
+
+.more-details[open] summary app-icon {
+  transform: rotate(180deg);
+}
+
+.more-details[open] summary {
+  margin-bottom: var(--space-2);
+}
+
+.more-details .def-list {
+  padding-bottom: var(--space-4);
+}
+
+.date-cell {
+  white-space: nowrap;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.route {
+  display: block;
+  margin-top: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.row-card .route {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+.row-card__quantity {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.why-not {
+  display: block;
+  max-width: 16rem;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: normal;
+}
+
+.data-table .actions .why-not {
+  margin-left: auto;
+  text-align: right;
+}
+
+.history-row--reversed .route {
+  color: var(--color-text-muted);
+}
+
+.results--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}

@@ -1,0 +1,168 @@
+<app-page-header
+  [title]="isEdit() ? 'Edit details' : 'Register item'"
+  [backLabel]="backLabel()"
+  [backLink]="backLink()"
+/>
+
+@if (loadingItem() && !loaded()) {
+  <app-skeleton [lines]="5" label="Loading item" />
+} @else if (loaded()?.status === 'Retired') {
+  <app-alert tone="warning" title="This item is retired">
+    A retired item can't be edited. Reverse its write-off first if it was retired by mistake.
+    <div alertActions>
+      <a appButton [routerLink]="['/stock', loaded()?.id]">Go to item</a>
+    </div>
+  </app-alert>
+} @else if (isEdit() && !loaded()) {
+  <app-api-error-alert
+    [error]="error()"
+    [allowRetry]="true"
+    reloadLabel="Try again"
+    (reload)="reload()"
+  />
+} @else {
+  <div class="card stack stack--loose form-card">
+    @if (error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [extra]="extraMessages()"
+        reloadLabel="Reload item"
+        (reload)="reload()"
+      />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention"
+        >Check the highlighted fields and try again.</app-alert
+      >
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      @if (isEdit()) {
+        <div class="stack stack--tight">
+          <p class="field__label">Category</p>
+          <p>{{ categoryLabel() }}</p>
+          <p class="field__hint">The category can't be changed once the item is registered.</p>
+        </div>
+      } @else {
+        <app-field-group
+          label="What kind of item is it?"
+          [hint]="categoryExplanation"
+          [control]="form.controls.category"
+          requiredMessage="Choose tool, equipment or machinery."
+        >
+          <div class="choice-list">
+            @for (category of categories; track category.value) {
+              <label class="choice">
+                <input type="radio" formControlName="category" [value]="category.value" />
+                <span class="choice__text"
+                  ><span class="choice__label">{{ category.label }}</span></span
+                >
+              </label>
+            }
+          </div>
+        </app-field-group>
+      }
+
+      <app-form-field
+        label="Description"
+        hint="For example: Claw hammer, or Diesel generator 20 kVA."
+        [control]="form.controls.description"
+        requiredMessage="Enter what the item is."
+      >
+        <input appControl formControlName="description" autocomplete="off" />
+      </app-form-field>
+
+      <app-form-field label="Brand" [optional]="true" [control]="form.controls.brand">
+        <input appControl formControlName="brand" autocomplete="off" />
+      </app-form-field>
+
+      @if (showSerial()) {
+        <app-form-field
+          label="Serial number"
+          [optional]="!rules().serialRequired"
+          hint="Each single piece needs its own number."
+          [control]="form.controls.serialNumber"
+          requiredMessage="Enter the serial number. Equipment and machinery are tracked one by one."
+        >
+          <input appControl formControlName="serialNumber" autocomplete="off" />
+        </app-form-field>
+      }
+
+      @if (!isEdit() && categoryChosen()) {
+        @if (rules().singlePiece) {
+          <p class="text-muted">One piece is received into the warehouse.</p>
+        } @else {
+          <app-form-field
+            label="Quantity"
+            hint="How many you are receiving into the warehouse."
+            [control]="form.controls.quantity"
+            requiredMessage="Enter how many you are receiving."
+          >
+            <app-number-input
+              formControlName="quantity"
+              [decimals]="4"
+              [unit]="form.controls.unit.value"
+            />
+          </app-form-field>
+        }
+      }
+
+      <app-form-field
+        label="Unit"
+        hint="What it is counted in, like pc or set. Pick a suggestion or type your own."
+        [control]="form.controls.unit"
+        requiredMessage="Enter the unit, for example pc."
+      >
+        <input appControl formControlName="unit" list="unit-suggestions" autocomplete="off" />
+      </app-form-field>
+      <datalist id="unit-suggestions">
+        @for (unit of units; track unit) {
+          <option [value]="unit"></option>
+        }
+      </datalist>
+
+      <div class="form__section">
+        <h2 class="card__title">Purchase</h2>
+        <div class="form__row">
+          <app-form-field label="Supplier" [optional]="true" [control]="form.controls.supplier">
+            <input appControl formControlName="supplier" autocomplete="organization" />
+          </app-form-field>
+          <app-form-field
+            label="Invoice number"
+            [optional]="true"
+            [control]="form.controls.invoiceNumber"
+          >
+            <input appControl formControlName="invoiceNumber" autocomplete="off" />
+          </app-form-field>
+        </div>
+        <div class="form__row">
+          <app-form-field
+            label="Purchase date"
+            [control]="form.controls.purchaseDate"
+            requiredMessage="Choose the purchase date."
+          >
+            <input appControl type="date" formControlName="purchaseDate" [attr.max]="todayDate" />
+          </app-form-field>
+          <app-form-field
+            label="Unit cost"
+            [optional]="true"
+            hint="The cost of one piece, including VAT. Needed to charge a move to a project."
+            [control]="form.controls.unitCost"
+          >
+            <app-money-input formControlName="unitCost" placeholder="0.00" />
+          </app-form-field>
+        </div>
+      </div>
+
+      <app-form-field label="Remarks" [optional]="true" [control]="form.controls.remarks">
+        <textarea appControl formControlName="remarks" rows="3" maxlength="500"></textarea>
+      </app-form-field>
+
+      <div class="form__actions form__actions--sticky">
+        <a appButton [routerLink]="backLink()">Cancel</a>
+        <button appButton variant="primary" type="submit" [busy]="saving()">
+          {{ isEdit() ? 'Save details' : 'Register item' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

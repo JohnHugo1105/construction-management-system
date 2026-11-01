@@ -1,0 +1,153 @@
+<div class="stack">
+  @if (context.isArchived()) {
+    <app-alert tone="info" title="Stock on an archived project">
+      Nothing can be moved onto it until it is restored. Stock can still be moved off it to the
+      warehouse.
+    </app-alert>
+  }
+
+  @if (error(); as problem) {
+    <app-api-error-alert [error]="problem" />
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading stock" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Stock on this project" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col">Category</th>
+                <th scope="col" class="num">Quantity</th>
+                @if (canManage()) {
+                  <th scope="col"><span class="visually-hidden">Actions</span></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.stock.itemId) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/stock', row.stock.itemId]">{{
+                      row.stock.description
+                    }}</a>
+                    @if (row.about) {
+                      <span class="cell-sub">{{ row.about }}</span>
+                    }
+                  </th>
+                  <td>
+                    <app-status-chip
+                      [label]="row.category.label"
+                      tone="neutral"
+                      [icon]="row.category.icon"
+                    />
+                  </td>
+                  <td class="num">{{ row.quantity }}</td>
+                  @if (canManage()) {
+                    <td class="actions">
+                      <button
+                        appButton
+                        variant="ghost"
+                        type="button"
+                        [busy]="fetching() === row.stock.itemId"
+                        [attr.aria-label]="'Move ' + row.stock.description + ' to the warehouse'"
+                        (click)="moveToWarehouse(row.stock)"
+                      >
+                        Move to the warehouse
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.stock.itemId) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a
+                  class="row-card__title row-link row-link--stretch"
+                  [routerLink]="['/stock', row.stock.itemId]"
+                  >{{ row.stock.description }}</a
+                >
+                <app-status-chip
+                  [label]="row.category.label"
+                  tone="neutral"
+                  [icon]="row.category.icon"
+                />
+              </div>
+              @if (row.about) {
+                <p class="text-muted text-small">{{ row.about }}</p>
+              }
+              <p class="row-card__quantity">{{ row.quantity }}</p>
+              @if (canManage()) {
+                <div class="row-card__action">
+                  <button
+                    appButton
+                    type="button"
+                    [busy]="fetching() === row.stock.itemId"
+                    [attr.aria-label]="'Move ' + row.stock.description + ' to the warehouse'"
+                    (click)="moveToWarehouse(row.stock)"
+                  >
+                    Move to the warehouse
+                  </button>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="items"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    <app-empty-state
+      icon="stock"
+      [title]="
+        context.isArchived() ? 'No stock is on this project' : 'Nothing is on this project yet'
+      "
+      [message]="emptyMessage()"
+    >
+      @if (canManage() && !context.isArchived()) {
+        <a appButton variant="primary" routerLink="/stock">
+          <app-icon name="stock" [size]="18" />
+          Go to stock
+        </a>
+      }
+    </app-empty-state>
+  }
+</div>
+
+@if (returning(); as item) {
+  <app-move-stock-dialog
+    [item]="item"
+    [returnFrom]="context.projectId()"
+    (done)="moved()"
+    (dismissed)="returning.set(null)"
+    (reloaded)="refreshReturning()"
+  />
+}

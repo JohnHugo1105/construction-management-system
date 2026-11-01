@@ -1,0 +1,336 @@
+<app-page-header
+  [title]="state.item()?.description || 'Item'"
+  backLabel="All stock"
+  [backLink]="['/stock']"
+/>
+
+@if (state.itemLoading()) {
+  <app-skeleton [lines]="4" label="Loading item" />
+} @else if (state.itemError(); as problem) {
+  <div class="stack">
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="!problem.isNotFound"
+      reloadLabel="Try again"
+      (reload)="reload()"
+    />
+    <p><a appButton routerLink="/stock">Back to stock</a></p>
+  </div>
+} @else if (state.item(); as item) {
+  @if (summary(); as info) {
+    <div class="stack">
+      @if (item.status === 'Retired') {
+        <app-alert tone="warning" title="It can't be moved, counted or edited">
+          @if (item.retiredReason) {
+            Reason: {{ item.retiredReason }}.
+          }
+          @if (canManage()) {
+            Only its write-off can be reversed, from the history below.
+          }
+        </app-alert>
+      }
+
+      <div class="summary">
+        <div class="summary__info">
+          <app-status-chip
+            [label]="info.category.label"
+            tone="neutral"
+            [icon]="info.category.icon"
+          />
+          <app-status-chip
+            [label]="info.status.label"
+            [tone]="info.status.tone"
+            [icon]="info.status.icon"
+          />
+          @if (info.about) {
+            <p class="summary__about">{{ info.about }}</p>
+          }
+        </div>
+
+        @if (info.plan.primary || info.plan.more.length > 0) {
+          <div class="summary__actions">
+            @if (info.plan.primary; as primary) {
+              <button appButton variant="primary" type="button" (click)="open(primary)">
+                {{ labels[primary] }}
+              </button>
+            }
+            @if (info.plan.more.length > 0) {
+              <app-menu label="More" ariaLabel="More actions for this item" align="end">
+                @for (action of info.plan.more; track action) {
+                  @if (action === 'edit') {
+                    <a class="menu__item" [routerLink]="['/stock', item.id, 'edit']">
+                      {{ labels[action] }}
+                    </a>
+                  } @else {
+                    <button type="button" class="menu__item" (click)="open(action)">
+                      {{ labels[action] }}
+                    </button>
+                  }
+                }
+              </app-menu>
+            }
+          </div>
+        }
+      </div>
+
+      <section class="card" aria-labelledby="where-heading">
+        <h2 id="where-heading" class="card__title">Where it is</h2>
+        <div class="stack stack--tight">
+          @if (info.total) {
+            <p class="total">{{ info.total }} in total</p>
+          }
+          <app-balance-chips [balances]="item.balances" [unit]="item.unit" />
+          <p class="text-muted text-small">{{ info.unitCost }}</p>
+        </div>
+      </section>
+
+      <details class="more-details">
+        <summary>
+          Purchase details
+          <app-icon name="chevron-down" [size]="18" />
+        </summary>
+        <dl class="def-list">
+          <div>
+            <dt>Purchased</dt>
+            <dd>{{ info.purchased }}</dd>
+          </div>
+          @if (item.sourceDealer) {
+            <div>
+              <dt>Supplier</dt>
+              <dd>{{ item.sourceDealer }}</dd>
+            </div>
+          }
+          @if (item.invoiceNumber) {
+            <div>
+              <dt>Invoice number</dt>
+              <dd>{{ item.invoiceNumber }}</dd>
+            </div>
+          }
+          @if (item.remarks) {
+            <div>
+              <dt>Remarks</dt>
+              <dd>{{ item.remarks }}</dd>
+            </div>
+          }
+        </dl>
+      </details>
+
+      <section class="stack stack--tight" aria-labelledby="history-heading">
+        <h2 id="history-heading">Movement history</h2>
+
+        @if (state.historyError(); as problem) {
+          <app-api-error-alert
+            [error]="problem"
+            [allowRetry]="true"
+            reloadLabel="Try again"
+            (reload)="state.reloadHistory()"
+          />
+        }
+
+        @if (state.historyLoading()) {
+          <app-skeleton variant="card" [lines]="3" label="Loading history" />
+        } @else if (rows().length > 0) {
+          <div
+            class="results"
+            [class.results--refreshing]="state.historyRefreshing()"
+            [attr.aria-busy]="state.historyRefreshing()"
+          >
+            @if (viewport.isTablet()) {
+              <div class="table-wrap" role="region" aria-label="Movement history" tabindex="0">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Date</th>
+                      <th scope="col">Movement</th>
+                      <th scope="col" class="num">Quantity</th>
+                      <th scope="col">Recorded by</th>
+                      @if (canManage()) {
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of rows(); track row.movement.id) {
+                      <tr [class.history-row--reversed]="row.movement.isReversed">
+                        <th scope="row" class="date-cell">{{ row.date }}</th>
+                        <td>
+                          <div class="chips">
+                            <app-status-chip
+                              [label]="row.type.label"
+                              [tone]="row.type.tone"
+                              [icon]="row.type.icon"
+                            />
+                            @if (row.movement.isReversed) {
+                              <app-status-chip label="Reversed" tone="neutral" icon="restore" />
+                            }
+                          </div>
+                          <span class="route"
+                            ><span class="visually-hidden">From </span>{{ row.from }}&ngsp;<span
+                              aria-hidden="true"
+                              >→</span
+                            >&ngsp;<span class="visually-hidden">to </span>{{ row.to }}</span
+                          >
+                          @if (row.charged) {
+                            <span class="cell-sub">{{ row.charged }}</span>
+                          }
+                          @if (row.movement.note) {
+                            <span class="cell-sub">Note: {{ row.movement.note }}</span>
+                          }
+                        </td>
+                        <td class="num">{{ row.quantity }}</td>
+                        <td>{{ row.movement.recordedBy }}</td>
+                        @if (canManage()) {
+                          <td class="actions">
+                            @if (row.canReverse) {
+                              <button
+                                appButton
+                                variant="ghost"
+                                type="button"
+                                [attr.aria-label]="
+                                  'Reverse the ' +
+                                  row.type.label.toLowerCase() +
+                                  ' of ' +
+                                  row.quantity +
+                                  ' on ' +
+                                  row.date
+                                "
+                                (click)="reverse(row.movement)"
+                              >
+                                Reverse
+                              </button>
+                            } @else if (row.whyNot) {
+                              <span class="why-not">{{ row.whyNot }}</span>
+                            }
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <ul class="card-list">
+                @for (row of rows(); track row.movement.id) {
+                  <li class="row-card" [class.history-row--reversed]="row.movement.isReversed">
+                    <div class="row-card__head">
+                      <div class="chips">
+                        <app-status-chip
+                          [label]="row.type.label"
+                          [tone]="row.type.tone"
+                          [icon]="row.type.icon"
+                        />
+                        @if (row.movement.isReversed) {
+                          <app-status-chip label="Reversed" tone="neutral" icon="restore" />
+                        }
+                      </div>
+                      <span class="text-muted text-small">{{ row.date }}</span>
+                    </div>
+                    <p class="route">
+                      <span class="visually-hidden">From </span>{{ row.from }}&ngsp;<span
+                        aria-hidden="true"
+                        >→</span
+                      >&ngsp;<span class="visually-hidden">to </span>{{ row.to }}
+                    </p>
+                    <p class="row-card__quantity">{{ row.quantity }}</p>
+                    @if (row.charged) {
+                      <p class="text-small">{{ row.charged }}</p>
+                    }
+                    @if (row.movement.note) {
+                      <p class="text-small">Note: {{ row.movement.note }}</p>
+                    }
+                    <p class="text-muted text-small">Recorded by {{ row.movement.recordedBy }}</p>
+                    @if (row.canReverse) {
+                      <div>
+                        <button
+                          appButton
+                          type="button"
+                          [attr.aria-label]="
+                            'Reverse the ' +
+                            row.type.label.toLowerCase() +
+                            ' of ' +
+                            row.quantity +
+                            ' on ' +
+                            row.date
+                          "
+                          (click)="reverse(row.movement)"
+                        >
+                          Reverse
+                        </button>
+                      </div>
+                    } @else if (row.whyNot) {
+                      <p class="why-not">{{ row.whyNot }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <app-pager
+            [page]="state.query.values().page"
+            [pageSize]="state.pageSize"
+            [total]="state.total()"
+            noun="movements"
+            (pageChange)="state.query.setPage($event)"
+          />
+        }
+      </section>
+    </div>
+
+    @if (dialog(); as open) {
+      @switch (open.kind) {
+        @case ('move') {
+          <app-move-stock-dialog
+            [item]="item"
+            (done)="done('move', $event)"
+            (dismissed)="close()"
+            (reloaded)="reload()"
+          />
+        }
+        @case ('receive') {
+          <app-receive-stock-dialog
+            [item]="item"
+            (done)="done('receive', $event)"
+            (dismissed)="close()"
+            (reloaded)="reload()"
+          />
+        }
+        @case ('count') {
+          <app-count-stock-dialog
+            [item]="item"
+            (done)="done('count', $event)"
+            (dismissed)="close()"
+            (reloaded)="reload()"
+          />
+        }
+        @case ('write-off') {
+          <app-write-off-dialog
+            [item]="item"
+            (done)="done('write-off', $event)"
+            (dismissed)="close()"
+            (reloaded)="reload()"
+          />
+        }
+        @case ('retire') {
+          <app-retire-item-dialog
+            [item]="item"
+            (done)="done('retire', $event)"
+            (dismissed)="close()"
+            (reloaded)="reload()"
+          />
+        }
+        @case ('reverse') {
+          @if (reverseTarget(); as movement) {
+            <app-reverse-movement-dialog
+              [item]="item"
+              [movement]="movement"
+              (done)="done('reverse', $event)"
+              (dismissed)="close()"
+              (reloaded)="reload()"
+            />
+          }
+        }
+      }
+    }
+  }
+}
