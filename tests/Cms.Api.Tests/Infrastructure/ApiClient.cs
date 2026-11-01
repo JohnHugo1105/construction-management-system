@@ -17,7 +17,7 @@ public sealed class ApiClient : IDisposable
     private readonly HttpClient _http;
     private string? _csrf;
 
-    public ApiClient(CmsApiFactory factory)
+    public ApiClient(WebApplicationFactory<Program> factory)
     {
         _http = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true, AllowAutoRedirect = false });
     }

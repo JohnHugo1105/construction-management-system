@@ -17,8 +17,10 @@ public sealed class IdentityEndpoints : IEndpointModule
             return Results.NoContent();
         }).AllowAnonymous();
 
-        group.MapGet("/setup-status", async (AuthService auth, CancellationToken ct) =>
-            Results.Ok(new SetupStatusDto(await auth.NeedsSetupAsync(ct)))).AllowAnonymous();
+        // First-time setup is offered only while it is switched on in configuration AND the system has no users, so a production
+        // deployment that forgot the switch never shows (or accepts) an open "create the administrator" page.
+        group.MapGet("/setup-status", async (AuthService auth, IConfiguration configuration, CancellationToken ct) =>
+            Results.Ok(new SetupStatusDto(configuration.GetValue("Bootstrap:Enabled", false) && await auth.NeedsSetupAsync(ct)))).AllowAnonymous();
 
         group.MapPost("/sign-in", async (SignInRequest request, HttpContext context, AuthService auth, CancellationToken ct) =>
         {
@@ -30,7 +32,7 @@ public sealed class IdentityEndpoints : IEndpointModule
         // First-time setup: allowed once, while the system has no users, and only when switched on in configuration.
         group.MapPost("/bootstrap", async (BootstrapRequest request, HttpContext context, AuthService auth, IConfiguration configuration, CancellationToken ct) =>
         {
-            if (!configuration.GetValue("Bootstrap:Enabled", true)) return Results.NotFound();
+            if (!configuration.GetValue("Bootstrap:Enabled", false)) return Results.NotFound();
             var session = await auth.BootstrapAsync(request, ct);
             await SessionCookies.SignInAsync(context, session);
             return Results.Created("/api/identity/session", session);

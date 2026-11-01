@@ -5,6 +5,7 @@ using Cms.Api.Tests.Infrastructure;
 using Cms.Application.Features.Identity;
 using Cms.Domain.Features.Identity;
 using Cms.TestSupport;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Cms.Api.Tests.Features;
 
@@ -322,5 +323,26 @@ public sealed class ApiFailureShapeTests : IClassFixture<CmsApiFactory>
         Assert.DoesNotContain(quiet.Items, entry => entry.Action == "User.SignedIn");
         Assert.Contains(quiet.Items, entry => entry.Action == "User.SignInFailed");
         Assert.Contains(withSignIns.Items, entry => entry.Action == "User.SignedIn");
+    }
+}
+
+public sealed class FirstTimeSetupSwitchApiTests : IClassFixture<CmsApiFactory>
+{
+    private readonly CmsApiFactory _factory;
+
+    public FirstTimeSetupSwitchApiTests(CmsApiFactory factory) => _factory = factory;
+
+    [SqlServerFact]
+    public async Task With_the_switch_off_first_time_setup_is_neither_offered_nor_accepted_even_on_an_empty_system()
+    {
+        await using var switchedOff = _factory.WithWebHostBuilder(builder => builder.UseSetting("Bootstrap:Enabled", "false"));
+        using var client = new ApiClient(switchedOff);
+
+        var status = await client.GetAsync<JsonElement>("/api/identity/setup-status");
+        var attempt = await client.PostAsync("/api/identity/bootstrap",
+            new { companyName = "Hijack Ltd", username = "intruder", displayName = "Intruder", password = TenantSeeder.Password });
+
+        Assert.False(status.GetProperty("needsSetup").GetBoolean());
+        Assert.Equal(HttpStatusCode.NotFound, attempt.StatusCode);
     }
 }
