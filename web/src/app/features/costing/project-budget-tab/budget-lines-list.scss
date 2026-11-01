@@ -57,3 +57,9 @@ th[scope='row'] {
     flex: 1 1 8rem;
   }
 }
+
+/* The change order that added a line (slice C). */
+.line__change-order {
+  display: block;
+  margin-block: var(--space-1);
+}

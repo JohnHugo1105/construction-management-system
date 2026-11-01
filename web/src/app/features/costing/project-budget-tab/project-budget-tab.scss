@@ -32,3 +32,11 @@
 .margins__negative {
   color: var(--color-danger);
 }
+
+/* The locked budget line (slice C): its link is a full-size touch target. */
+.budget-locked a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-1);
+}

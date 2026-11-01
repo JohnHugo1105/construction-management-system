@@ -1,0 +1,67 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  align-self: flex-start;
+}
+
+.co-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.co-head .card__title {
+  overflow-wrap: anywhere;
+}
+
+.co-effect {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.co-effect dt {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.co-effect dd {
+  margin: 0;
+}
+
+.co-effect dd.money {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.co-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.co-actions,
+.co-line-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.co-kind {
+  display: inline-block;
+  margin-right: var(--space-1);
+  font-weight: 600;
+}
+
+.co-line-effect {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.row-card__title {
+  overflow-wrap: anywhere;
+}

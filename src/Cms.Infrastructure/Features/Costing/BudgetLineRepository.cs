@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Cms.Application.Common;
 using Cms.Application.Features.Costing;
+using Cms.Domain.Features.ChangeOrders;
 using Cms.Domain.Features.Costing;
 using Cms.Domain.Features.Projects;
 using Cms.Infrastructure.Common;
@@ -79,5 +80,6 @@ internal sealed class BudgetLineReader(CmsDbContext db) : IBudgetLineReader
         db.Set<SubProject>().Where(sub => sub.Id == line.SubProjectId).Select(sub => sub.Name).FirstOrDefault(),
         line.Division, line.MainScope, line.SubScope, line.WbsCode, line.Description, line.ItemType.ToString(), line.Quantity, line.Unit,
         line.UnitCostMinor, line.VatTreatment.ToString(), line.VatRateBps, line.NetMinor, line.VatMinor, line.GrossMinor, line.EntryDate,
-        line.Remarks, line.Status.ToString(), line.CreatedAtUtc, line.RemovedAtUtc, line.RemovedReason, line.Version));
+        line.Remarks, line.Status.ToString(), line.CreatedAtUtc, line.RemovedAtUtc, line.RemovedReason, line.Version, line.ChangeOrderId,
+        db.Set<ChangeOrder>().Where(order => order.Id == line.ChangeOrderId).Select(order => order.Number).FirstOrDefault()));
 }

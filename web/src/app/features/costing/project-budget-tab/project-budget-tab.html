@@ -78,6 +78,13 @@
           </button>
         } @else if (archivedNote()) {
           <p class="text-muted text-small">Archived: lines can't be added, changed or removed.</p>
+        } @else if (lockedNote()) {
+          <p class="text-muted text-small budget-locked">
+            The budget is locked. Record a change order to change it.
+            @if (canSeeChanges()) {
+              <a routerLink="../changes">Go to Changes</a>
+            }
+          </p>
         }
       </div>
 

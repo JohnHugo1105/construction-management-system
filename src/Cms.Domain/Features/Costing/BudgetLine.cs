@@ -45,7 +45,12 @@ public sealed class BudgetLine : AggregateRoot
     public Guid? RemovedByUserId { get; private set; }
     public string? RemovedReason { get; private set; }
 
+    /// <summary>The approved change order that added this line; null for a line entered directly.</summary>
+    public Guid? ChangeOrderId { get; private set; }
+
     public bool IsRemoved => Status == BudgetLineStatus.Removed;
+
+    public LineAmounts CurrentAmounts() => new(NetMinor, VatMinor, GrossMinor);
 
     public static BudgetLine Create(Guid id, Guid tenantId, Project projectContext, Guid? subProjectId, int? division,
         string? mainScope, string? subScope, string? wbsCode, string? description, ItemType itemType, decimal quantity, string? unit,
@@ -62,6 +67,23 @@ public sealed class BudgetLine : AggregateRoot
             SubProjectId = subProjectId,
             CreatedByUserId = createdByUserId,
             ClientRequestId = Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80)
+        };
+        line.Initialize(id, tenantId, now);
+        line.Apply(values);
+        return line;
+    }
+
+    /// <summary>A line added by an approved change order. The order has already checked the project, the budget lock and the fields.</summary>
+    internal static BudgetLine CreateFromChangeOrder(Guid id, Guid tenantId, Project projectContext, Guid changeOrderId, Guid? subProjectId,
+        CostLineValues values, Guid createdByUserId, DateTimeOffset now)
+    {
+        projectContext.EnsureCanReceiveRecordsFor(subProjectId);
+        var line = new BudgetLine
+        {
+            ProjectId = projectContext.Id,
+            SubProjectId = subProjectId,
+            CreatedByUserId = createdByUserId,
+            ChangeOrderId = changeOrderId
         };
         line.Initialize(id, tenantId, now);
         line.Apply(values);
@@ -89,6 +111,31 @@ public sealed class BudgetLine : AggregateRoot
         Status = BudgetLineStatus.Removed;
         RemovedAtUtc = now;
         RemovedByUserId = userId;
+        Touch(now);
+    }
+
+    /// <summary>
+    /// A change order revises the quantity and unit cost (and a void puts the previous ones back). Every other field, and the VAT rate the
+    /// line was entered with, stays, so the money is recomputed by the same rule and returns to the centavo when the values are restored.
+    /// </summary>
+    internal LineAmounts ChangeQuantityAndCost(decimal quantity, long unitCostMinor, DateTimeOffset now)
+    {
+        if (IsRemoved) throw new DomainRuleException($"The budget line \"{Description}\" was removed, so it can't be revised.");
+        var values = CostLineRules.Validate(Division, MainScope, SubScope, WbsCode, Description, ItemType, quantity, Unit, unitCostMinor, VatTreatment,
+            VatRateBps, EntryDate, Remarks, latestAllowedDate: null);
+        Apply(values);
+        Touch(now);
+        return values.Amounts;
+    }
+
+    /// <summary>Brings back a line that a change order removed, when that change order is voided. It counts in every total again.</summary>
+    public void Reinstate(DateTimeOffset now)
+    {
+        if (!IsRemoved) throw new DomainRuleException($"The budget line \"{Description}\" isn't removed, so it can't be brought back.");
+        Status = BudgetLineStatus.Active;
+        RemovedAtUtc = null;
+        RemovedByUserId = null;
+        RemovedReason = null;
         Touch(now);
     }
 

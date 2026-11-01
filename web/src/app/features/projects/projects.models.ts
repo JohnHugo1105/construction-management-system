@@ -44,6 +44,11 @@ export interface Project {
   readonly archivedAtUtc: string | null;
   readonly subProjects: readonly SubProject[];
   readonly version: number;
+  /**
+   * The budget is frozen as the baseline: budget lines and the contract price change only through approved change orders. The API
+   * always sends it; it is optional here so older fixtures read as "not locked".
+   */
+  readonly budgetBaselineLocked?: boolean;
 }
 
 /** What the project form sends to create a project. */

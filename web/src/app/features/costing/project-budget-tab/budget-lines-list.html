@@ -16,6 +16,15 @@
           <tr [class.line--removed]="row.removed">
             <th scope="row">
               <span class="line__name">{{ row.line.description }}</span>
+              @if (row.line.changeOrderNumber) {
+                <span class="line__change-order">
+                  <app-status-chip
+                    [label]="'Change order ' + row.line.changeOrderNumber"
+                    tone="info"
+                    icon="contract"
+                  />
+                </span>
+              }
               <span class="cell-sub">{{ row.about }}</span>
               <span class="cell-sub">{{ row.date }}</span>
               @if (row.removed) {
@@ -71,6 +80,15 @@
           <p class="row-card__title line__name">{{ row.line.description }}</p>
           <p class="line__card-total money">{{ row.gross }}</p>
         </div>
+        @if (row.line.changeOrderNumber) {
+          <div class="line__change-order">
+            <app-status-chip
+              [label]="'Change order ' + row.line.changeOrderNumber"
+              tone="info"
+              icon="contract"
+            />
+          </div>
+        }
         <p class="text-muted text-small">{{ row.about }}</p>
         <p class="text-small">
           <span class="money">{{ row.quantity }} × {{ row.unitCost }}</span>

@@ -63,7 +63,8 @@ public sealed record BudgetLineFilter(Guid? SubProjectId, int? Division, ItemTyp
 public sealed record BudgetLineDto(Guid Id, Guid ProjectId, Guid? SubProjectId, string? SubProjectName, int? Division, string? MainScope,
     string? SubScope, string? WbsCode, string Description, string ItemType, decimal Quantity, string Unit, long UnitCostMinor,
     string VatTreatment, int VatRateBps, long NetMinor, long VatMinor, long GrossMinor, DateOnly EntryDate, string? Remarks, string Status,
-    DateTimeOffset CreatedAtUtc, DateTimeOffset? RemovedAtUtc, string? RemovedReason, int Version);
+    DateTimeOffset CreatedAtUtc, DateTimeOffset? RemovedAtUtc, string? RemovedReason, int Version, Guid? ChangeOrderId = null,
+    string? ChangeOrderNumber = null);
 
 /// <summary>
 /// The VAT rate is not a field: the company's rate at the moment of entry is stored on the line. <c>ItemType</c> and <c>VatTreatment</c> are
@@ -121,11 +122,12 @@ public sealed record CostingReferenceDto(IReadOnlyList<WbsDivisionDto> Divisions
 
 public static class CostingMapper
 {
-    public static BudgetLineDto ToDto(BudgetLine line, Project project) => new(line.Id, line.ProjectId, line.SubProjectId,
-        SubProjectName(project, line.SubProjectId), line.Division, line.MainScope, line.SubScope, line.WbsCode, line.Description,
+    /// <param name="changeOrderNumber">"CO-001" when the line was added by a change order.</param>
+    public static BudgetLineDto ToDto(BudgetLine line, Project project, string? changeOrderNumber = null) => new(line.Id, line.ProjectId,
+        line.SubProjectId, SubProjectName(project, line.SubProjectId), line.Division, line.MainScope, line.SubScope, line.WbsCode, line.Description,
         line.ItemType.ToString(), line.Quantity, line.Unit, line.UnitCostMinor, line.VatTreatment.ToString(), line.VatRateBps, line.NetMinor,
         line.VatMinor, line.GrossMinor, line.EntryDate, line.Remarks, line.Status.ToString(), line.CreatedAtUtc, line.RemovedAtUtc,
-        line.RemovedReason, line.Version);
+        line.RemovedReason, line.Version, line.ChangeOrderId, changeOrderNumber);
 
     public static CostEntryDto ToDto(CostEntry entry, Project project) => new(entry.Id, entry.ProjectId, entry.SubProjectId,
         SubProjectName(project, entry.SubProjectId), entry.Division, entry.MainScope, entry.SubScope, entry.WbsCode, entry.Description,

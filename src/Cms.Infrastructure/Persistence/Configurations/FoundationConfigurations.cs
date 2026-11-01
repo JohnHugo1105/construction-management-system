@@ -54,7 +54,9 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(item => item.StatusBeforeArchive).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.ArchiveReason).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.ArchiveNote).HasMaxLength(500);
+        builder.Property(item => item.BudgetBaselineUnlockReason).HasMaxLength(300);
         builder.Ignore(item => item.IsArchived);
+        builder.Ignore(item => item.IsBudgetLocked);
 
         builder.HasMany(item => item.SubProjects).WithOne().HasForeignKey(sub => sub.ProjectId).OnDelete(DeleteBehavior.Restrict);
         builder.Navigation(item => item.SubProjects).UsePropertyAccessMode(PropertyAccessMode.Field);

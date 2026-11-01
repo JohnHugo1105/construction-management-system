@@ -1,5 +1,6 @@
 using System.Globalization;
 using Cms.Application.Common;
+using Cms.Application.Features.ChangeOrders;
 using Cms.Application.Features.Organizations;
 using Cms.Application.Features.Projects;
 using Cms.Domain.Common;
@@ -14,7 +15,8 @@ namespace Cms.Application.Features.Costing;
 /// later change of the company rate never touches an existing line. A line is removed with a reason, never deleted.
 /// </summary>
 public sealed class BudgetLineService(IBudgetLineRepository lines, IBudgetLineReader reader, IProjectRepository projects,
-    IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
+    IOrganizationRepository organizations, IChangeOrderReader changeOrders, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork,
+    IAuditTrail audit)
 {
     public async Task<TotaledPage<BudgetLineDto>> ListAsync(Guid projectId, BudgetLineListQuery query, PageRequest page,
         CancellationToken cancellationToken)
@@ -27,7 +29,8 @@ public sealed class BudgetLineService(IBudgetLineRepository lines, IBudgetLineRe
     public async Task<BudgetLineDto> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var line = await Load(id, cancellationToken);
-        return CostingMapper.ToDto(line, await LoadProject(line.ProjectId, cancellationToken));
+        var changeOrderNumber = line.ChangeOrderId is { } changeOrderId ? await changeOrders.NumberOfAsync(changeOrderId, cancellationToken) : null;
+        return CostingMapper.ToDto(line, await LoadProject(line.ProjectId, cancellationToken), changeOrderNumber);
     }
 
     public async Task<BudgetLineDto> CreateAsync(Guid projectId, CreateBudgetLineRequest request, CancellationToken cancellationToken)
@@ -43,6 +46,8 @@ public sealed class BudgetLineService(IBudgetLineRepository lines, IBudgetLineRe
             return CostingMapper.ToDto(original, project);
         }
 
+        // A locked budget changes only through approved change orders, so the baseline and the change orders always explain it.
+        project.EnsureBudgetIsOpen();
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         var line = BudgetLine.Create(Guid.NewGuid(), currentUser.TenantId, project, request.SubProjectId, request.Division, request.MainScope,
             request.SubScope, request.WbsCode, request.Description, CostingInput.ParseItemType(request.ItemType), request.Quantity, request.Unit,
@@ -72,6 +77,7 @@ public sealed class BudgetLineService(IBudgetLineRepository lines, IBudgetLineRe
         var line = await Load(id, cancellationToken);
         var project = await LoadProject(line.ProjectId, cancellationToken);
         ConcurrencyGuard.Ensure(line.Version, request.Version);
+        project.EnsureBudgetIsOpen();
 
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         var grossBefore = line.GrossMinor;
@@ -93,8 +99,9 @@ public sealed class BudgetLineService(IBudgetLineRepository lines, IBudgetLineRe
         var line = await Load(id, cancellationToken);
         var project = await LoadProject(line.ProjectId, cancellationToken);
         ConcurrencyGuard.Ensure(line.Version, request.Version);
-        // An archived project is read-only: restore it first, so a finished project's figures don't change unnoticed.
-        project.EnsureNotArchived();
+        // An archived project is read-only: restore it first, so a finished project's figures don't change unnoticed. A locked budget
+        // changes only through change orders.
+        project.EnsureBudgetIsOpen();
 
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         line.Remove(currentUser.UserId, request.Reason, clock.UtcNow);

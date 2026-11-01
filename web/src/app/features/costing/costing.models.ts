@@ -57,6 +57,9 @@ export interface BudgetLine extends LineBase {
   readonly status: 'Active' | 'Removed';
   readonly removedAtUtc: string | null;
   readonly removedReason: string | null;
+  /** The change order that added this line ("CO-001"), when one did. */
+  readonly changeOrderId?: string | null;
+  readonly changeOrderNumber?: string | null;
 }
 
 /** What a project has spent. System-made entries (`origin` Payroll or Inventory) have `canEdit` false. */

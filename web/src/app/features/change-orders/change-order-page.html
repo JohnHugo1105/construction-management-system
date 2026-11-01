@@ -1,0 +1,226 @@
+<div class="stack">
+  <a class="back-link" routerLink="." [queryParams]="backQuery()" queryParamsHandling="merge">
+    <app-icon name="arrow-left" [size]="18" />
+    All change orders
+  </a>
+
+  @if (loadError(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="load()"
+    />
+  } @else if (view(); as page) {
+    <section class="card stack" aria-labelledby="co-heading">
+      <div class="co-head">
+        <div>
+          <h2 id="co-heading" class="card__title">{{ page.title }}: {{ page.order.title }}</h2>
+          <p class="text-muted text-small">{{ page.reason }}</p>
+        </div>
+        <app-status-chip
+          [label]="page.status.label"
+          [tone]="page.status.tone"
+          [icon]="page.status.icon"
+        />
+      </div>
+
+      <dl class="co-effect">
+        <div>
+          <dt>{{ page.estimate ? 'Budget change if approved' : 'Budget change' }}</dt>
+          <dd class="money">{{ page.budget }}</dd>
+          <dd class="text-muted text-small">With VAT. Before VAT {{ page.budgetNet }}</dd>
+        </div>
+        @if (page.price) {
+          <div>
+            <dt>Contract price change</dt>
+            <dd class="money">{{ page.price }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (page.order.description) {
+        <p class="co-text">{{ page.order.description }}</p>
+      }
+      @if (page.order.decisionReason) {
+        <p class="text-small">
+          <strong>{{
+            page.order.status === 'Rejected' ? 'Why rejected:' : 'Approval note:'
+          }}</strong>
+          {{ page.order.decisionReason }}
+        </p>
+      }
+      @if (page.order.voidReason) {
+        <p class="text-small">
+          <strong>{{
+            page.order.voidedFromStatus === 'Approved' ? 'Why voided:' : 'Why discarded:'
+          }}</strong>
+          {{ page.order.voidReason }}
+        </p>
+      }
+      <p class="text-muted text-small">{{ page.trail }}</p>
+
+      @if (actionError(); as problem) {
+        <app-api-error-alert [error]="problem" (reload)="load()" />
+      }
+
+      @if (context.isArchived()) {
+        <p class="text-muted text-small">
+          This project is archived, so its change orders can't change.
+        </p>
+      } @else if (page.blockedBy) {
+        <p class="text-muted text-small">
+          To void this one, void {{ page.blockedBy }} first: it was approved later and may build on
+          these changes.
+        </p>
+      }
+
+      @if (
+        page.actions.submit ||
+        page.actions.approve ||
+        page.actions.void ||
+        page.actions.discard ||
+        page.actions.edit
+      ) {
+        <div class="co-actions">
+          @if (page.actions.submit) {
+            <button
+              appButton
+              variant="primary"
+              type="button"
+              [busy]="busy() === 'submit'"
+              (click)="submit()"
+            >
+              Submit for approval
+            </button>
+          }
+          @if (page.actions.approve) {
+            <button appButton variant="primary" type="button" (click)="approving.set(true)">
+              Approve change order
+            </button>
+          }
+          @if (page.actions.reject) {
+            <button appButton type="button" (click)="reasonAction.set('reject')">Reject</button>
+          }
+          @if (page.actions.void) {
+            <button appButton variant="danger" type="button" (click)="reasonAction.set('void')">
+              Void change order
+            </button>
+          }
+          @if (page.actions.edit) {
+            <button appButton type="button" (click)="editingDetails.set(true)">Edit details</button>
+          }
+          @if (page.actions.discard) {
+            <button appButton variant="ghost" type="button" (click)="reasonAction.set('discard')">
+              Discard
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="stack" aria-labelledby="co-lines-heading">
+      <div class="panel-head">
+        <h3 id="co-lines-heading" class="card__title">Lines</h3>
+        @if (page.actions.edit) {
+          <button appButton type="button" (click)="lineDialog.set({ line: null })">
+            <app-icon name="plus" [size]="18" />
+            Add a line
+          </button>
+        }
+      </div>
+
+      @if (page.rows.length === 0) {
+        <p class="text-muted">
+          {{
+            page.actions.edit
+              ? 'No lines yet. Add what this change adds, revises or omits in the budget.'
+              : 'This change order changes no budget line.'
+          }}
+        </p>
+      } @else {
+        <ul class="card-list">
+          @for (row of page.rows; track row.line.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <p class="row-card__title">
+                  <span class="co-kind">{{ row.line.lineNumber }}. {{ row.kind }}</span>
+                  {{ row.line.description }}
+                </p>
+                <p class="money co-line-effect">{{ row.effect }}</p>
+              </div>
+              <p class="text-muted text-small">{{ row.detail }}</p>
+              @if (page.actions.edit) {
+                <div class="co-line-actions">
+                  <button
+                    appButton
+                    type="button"
+                    [attr.aria-label]="'Edit line ' + row.line.lineNumber"
+                    (click)="lineDialog.set({ line: row.line })"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    appButton
+                    type="button"
+                    [busy]="busy() === 'remove'"
+                    [attr.aria-label]="'Remove line ' + row.line.lineNumber"
+                    (click)="removeLine(row.line)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    @if (editingDetails()) {
+      <app-change-order-form-dialog
+        [order]="page.order"
+        (saved)="detailsSaved($event)"
+        (reloadRequested)="editingDetails.set(false); load()"
+        (dismissed)="editingDetails.set(false)"
+      />
+    }
+
+    @if (lineDialog(); as dialog) {
+      <app-change-order-line-dialog
+        [order]="page.order"
+        [line]="dialog.line"
+        (saved)="lineSaved($event)"
+        (reloadRequested)="lineDialog.set(null); load()"
+        (dismissed)="lineDialog.set(null)"
+      />
+    }
+
+    @if (approving()) {
+      <app-confirm-dialog
+        [title]="'Approve ' + page.title + '?'"
+        [message]="page.approveMessage"
+        confirmLabel="Approve change order"
+        [busy]="busy() === 'approve'"
+        (confirmed)="approve()"
+        (cancelled)="approving.set(false)"
+      />
+    }
+
+    @if (reasonWords(); as words) {
+      <app-reason-dialog
+        [title]="words.title"
+        [message]="words.message"
+        [reasonLabel]="words.label"
+        [requiredMessage]="words.required"
+        [confirmLabel]="words.confirm"
+        [perform]="performReason"
+        (done)="reasonDone()"
+        (reloadRequested)="reasonOutdated()"
+        (dismissed)="reasonAction.set(null)"
+      />
+    }
+  } @else {
+    <app-skeleton variant="card" [lines]="4" label="Loading the change order" />
+  }
+</div>

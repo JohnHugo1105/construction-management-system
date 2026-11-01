@@ -31,9 +31,11 @@ public sealed record ProjectLookupDto(Guid Id, string Name, string Status, IRead
 
 public sealed record SubProjectDto(Guid Id, string Name, DateOnly StartDate, string Status);
 
+/// <param name="BudgetBaselineLocked">The budget is frozen as the baseline: budget lines change only through approved change orders, and
+/// the contract price only through them too.</param>
 public sealed record ProjectDto(Guid Id, string Name, string? Client, string? Location, long? ContractPriceMinor, DateOnly StartDate,
     DateOnly? TargetEndDate, string Status, string? ArchiveReason, string? ArchiveNote, DateTimeOffset? ArchivedAtUtc,
-    IReadOnlyList<SubProjectDto> SubProjects, int Version);
+    IReadOnlyList<SubProjectDto> SubProjects, int Version, bool BudgetBaselineLocked = false);
 
 public sealed record CreateProjectRequest(string? Name, string? Client, string? Location, long? ContractPriceMinor, DateOnly StartDate,
     DateOnly? TargetEndDate);
@@ -49,7 +51,7 @@ public static class ProjectMapper
 {
     public static ProjectDto ToDto(Project project) => new(project.Id, project.Name, project.Client, project.Location, project.ContractPriceMinor,
         project.StartDate, project.TargetEndDate, project.Status.ToString(), project.ArchiveReason?.ToString(), project.ArchiveNote,
-        project.ArchivedAtUtc, project.SubProjects.OrderBy(sub => sub.Name).Select(ToDto).ToArray(), project.Version);
+        project.ArchivedAtUtc, project.SubProjects.OrderBy(sub => sub.Name).Select(ToDto).ToArray(), project.Version, project.IsBudgetLocked);
 
     public static SubProjectDto ToDto(SubProject sub) => new(sub.Id, sub.Name, sub.StartDate, sub.Status.ToString());
 }

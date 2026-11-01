@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ToastService } from '../../../core/notifications/toast-service';
 import { Permission } from '../../../core/session/permissions';
 import { SessionState } from '../../../core/session/session-state';
@@ -36,6 +37,7 @@ type DialogState = { readonly kind: 'add' } | { readonly kind: 'edit'; readonly 
 @Component({
   selector: 'app-project-budget-tab',
   imports: [
+    RouterLink,
     ApiErrorAlert,
     Button,
     Control,
@@ -67,9 +69,19 @@ export class ProjectBudgetTab {
 
   /** Holds costs.write (an archived project still turns writing off, below). */
   private readonly mayWrite = this.session.permit(Permission.costsWrite);
-  protected readonly canWrite = computed(() => this.mayWrite() && !this.context.isArchived());
+  /** A locked budget changes only through change orders, so the line controls give way to one line saying so. */
+  protected readonly budgetLocked = computed(
+    () => this.context.project().budgetBaselineLocked === true,
+  );
+  protected readonly canWrite = computed(
+    () => this.mayWrite() && !this.context.isArchived() && !this.budgetLocked(),
+  );
   /** Says why the buttons are missing, to the people who would otherwise have them. */
   protected readonly archivedNote = computed(() => this.mayWrite() && this.context.isArchived());
+  protected readonly lockedNote = computed(
+    () => this.mayWrite() && !this.context.isArchived() && this.budgetLocked(),
+  );
+  protected readonly canSeeChanges = this.session.permit(Permission.changeOrdersRead);
 
   protected readonly filtersOpen = signal(this.state.activeFilterCount() > 0);
   protected readonly dialog = signal<DialogState | null>(null);
