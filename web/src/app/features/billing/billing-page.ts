@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiError, asApiError } from '../../core/api/api-error';
 import { DEFAULT_PAGE_SIZE } from '../../core/api/paged-result';
+import { Permission } from '../../core/session/permissions';
 import { SessionState } from '../../core/session/session-state';
 import { formatMoney } from '../../shared/presentation/money';
 import { ApiErrorAlert } from '../../shared/ui/api-error-alert/api-error-alert';
@@ -34,7 +35,11 @@ import { Receivables } from './billing.models';
   imports: [RouterLink, PageHeader, ApiErrorAlert, Button, EmptyState, Pager, Skeleton, StatusChip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-page-header title="Billing" description="What clients still owe, overdue first." />
+    <app-page-header title="Billing" description="What clients still owe, overdue first.">
+      @if (canSeeBonds()) {
+        <a appButton routerLink="/bonds">Bonds register</a>
+      }
+    </app-page-header>
 
     @if (error(); as problem) {
       <app-api-error-alert
@@ -230,6 +235,7 @@ import { Receivables } from './billing.models';
 export class BillingPage {
   private readonly api = inject(BillingApi);
   private readonly session = inject(SessionState);
+  protected readonly canSeeBonds = computed(() => this.session.can(Permission.bondsRead));
   protected readonly viewport = inject(Viewport);
 
   protected readonly receivables = signal<Receivables | null>(null);

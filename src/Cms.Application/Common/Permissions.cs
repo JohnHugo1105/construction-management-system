@@ -43,6 +43,12 @@ public static class Permissions
     public const string SubcontractsApprove = "subcontracts.approve";
     public const string StatutoryManage = "statutory.manage";
 
+    // Philippine practice: delivery receipts, the bonds register, premium pay rules and the holiday calendar.
+    public const string PurchasingReceive = "purchasing.receive";
+    public const string BondsRead = "bonds.read";
+    public const string BondsManage = "bonds.manage";
+    public const string PayrollRulesManage = "payrollrules.manage";
+
     private const AccessRole Admin = AccessRole.Administrator;
     private const AccessRole Pm = AccessRole.ProjectManager;
     private const AccessRole Cost = AccessRole.CostEngineer;
@@ -91,7 +97,14 @@ public static class Permissions
         [SubcontractsManage] = Admin | Pm | Cost,
         [SubcontractsApprove] = Admin | Acct,
         // The statutory contribution and tax tables change by law; the accountant owns them. HR reads them through payroll.read.
-        [StatutoryManage] = Admin | Acct
+        [StatutoryManage] = Admin | Acct,
+
+        // Receiving a delivery says what physically arrived; the people who can read purchase orders and raise them may record it.
+        [PurchasingReceive] = Admin | Pm | Cost | Acct,
+        [BondsRead] = Admin | Pm | Cost | Acct | View,
+        [BondsManage] = Admin | Pm | Acct,
+        // Premium factors and holidays change by law and proclamation; the people who run payroll keep them, every change is audited.
+        [PayrollRulesManage] = Admin | Acct | Hr
     };
 
     public static IReadOnlyCollection<string> All => Matrix.Keys;

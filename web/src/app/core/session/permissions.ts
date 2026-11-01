@@ -35,6 +35,10 @@ export const Permission = {
   subcontractsManage: 'subcontracts.manage',
   subcontractsApprove: 'subcontracts.approve',
   statutoryManage: 'statutory.manage',
+  purchasingReceive: 'purchasing.receive',
+  bondsRead: 'bonds.read',
+  bondsManage: 'bonds.manage',
+  payrollRulesManage: 'payrollrules.manage',
 } as const;
 
 export type PermissionName = (typeof Permission)[keyof typeof Permission];

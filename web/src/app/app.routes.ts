@@ -89,6 +89,11 @@ export const routes: Routes = [
           import('./features/billing/billing.routes').then((m) => m.BILLING_ROUTES),
       },
       {
+        path: 'bonds',
+        canActivate: [permissionGuard(Permission.bondsRead)],
+        loadChildren: () => import('./features/bonds/bonds.routes').then((m) => m.BONDS_ROUTES),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
