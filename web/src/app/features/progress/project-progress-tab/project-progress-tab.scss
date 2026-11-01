@@ -1,0 +1,228 @@
+:host {
+  display: block;
+}
+
+.headline {
+  margin: 0;
+  font-size: var(--text-xl, 1.5rem);
+  font-weight: 700;
+}
+
+.bar {
+  display: block;
+  height: 8px;
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  overflow: clip;
+}
+
+.bar__fill {
+  display: block;
+  height: 100%;
+  background: var(--color-brand);
+}
+
+// The sentences that explain the money. A warning is also in the words ("over", "behind"), never colour alone.
+.facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.facts__icon {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}
+
+.facts__icon--warning {
+  color: var(--color-warning);
+}
+
+.facts__icon--good {
+  color: var(--color-success);
+}
+
+.division {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: clip;
+}
+
+.division__title {
+  margin: 0;
+  font-size: inherit;
+}
+
+.division__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'chevron name figure'
+    '. sub sub';
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.division__head:hover {
+  background: var(--color-surface-2);
+}
+
+.division__chevron {
+  grid-area: chevron;
+  transition: transform 120ms ease;
+}
+
+.division__chevron--open {
+  transform: rotate(180deg);
+}
+
+.division__name {
+  grid-area: name;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.division__figure {
+  grid-area: figure;
+  font-weight: 650;
+}
+
+.division__sub {
+  grid-area: sub;
+}
+
+.lines {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.line {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.line:last-child {
+  border-bottom: 0;
+}
+
+.line--edited {
+  background: var(--color-brand-soft);
+}
+
+.line__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.line__text {
+  min-width: 0;
+}
+
+.line__name,
+.line__meta,
+.line__read {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.line__name {
+  font-weight: 600;
+}
+
+.line__edit {
+  display: grid;
+  grid-template-columns: auto minmax(0, 9rem) auto;
+  align-items: start;
+  gap: var(--space-2);
+}
+
+// With room to spare the steppers stay button-sized instead of stretching across the row.
+@media (min-width: 48rem) {
+  .line__edit {
+    grid-template-columns: 2.75rem minmax(0, 9rem) 2.75rem;
+    justify-content: start;
+  }
+}
+
+// The label of the percent field is for screen readers: the buttons and the % sign say what the field is on screen.
+.line__field ::ng-deep .field__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.division__more {
+  margin: var(--space-3);
+}
+
+// Saving stays in reach while a long list scrolls, just above the bottom navigation on phones.
+.savebar {
+  position: sticky;
+  bottom: var(--bottom-chrome, calc(var(--bottom-nav-height) + var(--safe-bottom)));
+  z-index: 2;
+  display: grid;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+}
+
+@media (min-width: 64rem) {
+  .savebar {
+    bottom: var(--space-3);
+
+    app-form-field {
+      max-width: 16rem;
+    }
+  }
+}
+
+.savebar__count {
+  margin: 0;
+  font-weight: 650;
+}
+
+.savebar__problem {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.savebar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+
+  .btn {
+    flex: 1 1 auto;
+  }
+}
