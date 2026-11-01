@@ -25,6 +25,7 @@ import { Pager } from '../../../shared/ui/pager/pager';
 import { Skeleton } from '../../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../../shared/ui/status-chip/status-chip';
 import { Viewport } from '../../../shared/ui/viewport/viewport';
+import { ProjectBondsCard } from '../../bonds/project-bonds-card/project-bonds-card';
 import { ProjectContext } from '../../projects/project-context';
 import { BillFormDialog, BillFormContext } from '../bill-form-dialog';
 import { BillingApi } from '../billing-api';
@@ -93,6 +94,7 @@ export function termsNotes(terms: BillingTerms): string[] {
     Skeleton,
     StatusChip,
     BillFormDialog,
+    ProjectBondsCard,
     TermsDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -115,6 +117,7 @@ export class ProjectBillingTab {
   protected readonly editingTerms = signal(false);
 
   protected readonly isArchived = this.context.isArchived;
+  protected readonly projectId = this.context.projectId;
   private readonly canManage = computed(
     () => this.session.can(Permission.billingManage) && !this.isArchived(),
   );

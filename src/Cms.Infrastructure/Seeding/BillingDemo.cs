@@ -14,7 +14,7 @@ namespace Cms.Infrastructure.Seeding;
 /// </summary>
 public static class BillingDemo
 {
-    public static async Task SeedAsync(CmsDbContext db, Organization organization, Project riverside, Guid accountantUserId, Guid managerUserId,
+    public static async Task SeedAsync(CmsDbContext db, Organization organization, Project riverside, Project harbor, Guid accountantUserId, Guid managerUserId,
         DateOnly today, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         var tenant = organization.Id;
@@ -45,8 +45,24 @@ public static class BillingDemo
             Share(5_000), afterSecond, terms.Snapshot, organization.VatRateBps, managerUserId, null, today, now);
 
         db.AddRange(first, second, draft);
-        // The next bill an accountant issues is BILL-0003.
-        db.Add(new NumberSequenceRow { TenantId = tenant, Key = ClientInvoiceService.NumberSequenceKey, LastValue = 2 });
+
+        // Harbor Warehouse (a private client): a 20% down payment, BILL-0003, issued and paid, and a draft first progress bill that recovers
+        // its share of the down payment (20% of that bill) so the preview shows the recovery.
+        var harborPrice = harbor.ContractPriceMinor ?? throw new InvalidOperationException("The billing demo needs Harbor Warehouse to have a contract price.");
+        var harborTerms = ProjectBillingTerms.Create(Guid.NewGuid(), tenant, harbor, 1_000, 200, 30, now, advanceBps: 2_000);
+        db.Add(harborTerms);
+        var downPayment = ClientInvoice.DraftAdvance(Guid.NewGuid(), tenant, harbor, today.AddDays(-6), "Down payment, 20% of the contract", BillingLedger.Empty,
+            false, harborTerms.Snapshot, managerUserId, null, today, now);
+        BillingChain.Issue(downPayment, harbor, null, BillingLedger.Empty, 3, accountantUserId, now);
+        downPayment.RecordPayment(Guid.NewGuid(), harbor, downPayment.NetReceivableMinor, today.AddDays(-3), ClientPaymentMethod.BankTransfer, "Demo transfer HL-0001",
+            null, accountantUserId, null, today, now);
+        var afterDownPayment = new BillingLedger(0, 0, 0, downPayment.GrossMinor, harborTerms.AdvanceBps, 0);
+        var harborDraft = ClientInvoice.DraftProgress(Guid.NewGuid(), tenant, harbor, today.AddDays(-1), "Progress billing no. 1: site works and footings",
+            harborPrice * 1_000 / 10_000, afterDownPayment, harborTerms.Snapshot, organization.VatRateBps, managerUserId, null, today, now);
+        db.AddRange(downPayment, harborDraft);
+
+        // The next bill an accountant issues is BILL-0004.
+        db.Add(new NumberSequenceRow { TenantId = tenant, Key = ClientInvoiceService.NumberSequenceKey, LastValue = 3 });
         await db.SaveChangesAsync(cancellationToken);
     }
 }

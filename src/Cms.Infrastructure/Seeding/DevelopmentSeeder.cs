@@ -109,7 +109,16 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
         var foreman = crew[0];
         foreman.ChangeRate(RateChangeCategory.RateAdjustment, "Foreman", 1_150_00, RateUnit.Daily, today.AddDays(-7), "Annual review", users["hrofficer"].Id, now);
         foreach (var worker in crew) worker.AssignTo(riverside, worker == foreman ? towerA.Id : null, today.AddMonths(-4), users["hrofficer"].Id, now);
+        // The crew rests on Sundays, which makes a Sunday shift a rest-day shift.
+        foreach (var worker in crew) worker.SetRestDay(DayOfWeek.Sunday, now);
         db.AddRange(crew);
+
+        // Two illustrative holidays (invented for the demo, not real proclamations): a regular holiday on a weekday inside the attendance below,
+        // so the crew's pay shows the holiday premium, and a special day a few days ahead.
+        var holiday = today.AddDays(-9);
+        while (holiday.DayOfWeek == DayOfWeek.Sunday) holiday = holiday.AddDays(-1);
+        db.Add(CompanyHoliday.Create(Guid.NewGuid(), tenant, holiday, "Demo regular holiday", HolidayType.Regular, now));
+        db.Add(CompanyHoliday.Create(Guid.NewGuid(), tenant, today.AddDays(5), "Demo special non-working day", HolidayType.Special, now));
 
         for (var daysAgo = 13; daysAgo >= 1; daysAgo--)
         {
@@ -145,7 +154,8 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
         await SubcontractDemo.SeedAsync(db, organization, riverside, users["manager"].Id, users["accounts"].Id, today, now, cancellationToken);
         await ChangeOrderDemo.SeedAsync(db, tenant, riverside.Id, users["manager"].Id, users["cost"].Id, organization.VatRateBps, today, now, cancellationToken);
         await ProgressDemo.SeedAsync(db, tenant, today, now, cancellationToken);
-        await BillingDemo.SeedAsync(db, organization, riverside, users["accounts"].Id, users["manager"].Id, today, now, cancellationToken);
+        await BillingDemo.SeedAsync(db, organization, riverside, harbor, users["accounts"].Id, users["manager"].Id, today, now, cancellationToken);
+        await BondDemo.SeedAsync(db, organization, riverside, users["accounts"].Id, today, now, cancellationToken);
         logger.LogInformation("Demo data created for {Company}. Sign in as admin, manager, cost, accounts, hrofficer, store or viewer with the demo password.", organization.Name);
     }
 }

@@ -16,11 +16,15 @@ Architecture. The engineering standards come from DriveOPX and are in [AGENTS.md
 | **Dashboard and exports** | Every project's budget, actual, remaining and margin in one view; a cost summary per project; CSV exports. |
 | **Workforce** | Workers, effective-dated pay history that can't be rewritten, postings to projects, status changes, cases. Pay is visible only to people who run payroll. |
 | **Attendance and payroll** | Daily attendance, pay calculated at the rate in force each day (regular and overtime), deductions (manual, and SSS, PhilHealth, Pag-IBIG and withholding tax computed from tables the company keeps current), approval that posts labor cost to each project, voiding that reverses it. |
+| **Premium pay and 13th-month pay** | Rest-day, holiday and night premiums from pay rules and a holiday calendar the company keeps, one paid day for a regular holiday a daily-paid worker did not work, and a 13th-month payroll for the year. |
 | **Progress and earned value** | How far along each part of a project is, and what that means: work done against money spent and planned, cost and schedule indices, and a forecast cost and margin at completion. |
 | **Change orders and baseline** | The agreed budget is frozen as a baseline; later changes to scope and price go through change orders that are approved, voided newest first, and always add up to the revised budget and contract price. |
 | **Purchasing and committed cost** | Suppliers and purchase orders; invoices matched to order lines; what is promised but not yet invoiced is counted as committed cost, so the dashboard shows a forecast. |
+| **Deliveries** | What a supplier actually brought against an approved purchase order, so ordered, received and invoiced are three numbers; a mistake is voided, and committed cost does not move until an invoice is matched. |
 | **Subcontracts** | Awards, progress claims certified into project cost, retention, withholding and payments recorded by a person. |
 | **Client billing and retention** | Bills against the contract price with exact VAT, retention and withholding, payments recorded by a person, retention release at completion, and what is still to collect. |
+| **Down payment and government clients** | A down payment billed before the first progress bill and recovered from the progress bills that follow, VAT withheld by the client as a second withholding line, and a government-client setting that caps the down payment at 15% and warns when added work passes 10% of the original price. |
+| **Bonds register** | Bonds given to clients and received from subcontractors and suppliers, with validity dates and what is expiring; a bond is not a cost and changes no money figure. |
 | **Stock** | Tools, equipment and machinery in the warehouse and on projects, an append-only ledger with no negative stock, reversals, and optional charging of a transfer to a project. |
 | **Administration** | Users and roles, company settings (VAT rate, time zone, paid hours, overtime rate), and an activity log of every change. |
 

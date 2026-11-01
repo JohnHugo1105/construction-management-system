@@ -11,7 +11,7 @@ namespace Cms.Infrastructure.Seeding;
 /// <summary>
 /// A small, obviously fictional purchasing demo for the Riverside Residences project the development seeder creates: the firms the demo's
 /// invoices already name, and four purchase orders in the four states a person meets (approved and partly invoiced, approved and not yet
-/// invoiced, still a draft, closed early). The approved orders are what the dashboard and the Budget tab show as committed cost.
+/// invoiced and part delivered, still a draft, closed early). The approved orders are what the dashboard and the Budget tab show as committed cost.
 /// The seeder calls this with its own organization, project, users and clock; it saves what it adds.
 /// </summary>
 public static class PurchasingDemo
@@ -64,6 +64,9 @@ public static class PurchasingDemo
             Line(9, "9300", "Floor tiles 60x60", ItemType.Material, 2_000m, "m²", 790_00));
         tilesOrder.Approve(tiles, riverside, accountantUserId, now);
         Invoice(tilesOrder, 0, "Floor tiles 60x60", 800m, "m²", 790_00, tiles.Name, "TM-31044", 7);
+        // The first truckload arrived 8 days ago: 800 m² of the 2,000 m² ordered. The rest is still to come.
+        db.Add(GoodsReceipt.Record(Guid.NewGuid(), tenant, tilesOrder, riverside, today.AddDays(-8), "DR-5521", "First truckload, delivered to the lobby.",
+            [new GoodsReceiptLineInput(tilesOrder.Lines[0].Id, 800m)], new Dictionary<Guid, decimal>(), false, costEngineerUserId, null, today, now));
 
         // PO-0002: plumbing fixtures, approved, nothing invoiced yet: 1,850,000.00 committed.
         var plumbingOrder = Order(plumbing, today.AddDays(-12), today.AddDays(45), "CPS-PO-118", null,

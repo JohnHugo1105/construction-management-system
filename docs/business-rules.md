@@ -50,6 +50,7 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | See purchase orders, progress, change orders, subcontracts and bills | yes | yes | yes | yes | | | yes |
 | Raise and change purchase orders | yes | | yes | yes | | | |
 | Approve, cancel or close purchase orders | yes | yes | | yes | | | |
+| Record or void a delivery against a purchase order | yes | yes | yes | yes | | | |
 | Record progress | yes | yes | yes | | | | |
 | Draft and submit change orders; draft subcontracts and claims | yes | yes | yes | | | | |
 | Approve, reject or void change orders; lock the budget | yes | yes | | | | | |
@@ -58,6 +59,12 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | Award, certify, pay and complete subcontracts | yes | | | yes | | | |
 | See the statutory tables | yes | | | yes | | yes | |
 | Enter the statutory tables | yes | | | yes | | | |
+| See bonds | yes | yes | yes | yes | | | yes |
+| Record, change, extend, release, mark as called or void bonds | yes | yes | | yes | | | |
+| Keep the pay rules and the holiday calendar | yes | | | yes | | yes | |
+
+Everyone who may see purchase orders sees the deliveries on them. Everyone who can see payroll reads the pay rules and the holiday
+calendar (sections 6.8 and 6.9). A **warehouse keeper cannot record deliveries** under this matrix (section 10.1).
 
 Sign-in: five wrong passwords lock the account for 15 minutes; an unknown username, a wrong password and a locked account all get the
 same message, so the sign-in page can't be used to find out which accounts exist.
@@ -184,6 +191,11 @@ For any slice (a project, sub-project, division, code, item type):
   step without the reasons (they stay on the record).
 * The dashboard, the project cost summary and the Budget tab need no change of their own: they add up the active budget lines, so an
   approval moves them by exactly the approved effect and a void returns them.
+* **Government projects (a warning, not a block).** When the project's billing terms say the client is a government agency (section
+  14.8) and the budget baseline is locked, each change order shows how the **added work** compares with **10% of the original contract
+  price**: the price increases of the approved change orders, plus the order's own increase while it is a draft or submitted. Price
+  decreases do not reduce it. When it passes the limit the change order says: "Added work on this government project passes 10% of
+  the original contract price. Check that the agency has approved it." Approving is still allowed: that approval is the agency's.
 
 ## 5. Workforce
 
@@ -212,7 +224,7 @@ The retired app had no attendance and no payroll; wages never reached a project'
 
 ### 6.1 Attendance
 Attendance is the hours one worker put in on one project on one day: regular hours (up to the company's paid hours per day, 8 by
-default) and overtime hours. A worker's hours across all projects on a date may not exceed 24. One entry per worker, project,
+default) and overtime hours, and optionally the night hours (section 6.11). A worker's hours across all projects on a date may not exceed 24. One entry per worker, project,
 sub-project and date (enforced by the database). The 24-hour check is made when an entry is saved: two entries for the same worker
 and date saved at the very same instant on different projects could both pass it, and payroll review would show the excess hours.
 A worker can be recorded from the hire date on days they were **active**; one who left only up to the last day they worked; days of
@@ -223,19 +235,31 @@ can't be in the future. Removing an entry is refused on an archived project and 
 Each attendance entry is paid at the rate **in force on its work date**, so a raise part-way through a period applies from its date.
 
 * A daily rate is spread over the company's paid hours per day; an hourly rate is used as is.
-* **Regular pay** = rate × regular hours (÷ paid hours per day for a daily rate). **Overtime pay** = the same hourly pay × overtime
-  hours × the overtime multiple (125% by default). The division happens **once, last**, so no rounded hourly figure is ever multiplied
-  (600.25 a day over 7.5 hours for 0.75 hours is 60.025, which is 60.03, not 60.02).
+* **Regular pay** (the basic pay) = rate × regular hours (÷ paid hours per day for a daily rate). **Overtime pay** on an ordinary day =
+  the same hourly pay × overtime hours × the overtime multiple (125% by default). The division happens **once, last**, so no rounded
+  hourly figure is ever multiplied (600.25 a day over 7.5 hours for 0.75 hours is 60.025, which is 60.03, not 60.02).
+* **Premium.** On a rest day, a special day or a regular holiday the regular hours are paid at the day's factor of the ordinary hourly
+  rate (130% on a rest day or special day, 150% on a special day that is also the rest day, 200% on a regular holiday, 260% on a
+  regular holiday that is also the rest day, by default). The premium is the pay at the factor less the regular pay; it is zero on an
+  ordinary day.
+* **Overtime on a premium day** = hourly rate × overtime hours × the day's factor × (100% + the overtime extra, 30% by default), in place
+  of the overtime multiple.
+* **Night differential** = hourly rate × night hours × the day's factor × the night rate (10% by default), on the night hours typed on
+  the entry.
 * Each figure is rounded once per entry; a worker's pay and each project's share are sums of those rounded figures, so project shares
   always add up to the worker's pay exactly.
 
-Not computed, on purpose: holiday and rest-day premiums, night differential and 13th-month pay. They change by law and company
-policy. Premium hours are entered as overtime hours; advances and other deductions are entered by a person. SSS, PhilHealth,
-Pag-IBIG and withholding tax are computed from the effective-dated tables (sections 6.4 to 6.7).
+The factors come from the company's pay rules and the day type from its holiday calendar and the worker's rest day (sections 6.8 to
+6.11); a regular holiday not worked is paid by the rule in 6.12; the 13th-month pay is its own payroll (6.14). SSS, PhilHealth, Pag-IBIG
+and withholding tax are computed from the effective-dated tables (sections 6.4 to 6.7).
+
+Not computed, on purpose, and still entered by a person: advances and other deductions; any tax on a 13th-month amount above the legal
+exemption (it is not tracked, section 6.14); and the inputs the premiums rest on: the **night hours** of an entry, a worker's **rest
+day** and the year's proclaimed **holidays**. The system does not work shifts out or know what the government proclaims.
 
 ### 6.3 Payroll runs
 1. **Draft:** for a pay period (at most 31 days counting both ends, so 1 to 31 October but not 1 October to 1 November; not ending in
-   the future) the system takes all recorded attendance not yet paid,
+   the future) the system takes all recorded attendance not yet paid (and the regular holidays owed as not worked, section 6.12),
    calculates every worker's pay, and **locks** that attendance. Locked attendance can't be edited or removed; the same attendance can
    never be in two runs, so nobody is paid twice.
 2. **Deductions** are entered per worker while the run is a draft. Deductions can't exceed pay.
@@ -307,6 +331,104 @@ payroll, shown and exported, but not posted to a project**: the labor cost a pay
   processed in January is told about a table that only started in January.
 * **To remit counts only what was calculated.** When an agency has no table, a contribution typed in by hand is a deduction like any other but is
   not in the remittance totals; the card says so.
+
+### 6.8 Pay rules
+
+* The **pay rules** are one set per company. Until someone saves them, these apply (each a share of the ordinary hourly rate):
+
+  | Day | Factor |
+  | --- | --- |
+  | Rest day | 130% |
+  | Special (non-working) day | 130% |
+  | Special day that is also the rest day | 150% |
+  | Regular holiday | 200% |
+  | Regular holiday that is also the rest day | 260% |
+  | Overtime on any of these days | the day's factor × 130% (the "overtime extra" is 30%) |
+  | Night differential | 10% of the day's rate for each night hour |
+
+  A day factor is between 100% and 500%; the overtime extra and the night differential are between 0% and 100%. Overtime on an
+  **ordinary** day keeps using the company's overtime multiple (125% by default) from company settings; there is no second one.
+* Administrators, accountants and HR officers keep the rules; everyone who can see payroll reads them. Every change is in the activity
+  log (the factors as percentages; never a pay figure).
+* A change applies to payrolls worked out or **recalculated** afterwards. An approved payroll keeps its amounts.
+
+### 6.9 The holiday calendar
+
+* The calendar has at most one holiday per date: a date, a name (up to 80 characters) and a type, **regular holiday** or **special day**.
+  No real holiday is built in; the people who keep payroll enter the year's proclaimed holidays. Administrators, accountants and HR
+  officers add, change and remove them; everyone who can see payroll reads them. The activity log records the holiday's date and name.
+* A holiday on a date that a non-void **approved** payroll covers can't have its type changed or be removed ("A payroll that covers
+  this date was approved. Void it before changing this holiday."), and no holiday can be added on such a date ("... Void it before
+  adding a holiday on this date."). Renaming it is allowed: the name changes no pay.
+* A payroll for a year in which the company has entered no holiday at all says so in one line ("No holidays are entered for 2026. Add
+  them under Payroll, Holidays if any fall in this period."). It is never a block.
+
+### 6.10 Rest day and day type
+
+* A worker's **rest day** is a day of the week, or none. A new worker has **none** (every day is an ordinary day for pay); HR sets
+  Sunday, or another day, for crews that rest on it. People who manage workers set it on the hire form and the profile.
+* The **day type** of an attendance date for a worker is decided by the server from the date's holiday (if any) and the worker's rest
+  day: ordinary, rest day, special day, special day on the rest day, regular holiday, regular holiday on the rest day. Attendance shows
+  it as a chip ("Rest day", "Regular holiday"); an ordinary day shows nothing. The chip follows the calendar and rest day as they are
+  now; an approved payroll keeps what it paid.
+
+### 6.11 Pay of an attendance entry
+
+Each figure is worked out per entry at the rate in force on the work date, multiplied first and divided once, last, and rounded once
+half away from zero; a worker's pay and each project's share are sums of those rounded figures, so they always add up.
+
+* **Regular pay** (the basic pay) = hourly rate × regular hours (a daily rate is divided by the paid hours a day).
+* **Premium** = hourly rate × regular hours × day factor, rounded, minus the regular pay (zero on an ordinary day).
+* **Overtime** = hourly rate × overtime hours × the company overtime multiple on an ordinary day; on any other day hourly rate ×
+  overtime hours × day factor × (100% + the overtime extra).
+* **Night differential** = hourly rate × night hours × day factor × the night rate. **Night hours** (0 up to the hours worked that day,
+  2 decimals) are typed on the attendance entry by the person who knows the shift; the system does not work shifts out.
+* Worked example (800.00 a day, 8 paid hours, the default rules, Sunday the worker's rest day): 8 h + 2 h overtime with 2 night hours on
+  the Sunday = 800.00 + 240.00 premium + 338.00 overtime (100.00 × 2 × 130% × 130%) + 26.00 night (100.00 × 2 × 130% × 10%) = 1,404.00;
+  8 h on a regular holiday = 1,600.00. An awkward rate: 1,000.01 a day, 0.75 h regular + 0.75 h overtime + 0.75 night hours on the
+  rest day = 93.75 + 28.13 + 158.44 + 12.19.
+* The payroll shows each worker's gross folded into Regular pay, Overtime and premium, Night differential and Holiday pay (a part that
+  is zero is left out); the register (CSV) has a column for each.
+
+### 6.12 The unworked regular holiday
+
+* A worker paid **by the day**, active and hired on the date, **posted** to a project that day, with **no attendance** anywhere that
+  day, and the date not their rest day, is paid **one day at the daily rate** for a regular holiday in the pay period, charged to the
+  project (and sub-project) they were posted to. Hourly-rated workers are paid for hours worked only. A special day not worked is not
+  paid.
+* A worker is paid for an unworked holiday by **one standing payroll only** (the database enforces it); voiding that payroll frees the
+  day. Recording work on a day a standing payroll already paid as an unworked holiday is refused ("... was paid for 7 Oct 2026 as a
+  regular holiday not worked. Void that payroll before recording work on this day.").
+
+### 6.13 Recalculating and approving a draft
+
+* **Recalculate** on a draft works the pay out again from the pay rules, holidays, rest days, postings and the company's paid hours and
+  overtime multiple as they are now, then the contributions and tax (6.7). Typed deductions are kept; it is refused when they would be
+  more than the new pay, or when a worker who would leave the payroll has typed deductions.
+* **Approving** works the pay out again (with the paid hours and overtime multiple the draft was made with) and is refused when it no
+  longer matches: "The pay rules, holidays, or a worker's rest day or posting changed after this payroll was worked out. Recalculate the
+  payroll, then approve." An approved payroll can always be explained from its rules and calendar.
+
+### 6.14 13th-month pay
+
+* A **13th-month payroll** is prepared for a calendar year (this year at any time, for example an early payout when a worker leaves;
+  never a future year). Each worker's amount is **one twelfth of their basic pay for the year**, rounded once half away from zero.
+* **Basic pay** is the plain-rate pay for regular hours (hours × rate, no day factor) of the worker's **approved** regular payrolls whose
+  pay period **ends** in that year. Overtime, premiums, night differential and holiday pay are not basic pay. The basic pay is stored on
+  each project share of each payroll, so the year's sum is exact.
+* A worker with no basic pay in the year is not included. A worker is in **one standing 13th-month payroll per year** (the database
+  enforces it); a second one for the year includes only workers not already in one, and voiding one frees its workers.
+* **No contributions and no tax** are taken; typed deductions still work. The tax exemption up to the legal ceiling is not tracked, so
+  any tax on an excess is a typed deduction.
+* Approving posts the cost to the projects like any payroll, split in proportion to the worker's basic pay on each project over the year
+  by the **largest remainder** (the shares add up to the amount exactly; a tie goes to the earlier project). The cost is labor, described
+  "13th-month pay 2026", dated the year's last day or, when paid within the year, the day it is approved. Voiding reverses it.
+* Approving is refused when the year's approved payrolls changed since the draft was worked out ("The approved payrolls of 2026 changed
+  after this 13th-month pay was worked out. Recalculate it, then approve.").
+* Prepared with the permission to run payroll (HR officers, accountants, administrators), approved with the permission to approve
+  payroll (accountants, administrators); an approved one is voided by those who approve, a draft by whoever prepares payroll (as for
+  any payroll).
+* Worked example: 2,400.00 of basic pay (1,600.00 on Tower A, 800.00 on Warehouse B) gives 200.00, charged 133.33 and 66.67.
 
 ## 7. Inventory (tools, equipment, machinery)
 
@@ -380,9 +502,9 @@ per-project count of problem parts on the dashboard is not built, because the pr
 budget; (c) rotating the credentials that remain in the desktop program's git history is deferred by the owner, and the risk is
 still listed in `docs/operations/secrets-and-access.md`.
 
-1. **Payroll scope.** The retired app had no payroll, so the calculation (section 6) is new. It covers regular and overtime pay only.
-   Confirm the overtime multiple (125%), the paid hours per day (8), whether holiday, rest-day and night premiums are needed, and who
-   enters statutory contributions.
+1. **Payroll scope.** The retired app had no payroll, so the calculation (section 6) is new. It covers regular and overtime pay, the
+   rest-day, holiday and night premiums, a regular holiday not worked, and the 13th-month pay (sections 6.8 to 6.14; their defaults are
+   in 10.1). Confirm the overtime multiple (125%), the paid hours per day (8), and who enters statutory contributions.
 2. **Pay unit.** The old rate was free text with no unit. Rates are now per day or per hour; construction crews are normally paid daily.
 3. **VAT basis for comparison.** Budget against actual defaults to amounts **including VAT** (as the old totals were). Switch to
    excluding VAT in company settings if VAT paid is recovered.
@@ -489,6 +611,71 @@ These rest on defaults chosen where the owner had not yet decided. Each is rever
 6. **A table used by a payroll that was approved and later voided** still counts as used and can't be changed.
 7. **Pay runs a month** defaults to 2 (semi-monthly).
 8. **Tax exemption** is a yes/no on the worker; partial exemptions and annual tax reconciliation are not modelled.
+
+**Philippine practice: down payment, premium pay, deliveries and bonds.** The owner asked for these four additions to be built using
+the recommended defaults below. None is confirmed yet; each is reversible, so confirm or change it when the business needs it.
+
+*Down payment, VAT withheld and government client* (sections 14 and 4.9)
+
+1. **Down payment VAT:** the down payment is a receivable only, with no VAT split, retention or withholding; VAT is billed on the
+   progress bills at the full value of the work. The accountant confirms the VAT treatment of advances (one function,
+   `BillingCalculator.Advance`).
+2. **Down payment defaults:** no down payment, no VAT withheld and not a government client until someone sets them.
+3. **Last-bill recovery:** the bill that brings the work to the contract price recovers whatever is left of the down payment, even when
+   a change order moved the price since the down payment was billed (the formula alone would leave some behind when the price fell).
+4. **A pending down payment draft does not block progress billing:** once a progress bill is issued the draft can only be discarded.
+5. **Government variation limit is advisory:** the system warns past 10% of the original price; the agency's approval is outside it.
+   Only price increases of approved change orders count; a rejected or discarded order counts nothing.
+6. **Government limit needs a locked baseline:** without one there is no original price, and nothing is shown.
+
+*Premium pay and 13th-month pay* (sections 6.8 to 6.14)
+
+1. **Default factors** as in 6.8: rest day 130%, special day 130%, special day on the rest day 150%, regular holiday 200%, regular
+   holiday on the rest day 260%, overtime on those days × 130%, night differential 10%.
+2. **A new worker has no rest day.** Defaulting to Sunday would pay a premium nobody agreed.
+3. **Night differential on the day's regular-hour rate**, also for night hours that are overtime; this slightly understates night
+   overtime.
+4. **An unworked regular holiday is paid without checking that the worker was present the day before.** HR marks a worker away or
+   suspended through the status history when the day should not be paid. Hourly-rated workers get none.
+5. **Renaming a holiday that an approved payroll covers is allowed**; changing its type, removing it, or adding a holiday on such a date
+   is not.
+6. **13th-month basic pay** counts the approved regular payrolls whose pay period ends in the year (a payroll crossing the year end
+   counts in its last day's year).
+7. **13th-month pay takes no tax:** the exemption up to the legal ceiling is not tracked, so any tax on an excess is a typed deduction.
+8. **A 13th-month draft is voided by whoever prepares payroll**, like any draft; an approved one needs the permission to approve payroll.
+
+*Deliveries on purchase orders* (section 12.5)
+
+1. **Over-receipt is refused** (the supplier's extra is a new or amended order). Some companies accept a tolerance (for example 5% on
+   bulk material); that would be a company setting.
+2. **A delivery does not release committed cost.** Committed cost falls only on a matched invoice, so goods received but not yet invoiced
+   stay committed (they are owed). The accountant may prefer to accrue goods received not invoiced separately; not built.
+3. **An approved order with a delivery cannot be cancelled** (it must be closed). Not in the original ask; added so a cancelled order
+   never carries delivered goods. Easy to relax: the check is one condition in `PurchaseOrder.Cancel`.
+4. **The delivery receipt number is compared by letters and digits only**, the way supplier invoice numbers are, and per supplier across
+   orders.
+5. **Fully received** means every line has arrived in full; an order cut short is closed by a person, not by the system.
+6. **No stock movement:** receiving into stock stays a separate, manual stock movement.
+7. **Open point, to be decided: warehouse keepers cannot record deliveries.** Under the current role matrix the permission to receive is
+   held by Administrator, Project Manager, Cost Engineer and Accountant, and the Warehouse Keeper has no purchasing access, although in
+   practice the store keeper receives the goods. The builder suggested giving that role the permissions to receive and to read purchase
+   orders, which would also let them read order prices. Left as is until decided.
+
+*Bonds register* (section 15)
+
+1. "Expiring soon" is **30 days or fewer**, with the last valid day counted as still valid. A constant in the code, not a setting.
+2. **The project and the direction of a bond are fixed once recorded;** a bond entered against the wrong project or the wrong way round
+   is voided and entered again.
+3. **A released or called bond can be voided** (the correction path); it cannot otherwise change.
+4. **A bond that has already lapsed can still be recorded** (a person may be entering an old bond); it shows as Expired. An expired bond
+   can be extended to any later date, not necessarily one after today.
+5. **An issue date may be any date in range** (a bond can be entered a day before it is issued); only release and call dates are kept
+   out of the future.
+6. **No check for a repeated bond number:** a double-click is covered by the request id, but two bonds with the same number can be
+   recorded (a surety may reissue a number on renewal).
+7. **A posted bond may not name the other party;** the beneficiary is the project's client.
+8. **Active bonds on an archived project stay in the register totals and the attention counts,** because they still lapse.
+9. The register opens on the Active bonds; closed and voided bonds are one filter away.
 
 **Narrow races that are accepted** (money stays correct; each is detected or harmless)
 
@@ -599,6 +786,59 @@ returns; a closed or cancelled order, and a draft, commit nothing.
 budget with the same thresholds as actual cost. The dashboard row, the dashboard total and the project's cost summary show the same
 committed and forecast figures, and show nothing when nothing is committed. A forecast over the budget is shown as a warning, not as spent.
 
+### 12.5 Deliveries
+
+An order says what was ordered and what was invoiced. A **delivery** (a delivery receipt, "DR") says what the supplier actually brought,
+so ordered, received and invoiced are three honest numbers.
+
+* **What a delivery is.** A record against one **approved** order: the day it arrived (not in the future, in the company's business
+  day), the number on the supplier's own delivery receipt (up to 60 characters, optional), a note (up to 300) and a quantity for each
+  order line that arrived. It names the person who recorded it. Administrators, project managers, cost engineers and accountants record
+  and void deliveries; everyone who may see purchase orders sees them.
+* **Append-only.** A delivery is never edited or deleted. A mistake is **voided with a reason** and the delivery is entered again. A
+  voided delivery stays on record with who voided it and why, counts for nothing, and frees its delivery receipt number. A void is
+  refused on an archived project ("Restore it first"). A delivery can still be voided after its order was closed.
+* **When one can be recorded.** Only against an approved order of a project that is not archived: a draft ("... is not approved yet"),
+  a closed order ("This order is closed.") and a cancelled one ("This order was cancelled.") refuse.
+* **How much.** A line's quantity must be greater than zero (at most 4 decimals) and **not more than what is still to receive**:
+  ordered minus what deliveries that stand already name. **Over-receipt is refused**: what a supplier brings beyond the order is a new
+  order, or an amended one. Exactly the quantity ordered is accepted. A line is named at most once in a delivery, and a delivery names
+  at least one line.
+* **Duplicate protection.** The same delivery receipt number for the same supplier on a delivery that stands is refused: "This
+  delivery receipt is already recorded." Numbers are compared by their letters and digits only, ignoring case, so "DR-0045", "dr 0045"
+  and "DR0045." are one delivery receipt. It holds across all of that supplier's orders. A delivery with no number is never a
+  duplicate; a voided delivery frees its number. The database holds the same rule, so two people saving the same delivery receipt at
+  the same moment cannot both succeed.
+* **Two people at once.** Recording a delivery touches the order, so two deliveries of the last quantity (or a delivery and a close or
+  cancel) at the same moment cannot both be saved: one succeeds, the other is told to reload or that the quantity has already been
+  received.
+* **What is derived (never stored).** Per line: the **received quantity** (deliveries that stand), the quantity **still to receive**
+  (ordered minus received, never below zero) and the **received value**: the line's unit cost times the received quantity, rounded
+  once, half away from zero, on the line's own VAT treatment and the VAT rate kept on the line, so net + VAT = gross and receiving the
+  whole line is worth exactly the line. Per order: the **delivery state**: *not received* (nothing arrived), *partly received*
+  (something arrived, a line is still short) or *fully received* (every line has arrived in full). The list shows the state only for an
+  approved order. *Fully received* is a fact, not a step: an order cut short is closed by a person, never by the system.
+* **Invoiced ahead of delivery (advisory).** A line is flagged when what was invoiced to it (with VAT) is more than its received value.
+  It is a note on the order page ("Invoiced ahead of delivery: ... invoiced, ... delivered so far. The invoice stands."); the invoice
+  is still valid, still matched, and still reduces the commitment.
+* **A delivery changes no money.** Committed cost still falls only when an invoice is matched to the order line (section 12.4), so the
+  dashboard, the Budget tab and the forecast do not move when goods arrive or when a delivery is voided: goods received but not yet
+  invoiced stay committed, because they are owed. Stock is not updated by a delivery; receiving into stock stays a separate, manual
+  stock movement (section 7).
+* **Cancel and close.** An approved order with a delivery that stands **cannot be cancelled** ("Deliveries are already recorded against
+  this order, so it can't be cancelled. Close it instead ..."), like an order with a matched invoice; voiding the delivery makes
+  cancelling possible again. **Close** is always possible and keeps the deliveries on record.
+* **Audit.** `GoodsReceipt.Recorded` and `GoodsReceipt.Voided` name the order and the project. The note, the delivery receipt number and
+  the void reason stay on the delivery and are not copied into the activity log.
+* **On screen.** The order page leads with **Record delivery** as its one primary action while something is left to receive (for people
+  who may record deliveries); the **Deliveries** section appears once a delivery exists, newest first, voided ones muted with their
+  reason; each line shows "Ordered 10 pc · Received 4 pc · Invoiced ₱2,000.00" once anything has arrived. The orders list (and the
+  project's Purchases tab) carries a delivery chip only for an approved order that has had something arrive or has an expected date
+  ("Partly delivered", "Delivered in full", "Expected 10 Nov 2026"); a draft, closed or cancelled order shows none.
+* **Not built, deliberately:** delivery photos or a scanned delivery receipt; receiving into stock; partial returns or rejected goods;
+  a tolerance for over-receipt; an overdue-delivery alert (the list shows the expected date only); automatic closing of a fully
+  received and fully invoiced order.
+
 ## 13. Subcontracts
 
 The company gives work to subcontractors, certifies their progress claims (which become project cost), holds retention, and records what
@@ -685,6 +925,11 @@ only bills prepared afterwards: every bill keeps the terms it was prepared with.
 | Retention: the share of each progress bill the client holds until the project is completed | 0% to 30% | 10% |
 | Creditable withholding tax: the share of the amount before VAT the client withholds and covers with a certificate | 0% to 10% | 0% |
 | Payment terms: days from the billing date to the due date | 0 to 180 | 30 |
+| VAT withheld: the share of the amount before VAT the client withholds as VAT and covers with its own certificate | 0% to 12% | 0% |
+| Down payment: a share of the contract price billed before any progress bill (section 14.7) | 0% to 50% (15% for a government client) | 0% |
+| Government client: the client is a government agency (section 14.8) | yes or no | no |
+
+Leaving the down payment, the VAT withheld or the government setting out of a save keeps what is saved.
 
 ### 14.2 Progress bills
 
@@ -696,11 +941,24 @@ project needs a contract price to be billed). Then, each figure rounded once, ha
 * **Net** = round(this bill × 10,000 ÷ (10,000 + VAT rate)); **VAT** = this bill − net (the company's VAT rate when the bill is prepared, kept on it).
 * **Retention** = round(this bill × retention rate).
 * **Withholding** = round(net × withholding rate).
-* **The client pays** = this bill − retention − withholding.
+* **VAT withheld** = round(net × VAT withheld rate).
+* **Down payment recovered**: worked out as in 14.7. It is taken after the other deductions, which are all worked out on the bill as it
+  is.
+* **The client pays** = this bill − retention − withholding − VAT withheld − down payment recovered. If that would be below zero the
+  bill is refused: "The deductions are more than this bill. Check the down payment, retention and withholding rates." (Exactly zero is
+  allowed.)
 
 Example (₱11,200,000.00 contract, 12% VAT, 10% retention, 2% withholding): work to date ₱2,240,000.00 gives net ₱2,000,000.00, VAT
 ₱240,000.00, retention ₱224,000.00, withholding ₱40,000.00, and the client pays ₱1,976,000.00. The next bill at ₱5,600,000.00 to date
 bills ₱3,360,000.00: retention ₱336,000.00, withholding ₱60,000.00, the client pays ₱2,964,000.00.
+
+Example with a down payment (the same contract, 12% VAT, 10% retention, 2% withholding, 5% VAT withheld, 15% down payment): the down
+payment bill asks for ₱1,680,000.00. Work to date ₱2,240,000.00 gives net ₱2,000,000.00, retention ₱224,000.00, withholding
+₱40,000.00, VAT withheld ₱100,000.00, down payment recovered ₱336,000.00, and the client pays ₱1,540,000.00. At ₱5,600,000.00 to date
+the bill is ₱3,360,000.00: recovered ₱840,000.00 − ₱336,000.00 = ₱504,000.00, the client pays ₱2,310,000.00. The last bill, to
+₱11,200,000.00, recovers the ₱840,000.00 left and the client pays ₱3,850,000.00. Over the contract the client is asked for
+₱9,380,000.00 = the price less retention ₱1,120,000.00, withholding ₱200,000.00 and VAT withheld ₱500,000.00: the down payment is never
+billed twice.
 
 ### 14.3 Retention release
 
@@ -736,3 +994,123 @@ to collect). A project's billing shows contract price, billed to date and its sh
 overdue part), and retention held. The company's receivables list every project with money to collect or retention held, overdue first.
 
 An archived project's billing is read-only: no new bills, issuing, voiding, payments or terms until it is restored.
+
+### 14.7 The down payment
+
+* A project has at most **one** down payment bill that is not void (a draft or an issued one). It needs a contract price and a down
+  payment in the terms. **Down payment** = round(contract price × down payment rate). If that rounds to nothing it is refused.
+* It is a **receivable only**: no VAT is split out of it and nothing is retained or withheld; the client pays the whole amount. The VAT
+  is billed on the progress bills at the full value of the work, so it is never counted twice.
+* It takes the next company bill number **when it is issued**, like any bill, and it must be issued **before the first progress bill**:
+  preparing or issuing it after a progress bill is issued is refused with "Bill the down payment before the first progress bill."
+* It keeps its own rate. Changing the down payment in the terms later changes nothing already billed, and recovery always uses the rate
+  on the down payment bill.
+* **Recovery** on each progress bill is worked out on the work to date, so it is exact when the work reaches the price:
+  recovered = min(down payment, round(work to date × rate)) − recovered on earlier issued progress bills, never below zero. The bill
+  that brings the work to the contract price recovers **everything still to recover**, so a price changed by a change order since the
+  down payment was billed still leaves nothing behind. Without an issued down payment nothing is recovered.
+* Nothing is stored on the down payment: recovery is part of each progress bill. **Voiding the latest progress bill gives back the
+  recovery it took**, and the next bill recovers it again.
+* A progress draft prepared before the down payment was issued (or before a price change made it the last bill) is out of date: issuing
+  it is refused with the usual reload message until it is saved again, when it takes its recovery.
+* A down payment bill is voided like any bill: only while it is the latest issued bill (no progress bill after it) and with no payment
+  recorded; a draft is discarded with a reason.
+* The project's billing shows the down payment billed, recovered and **still to recover**. What is owed counts the down payment bill
+  like any other bill, paid by recorded payments.
+
+### 14.8 Government client
+
+* The billing terms say whether the client is a government agency (standard: no). A government client allows a down payment of **up to
+  15%** of the contract price; saving more is refused with "A government project allows a down payment of up to 15% of the contract
+  price." (Any other client: up to 50%.)
+* Income-tax withholding (14.1, "Creditable withholding tax") and VAT withheld are separate terms, each worked out on the amount before
+  VAT of every progress bill (14.2); nothing is withheld on the down payment bill or on a retention release.
+* Change orders on a government project show a warning when the added work passes 10% of the original contract price; it blocks
+  nothing (section 4.9).
+
+## 15. Bonds register
+
+A **bond** is a guarantee a bank or surety gives. Government and many private jobs require bid, performance, advance payment and warranty
+bonds, each valid until a date; a bond that lapses unnoticed is a real risk, and the register exists so nobody lets one lapse.
+
+**A bond is not a cost and changes no money figure anywhere.** Recording, editing, extending, releasing, calling or voiding a bond never
+adds to or changes a budget, a cost, a bill, a payment, retention, commitments, the dashboard or a project's cost summary. The amount is
+kept for reference only. (A test asserts that the cost summary, the project and the dashboard read identically before and after bonds
+are recorded, extended and released.)
+
+### 15.1 What a bond records
+
+| Field | Rule |
+| --- | --- |
+| Project | Required. The project must not be archived. Fixed once recorded. |
+| Direction | **Posted**: the company gave it to the client. **Received**: a subcontractor or supplier gave it to the company. Fixed once recorded. |
+| Kind | Bid, Performance, Advance payment, Warranty or Other. |
+| Bank or surety | Required, up to 120 characters. |
+| Bond number | Required, up to 60 characters. |
+| Amount | Whole centavos, more than zero, at most ₱100,000,000,000.00. The currency is the company's when the bond was recorded. |
+| Issued on, Valid until | Both required, between 1 Jan 2000 and 31 Dec 2100. Valid until is the last day the bond is in force and is not before the issue date. |
+| Given by | Received bonds only, optional, up to 120 characters: the subcontractor or supplier. A posted bond may not name one. |
+| Note | Optional, up to 500 characters. |
+
+### 15.2 Where a bond stands
+
+* **Active**: in force. It can be edited, extended, released, marked as called or voided.
+* **Released**: returned or no longer needed, with a date and an optional note. Final.
+* **Called**: the beneficiary claimed against it, with a date and a note saying what was claimed (required). Final.
+* **Void**: entered by mistake, with a reason (required, up to 300 characters). It stays on record and counts nowhere.
+
+Released and Called are final: nothing edits, extends, releases or calls them again. A wrong release or call is **voided and the bond
+entered again**; that is the one step still allowed on them. A voided bond refuses every step. A release or call date is not in the
+future (company calendar) and not before the bond was issued.
+
+### 15.3 Expiry
+
+Every Active bond has an expiry state, judged on the **company's calendar day** (never the UTC day), worked out each time it is read and
+never stored:
+
+| State | When |
+| --- | --- |
+| Valid | More than 30 days remain. |
+| Expiring soon | 30 days or fewer remain, counting the last valid day (a bond valid until today is expiring soon, not expired). |
+| Expired | The valid-until date is before today. |
+
+An Active bond that has expired **stays Active** until a person releases or voids it; it is shown as Expired and is never changed behind
+anyone's back. An expired bond can still be extended. Released, Called and Void bonds have no expiry state.
+
+### 15.4 Changing a bond
+
+* **Edit** (Active only) changes the kind, bank or surety, number, amount, dates, the firm's name and the note. The valid-until date may
+  stay or move later; moving it earlier is refused ("An active bond can't be changed to an earlier date than 1 Jun 2027. Extend it to move
+  the date later."). Saving details that are the same as before changes nothing and records nothing. A later date made through an edit
+  is recorded with the old and new date, like an extension.
+* **Extend** (Active only) moves the valid-until date to a **later** date only (the same or an earlier day is refused), with an optional
+  note. Every extension is audited and is a line in the bond's history with the old and new date.
+* **Release**, **Mark as called** and **Void** are as in 15.2.
+* An **archived project is read-only** for its bonds: nothing can be recorded, edited, extended, released, called or voided until the
+  project is restored. Bonds on it can still be read, and still count in the register's totals (they still lapse).
+* Every change needs the version the person opened: a stale step is refused with "reload", never applied. A repeated create with the
+  same request id returns the first bond; the same id used for another project or direction is refused.
+* **History.** Each bond keeps a line for every step (who, when, and the dates and note that went with it), newest first, the latest 100
+  shown. The activity log records each step without notes or reasons (they stay on the record).
+
+### 15.5 Reading bonds
+
+* The **register** lists every bond of the company: filtered by project, direction, kind, state or expiry, paged. Active bonds come
+  first, the one that lapses soonest on top; then the closed ones, the most recently valid first. The screen opens on the Active bonds;
+  closed and voided bonds are one filter away.
+* A **project's list** has its bonds that are not voided, Active first, at most 50.
+* The **totals** are the Active amounts and counts by direction (posted, received) and the number of Active bonds that have expired or
+  expire within 30 days. Voided, released and called bonds are not in them.
+* Every read is a fixed number of SQL statements however many bonds exist (asserted by a test).
+
+### 15.6 Who can do what
+
+Reading needs the permission to read bonds (Administrator, Project Manager, Cost Engineer, Accountant, Viewer). Recording, editing,
+extending, releasing, marking as called and voiding need the permission to manage bonds (Administrator, Project Manager, Accountant). A
+bond of another company is "not found".
+
+### 15.7 Not built, deliberately
+
+* Swapping retention for a bond (a bond does not release or replace retention held).
+* Automatic expiry emails or messages (the register and the project card show what is lapsing; nothing is sent).
+* Bond premiums as a cost.

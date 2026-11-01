@@ -24,13 +24,14 @@ a concurrency token, every string column has a length, and every API endpoint ou
 | Projects | `Project`, `SubProject` | Lifecycle, archive and restore, contract price |
 | Costing | `BudgetLine`, `CostEntry`, `LineAmounts`, `CostClassification`, `WbsCatalog`, `BudgetPosition` | Budget and actual cost, VAT, classification, variance, dashboard, exports |
 | Workforce | `Worker`, `WorkerRate`, `WorkerAssignment`, `WorkerCase` | People, pay history, postings, cases |
-| Payroll | `AttendanceEntry`, `PayrollRun`, `PayrollCalculator` | Attendance, pay calculation, approval, labor cost posting |
+| Payroll | `AttendanceEntry`, `PayrollRun`, `PayrollCalculator`, `PayRules`, `CompanyHoliday` | Attendance, pay calculation, premium and night pay from pay rules and the holiday calendar, 13th-month pay, approval, labor cost posting |
 | Inventory | `InventoryItem`, `StockBalance`, `StockMovement` | Tools, equipment, machinery, stock ledger, charged transfers |
 | Suppliers | `Supplier` | The firms the company buys from and hires |
-| Purchasing | `PurchaseOrder` | Purchase orders, invoices matched to order lines, the open commitment |
+| Purchasing | `PurchaseOrder`, `GoodsReceipt` | Purchase orders, invoices matched to order lines, the open commitment, deliveries received against an order |
 | Progress | `ProgressEntry`, earned-value calculator | Percent complete per budget line and the earned-value figures |
 | Change orders | `ChangeOrder`, the project's budget baseline | Approved changes to budget and contract price |
-| Billing | `ProjectBillingTerms`, `ClientInvoice`, `ClientPayment` | Bills, retention, payments received |
+| Billing | `ProjectBillingTerms`, `ClientInvoice`, `ClientPayment`, `BillingCalculator` | Bills, the down payment and its recovery, retention, withholding (income tax and VAT), the government-client setting, payments received |
+| Bonds | `Bond` | The bonds register: bonds posted and received, validity and expiry (no money figure changes) |
 | Subcontracts | `Subcontract`, claims, payments | Awards, certified claims posted to cost, payments made |
 | Statutory | `StatutorySchedule`, `StatutoryCalculator` | Contribution and tax tables and the deductions they give |
 | Audit | `AuditEntry` | The append-only activity log |
@@ -80,6 +81,11 @@ token catches two saves racing in the same instant. Either way: 409 `concurrency
 | Commitments are a port, not a table | Open purchase orders and subcontracts each implement `ICommitmentSource`; the report service adds every source's remainder to the actual cost to give the forecast. A new kind of commitment adds a class, and nothing is counted twice because a source subtracts what has already become actual cost. |
 | Atomic numbering, gaps allowed | `INumberSequence` hands out the next number with one SQL statement, so two people never get the same purchase order or bill number. A save that fails after taking a number leaves a gap: numbers are unique and rising, not unbroken. |
 | Statutory rates are data, never code | Contribution and tax tables are effective-dated rows an accountant enters; nothing in the code or the seed claims a legal rate. Until a table exists the feature says it needs setup and payroll falls back to manual deductions. |
+| A down payment is a receivable only, and recovery is cumulative | The down payment bill splits out no VAT and withholds nothing, because VAT is billed on the progress bills at the full value of the work and would otherwise be counted twice. Each progress bill recovers `min(down payment, work to date × rate)` less what earlier bills recovered, so recovery is exact when the work reaches the price and nothing is stored on the down payment: voiding the latest bill gives the recovery back. |
+| Pay rules and holidays are data, not code | Premium factors are one editable set per company and holidays are rows the payroll keepers enter; nothing in the code or the seed claims a proclaimed holiday. A change applies to drafts when recalculated, and approval re-checks it, so an approved payroll can always be explained from the rules and calendar it used. |
+| The 13th-month pay is its own kind of payroll run | It is a calendar-year run of one twelfth of each worker's stored basic pay, with no contributions or tax, posted to projects by largest remainder, so it reuses approval, posting and voiding without touching the period rules of a regular run. |
+| A delivery does not change committed cost | Committed cost still falls only when an invoice is matched to the order line, so goods received but not yet invoiced stay committed (they are owed) and no figure on the dashboard moves when a delivery is recorded or voided. Ordered, received and invoiced are three derived numbers on the order. |
+| A bond is not a cost | A bond is a guarantee, not spending. It never reaches a budget, cost, bill, payment, retention or commitment figure, and its expiry is worked out when read, never stored. |
 | Void and archive, never delete | Financial history must stay explainable; deleting orphaned the retired app's data. |
 | Generated migrations only; a development database may be created from the model until the first migration exists | One reviewed history of the schema; no hand edits in production. |
 | Pay data is gated by a permission, not a UI hint | The API omits pay from responses for people without `payroll.read`. |

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CmsDbContext))]
-    [Migration("20261101153207_InitialCreate")]
+    [Migration("20261101232140_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -79,6 +79,12 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AdvanceBps")
+                        .HasColumnType("int");
+
+                    b.Property<long>("AdvanceRecoveryMinor")
+                        .HasColumnType("bigint");
 
                     b.Property<DateOnly>("BillingDate")
                         .HasColumnType("date");
@@ -172,6 +178,12 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<int>("VatRateBps")
                         .HasColumnType("int");
 
+                    b.Property<int>("VatWithholdingBps")
+                        .HasColumnType("int");
+
+                    b.Property<long>("VatWithholdingMinor")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Version")
                         .IsConcurrencyToken()
                         .HasColumnType("int");
@@ -205,6 +217,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId", "Number")
                         .IsUnique()
                         .HasFilter("[Number] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "ProjectId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ClientInvoices_OneLiveAdvancePerProject")
+                        .HasFilter("[Kind] = 'Advance' AND [Status] <> 'Void'");
 
                     b.HasIndex("TenantId", "ProjectId", "ChainIndex")
                         .IsUnique()
@@ -288,11 +305,17 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("AdvanceBps")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("CreditableWithholdingBps")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsGovernmentClient")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PaymentTermsDays")
                         .HasColumnType("int");
@@ -309,6 +332,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("VatWithholdingBps")
+                        .HasColumnType("int");
+
                     b.Property<int>("Version")
                         .IsConcurrencyToken()
                         .HasColumnType("int");
@@ -321,6 +347,158 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ProjectBillingTerms", (string)null);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Bonds.Bond", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("AmountMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("BondNumber")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("CallNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly?>("CalledOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ClientRequestId")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly>("IssuedOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("IssuerName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OtherPartyName")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReleaseNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly?>("ReleasedOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("ValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("TenantId", "ClientRequestId")
+                        .IsUnique()
+                        .HasFilter("[ClientRequestId] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "ProjectId", "Status");
+
+                    b.HasIndex("TenantId", "Status", "ValidUntil");
+
+                    b.ToTable("Bonds", (string)null);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Bonds.BondEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("BondId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("EventDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly?>("NewValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly?>("PreviousValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("BondId", "AtUtc");
+
+                    b.ToTable("BondEvents", (string)null);
                 });
 
             modelBuilder.Entity("Cms.Domain.Features.ChangeOrders.ChangeOrder", b =>
@@ -1188,6 +1366,10 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<decimal>("NightHours")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
                     b.Property<decimal>("OvertimeHours")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
@@ -1269,10 +1451,99 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.ToTable("AttendanceEntries", (string)null);
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Payroll.CompanyHoliday", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("CompanyHolidays", (string)null);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Payroll.PayRules", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("NightDifferentialBps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PremiumDayOvertimeExtraBps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RegularHolidayBps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RegularHolidayRestDayBps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RestDayBps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpecialDayBps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpecialRestDayBps")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("PayRules", (string)null);
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.Payroll.PayrollAllocation", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("BasicPayMinor")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("GrossMinor")
                         .HasColumnType("bigint");
@@ -1368,6 +1639,54 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.ToTable("PayrollDeductions", (string)null);
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Payroll.PayrollHolidayPay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("AmountMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateOnly?>("ClaimDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("HolidayDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("PayrollLineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SubProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayrollLineId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("SubProjectId");
+
+                    b.HasIndex("WorkerId");
+
+                    b.HasIndex("TenantId", "ClaimDate");
+
+                    b.HasIndex("TenantId", "WorkerId", "ClaimDate")
+                        .IsUnique()
+                        .HasFilter("[ClaimDate] IS NOT NULL");
+
+                    b.ToTable("PayrollHolidayPays", (string)null);
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.Payroll.PayrollLine", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1383,6 +1702,16 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
+                    b.Property<long>("HolidayPayMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("NightHours")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<long>("NightPayMinor")
+                        .HasColumnType("bigint");
+
                     b.Property<decimal>("OvertimeHours")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
@@ -1393,6 +1722,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("PayrollRunId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long>("PremiumPayMinor")
+                        .HasColumnType("bigint");
+
                     b.Property<decimal>("RegularHours")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
@@ -1402,6 +1734,15 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("ThirteenthMonthBasisMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ThirteenthMonthPayMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("ThirteenthMonthYear")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("WorkerId")
                         .HasColumnType("uniqueidentifier");
@@ -1419,6 +1760,10 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.HasIndex("TenantId", "WorkerId");
+
+                    b.HasIndex("TenantId", "WorkerId", "ThirteenthMonthYear")
+                        .IsUnique()
+                        .HasFilter("[ThirteenthMonthYear] IS NOT NULL");
 
                     b.ToTable("PayrollLines", (string)null);
                 });
@@ -1447,6 +1792,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<decimal>("HoursPerDay")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("OvertimeMultiplierBps")
                         .HasColumnType("int");
@@ -1489,6 +1839,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("VoidedByUserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("Year")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId", "ClientRequestId")
@@ -1498,6 +1851,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId", "CreatedAtUtc");
 
                     b.HasIndex("TenantId", "Status");
+
+                    b.HasIndex("TenantId", "Kind", "Status", "PeriodEnd");
 
                     b.ToTable("PayrollRuns", (string)null);
                 });
@@ -1690,6 +2045,121 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("SubProjects", (string)null);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Purchasing.GoodsReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClientRequestId")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeliveryReceiptNumber")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("NormalizedDeliveryReceiptNumber")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PurchaseOrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("ReceivedDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("RecordedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset?>("VoidedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("VoidedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("PurchaseOrderId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("TenantId", "ClientRequestId")
+                        .IsUnique()
+                        .HasFilter("[ClientRequestId] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "PurchaseOrderId", "Status");
+
+                    b.HasIndex("TenantId", "SupplierId", "NormalizedDeliveryReceiptNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_GoodsReceipts_OnePostedNumberPerSupplier")
+                        .HasFilter("[Status] = 'Posted' AND [NormalizedDeliveryReceiptNumber] IS NOT NULL");
+
+                    b.ToTable("GoodsReceipts", (string)null);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Purchasing.GoodsReceiptLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GoodsReceiptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PurchaseOrderLineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GoodsReceiptId");
+
+                    b.HasIndex("PurchaseOrderLineId");
+
+                    b.HasIndex("TenantId", "PurchaseOrderLineId");
+
+                    b.ToTable("GoodsReceiptLines", (string)null);
                 });
 
             modelBuilder.Entity("Cms.Domain.Features.Purchasing.PurchaseOrder", b =>
@@ -2559,6 +3029,10 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<string>("RestDay")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("SpouseName")
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
@@ -2821,6 +3295,24 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Bonds.Bond", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Bonds.BondEvent", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Bonds.Bond", null)
+                        .WithMany("Events")
+                        .HasForeignKey("BondId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.ChangeOrders.ChangeOrder", b =>
                 {
                     b.HasOne("Cms.Domain.Features.Projects.Project", null)
@@ -2950,7 +3442,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.HasOne("Cms.Domain.Features.Payroll.PayrollLine", null)
                         .WithMany("Allocations")
                         .HasForeignKey("PayrollLineId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Cms.Domain.Features.Projects.Project", null)
@@ -2979,12 +3471,38 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Payroll.PayrollHolidayPay", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Payroll.PayrollLine", null)
+                        .WithMany("HolidayPays")
+                        .HasForeignKey("PayrollLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Projects.SubProject", null)
+                        .WithMany()
+                        .HasForeignKey("SubProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Cms.Domain.Features.Workforce.Worker", null)
+                        .WithMany()
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.Payroll.PayrollLine", b =>
                 {
                     b.HasOne("Cms.Domain.Features.Payroll.PayrollRun", null)
                         .WithMany("Lines")
                         .HasForeignKey("PayrollRunId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Cms.Domain.Features.Workforce.Worker", null)
@@ -3014,6 +3532,42 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.HasOne("Cms.Domain.Features.Projects.Project", null)
                         .WithMany("SubProjects")
                         .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Purchasing.GoodsReceipt", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Purchasing.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Suppliers.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Purchasing.GoodsReceiptLine", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Purchasing.GoodsReceipt", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("GoodsReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Purchasing.PurchaseOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderLineId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -3170,6 +3724,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Navigation("Payments");
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Bonds.Bond", b =>
+                {
+                    b.Navigation("Events");
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.ChangeOrders.ChangeOrder", b =>
                 {
                     b.Navigation("Lines");
@@ -3187,6 +3746,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Navigation("Allocations");
 
                     b.Navigation("Deductions");
+
+                    b.Navigation("HolidayPays");
                 });
 
             modelBuilder.Entity("Cms.Domain.Features.Payroll.PayrollRun", b =>
@@ -3197,6 +3758,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Features.Projects.Project", b =>
                 {
                     b.Navigation("SubProjects");
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Purchasing.GoodsReceipt", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("Cms.Domain.Features.Purchasing.PurchaseOrder", b =>

@@ -225,6 +225,10 @@
         </app-empty-state>
       }
     }
+
+    @if (projectId(); as id) {
+      <app-project-bonds-card [projectId]="id" [projectArchived]="isArchived()" />
+    }
   </div>
 }
 

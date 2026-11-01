@@ -659,19 +659,21 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
     }
 
     [SqlServerFact]
-    public async Task The_demo_bills_Riverside_with_one_paid_bill_one_overdue_bill_and_a_draft()
+    public async Task The_demo_bills_Riverside_with_one_paid_bill_one_overdue_bill_and_a_draft_and_Harbor_with_a_down_payment()
     {
         var (client, user) = await SignedInAsync(_factory);
         using var _c = client;
         var project = await CreateProjectAsync(client, "Riverside Residences", 48_500_000_00);
+        var harborProject = await CreateProjectAsync(client, "Harbor Warehouse", 12_000_000_00);
 
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<CmsDbContext>();
             var organization = await db.Set<Organization>().IgnoreQueryFilters().SingleAsync(item => item.Id == user.TenantId);
             var riverside = await db.Set<Project>().IgnoreQueryFilters().Include(item => item.SubProjects).SingleAsync(item => item.Id == project.Id);
+            var harborEntity = await db.Set<Project>().IgnoreQueryFilters().Include(item => item.SubProjects).SingleAsync(item => item.Id == harborProject.Id);
             var today = organization.TodayLocal(DateTimeOffset.UtcNow);
-            await BillingDemo.SeedAsync(db, organization, riverside, user.UserId, user.UserId, today, DateTimeOffset.UtcNow);
+            await BillingDemo.SeedAsync(db, organization, riverside, harborEntity, user.UserId, user.UserId, today, DateTimeOffset.UtcNow);
         }
 
         var summary = await BillingAsync(client, project.Id);
@@ -684,9 +686,16 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(0, summary.Bills.Items[2].OutstandingMinor);
         Assert.Equal((summary.OutstandingMinor, 1), (summary.OverdueMinor, summary.OverdueCount));
 
+        // Harbor Warehouse: a 20% down payment (BILL-0003), paid, and a draft first progress bill that recovers its share of it.
+        var harbor = await BillingAsync(client, harborProject.Id);
+        Assert.Equal((2_400_000_00L, 0L, 2_400_000_00L), (harbor.AdvanceBilledMinor, harbor.AdvanceRecoveredMinor, harbor.AdvanceToRecoverMinor));
+        var harborDraft = await client.GetAsync<ClientInvoiceDto>($"/api/client-invoices/{harbor.Bills.Items.Single(bill => bill.Status == "Draft").Id}");
+        Assert.Equal(240_000_00L, harborDraft.AdvanceRecoveryMinor);
+        Assert.Equal("BILL-0003", harbor.Bills.Items.Single(bill => bill.Status == "Issued").Number);
+
         // The next bill an accountant issues continues the demo's numbering.
         var draft = await client.GetAsync<ClientInvoiceDto>($"/api/client-invoices/{summary.Bills.Items[0].Id}");
         Assert.False(draft.IsStale);
-        Assert.Equal("BILL-0003", (await IssueAsync(client, draft)).Number);
+        Assert.Equal("BILL-0004", (await IssueAsync(client, draft)).Number);
     }
 }

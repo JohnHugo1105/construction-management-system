@@ -16,7 +16,7 @@ namespace Cms.Infrastructure.Seeding;
 /// </summary>
 public static class SubcontractDemo
 {
-    private const string ElectricalFirm = "Lumen Electrical Contractors (demo)";
+    internal const string ElectricalFirm = "Lumen Electrical Contractors (demo)";
     private const string WaterproofingFirm = "Seal-Tight Waterproofing (demo)";
 
     /// <param name="drafterUserId">Who drafts subcontracts and claims (a project manager or cost engineer).</param>

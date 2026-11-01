@@ -32,6 +32,24 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CompanyHolidays",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CompanyHolidays", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InventoryItems",
                 columns: table => new
                 {
@@ -103,6 +121,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     PeriodStart = table.Column<DateOnly>(type: "date", nullable: false),
                     PeriodEnd = table.Column<DateOnly>(type: "date", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Kind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: true),
                     HoursPerDay = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     OvertimeMultiplierBps = table.Column<int>(type: "int", nullable: false),
                     RunsPerMonth = table.Column<int>(type: "int", nullable: false),
@@ -122,6 +142,28 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PayrollRuns", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PayRules",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RestDayBps = table.Column<int>(type: "int", nullable: false),
+                    SpecialDayBps = table.Column<int>(type: "int", nullable: false),
+                    SpecialRestDayBps = table.Column<int>(type: "int", nullable: false),
+                    RegularHolidayBps = table.Column<int>(type: "int", nullable: false),
+                    RegularHolidayRestDayBps = table.Column<int>(type: "int", nullable: false),
+                    PremiumDayOvertimeExtraBps = table.Column<int>(type: "int", nullable: false),
+                    NightDifferentialBps = table.Column<int>(type: "int", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PayRules", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -267,6 +309,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     IsPhilHealthMember = table.Column<bool>(type: "bit", nullable: false),
                     IsPagIbigMember = table.Column<bool>(type: "bit", nullable: false),
                     IsTaxExempt = table.Column<bool>(type: "bit", nullable: false),
+                    RestDay = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     StatusChangedOn = table.Column<DateOnly>(type: "date", nullable: true),
                     StatusReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
@@ -278,6 +321,46 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Workers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Bonds",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Direction = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Kind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    IssuerName = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    BondNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    AmountMinor = table.Column<long>(type: "bigint", nullable: false),
+                    CurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    IssuedOn = table.Column<DateOnly>(type: "date", nullable: false),
+                    ValidUntil = table.Column<DateOnly>(type: "date", nullable: false),
+                    OtherPartyName = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ReleasedOn = table.Column<DateOnly>(type: "date", nullable: true),
+                    ReleaseNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CalledOn = table.Column<DateOnly>(type: "date", nullable: true),
+                    CallNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bonds", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Bonds_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -349,6 +432,10 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     RetentionMinor = table.Column<long>(type: "bigint", nullable: false),
                     WithholdingBps = table.Column<int>(type: "int", nullable: false),
                     WithholdingMinor = table.Column<long>(type: "bigint", nullable: false),
+                    VatWithholdingBps = table.Column<int>(type: "int", nullable: false),
+                    VatWithholdingMinor = table.Column<long>(type: "bigint", nullable: false),
+                    AdvanceBps = table.Column<int>(type: "int", nullable: false),
+                    AdvanceRecoveryMinor = table.Column<long>(type: "bigint", nullable: false),
                     NetReceivableMinor = table.Column<long>(type: "bigint", nullable: false),
                     PaymentTermsDays = table.Column<int>(type: "int", nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -383,6 +470,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     RetentionBps = table.Column<int>(type: "int", nullable: false),
                     CreditableWithholdingBps = table.Column<int>(type: "int", nullable: false),
                     PaymentTermsDays = table.Column<int>(type: "int", nullable: false),
+                    AdvanceBps = table.Column<int>(type: "int", nullable: false),
+                    VatWithholdingBps = table.Column<int>(type: "int", nullable: false),
+                    IsGovernmentClient = table.Column<bool>(type: "bit", nullable: false),
                     TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Version = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -535,8 +625,15 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     Designation = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: false),
                     RegularHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     OvertimeHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    NightHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     RegularPayMinor = table.Column<long>(type: "bigint", nullable: false),
-                    OvertimePayMinor = table.Column<long>(type: "bigint", nullable: false)
+                    PremiumPayMinor = table.Column<long>(type: "bigint", nullable: false),
+                    OvertimePayMinor = table.Column<long>(type: "bigint", nullable: false),
+                    NightPayMinor = table.Column<long>(type: "bigint", nullable: false),
+                    HolidayPayMinor = table.Column<long>(type: "bigint", nullable: false),
+                    ThirteenthMonthPayMinor = table.Column<long>(type: "bigint", nullable: false),
+                    ThirteenthMonthBasisMinor = table.Column<long>(type: "bigint", nullable: false),
+                    ThirteenthMonthYear = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -546,7 +643,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         column: x => x.PayrollRunId,
                         principalTable: "PayrollRuns",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PayrollLines_Workers_WorkerId",
                         column: x => x.WorkerId,
@@ -637,6 +734,32 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BondEvents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BondId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Kind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    PreviousValidUntil = table.Column<DateOnly>(type: "date", nullable: true),
+                    NewValidUntil = table.Column<DateOnly>(type: "date", nullable: true),
+                    EventDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BondEvents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BondEvents_Bonds_BondId",
+                        column: x => x.BondId,
+                        principalTable: "Bonds",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ClientPayments",
                 columns: table => new
                 {
@@ -678,6 +801,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     WorkDate = table.Column<DateOnly>(type: "date", nullable: false),
                     RegularHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     OvertimeHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    NightHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     Remarks = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     PayrollRunId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -947,7 +1071,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     SubProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     RegularHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     OvertimeHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
-                    GrossMinor = table.Column<long>(type: "bigint", nullable: false)
+                    GrossMinor = table.Column<long>(type: "bigint", nullable: false),
+                    BasicPayMinor = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -957,7 +1082,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         column: x => x.PayrollLineId,
                         principalTable: "PayrollLines",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PayrollAllocations_Projects_ProjectId",
                         column: x => x.ProjectId,
@@ -1002,6 +1127,49 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         name: "FK_PayrollDeductions_StatutorySchedules_ScheduleId",
                         column: x => x.ScheduleId,
                         principalTable: "StatutorySchedules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PayrollHolidayPays",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PayrollLineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HolidayDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    ClaimDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    AmountMinor = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PayrollHolidayPays", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PayrollHolidayPays_PayrollLines_PayrollLineId",
+                        column: x => x.PayrollLineId,
+                        principalTable: "PayrollLines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PayrollHolidayPays_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PayrollHolidayPays_SubProjects_SubProjectId",
+                        column: x => x.SubProjectId,
+                        principalTable: "SubProjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PayrollHolidayPays_Workers_WorkerId",
+                        column: x => x.WorkerId,
+                        principalTable: "Workers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1093,6 +1261,52 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         name: "FK_ProgressEntries_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GoodsReceipts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PurchaseOrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SupplierId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReceivedDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    DeliveryReceiptNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
+                    NormalizedDeliveryReceiptNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    RecordedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GoodsReceipts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GoodsReceipts_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GoodsReceipts_PurchaseOrders_PurchaseOrderId",
+                        column: x => x.PurchaseOrderId,
+                        principalTable: "PurchaseOrders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GoodsReceipts_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1216,6 +1430,33 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         name: "FK_CostEntries_SubProjects_SubProjectId",
                         column: x => x.SubProjectId,
                         principalTable: "SubProjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GoodsReceiptLines",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GoodsReceiptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PurchaseOrderLineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GoodsReceiptLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GoodsReceiptLines_GoodsReceipts_GoodsReceiptId",
+                        column: x => x.GoodsReceiptId,
+                        principalTable: "GoodsReceipts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GoodsReceiptLines_PurchaseOrderLines_PurchaseOrderLineId",
+                        column: x => x.PurchaseOrderLineId,
+                        principalTable: "PurchaseOrderLines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1372,6 +1613,38 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "OccurredAtUtc" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_BondEvents_BondId_AtUtc",
+                table: "BondEvents",
+                columns: new[] { "BondId", "AtUtc" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BondEvents_TenantId",
+                table: "BondEvents",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bonds_ProjectId",
+                table: "Bonds",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bonds_TenantId_ClientRequestId",
+                table: "Bonds",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bonds_TenantId_ProjectId_Status",
+                table: "Bonds",
+                columns: new[] { "TenantId", "ProjectId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bonds_TenantId_Status_ValidUntil",
+                table: "Bonds",
+                columns: new[] { "TenantId", "Status", "ValidUntil" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_BudgetLines_ChangeOrderId",
                 table: "BudgetLines",
                 column: "ChangeOrderId");
@@ -1448,6 +1721,13 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "ProjectId", "Status", "DecidedAtUtc" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ClientInvoices_OneLiveAdvancePerProject",
+                table: "ClientInvoices",
+                columns: new[] { "TenantId", "ProjectId" },
+                unique: true,
+                filter: "[Kind] = 'Advance' AND [Status] <> 'Void'");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ClientInvoices_ProjectId",
                 table: "ClientInvoices",
                 column: "ProjectId");
@@ -1506,6 +1786,12 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 filter: "[ClientRequestId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CompanyHolidays_TenantId_Date",
+                table: "CompanyHolidays",
+                columns: new[] { "TenantId", "Date" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CostEntries_ProjectId_Division_WbsCode",
                 table: "CostEntries",
                 columns: new[] { "ProjectId", "Division", "WbsCode" });
@@ -1555,6 +1841,55 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "PurchaseOrderLineId" },
                 filter: "[PurchaseOrderLineId] IS NOT NULL")
                 .Annotation("SqlServer:Include", new[] { "Status", "NetMinor", "GrossMinor" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceiptLines_GoodsReceiptId",
+                table: "GoodsReceiptLines",
+                column: "GoodsReceiptId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceiptLines_PurchaseOrderLineId",
+                table: "GoodsReceiptLines",
+                column: "PurchaseOrderLineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceiptLines_TenantId_PurchaseOrderLineId",
+                table: "GoodsReceiptLines",
+                columns: new[] { "TenantId", "PurchaseOrderLineId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceipts_OnePostedNumberPerSupplier",
+                table: "GoodsReceipts",
+                columns: new[] { "TenantId", "SupplierId", "NormalizedDeliveryReceiptNumber" },
+                unique: true,
+                filter: "[Status] = 'Posted' AND [NormalizedDeliveryReceiptNumber] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceipts_ProjectId",
+                table: "GoodsReceipts",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceipts_PurchaseOrderId",
+                table: "GoodsReceipts",
+                column: "PurchaseOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceipts_SupplierId",
+                table: "GoodsReceipts",
+                column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceipts_TenantId_ClientRequestId",
+                table: "GoodsReceipts",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodsReceipts_TenantId_PurchaseOrderId_Status",
+                table: "GoodsReceipts",
+                columns: new[] { "TenantId", "PurchaseOrderId", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_InventoryItems_TenantId_Description",
@@ -1615,6 +1950,38 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 filter: "[ScheduleId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PayrollHolidayPays_PayrollLineId",
+                table: "PayrollHolidayPays",
+                column: "PayrollLineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayrollHolidayPays_ProjectId",
+                table: "PayrollHolidayPays",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayrollHolidayPays_SubProjectId",
+                table: "PayrollHolidayPays",
+                column: "SubProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayrollHolidayPays_TenantId_ClaimDate",
+                table: "PayrollHolidayPays",
+                columns: new[] { "TenantId", "ClaimDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayrollHolidayPays_TenantId_WorkerId_ClaimDate",
+                table: "PayrollHolidayPays",
+                columns: new[] { "TenantId", "WorkerId", "ClaimDate" },
+                unique: true,
+                filter: "[ClaimDate] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayrollHolidayPays_WorkerId",
+                table: "PayrollHolidayPays",
+                column: "WorkerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PayrollLines_PayrollRunId_WorkerId",
                 table: "PayrollLines",
                 columns: new[] { "PayrollRunId", "WorkerId" },
@@ -1624,6 +1991,13 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 name: "IX_PayrollLines_TenantId_WorkerId",
                 table: "PayrollLines",
                 columns: new[] { "TenantId", "WorkerId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayrollLines_TenantId_WorkerId_ThirteenthMonthYear",
+                table: "PayrollLines",
+                columns: new[] { "TenantId", "WorkerId", "ThirteenthMonthYear" },
+                unique: true,
+                filter: "[ThirteenthMonthYear] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PayrollLines_WorkerId",
@@ -1643,9 +2017,20 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "CreatedAtUtc" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_PayrollRuns_TenantId_Kind_Status_PeriodEnd",
+                table: "PayrollRuns",
+                columns: new[] { "TenantId", "Kind", "Status", "PeriodEnd" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PayrollRuns_TenantId_Status",
                 table: "PayrollRuns",
                 columns: new[] { "TenantId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayRules_TenantId",
+                table: "PayRules",
+                column: "TenantId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProgressEntries_BudgetLineId",
@@ -2056,10 +2441,19 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 name: "AuditEntries");
 
             migrationBuilder.DropTable(
+                name: "BondEvents");
+
+            migrationBuilder.DropTable(
                 name: "ChangeOrderLines");
 
             migrationBuilder.DropTable(
                 name: "ClientPayments");
+
+            migrationBuilder.DropTable(
+                name: "CompanyHolidays");
+
+            migrationBuilder.DropTable(
+                name: "GoodsReceiptLines");
 
             migrationBuilder.DropTable(
                 name: "NumberSequences");
@@ -2072,6 +2466,12 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "PayrollDeductions");
+
+            migrationBuilder.DropTable(
+                name: "PayrollHolidayPays");
+
+            migrationBuilder.DropTable(
+                name: "PayRules");
 
             migrationBuilder.DropTable(
                 name: "ProgressEntries");
@@ -2110,7 +2510,13 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 name: "WorkerStatusChanges");
 
             migrationBuilder.DropTable(
+                name: "Bonds");
+
+            migrationBuilder.DropTable(
                 name: "ClientInvoices");
+
+            migrationBuilder.DropTable(
+                name: "GoodsReceipts");
 
             migrationBuilder.DropTable(
                 name: "PayrollLines");
