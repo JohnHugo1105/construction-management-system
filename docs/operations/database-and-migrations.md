@@ -33,7 +33,7 @@ dotnet ef migrations script --idempotent --project src/Cms.Infrastructure --star
    API version known to be compatible with the new schema (additive migrations are). **`-I` is required**: the schema has filtered
    unique indexes, and without it `sqlcmd` fails with "CREATE INDEX failed because the following SET options have incorrect settings:
    'QUOTED_IDENTIFIER'". The script is idempotent: applying it again changes nothing. (Verified on 1 Nov 2026 after the last model change: a fresh SQL Server 2022
-   database got 20 tables plus the migration history, and a second run was a no-op.)
+   database got 36 tables plus the migration history, and a second run was a no-op.)
 4. Start the new API; `GET /health/ready` reports `migrations: current` only when none is pending.
 5. Record: release id, script name, who applied it, when, the backup it follows.
 

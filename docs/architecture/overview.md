@@ -26,6 +26,13 @@ a concurrency token, every string column has a length, and every API endpoint ou
 | Workforce | `Worker`, `WorkerRate`, `WorkerAssignment`, `WorkerCase` | People, pay history, postings, cases |
 | Payroll | `AttendanceEntry`, `PayrollRun`, `PayrollCalculator` | Attendance, pay calculation, approval, labor cost posting |
 | Inventory | `InventoryItem`, `StockBalance`, `StockMovement` | Tools, equipment, machinery, stock ledger, charged transfers |
+| Suppliers | `Supplier` | The firms the company buys from and hires |
+| Purchasing | `PurchaseOrder` | Purchase orders, invoices matched to order lines, the open commitment |
+| Progress | `ProgressEntry`, earned-value calculator | Percent complete per budget line and the earned-value figures |
+| Change orders | `ChangeOrder`, the project's budget baseline | Approved changes to budget and contract price |
+| Billing | `ProjectBillingTerms`, `ClientInvoice`, `ClientPayment` | Bills, retention, payments received |
+| Subcontracts | `Subcontract`, claims, payments | Awards, certified claims posted to cost, payments made |
+| Statutory | `StatutorySchedule`, `StatutoryCalculator` | Contribution and tax tables and the deductions they give |
 | Audit | `AuditEntry` | The append-only activity log |
 
 `docs/business-rules.md` is the authoritative statement of the rules each of these enforces.
@@ -70,6 +77,9 @@ token catches two saves racing in the same instant. Either way: 409 `concurrency
 | Integer `Version` instead of `rowversion` | Portable, visible in DTOs for the explicit stale-form check, and testable on any provider. DriveOPX uses integer revisions in most places too. |
 | EF global query filters for tenancy | A forgotten `Where` in a new query can't leak data. Explicit `IgnoreQueryFilters()` appears only in sign-in and first-time setup. |
 | No MediatR, no CQRS framework | Services per use case, and `*Reader` ports for projected reads, give the same separation with less indirection (YAGNI, per AGENTS.md). |
+| Commitments are a port, not a table | Open purchase orders and subcontracts each implement `ICommitmentSource`; the report service adds every source's remainder to the actual cost to give the forecast. A new kind of commitment adds a class, and nothing is counted twice because a source subtracts what has already become actual cost. |
+| Atomic numbering, gaps allowed | `INumberSequence` hands out the next number with one SQL statement, so two people never get the same purchase order or bill number. A save that fails after taking a number leaves a gap: numbers are unique and rising, not unbroken. |
+| Statutory rates are data, never code | Contribution and tax tables are effective-dated rows an accountant enters; nothing in the code or the seed claims a legal rate. Until a table exists the feature says it needs setup and payroll falls back to manual deductions. |
 | Void and archive, never delete | Financial history must stay explainable; deleting orphaned the retired app's data. |
 | Generated migrations only; a development database may be created from the model until the first migration exists | One reviewed history of the schema; no hand edits in production. |
 | Pay data is gated by a permission, not a UI hint | The API omits pay from responses for people without `payroll.read`. |

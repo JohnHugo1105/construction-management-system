@@ -134,9 +134,18 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
         excavator.Transfer(StockLocation.Warehouse, site, 1m, today.AddMonths(-2), false, null, users["store"].Id, null, today, now);
         db.AddRange(hammers, generator, excavator);
 
+        // The statutory tables are added to this same save; every other layer below saves itself, in the order that lets each find what the
+        // one before it made (firms and orders, subcontracts, a locked budget with change orders, progress, then billing against the price).
+        await StatutoryDemo.SeedAsync(db, tenant, today, now, cancellationToken);
         db.Add(Domain.Features.Audit.AuditEntry.Record(tenant, by, "admin", "System.Seeded", nameof(Organization), tenant,
             "Demo data was created for development.", null, now));
         await db.SaveChangesAsync(cancellationToken);
+
+        await PurchasingDemo.SeedAsync(db, organization, riverside, users["cost"].Id, users["accounts"].Id, today, now, cancellationToken);
+        await SubcontractDemo.SeedAsync(db, organization, riverside, users["manager"].Id, users["accounts"].Id, today, now, cancellationToken);
+        await ChangeOrderDemo.SeedAsync(db, tenant, riverside.Id, users["manager"].Id, users["cost"].Id, organization.VatRateBps, today, now, cancellationToken);
+        await ProgressDemo.SeedAsync(db, tenant, today, now, cancellationToken);
+        await BillingDemo.SeedAsync(db, organization, riverside, users["accounts"].Id, users["manager"].Id, today, now, cancellationToken);
         logger.LogInformation("Demo data created for {Company}. Sign in as admin, manager, cost, accounts, hrofficer, store or viewer with the demo password.", organization.Name);
     }
 }
