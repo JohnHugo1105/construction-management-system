@@ -31,6 +31,10 @@ public sealed class Worker : AggregateRoot
     public string? ProvincialAddress { get; private set; }
     public string? ContactNumber { get; private set; }
     public string? Reference { get; private set; }
+
+    /// <summary>The id of the form submission that hired this worker, so a repeated submission returns the same worker.</summary>
+    public string? ClientRequestId { get; private set; }
+
     public WorkerStatus Status { get; private set; } = WorkerStatus.Active;
     public DateOnly? StatusChangedOn { get; private set; }
     public string? StatusReason { get; private set; }
@@ -49,7 +53,7 @@ public sealed class Worker : AggregateRoot
 
     public static Worker Hire(Guid id, Guid tenantId, string? employeeNumber, string? firstName, string? middleName, string? lastName,
         DateOnly dateHired, string? designation, long rateMinor, RateUnit rateUnit, Guid recordedByUserId, DateOnly today,
-        DateTimeOffset now)
+        DateTimeOffset now, string? clientRequestId = null)
     {
         var errors = new ValidationErrors();
         string number = "", first = "", last = "", title = "";
@@ -59,6 +63,8 @@ public sealed class Worker : AggregateRoot
         Capture(errors, () => title = Guard.RequiredText(designation, "designation", "the designation (for example Mason)", 80));
         string? middle = null;
         Capture(errors, () => middle = Guard.OptionalText(middleName, "middleName", "the middle name", 80));
+        string? requestId = null;
+        Capture(errors, () => requestId = Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80));
         if (dateHired == default) errors.Add("dateHired", "Choose the date the worker was hired.");
         else if (dateHired > today) errors.Add("dateHired", "The hire date can't be in the future.");
         ValidateRate(errors, rateMinor, rateUnit);
@@ -71,7 +77,8 @@ public sealed class Worker : AggregateRoot
             FirstName = first,
             MiddleName = middle,
             LastName = last,
-            DateHired = dateHired
+            DateHired = dateHired,
+            ClientRequestId = requestId
         };
         worker.Initialize(id, tenantId, now);
         worker._rates.Add(new WorkerRate(Guid.NewGuid(), tenantId, id, title, rateMinor, rateUnit, RateChangeCategory.Initial, dateHired,

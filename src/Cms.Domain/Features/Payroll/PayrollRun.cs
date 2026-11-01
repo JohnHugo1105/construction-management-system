@@ -18,15 +18,17 @@ public sealed class PayrollDeduction
 {
     private PayrollDeduction() { }
 
-    internal PayrollDeduction(Guid id, Guid payrollLineId, string description, long amountMinor)
+    internal PayrollDeduction(Guid id, Guid tenantId, Guid payrollLineId, string description, long amountMinor)
     {
         Id = id;
+        TenantId = tenantId;
         PayrollLineId = payrollLineId;
         Description = description;
         AmountMinor = amountMinor;
     }
 
     public Guid Id { get; private set; }
+    public Guid TenantId { get; private set; }
     public Guid PayrollLineId { get; private set; }
     public string Description { get; private set; } = "";
     public long AmountMinor { get; private set; }
@@ -36,9 +38,11 @@ public sealed class PayrollAllocation
 {
     private PayrollAllocation() { }
 
-    internal PayrollAllocation(Guid id, Guid payrollLineId, Guid projectId, Guid? subProjectId, decimal regularHours, decimal overtimeHours, long grossMinor)
+    internal PayrollAllocation(Guid id, Guid tenantId, Guid payrollLineId, Guid projectId, Guid? subProjectId, decimal regularHours, decimal overtimeHours,
+        long grossMinor)
     {
         Id = id;
+        TenantId = tenantId;
         PayrollLineId = payrollLineId;
         ProjectId = projectId;
         SubProjectId = subProjectId;
@@ -48,6 +52,7 @@ public sealed class PayrollAllocation
     }
 
     public Guid Id { get; private set; }
+    public Guid TenantId { get; private set; }
     public Guid PayrollLineId { get; private set; }
     public Guid ProjectId { get; private set; }
     public Guid? SubProjectId { get; private set; }
@@ -78,7 +83,7 @@ public sealed class PayrollLine
         RegularPayMinor = calculated.RegularPayMinor;
         OvertimePayMinor = calculated.OvertimePayMinor;
         foreach (var allocation in calculated.Allocations)
-            _allocations.Add(new PayrollAllocation(Guid.NewGuid(), id, allocation.ProjectId, allocation.SubProjectId, allocation.RegularHours,
+            _allocations.Add(new PayrollAllocation(Guid.NewGuid(), tenantId, id, allocation.ProjectId, allocation.SubProjectId, allocation.RegularHours,
                 allocation.OvertimeHours, allocation.GrossMinor));
     }
 
@@ -117,7 +122,7 @@ public sealed class PayrollLine
         errors.ThrowIfAny();
 
         _deductions.Clear();
-        foreach (var (description, amount) in list) _deductions.Add(new PayrollDeduction(Guid.NewGuid(), Id, description.Trim(), amount));
+        foreach (var (description, amount) in list) _deductions.Add(new PayrollDeduction(Guid.NewGuid(), TenantId, Id, description.Trim(), amount));
     }
 }
 
