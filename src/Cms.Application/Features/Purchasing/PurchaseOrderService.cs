@@ -104,7 +104,7 @@ public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IPurch
 
         order.Cancel(project, request.Reason, hasInvoices, currentUser.UserId, clock.UtcNow);
 
-        audit.Record("PurchaseOrder.Cancelled", nameof(PurchaseOrder), order.Id, $"Cancelled purchase order {order.Number} of {project.Name}. Reason: {order.CancelReason}");
+        audit.Record("PurchaseOrder.Cancelled", nameof(PurchaseOrder), order.Id, $"Cancelled purchase order {order.Number} of {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(order.Id, cancellationToken);
     }
@@ -117,8 +117,8 @@ public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IPurch
 
         order.Close(project, request.Reason, currentUser.UserId, clock.UtcNow);
 
-        audit.Record("PurchaseOrder.Closed", nameof(PurchaseOrder), order.Id,
-            order.CloseReason is null ? $"Closed purchase order {order.Number} of {project.Name}." : $"Closed purchase order {order.Number} of {project.Name}. Reason: {order.CloseReason}");
+        // The reason stays on the order: a typed reason may mention amounts or people and the activity log is read by more people than the order.
+        audit.Record("PurchaseOrder.Closed", nameof(PurchaseOrder), order.Id, $"Closed purchase order {order.Number} of {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(order.Id, cancellationToken);
     }

@@ -158,11 +158,23 @@ export class PayrollNewPage {
   private readonly statutoryStatus = signal<StatutoryStatus | null>(null);
 
   constructor() {
-    // The capability check is extra: when it fails, the form still works and nothing is said.
-    firstValueFrom(inject(StatutoryApi).status()).then(
-      (status) => this.statutoryStatus.set(status),
-      () => undefined,
-    );
+    // The capability check is extra: when it fails, the form still works and nothing is said. A payroll uses the tables in force at the
+    // end of its period, so ask again whenever the last day changes (a payroll for last December is judged on December, not today).
+    const statutoryApi = inject(StatutoryApi);
+    let asked = 0;
+    const askAbout = (periodEnd: string): void => {
+      const mine = ++asked;
+      firstValueFrom(statutoryApi.status(periodEnd || undefined)).then(
+        (status) => {
+          if (mine === asked) this.statutoryStatus.set(status);
+        },
+        () => undefined,
+      );
+    };
+    askAbout(this.form.controls.periodEnd.value);
+    this.form.controls.periodEnd.valueChanges.subscribe((value) => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) askAbout(value);
+    });
 
     // Each day is checked against the other, so check both whenever either changes. The change is announced, so a message
     // already on screen follows (a "last day" error goes away as soon as the first day is moved). A guard stops the two from

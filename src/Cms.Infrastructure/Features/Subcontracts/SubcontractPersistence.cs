@@ -204,8 +204,12 @@ internal sealed class SubcontractCommitmentSource(CmsDbContext db) : ICommitment
             .Select(group => new
             {
                 ProjectId = group.Key,
-                Net = group.Sum(item => item.RevisedNetMinor > item.CertifiedNetMinor ? item.RevisedNetMinor - item.CertifiedNetMinor : 0L),
-                Gross = group.Sum(item => item.RevisedGrossMinor > item.CertifiedGrossMinor ? item.RevisedGrossMinor - item.CertifiedGrossMinor : 0L)
+                // Once all the work is certified nothing is committed: each claim rounds its own VAT, so net and gross can differ from the
+                // revised sum's by a centavo or two, and that difference is not a commitment.
+                Net = group.Sum(item => item.CertifiedWorkMinor >= item.RevisedSumMinor ? 0L
+                    : item.RevisedNetMinor > item.CertifiedNetMinor ? item.RevisedNetMinor - item.CertifiedNetMinor : 0L),
+                Gross = group.Sum(item => item.CertifiedWorkMinor >= item.RevisedSumMinor ? 0L
+                    : item.RevisedGrossMinor > item.CertifiedGrossMinor ? item.RevisedGrossMinor - item.CertifiedGrossMinor : 0L)
             })
             .ToListAsync(cancellationToken);
         return rows.Where(row => row.Net > 0 || row.Gross > 0).Select(row => new ProjectAmounts(row.ProjectId, row.Net, row.Gross)).ToArray();

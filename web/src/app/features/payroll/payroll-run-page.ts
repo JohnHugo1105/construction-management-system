@@ -217,7 +217,7 @@ export class PayrollRunPage {
   private async loadStatutory(run: PayrollRun): Promise<void> {
     try {
       if (run.status === 'Draft' && this.statutoryStatus() === null)
-        this.statutoryStatus.set(await firstValueFrom(this.statutoryApi.status()));
+        this.statutoryStatus.set(await firstValueFrom(this.statutoryApi.status(run.periodEnd)));
       this.statutory.set(await firstValueFrom(this.statutoryApi.runStatutory(run.id)));
     } catch {
       // The contributions summary is extra: the run and its deductions are already on screen, so a failure here stays quiet.

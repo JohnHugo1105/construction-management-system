@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import type { Progress } from '../progress/progress.models';
 import { DEFAULT_PAGE_SIZE } from '../../core/api/paged-result';
 import {
   Bill,
@@ -91,7 +92,7 @@ export class BillingApi {
    * The project's progress, read only for the "suggested from progress" hint. That feature is separate: the caller ignores any
    * refusal or failure.
    */
-  progress(projectId: string): Observable<unknown> {
-    return this.http.get<unknown>(`/api/projects/${projectId}/progress`);
+  progress(projectId: string): Observable<Progress> {
+    return this.http.get<Progress>(`/api/projects/${projectId}/progress`);
   }
 }

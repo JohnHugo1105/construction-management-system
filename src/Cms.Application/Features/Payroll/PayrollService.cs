@@ -93,7 +93,7 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         // flags came with the workers above).
         var tables = await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken);
         run.ApplyStatutory(StatutoryFor(run, tables, found.ToDictionary(pair => pair.Key, pair => pair.Value.Statutory), organization.PayrollRunsPerMonth),
-            organization.PayrollRunsPerMonth, now);
+            organization.PayrollRunsPerMonth, now, StatutoryBasisOf(tables));
 
         foreach (var entry in unpaid) entry.LockTo(run.Id, now);
         runs.Add(run);
@@ -116,7 +116,8 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         var tables = await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken);
         var participation = await statutory.ParticipationAsync(run.Lines.Select(line => line.WorkerId).ToArray(), cancellationToken);
-        run.ApplyStatutory(StatutoryFor(run, tables, participation, organization.PayrollRunsPerMonth), organization.PayrollRunsPerMonth, clock.UtcNow);
+        run.ApplyStatutory(StatutoryFor(run, tables, participation, organization.PayrollRunsPerMonth), organization.PayrollRunsPerMonth, clock.UtcNow,
+            StatutoryBasisOf(tables));
 
         audit.Record("Payroll.StatutoryRecalculated", nameof(PayrollRun), run.Id,
             $"Recalculated the contributions and tax in the payroll for {Period(run)}.");
@@ -180,6 +181,10 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     {
         var run = await LoadAsync(runId, cancellationToken);
         ConcurrencyGuard.Ensure(run.Version, request.Version);
+        // The deductions must still match the tables they were worked out from: a table added, corrected or retired after the draft would make
+        // the approved payroll impossible to explain from its table.
+        if (StatutoryBasisOf(await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken)) != (run.StatutoryBasis ?? ""))
+            throw new DomainRuleException("A contribution or tax table was added or changed after this payroll was worked out. Recalculate the contributions and tax, then approve.");
         var now = clock.UtcNow;
         run.Approve(currentUser.UserId, now);
 
@@ -277,6 +282,10 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
 
     private async Task<PayrollRunDto> ReadAsync(Guid id, CancellationToken cancellationToken) =>
         await reader.GetAsync(id, cancellationToken) ?? throw new NotFoundException("that payroll");
+
+    /// <summary>The tables the deductions came from (agency, table and its version), as one short text; empty when none is in force.</summary>
+    internal static string StatutoryBasisOf(IReadOnlyList<StatutorySchedule> tables) =>
+        string.Join(';', tables.OrderBy(table => table.Agency).Select(table => $"{(int)table.Agency}:{table.Id:N}:{table.Version}"));
 
     /// <summary>"1 Nov - 15 Nov 2026"; both years are written when the period crosses a year end.</summary>
     internal static string Period(PayrollRun run) => Period(run.PeriodStart, run.PeriodEnd);

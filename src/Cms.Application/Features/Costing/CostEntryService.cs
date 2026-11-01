@@ -16,7 +16,7 @@ namespace Cms.Application.Features.Costing;
 /// The same supplier invoice can be recorded only once per project: the retired app let it in again and again.
 /// </summary>
 public sealed class CostEntryService(ICostEntryRepository entries, ICostEntryReader reader, IProjectRepository projects,
-    IOrganizationRepository organizations, IPurchaseOrderLineLookup purchaseOrderLines, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork,
+    IOrganizationRepository organizations, IPurchaseOrderLineLookup purchaseOrderLines, IPurchaseOrderRepository purchaseOrders, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork,
     IAuditTrail audit)
 {
     public async Task<TotaledPage<CostEntryDto>> ListAsync(Guid projectId, CostEntryListQuery query, PageRequest page, CancellationToken cancellationToken)
@@ -182,7 +182,14 @@ public sealed class CostEntryService(ICostEntryRepository entries, ICostEntryRea
         if (lineId is null) return null;
         var line = await purchaseOrderLines.FindAsync(lineId.Value, cancellationToken) ??
             throw new ValidationFailedException("purchaseOrderLineId", "That purchase order line wasn't found. Choose one from the list, or leave it empty.");
-        if (lineId != currentLineId) PurchaseOrderMatching.EnsureLineCanBeMatched(projectId, line.ProjectId, line.OrderStatus, line.OrderNumber);
+        if (lineId != currentLineId)
+        {
+            PurchaseOrderMatching.EnsureLineCanBeMatched(projectId, line.ProjectId, line.OrderStatus, line.OrderNumber);
+            // Read the order again as tracked and touch it: a cancel or close racing this invoice then fails on the order's version
+            // instead of leaving a cancelled order with a matched invoice.
+            var order = await purchaseOrders.GetAsync(line.OrderId, cancellationToken) ?? throw new NotFoundException("that purchase order");
+            order.NoteMatchedInvoice(clock.UtcNow);
+        }
         return line;
     }
 

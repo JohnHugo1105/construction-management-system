@@ -114,7 +114,7 @@ describe('BillFormDialog', () => {
     const answered = await open(
       {
         preview: stub(() => of(preview())),
-        progress: stub(() => of({ earnedValue: { percentCompleteBps: 5_250 } })),
+        progress: stub(() => of({ hasProgress: true, earnedValue: { percentCompleteBps: 5_250 } })),
       },
       [...MANAGER, Permission.progressRead],
     );
@@ -137,7 +137,9 @@ describe('BillFormDialog', () => {
     TestBed.resetTestingModule();
     vi.useRealTimers();
 
-    const progress = stub(() => of({ percentCompleteBps: 1_000 }));
+    const progress = stub(() =>
+      of({ hasProgress: true, earnedValue: { percentCompleteBps: 1_000 } }),
+    );
     const notAllowed = await open({ preview: stub(() => of(preview())), progress }, MANAGER);
     expect(progress).not.toHaveBeenCalled();
     expect(notAllowed.dialog().querySelector('.suggestion')).toBeNull();

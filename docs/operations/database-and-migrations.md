@@ -48,6 +48,9 @@ one needs an explicit retention and legal-hold decision.
 
 ## Local development database
 
+> The single `InitialCreate` migration is **unreleased and is regenerated whenever the model changes** until the first release. A local database
+> created from an earlier build will not migrate to a regenerated one: drop it and let the API recreate it (`Database:MigrateOnStartup`).
+
 `docker compose -f deploy/docker-compose.yml up -d sql`, then run the API in Development: until the first migration exists it creates
 the schema from the model; afterwards it applies migrations at start (`Database:MigrateOnStartup`). Reset by dropping the database;
 never reset a shared or production database.

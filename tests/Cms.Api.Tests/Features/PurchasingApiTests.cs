@@ -1,6 +1,7 @@
 using System.Net;
 using Cms.Api.Tests.Infrastructure;
 using Cms.Application.Common;
+using Cms.Application.Features.Audit;
 using Cms.Application.Features.Costing;
 using Cms.Application.Features.Purchasing;
 using Cms.Domain.Features.Identity;
@@ -193,10 +194,38 @@ public sealed class PurchasingApiTests : IClassFixture<CmsApiFactory>
         Assert.Contains("lines are locked", await DetailAsync(edit));
 
         await InvoiceAsync(client, project.Id, approved.Lines[0].Id, 10_000);
-        var cancel = await client.PostAsync($"/api/purchase-orders/{approved.Id}/cancel", new { reason = "Mistake", version = approved.Version });
+
+        // Matching the invoice touched the order, so a page opened before it is stale: the cancel is a conflict, not a silent success.
+        var stale = await client.PostAsync($"/api/purchase-orders/{approved.Id}/cancel", new { reason = "Mistake", version = approved.Version });
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        Assert.Equal("concurrency_conflict", await RuleCodeAsync(stale));
+
+        var fresh = await GetOrderAsync(client, approved.Id);
+        var cancel = await client.PostAsync($"/api/purchase-orders/{approved.Id}/cancel", new { reason = "Mistake", version = fresh.Version });
         Assert.Equal(HttpStatusCode.Conflict, cancel.StatusCode);
         Assert.Contains("Close it instead", await DetailAsync(cancel));
-        Assert.False((await GetOrderAsync(client, approved.Id)).CanCancel);
+        Assert.False(fresh.CanCancel);
+    }
+
+    [SqlServerFact]
+    public async Task Cancelling_and_closing_keep_the_typed_reason_off_the_activity_log()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var project = await CreateProjectAsync(client);
+        var firm = await CreateFirmAsync(client);
+        var toCancel = await ApprovedAsync(client, project, firm);
+        var toClose = await ApprovedAsync(client, project, firm);
+
+        await client.PostAsync<PurchaseOrderDto>($"/api/purchase-orders/{toCancel.Id}/cancel", new { reason = "Supplier quoted 9,876,543 pesos in error", version = toCancel.Version });
+        await client.PostAsync<PurchaseOrderDto>($"/api/purchase-orders/{toClose.Id}/close", new { reason = "Delivered short by 1,234,567 pesos", version = toClose.Version });
+
+        var trail = await client.GetAsync<PagedResult<AuditEntryDto>>("/api/audit?entityType=PurchaseOrder");
+        Assert.Contains(trail.Items, entry => entry.Action == "PurchaseOrder.Cancelled");
+        Assert.Contains(trail.Items, entry => entry.Action == "PurchaseOrder.Closed");
+        Assert.DoesNotContain(trail.Items, entry => entry.Summary.Contains("9,876,543") || entry.Summary.Contains("1,234,567") || entry.Summary.Contains("Reason"));
+        // The reasons are still on the orders themselves.
+        Assert.Equal("Supplier quoted 9,876,543 pesos in error", (await GetOrderAsync(client, toCancel.Id)).CancelReason);
     }
 
     [SqlServerFact]

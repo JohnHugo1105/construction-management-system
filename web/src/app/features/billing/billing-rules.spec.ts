@@ -1,3 +1,4 @@
+import type { Progress } from '../progress/progress.models';
 import { breakdownRows } from './bill-form-dialog';
 import { bill, issuedBill, listBill, preview } from './billing.fixtures';
 import {
@@ -73,13 +74,19 @@ describe('billActions', () => {
 });
 
 describe('percentCompleteFrom', () => {
-  it('finds the percent complete wherever the progress answer puts it, and nothing in any other shape', () => {
-    expect(percentCompleteFrom({ percentCompleteBps: 4_200 })).toBe(4_200);
-    expect(percentCompleteFrom({ earnedValue: { percentCompleteBps: 3_500 } })).toBe(3_500);
-    expect(percentCompleteFrom({ project: { percentCompleteBps: 0 } })).toBe(0);
-    expect(percentCompleteFrom({ earnedValue: { percentCompleteBps: null } })).toBeNull();
-    expect(percentCompleteFrom('nope')).toBeNull();
+  const progress = (hasProgress: boolean, percentCompleteBps: number | null) =>
+    ({ hasProgress, earnedValue: { percentCompleteBps } }) as unknown as Progress;
+
+  it('takes the percent complete from the progress answer once progress has been recorded', () => {
+    expect(percentCompleteFrom(progress(true, 4_200))).toBe(4_200);
+    expect(percentCompleteFrom(progress(true, 0))).toBe(0);
+  });
+
+  it('gives no hint when nothing has been recorded, when nothing is budgeted, or when there is no answer', () => {
+    expect(percentCompleteFrom(progress(false, 0))).toBeNull();
+    expect(percentCompleteFrom(progress(true, null))).toBeNull();
     expect(percentCompleteFrom(null)).toBeNull();
+    expect(percentCompleteFrom(undefined)).toBeNull();
   });
 });
 

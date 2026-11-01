@@ -1,3 +1,4 @@
+import type { Progress } from '../progress/progress.models';
 import { IconName } from '../../shared/ui/icon/icon';
 import { ChipTone } from '../../shared/ui/status-chip/status-chip';
 import { Bill, BillKind, BillListItem, PaymentMethod } from './billing.models';
@@ -94,24 +95,10 @@ export function billActions(bill: Bill, who: BillPermissions): BillActions {
 }
 
 /**
- * Reads the project's percent complete from the progress API's answer, wherever that feature puts it, as basis points; null when it
- * is not there. The billing form only shows it as a hint, so an answer in any other shape is ignored.
+ * The project's percent complete from the progress answer, as basis points; null when nobody has recorded progress yet (a hint of "0% of the
+ * contract" would say something nobody measured). The billing form only shows it as a hint.
  */
-export function percentCompleteFrom(progress: unknown): number | null {
-  const read = (value: unknown): number | null => {
-    if (value === null || typeof value !== 'object') return null;
-    const candidate = (value as Record<string, unknown>)['percentCompleteBps'];
-    return typeof candidate === 'number' && Number.isFinite(candidate) && candidate >= 0
-      ? candidate
-      : null;
-  };
-  if (progress === null || typeof progress !== 'object') return null;
-  const root = progress as Record<string, unknown>;
-  return (
-    read(root) ??
-    read(root['earnedValue']) ??
-    read(root['project']) ??
-    read(root['summary']) ??
-    read(root['totals'])
-  );
+export function percentCompleteFrom(progress: Progress | null | undefined): number | null {
+  if (!progress?.hasProgress) return null;
+  return progress.earnedValue.percentCompleteBps;
 }

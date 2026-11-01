@@ -300,6 +300,14 @@ payroll, shown and exported, but not posted to a project**: the labor cost a pay
 * The payroll's remittance summary shows, per agency, what was taken from the workers, what the employer adds, and the sum to remit. The
   payroll register gains a column for each employee and employer share. **Remitting is done by a person; the system pays nothing.**
 
+* **Approval needs current tables.** The tables each statutory deduction was worked out from are recorded on the payroll. If a table is added,
+  corrected or retired after the payroll was worked out, approving is refused with "Recalculate the contributions and tax, then approve", so an
+  approved payroll can always be explained from its tables.
+* **"Needs setup" is judged on the day the tables are picked from**, the last day of the pay period (not today): a payroll for last December
+  processed in January is told about a table that only started in January.
+* **To remit counts only what was calculated.** When an agency has no table, a contribution typed in by hand is a deduction like any other but is
+  not in the remittance totals; the card says so.
+
 ## 7. Inventory (tools, equipment, machinery)
 
 * **Tools** are counted by quantity; **equipment and machinery** are single pieces with a unique serial number and a quantity of 1.
@@ -474,6 +482,14 @@ These rest on defaults chosen where the owner had not yet decided. Each is rever
 6. **A table used by a payroll that was approved and later voided** still counts as used and can't be changed.
 7. **Pay runs a month** defaults to 2 (semi-monthly).
 8. **Tax exemption** is a yes/no on the worker; partial exemptions and annual tax reconciliation are not modelled.
+
+**Narrow races that are accepted** (money stays correct; each is detected or harmless)
+
+* Locking the budget at the very moment someone saves a budget line can leave that line out of the baseline: the baseline's reconciliation shows
+  it (and the Changes page warns), and unlocking and locking again fixes it. Touching the project on every budget edit would make every other
+  project action ask for a reload, so it is not done.
+* Correcting a statutory table at the very moment a payroll is approved can let the approval through; the approved payroll keeps its own
+  amounts, so no pay changes.
 
 ## 11. Progress and earned value
 

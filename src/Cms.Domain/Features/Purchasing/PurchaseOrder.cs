@@ -203,6 +203,17 @@ public sealed class PurchaseOrder : AggregateRoot
         Touch(now);
     }
 
+    /// <summary>
+    /// Called when a supplier invoice is matched to one of this order's lines. It re-checks that the order is still approved and touches the
+    /// order, so an invoice and a cancel (or close) that happen at the same moment collide on the order's version instead of both succeeding.
+    /// </summary>
+    public void NoteMatchedInvoice(DateTimeOffset now)
+    {
+        if (Status != PurchaseOrderStatus.Approved)
+            throw new DomainRuleException($"{Number} was {Status.ToString().ToLowerInvariant()} while you were recording the invoice. Reload and choose another order, or leave the invoice unmatched.");
+        Touch(now);
+    }
+
     /// <summary>Closes an approved order: the supplier delivered less, so what was not invoiced is released from committed cost.</summary>
     public void Close(Project project, string? reason, Guid userId, DateTimeOffset now)
     {

@@ -242,6 +242,13 @@ public sealed class PayrollRun : AggregateRoot
     /// <summary>The company's pay runs per month when the contributions and tax were last worked out (a monthly table's base is the run's pay times this).</summary>
     public int RunsPerMonth { get; private set; } = 2;
 
+    /// <summary>
+    /// Which contribution and tax tables (and which versions of them) the statutory deductions were worked out from, as one short text.
+    /// Approving compares it with the tables in force now: a table added, changed or retired since the draft was worked out means the
+    /// deductions no longer match the tables, so the person recalculates first.
+    /// </summary>
+    public string? StatutoryBasis { get; private set; }
+
     public Guid CreatedByUserId { get; private set; }
     public Guid? ApprovedByUserId { get; private set; }
     public DateTimeOffset? ApprovedAtUtc { get; private set; }
@@ -288,13 +295,15 @@ public sealed class PayrollRun : AggregateRoot
     /// Replaces every worker's calculated contributions and tax with fresh amounts (adjustments are reset). A worker missing from
     /// <paramref name="amountsByWorker"/> has none. Draft only: an approved payroll keeps the amounts it was approved with.
     /// </summary>
-    public void ApplyStatutory(IReadOnlyDictionary<Guid, IReadOnlyList<StatutoryAmount>> amountsByWorker, int runsPerMonth, DateTimeOffset now)
+    public void ApplyStatutory(IReadOnlyDictionary<Guid, IReadOnlyList<StatutoryAmount>> amountsByWorker, int runsPerMonth, DateTimeOffset now,
+        string? statutoryBasis = null)
     {
         if (Status != PayrollRunStatus.Draft)
             throw new DomainRuleException("Contributions and tax can only be recalculated while the payroll is a draft.");
         if (runsPerMonth is < StatutoryCalculator.MinimumRunsPerMonth or > StatutoryCalculator.MaximumRunsPerMonth)
             throw new ArgumentOutOfRangeException(nameof(runsPerMonth));
         RunsPerMonth = runsPerMonth;
+        StatutoryBasis = statutoryBasis;
         foreach (var line in _lines)
             line.ApplyStatutory(amountsByWorker.TryGetValue(line.WorkerId, out var amounts) ? amounts : []);
         Touch(now);

@@ -16,8 +16,13 @@ import {
 export class StatutoryApi {
   private readonly http = inject(HttpClient);
 
-  status(): Observable<StatutoryStatus> {
-    return this.http.get<StatutoryStatus>('/api/statutory/status');
+  /**
+   * Which agencies have a table in force on a day. A payroll is worked out from the tables in force at the END of its pay period, so
+   * the payroll pages ask about that day (not today); left out it is today.
+   */
+  status(asOf?: string): Observable<StatutoryStatus> {
+    const params = asOf ? new HttpParams().set('asOf', asOf) : undefined;
+    return this.http.get<StatutoryStatus>('/api/statutory/status', { params });
   }
 
   list(includeRetired: boolean): Observable<PagedResult<StatutoryScheduleListItem>> {

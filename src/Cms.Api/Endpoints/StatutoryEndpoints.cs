@@ -15,7 +15,7 @@ public sealed class StatutoryEndpoints : IEndpointModule
     {
         var group = api.MapFeature("/statutory", "Statutory");
 
-        group.MapGet("/status", async (StatutoryService statutory, CancellationToken ct) => Results.Ok(await statutory.StatusAsync(ct)))
+        group.MapGet("/status", async ([FromQuery] DateOnly? asOf, StatutoryService statutory, CancellationToken ct) => Results.Ok(await statutory.StatusAsync(asOf, ct)))
             .RequirePermission(Permissions.PayrollRead);
 
         group.MapGet("/schedules", async ([FromQuery] string? agency, [FromQuery] bool? includeRetired, [AsParameters] PageQuery page,

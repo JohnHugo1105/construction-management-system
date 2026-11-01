@@ -20,10 +20,14 @@ public sealed class StatutoryService(IStatutoryScheduleRepository schedules, ISt
     public async Task<StatutoryScheduleDto> GetAsync(Guid id, CancellationToken cancellationToken) =>
         await ReadAsync(id, await TodayAsync(cancellationToken), cancellationToken);
 
-    /// <summary>Per agency: Available when a table is in force today, otherwise Needs setup with the manual fallback. Never an error.</summary>
-    public async Task<StatutoryStatusDto> StatusAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Per agency: Available when a table is in force on the day asked about, otherwise Needs setup with the manual fallback. Never an error.
+    /// <paramref name="asOf"/> is the day to judge (a pay run is calculated from the tables in force at the END of its period, so the pages ask
+    /// about that day, not today); left out it is today.
+    /// </summary>
+    public async Task<StatutoryStatusDto> StatusAsync(DateOnly? asOf, CancellationToken cancellationToken)
     {
-        var today = await TodayAsync(cancellationToken);
+        var today = asOf ?? await TodayAsync(cancellationToken);
         var inForce = (await reader.InForceAsync(today, cancellationToken)).ToDictionary(item => item.Agency, StringComparer.Ordinal);
         var agencies = StatutoryAgencies.InOrder.Select(agency =>
         {

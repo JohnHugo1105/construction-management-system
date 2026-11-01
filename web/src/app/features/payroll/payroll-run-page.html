@@ -90,7 +90,13 @@
         @if (remit(); as owed) {
           <section class="card remit" aria-labelledby="remit-heading">
             <div class="panel-head">
-              <h2 id="remit-heading" class="card__title">Contributions and tax to remit</h2>
+              <h2 id="remit-heading" class="card__title">
+                {{
+                  setupLines().length > 0
+                    ? 'Calculated contributions and tax'
+                    : 'Contributions and tax to remit'
+                }}
+              </h2>
               @if (canRecalculate()) {
                 <button appButton type="button" (click)="recalculating.set(true)">
                   Recalculate
@@ -117,6 +123,12 @@
             <p class="remit__total">
               <span>Total to remit</span><span class="money">{{ owed.total }}</span>
             </p>
+            @if (setupLines().length > 0) {
+              <p class="text-muted text-small">
+                Amounts you typed in by hand for an agency without a table are not in these totals.
+                Add them to what you remit.
+              </p>
+            }
             @if (info.draft) {
               <p class="text-muted text-small">
                 Monthly tables use this run's pay times the pay runs a month, as an estimate of the

@@ -143,6 +143,23 @@ public sealed class SubcontractApiTests : IClassFixture<CmsApiFactory>
     }
 
     [SqlServerFact]
+    public async Task Once_all_the_work_is_certified_nothing_is_left_committed_even_when_each_claim_rounds_its_own_vat()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        // 2,000,008 centavos before 12% VAT: the whole sum is 2,240,008.96 -> VAT 240,001 (rounded once) but two claims of 1,000,004 each give
+        // VAT 120,000 + 120,000, a centavo less than the whole. That centavo is not a commitment.
+        var awarded = await AwardedAsync(client, sumMinor: 2_000_008, vat: "Exclusive");
+        var first = await CertifiedAsync(client, awarded, 1_000_004);
+        var done = await CertifiedAsync(client, first, 2_000_008);
+
+        var dashboard = await client.GetAsync<DashboardDto>("/api/reports/dashboard");
+
+        Assert.Null(dashboard.Projects.Single(item => item.Id == done.ProjectId).Commitments);
+        Assert.Null((await client.GetAsync<CostSummaryDto>($"/api/projects/{done.ProjectId}/cost-summary")).Commitments);
+    }
+
+    [SqlServerFact]
     public async Task A_subcontract_with_no_work_item_still_posts_unclassified_cost()
     {
         var (client, _) = await SignedInAsync(_factory);

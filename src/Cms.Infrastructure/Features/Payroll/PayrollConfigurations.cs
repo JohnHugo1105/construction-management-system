@@ -49,6 +49,7 @@ internal sealed class PayrollRunConfiguration : IEntityTypeConfiguration<Payroll
         builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.HoursPerDay).HasPrecision(5, 2);
         builder.Property(item => item.VoidReason).HasMaxLength(300);
+        builder.Property(item => item.StatutoryBasis).HasMaxLength(400);
         builder.Property(item => item.ClientRequestId).HasMaxLength(80);
         builder.Ignore(item => item.TotalGrossMinor);
         builder.Ignore(item => item.TotalDeductionsMinor);

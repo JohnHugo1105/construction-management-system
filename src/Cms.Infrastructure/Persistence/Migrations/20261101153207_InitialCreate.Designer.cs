@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CmsDbContext))]
-    [Migration("20261101150716_InitialCreate")]
+    [Migration("20261101153207_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -1464,6 +1464,10 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("StatutoryBasis")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");

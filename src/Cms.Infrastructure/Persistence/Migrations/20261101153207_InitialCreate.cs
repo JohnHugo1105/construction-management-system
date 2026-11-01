@@ -106,6 +106,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     HoursPerDay = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     OvertimeMultiplierBps = table.Column<int>(type: "int", nullable: false),
                     RunsPerMonth = table.Column<int>(type: "int", nullable: false),
+                    StatutoryBasis = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: true),
                     CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ApprovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ApprovedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),

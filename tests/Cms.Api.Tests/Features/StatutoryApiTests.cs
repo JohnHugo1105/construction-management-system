@@ -200,6 +200,73 @@ public sealed class StatutoryApiTests : IClassFixture<CmsApiFactory>
     }
 
     [SqlServerFact]
+    public async Task Needs_setup_is_judged_on_the_day_the_payroll_is_calculated_from_not_on_today()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        // The only SSS table starts on 1 Jan 2027: it is in force for a period ending after that, and not for one ending in 2026.
+        await admin.PostAsync<StatutoryScheduleDto>(Schedules, SssTable(effectiveFrom: "2027-01-01"));
+
+        var before = await admin.GetAsync<StatutoryStatusDto>("/api/statutory/status?asOf=2026-12-31");
+        var after = await admin.GetAsync<StatutoryStatusDto>("/api/statutory/status?asOf=2027-01-01");
+
+        Assert.Equal("NeedsSetup", before.Agencies.Single(item => item.Agency == "Sss").State);
+        Assert.Equal("Available", after.Agencies.Single(item => item.Agency == "Sss").State);
+        // The answer says which day it judged (today when none is asked about).
+        Assert.Equal(new DateOnly(2026, 12, 31), before.Today);
+    }
+
+    [SqlServerFact]
+    public async Task A_payroll_is_not_approved_after_a_table_was_added_or_changed_until_it_is_recalculated()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        var project = await NewProjectAsync(admin);
+        var juan = await AssignAsync(admin, await HireAsync(admin, "W-001", "Juan", "Dela Cruz", rateMinor: 80_000), project);
+        await RecordAsync(admin, juan.Id, project.Id, "2026-10-05", 8m);
+        var sss = await admin.PostAsync<StatutoryScheduleDto>(Schedules, SssTable());
+        var draft = await admin.PostAsync<PayrollRunDto>("/api/payroll-runs", new { periodStart = "2026-10-01", periodEnd = "2026-10-15" });
+
+        // A table is corrected after the draft was worked out: approving would leave deductions that no longer match the table they cite.
+        var corrected = (object)new
+        {
+            agency = "Sss", name = "Artificial test brackets", effectiveFrom = "2026-01-01", method = "Brackets", periodBasis = "Monthly", version = sss.Version,
+            rows = new object[]
+            {
+                new { fromMinor = 0L, toMinor = (long?)100_000, employeeMinor = 1_111L, employerMinor = 2_222L, baseTaxMinor = 0L, rateBps = 0 },
+                new { fromMinor = 100_000L, toMinor = (long?)null, employeeMinor = 4_000L, employerMinor = 5_000L, baseTaxMinor = 0L, rateBps = 0 }
+            }
+        };
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsync($"{Schedules}/{sss.Id}", corrected)).StatusCode);
+
+        var refused = await admin.PostAsync($"/api/payroll-runs/{draft.Id}/approve", new { version = draft.Version });
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        Assert.Contains("Recalculate the contributions and tax, then approve", (await ApiClient.ProblemAsync(refused)).GetProperty("detail").GetString());
+
+        // Recalculating takes the table as it is now, and then approval goes through.
+        var current = await admin.GetAsync<PayrollRunDto>($"/api/payroll-runs/{draft.Id}");
+        var recalculated = await admin.PostAsync<PayrollRunDto>($"/api/payroll-runs/{draft.Id}/recalculate-statutory", new { version = current.Version });
+        Assert.Equal("Approved", (await admin.PostAsync<PayrollRunDto>($"/api/payroll-runs/{draft.Id}/approve", new { version = recalculated.Version })).Status);
+    }
+
+    [SqlServerFact]
+    public async Task A_table_added_after_the_draft_also_stops_approval_until_recalculated()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        var project = await NewProjectAsync(admin);
+        var juan = await AssignAsync(admin, await HireAsync(admin, "W-001", "Juan", "Dela Cruz", rateMinor: 80_000), project);
+        await RecordAsync(admin, juan.Id, project.Id, "2026-10-05", 8m);
+        var draft = await admin.PostAsync<PayrollRunDto>("/api/payroll-runs", new { periodStart = "2026-10-01", periodEnd = "2026-10-15" });
+        await admin.PostAsync<StatutoryScheduleDto>(Schedules, SssTable());
+
+        var refused = await admin.PostAsync($"/api/payroll-runs/{draft.Id}/approve", new { version = draft.Version });
+
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        Assert.Contains("table was added or changed", (await ApiClient.ProblemAsync(refused)).GetProperty("detail").GetString());
+    }
+
+    [SqlServerFact]
     public async Task Runs_per_month_and_worker_flags_change_what_a_recalculation_takes()
     {
         var (client, _) = await SignedInAsync(_factory);
