@@ -32,7 +32,7 @@ export function itemTypeField(): ListQueryField<'' | ItemType> {
   return listField.choice<'' | ItemType>(['', ...ITEM_TYPES], '');
 }
 
-export const COST_ORIGINS: readonly CostOrigin[] = ['Manual', 'Payroll', 'Inventory'];
+export const COST_ORIGINS: readonly CostOrigin[] = ['Manual', 'Payroll', 'Inventory', 'Subcontract'];
 
 /** Where a cost came from, or empty for all of them. */
 export function originField(): ListQueryField<'' | CostOrigin> {

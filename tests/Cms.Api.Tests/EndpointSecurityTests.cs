@@ -72,7 +72,6 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
     {
         "purchasing.read", "purchasing.manage", "purchasing.approve",
         "billing.read", "billing.manage", "billing.approve",
-        "subcontracts.read", "subcontracts.manage", "subcontracts.approve",
         "statutory.manage"
     };
 

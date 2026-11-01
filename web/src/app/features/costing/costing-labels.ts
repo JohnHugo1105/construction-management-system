@@ -46,6 +46,7 @@ export const ORIGIN_PRESENTATION: Record<CostOrigin, OriginPresentation> = {
   Manual: { label: 'Manual', tone: 'neutral', icon: 'pencil', correctIn: '' },
   Payroll: { label: 'Payroll', tone: 'info', icon: 'payroll', correctIn: 'Payroll' },
   Inventory: { label: 'Inventory', tone: 'info', icon: 'stock', correctIn: 'Stock' },
+  Subcontract: { label: 'Subcontractor', tone: 'info', icon: 'contract', correctIn: 'Subcontracts' },
 };
 
 export function presentOrigin(origin: string): OriginPresentation {

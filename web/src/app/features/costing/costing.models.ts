@@ -7,7 +7,7 @@ export type ItemType = 'Material' | 'Labor' | 'Equipment' | 'Subcontract' | 'Oth
 
 export type VatTreatment = 'Inclusive' | 'Exclusive' | 'Exempt';
 
-export type CostOrigin = 'Manual' | 'Payroll' | 'Inventory';
+export type CostOrigin = 'Manual' | 'Payroll' | 'Inventory' | 'Subcontract';
 
 /** How a slice of the budget stands: the API works it out from exact amounts. */
 export type Health = 'NoActivity' | 'OnTrack' | 'NearLimit' | 'OverBudget' | 'Unbudgeted';
