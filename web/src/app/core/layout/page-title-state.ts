@@ -20,7 +20,7 @@ export class PageTitleState {
       const page = this.current();
       const company = this.session.organizationName();
       this.browserTitle.setTitle(
-        [page, company || 'Construction Management'].filter(Boolean).join(' - '),
+        [page, company || 'ConstructOPX'].filter(Boolean).join(' - '),
       );
     });
   }

@@ -29,10 +29,10 @@ business choices the owner has not confirmed; each slice lists them in its rules
 * **Performance.** Every read you add must be a fixed number of SQL statements however many rows exist (assert it the way the existing
   endpoints do), and no new request waterfall in the UI. State "Performance: no measurable path touched" if that is true.
 * **Environment.**
-  * `source /tmp/claude-0/cms-env.sh` (sets `DOTNET_ROOT`, `PATH`, `CMS_TEST_SQLSERVER`). Run `CI=true` builds before reporting: CI
+  * `source /tmp/claude-0/cms-env.sh` (sets `DOTNET_ROOT`, `PATH`, `CONSTRUCTOPX_TEST_SQLSERVER`). Run `CI=true` builds before reporting: CI
     builds with warnings as errors and applies the style rules (file-scoped namespaces and so on).
   * SQL Server runs on this machine. If connections are refused, run `bash /tmp/claude-0/start-sql.sh` and wait for it to print ready.
-  * Your worktree has no `web/node_modules`: `ln -s /home/user/construction-management-system/web/node_modules web/node_modules`
+  * Your worktree has no `web/node_modules`: `ln -s <the main checkout>/web/node_modules web/node_modules`
     (it is ignored by git, never commit it). Do not run `npm ci`.
   * Never `pkill -f` anything. Stop only processes you started.
 * **Report** (final message): what you built, files changed, tests run and result (counts), what you did not run and why, the Defaults
@@ -42,11 +42,11 @@ business choices the owner has not confirmed; each slice lists them in its rules
 
 | Slice | Owns |
 | --- | --- |
-| **G Billing** | `Cms.Domain/Features/Billing`, `Cms.Application/Features/Billing`, `Cms.Infrastructure/Features/Billing`, `Cms.Api/Endpoints/BillingEndpoints.cs`, `web/src/app/features/billing`, tests `*Billing*`. **Also**, only for the government-limit advisory: `ChangeOrderService.cs`, `ChangeOrderContracts.cs` (one new read-only field on the change-order DTO), the change-order page in `web/src/app/features/change-orders` (one banner), and the matching tests. |
-| **H Payroll** | `Cms.Domain/Features/Payroll`, `Cms.Application/Features/Payroll`, `Cms.Infrastructure/Features/Payroll`, `Cms.Api/Endpoints/PayrollEndpoints.cs`, `web/src/app/features/payroll`, tests `*Payroll*`, `*Attendance*`. **Also** the worker's rest day: `Worker.cs`, `WorkerService.cs`, `WorkforceContracts.cs`, `WorkforceConfigurations.cs`, the worker form and page in `web/src/app/features/workforce`. |
-| **I Receiving** | `Cms.Domain/Features/Purchasing`, `Cms.Application/Features/Purchasing`, `Cms.Infrastructure/Features/Purchasing`, `Cms.Api/Endpoints/PurchasingEndpoints.cs`, `web/src/app/features/purchasing`, tests `*Purchas*`, `*Receipt*`. |
-| **J Bonds** | New: `Cms.Domain/Features/Bonds`, `Cms.Application/Features/Bonds`, `Cms.Infrastructure/Features/Bonds`, `Cms.Api/Endpoints/BondEndpoints.cs`, `web/src/app/features/bonds` (replace the placeholder `bonds-page.ts` and `bonds.routes.ts`, keep the exported names `BONDS_ROUTES`, `BondsPage`), tests `*Bond*`. |
-| **Lead** | `Permissions.cs` (already extended), `EndpointSecurityTests.cs` (remove your permissions from `ExpectedUnusedWhileBuilding` when your endpoints land: that one edit is allowed), `app.routes.ts`, `navigation.ts`, `projects.routes.ts`, `project-detail-page.ts`, `project-billing-tab` placement of the bonds card, `DevelopmentSeeder.cs`, `docs/business-rules.md`, `README.md`, migrations, `CmsDbContext.cs`, `DependencyInjection.cs`. |
+| **G Billing** | `ConstructOPX.Domain/Features/Billing`, `ConstructOPX.Application/Features/Billing`, `ConstructOPX.Infrastructure/Features/Billing`, `ConstructOPX.Api/Endpoints/BillingEndpoints.cs`, `web/src/app/features/billing`, tests `*Billing*`. **Also**, only for the government-limit advisory: `ChangeOrderService.cs`, `ChangeOrderContracts.cs` (one new read-only field on the change-order DTO), the change-order page in `web/src/app/features/change-orders` (one banner), and the matching tests. |
+| **H Payroll** | `ConstructOPX.Domain/Features/Payroll`, `ConstructOPX.Application/Features/Payroll`, `ConstructOPX.Infrastructure/Features/Payroll`, `ConstructOPX.Api/Endpoints/PayrollEndpoints.cs`, `web/src/app/features/payroll`, tests `*Payroll*`, `*Attendance*`. **Also** the worker's rest day: `Worker.cs`, `WorkerService.cs`, `WorkforceContracts.cs`, `WorkforceConfigurations.cs`, the worker form and page in `web/src/app/features/workforce`. |
+| **I Receiving** | `ConstructOPX.Domain/Features/Purchasing`, `ConstructOPX.Application/Features/Purchasing`, `ConstructOPX.Infrastructure/Features/Purchasing`, `ConstructOPX.Api/Endpoints/PurchasingEndpoints.cs`, `web/src/app/features/purchasing`, tests `*Purchas*`, `*Receipt*`. |
+| **J Bonds** | New: `ConstructOPX.Domain/Features/Bonds`, `ConstructOPX.Application/Features/Bonds`, `ConstructOPX.Infrastructure/Features/Bonds`, `ConstructOPX.Api/Endpoints/BondEndpoints.cs`, `web/src/app/features/bonds` (replace the placeholder `bonds-page.ts` and `bonds.routes.ts`, keep the exported names `BONDS_ROUTES`, `BondsPage`), tests `*Bond*`. |
+| **Lead** | `Permissions.cs` (already extended), `EndpointSecurityTests.cs` (remove your permissions from `ExpectedUnusedWhileBuilding` when your endpoints land: that one edit is allowed), `app.routes.ts`, `navigation.ts`, `projects.routes.ts`, `project-detail-page.ts`, `project-billing-tab` placement of the bonds card, `DevelopmentSeeder.cs`, `docs/business-rules.md`, `README.md`, migrations, `ConstructOpxDbContext.cs`, `DependencyInjection.cs`. |
 
 Already done by the lead: the permissions `purchasing.receive` (Administrator, Project Manager, Cost Engineer, Accountant), `bonds.read`
 (Administrator, Project Manager, Cost Engineer, Accountant, Viewer), `bonds.manage` (Administrator, Project Manager, Accountant) and

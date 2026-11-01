@@ -1,5 +1,5 @@
 /**
- * Permission names, exactly as the API returns them in the session (see src/Cms.Application/Common/Permissions.cs).
+ * Permission names, exactly as the API returns them in the session (see src/ConstructOPX.Application/Common/Permissions.cs).
  * Use these constants with `permissionGuard(...)` and `SessionState.can(...)` instead of typing the strings.
  */
 export const Permission = {

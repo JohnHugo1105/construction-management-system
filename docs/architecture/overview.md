@@ -5,13 +5,13 @@ SQL Server 2022. One deployable API and one static web client; features are fold
 
 ```
 web/ (Angular 22)                        src/
-  core/    session, auth, shell            Cms.Domain          entities, value objects, rules             (no dependencies)
-  shared/  ui kit, money/date helpers      Cms.Application     use cases, ports, DTOs, permissions       (Domain)
-  features/<feature>/                      Cms.Infrastructure  EF Core, SQL Server, hashing, adapters   (Application, Domain)
-        *-api.ts  (only HTTP here)         Cms.Api             Minimal APIs, auth, errors, composition   (Application, Infrastructure)
+  core/    session, auth, shell            ConstructOPX.Domain          entities, value objects, rules             (no dependencies)
+  shared/  ui kit, money/date helpers      ConstructOPX.Application     use cases, ports, DTOs, permissions       (Domain)
+  features/<feature>/                      ConstructOPX.Infrastructure  EF Core, SQL Server, hashing, adapters   (Application, Domain)
+        *-api.ts  (only HTTP here)         ConstructOPX.Api             Minimal APIs, auth, errors, composition   (Application, Infrastructure)
 ```
 
-Dependencies point inward and `tests/Cms.ArchitectureTests` enforces it: the inner layers have no package references and no EF Core,
+Dependencies point inward and `tests/ConstructOPX.ArchitectureTests` enforces it: the inner layers have no package references and no EF Core,
 ASP.NET Core or SQL client namespaces, money is never floating point, every tenant-owned entity has the tenant filter, every aggregate has
 a concurrency token, every string column has a length, and every API endpoint outside identity names a permission.
 
@@ -46,7 +46,7 @@ a concurrency token, every string column has a length, and every API endpoint ou
    copied cookie dies when the person signs out, changes a password or is turned off), correlation id, "password change
    required" gate, authorization (a named permission per endpoint), then the endpoint filters (private/no-store, anti-forgery on writes).
 3. The endpoint calls one application service. The service takes the person and company from `ICurrentUser`, loads aggregates through
-   repositories (the tenant filter is added by `CmsDbContext` to every query), calls domain methods that validate and enforce rules,
+   repositories (the tenant filter is added by `ConstructOpxDbContext` to every query), calls domain methods that validate and enforce rules,
    records an audit line and saves once through `IUnitOfWork`.
 4. Domain exceptions become problem details in one place (`ApiExceptionHandler`): validation (422, per field), rule violation
    (409), stale version (409 `concurrency_conflict`), not found (404), sign-in failure (401). Unexpected errors become a generic message
@@ -54,7 +54,7 @@ a concurrency token, every string column has a length, and every API endpoint ou
 
 ## Multi-company isolation (three layers)
 
-1. Every entity carries `TenantId` and `CmsDbContext` adds `WHERE TenantId = <signed-in company>` to every query (nobody signed in
+1. Every entity carries `TenantId` and `ConstructOpxDbContext` adds `WHERE TenantId = <signed-in company>` to every query (nobody signed in
    means no rows).
 2. Domain constructors stamp the tenant from the current user; the context **refuses to save** a new record stamped with another
    company's id.
@@ -64,7 +64,7 @@ Usernames are unique across the whole system because sign-in has no company fiel
 
 ## Concurrency
 
-Every aggregate has an integer `Version` that `CmsDbContext` increments on each update; it is also an EF concurrency token. Every
+Every aggregate has an integer `Version` that `ConstructOpxDbContext` increments on each update; it is also an EF concurrency token. Every
 update request carries the version the person opened. The service compares it first (the token alone can't catch a stale form), and the
 token catches two saves racing in the same instant. Either way: 409 `concurrency_conflict` and the person is asked to reload.
 

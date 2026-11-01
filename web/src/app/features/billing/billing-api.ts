@@ -16,7 +16,7 @@ import {
 } from './billing.models';
 
 /**
- * The billing endpoints, one method each (src/Cms.Api/Endpoints/BillingEndpoints.cs). Every bill action answers with the whole
+ * The billing endpoints, one method each (src/ConstructOPX.Api/Endpoints/BillingEndpoints.cs). Every bill action answers with the whole
  * bill, so a page shows the server's figures after each step. Nothing here sends anything to a client or collects money.
  */
 @Injectable({ providedIn: 'root' })

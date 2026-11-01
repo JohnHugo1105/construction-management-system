@@ -5,7 +5,7 @@ model: opus
 effort: high
 ---
 
-Act as the CMS integration lead for a bounded parallel implementation.
+Act as ConstructOPX integration lead for a bounded parallel implementation.
 
 Before writers start, verify the parent supplied an ownership ledger with no
 overlap. Own all shared integration surfaces: application composition, API

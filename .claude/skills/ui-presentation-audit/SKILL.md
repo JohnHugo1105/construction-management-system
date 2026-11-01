@@ -74,8 +74,8 @@ the attachments.
 Start or reuse the local app, seed only when the use case needs data, then
 browse the named pages:
 
-1. Start or reuse a healthy local CMS profile: SQL Server from `deploy/docker-compose.yml`,
-   `dotnet run --project src/Cms.Api`, and `npm start --prefix web` (port 4200). Do not invent ports, launchers, or a
+1. Start or reuse a healthy local ConstructOPX profile: SQL Server from `deploy/docker-compose.yml`,
+   `dotnet run --project src/ConstructOPX.Api`, and `npm start --prefix web` (port 4200). Do not invent ports, launchers, or a
    parallel start path. If the user already gave a reachable local or hosted
    URL, open that after confirming it is up.
 2. Seed demo data only when the target screens cannot be judged without

@@ -4,8 +4,8 @@
 
 * A password manager, protected CI environment secrets, or root-only files on the server. **Never** the repository, documents, chat,
   tickets, screenshots or logs. `.env` is git-ignored; `.env.example` lists names only.
-* The application needs one secret: the database connection string (`CMS_DATABASE_CONNECTION`). Use a **dedicated application login**
-  with rights only on the CMS database, separate from the administrator login used for migrations and backups.
+* The application needs one secret: the database connection string (`CONSTRUCTOPX_DATABASE_CONNECTION`). Use a **dedicated application login**
+  with rights only on ConstructOPX database, separate from the administrator login used for migrations and backups.
 * Backup storage uses its own credential that can write backups but cannot read the live data; the application credential cannot reach
   the backups. Keep evidence of both.
 
@@ -41,9 +41,9 @@ rotate any credential that was ever real, and do not reuse that signing key.
   `deploy/web/nginx.conf` and add the proxy's address there if it is public. The API must be reachable only through nginx.
 * The session keys (`DataProtection__KeysPath`) are secrets too: they decrypt every session cookie. Keep that folder private, persistent
   and backed up with the database; losing it only signs everyone out, but leaking it lets someone forge a session cookie.
-* The API connects as the `cms_app` login (read and write the CMS tables, nothing else), created by `deploy/sql/create-app-login.sql`.
+* The API connects as the `constructopx_app` login (read and write ConstructOPX tables, nothing else), created by `deploy/sql/create-app-login.sql`.
   The administrator login is used only for migrations, backups and that script. Rotate the application password by running the script
-  again with a new `CMS_APP_DB_PASSWORD` and restarting the API.
+  again with a new `CONSTRUCTOPX_APP_DB_PASSWORD` and restarting the API.
 
 ## Monthly review
 

@@ -1,8 +1,8 @@
 # AGENTS.md
 
-> Construction Management System (CMS) — Agent and Engineering Guidelines
+> ConstructOPX — Agent and Engineering Guidelines
 
-This file is the durable repository guidance for software-engineering work in the CMS, for every agentic tool
+This file is the durable repository guidance for software-engineering work in ConstructOPX, for every agentic tool
 (Claude Code, Codex, Cursor, others) and for human contributors. It applies the engineering standards of the DriveOPX
 platform (monolith-first Clean Architecture on Angular, ASP.NET Core, EF Core and SQL Server) to a construction
 cost-control, workforce and warehouse system. Deliberate differences from DriveOPX are listed in
@@ -20,8 +20,8 @@ repository's current framework versions and conventions.
 ## Repository command baseline
 
 - Restore tools once: `dotnet tool restore`
-- Solution build: `dotnet build ConstructionManagementSystem.sln --configuration Release`
-- .NET tests: `dotnet test ConstructionManagementSystem.sln --configuration Release`
+- Solution build: `dotnet build ConstructOPX.sln --configuration Release`
+- .NET tests: `dotnet test ConstructOPX.sln --configuration Release`
 - Architecture rules only: `npm run check:architecture`
 - Angular install: `npm ci --prefix web`
 - Angular build: `npm run build --prefix web`
@@ -29,8 +29,8 @@ repository's current framework versions and conventions.
 - Source guards: `npm run check:no-gradients` and `npm run check:server-backed-interactions`
 - Everything: `npm run validate`
 - Local SQL Server 2022: `docker compose -f deploy/docker-compose.yml up -d sql`
-- Run API and web separately: `dotnet run --project src/Cms.Api` and `npm start --prefix web`
-- Add a migration: `dotnet ef migrations add <Name> --project src/Cms.Infrastructure --startup-project src/Cms.Api --output-dir Persistence/Migrations`
+- Run API and web separately: `dotnet run --project src/ConstructOPX.Api` and `npm start --prefix web`
+- Add a migration: `dotnet ef migrations add <Name> --project src/ConstructOPX.Infrastructure --startup-project src/ConstructOPX.Api --output-dir Persistence/Migrations`
 
 Day-to-day test runs follow the test posture under Validation and Evidence (affected tests only); the full commands
 above are the release gate.
@@ -300,13 +300,13 @@ reporting); or its rules change independently (tax rates, pricing). Otherwise ke
 
 ## 5) Boundaries and Layering
 
-* **Domain** (`Cms.Domain`): entities, value objects, aggregates, domain events, specifications and rules. Free of
+* **Domain** (`ConstructOPX.Domain`): entities, value objects, aggregates, domain events, specifications and rules. Free of
   infrastructure concerns, provider DTOs and external libraries. No project references.
-* **Application** (`Cms.Application`): use cases (commands and queries), ports (repository and gateway interfaces),
+* **Application** (`ConstructOPX.Application`): use cases (commands and queries), ports (repository and gateway interfaces),
   validators and DTOs. Depends only on Domain. No EF Core, no ASP.NET Core.
-* **Infrastructure** (`Cms.Infrastructure`): EF Core `DbContext`, SQL Server, migrations, provider adapters, password
+* **Infrastructure** (`ConstructOPX.Infrastructure`): EF Core `DbContext`, SQL Server, migrations, provider adapters, password
   hashing, background work. Implements Application ports.
-* **Api** (`Cms.Api`): ASP.NET Core Minimal APIs, the composition root, authentication and delivery concerns.
+* **Api** (`ConstructOPX.Api`): ASP.NET Core Minimal APIs, the composition root, authentication and delivery concerns.
 * **Web** (`web/`): the Angular client. Services wrap API endpoints 1:1; HTTP transport stays in `*-api.ts` files.
 
 **Dependency rule**: dependencies always point inward. `ArchitectureTests` enforce it.
@@ -363,7 +363,7 @@ reporting); or its rules change independently (tax rates, pricing). Otherwise ke
 
 ### End-user UI language
 
-Write every label, heading, instruction, empty state, validation message and error for the intended CMS audience
+Write every label, heading, instruction, empty state, validation message and error for the intended ConstructOPX audience
 (Administrator, Project Manager, Cost Engineer, Site Engineer, HR Officer, Warehouse Keeper, Accountant) in plain,
 specific language with a clear next action. No system terminology, internal identifiers or raw API errors. Buttons name
 the result ("Save budget line", not "Submit"). Money reads "₱1,250,000.00"; dates read "3 Dec 2026".
@@ -386,16 +386,16 @@ mobile-first layouts that hold at 375 x 812, 768 x 1024 and 1440 x 900 without h
 
 ```
 src/
-  Cms.Domain/            # Features/<Feature>/ entities, value objects, rules, events; Common/
-  Cms.Application/       # Features/<Feature>/ use cases, ports, DTOs, validators
-  Cms.Infrastructure/    # Persistence/ (DbContext, configurations, migrations), Security/, Features/<Feature>/
-  Cms.Api/               # Endpoints/, Errors/, Program.cs
+  ConstructOPX.Domain/            # Features/<Feature>/ entities, value objects, rules, events; Common/
+  ConstructOPX.Application/       # Features/<Feature>/ use cases, ports, DTOs, validators
+  ConstructOPX.Infrastructure/    # Persistence/ (DbContext, configurations, migrations), Security/, Features/<Feature>/
+  ConstructOPX.Api/               # Endpoints/, Errors/, Program.cs
 tests/
-  Cms.Domain.UnitTests/
-  Cms.Application.UnitTests/
-  Cms.Infrastructure.IntegrationTests/
-  Cms.Api.Tests/
-  Cms.ArchitectureTests/
+  ConstructOPX.Domain.UnitTests/
+  ConstructOPX.Application.UnitTests/
+  ConstructOPX.Infrastructure.IntegrationTests/
+  ConstructOPX.Api.Tests/
+  ConstructOPX.ArchitectureTests/
 web/
   src/app/{core,features,layout,shared}/
 docs/                    # architecture, business rules, runbooks

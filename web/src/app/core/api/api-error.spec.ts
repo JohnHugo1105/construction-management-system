@@ -77,7 +77,7 @@ describe('toApiError', () => {
         500,
         {
           title: 'Microsoft.Data.SqlClient.SqlException',
-          detail: 'Cannot insert duplicate key at Cms.Infrastructure.Projects line 42',
+          detail: 'Cannot insert duplicate key at ConstructOPX.Infrastructure.Projects line 42',
           code: 'server_error',
           traceId: 'body-id',
         },
@@ -89,7 +89,7 @@ describe('toApiError', () => {
     expect(error.title).toBe('Something went wrong');
     expect(error.detail).toBe("We couldn't finish that. Try again in a moment.");
     expect(`${error.title} ${error.detail} ${error.message}`).not.toMatch(
-      /Sql|duplicate|Cms\.Infrastructure|line 42/,
+      /Sql|duplicate|ConstructOPX\.Infrastructure|line 42/,
     );
     // The reference to quote comes from the response header, since the body of a failure is not trusted.
     expect(error.traceId).toBe('header-id');

@@ -1,7 +1,7 @@
 # Deployment
 
-One immutable image per approved commit, deployed by exact commit id. Images: `cms-api:<sha>` (`src/Cms.Api/Dockerfile`) and
-`cms-web:<sha>` (`deploy/web/Dockerfile`). `deploy/docker-compose.yml` runs SQL Server, the API and the web server.
+One immutable image per approved commit, deployed by exact commit id. Images: `constructopx-api:<sha>` (`src/ConstructOPX.Api/Dockerfile`) and
+`constructopx-web:<sha>` (`deploy/web/Dockerfile`). `deploy/docker-compose.yml` runs SQL Server, the API and the web server.
 
 > **Verification status.** The Dockerfiles, nginx configuration and compose file were written and reviewed but **not built or run**
 > in the environment where this repository was authored (no Docker daemon was available). The API, the migrations and the
@@ -28,21 +28,21 @@ client ──TLS──> reverse proxy / load balancer ──> web (nginx: static
 ## First installation
 
 1. Copy `.env.example` to `.env` and replace every `REPLACE-ME` (a copy that was never edited refuses to start). Two passwords: the SQL
-   Server administrator (`CMS_DB_PASSWORD`, for migrations and backups only) and the API's own login (`CMS_APP_DB_PASSWORD`).
-2. `docker compose -f deploy/docker-compose.yml up -d sql db-init`: starts SQL Server, then creates the `Cms` database and the
-   `cms_app` login (read and write the tables, no schema changes; `deploy/sql/create-app-login.sql`).
+   Server administrator (`CONSTRUCTOPX_DB_PASSWORD`, for migrations and backups only) and the API's own login (`CONSTRUCTOPX_APP_DB_PASSWORD`).
+2. `docker compose -f deploy/docker-compose.yml up -d sql db-init`: starts SQL Server, then creates the `ConstructOpx` database and the
+   `constructopx_app` login (read and write the tables, no schema changes; `deploy/sql/create-app-login.sql`).
 3. Apply the reviewed migration script as the administrator (`docs/operations/database-and-migrations.md`).
-4. Set `CMS_BOOTSTRAP_ENABLED=true`, `docker compose -f deploy/docker-compose.yml up -d --build`, open the site and create the company
+4. Set `CONSTRUCTOPX_BOOTSTRAP_ENABLED=true`, `docker compose -f deploy/docker-compose.yml up -d --build`, open the site and create the company
    and first administrator, then set it back to `false` and restart the API.
 
 ## Release steps
 
 1. **Pick the commit** that passed CI. Record its full SHA.
-2. **Build** both images tagged with the SHA (`--build-arg CMS_RELEASE_SHA=<sha>`); the API reports the SHA at `/health/version`, the
+2. **Build** both images tagged with the SHA (`--build-arg CONSTRUCTOPX_RELEASE_SHA=<sha>`); the API reports the SHA at `/health/version`, the
    web server at `/version.json`.
 3. **Back up** the database and, if the release has a migration, review and apply the script
    (`docs/operations/database-and-migrations.md`).
-4. **Start the candidate** (`CMS_RELEASE_SHA=<sha> docker compose -f deploy/docker-compose.yml up -d --no-build`).
+4. **Start the candidate** (`CONSTRUCTOPX_RELEASE_SHA=<sha> docker compose -f deploy/docker-compose.yml up -d --no-build`).
 5. **Check**: `GET /health/live` 200; `GET /health/ready` 200 (`database: ok`, `migrations: current`); `GET /health/version` shows
    the SHA you deployed, and so does `/version.json` on the web server. A deploy is healthy only when both report the commit that was
    deployed.
@@ -58,11 +58,11 @@ is labelled untested in the release record.
 ## Configuration
 
 Everything comes from environment variables (see `.env.example`); nothing secret is in the image or the repository.
-`CMS_DATABASE_CONNECTION`, `CMS_RELEASE_SHA`, `Bootstrap__Enabled` (turn on only for first-time setup, then off),
+`CONSTRUCTOPX_DATABASE_CONNECTION`, `CONSTRUCTOPX_RELEASE_SHA`, `Bootstrap__Enabled` (turn on only for first-time setup, then off),
 `PasswordHashing__Iterations`, `RateLimiting__SignInPerMinute`, `Security__RequireSecureCookies` (leave true outside local HTTP),
 `DataProtection__KeysPath` (a persistent private folder for the session keys: compose mounts the `api-keys` volume there; without
 it, every restart signs everyone out and the API logs a warning. With more than one API instance, point them all at one shared folder).
-First-time setup: set `CMS_BOOTSTRAP_ENABLED=true`, start, open the site, create the company and first administrator, then set it back
+First-time setup: set `CONSTRUCTOPX_BOOTSTRAP_ENABLED=true`, start, open the site, create the company and first administrator, then set it back
 to `false` and restart.
 
 ## Scaling and cost

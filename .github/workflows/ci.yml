@@ -27,28 +27,28 @@ jobs:
           # A throwaway password for a throwaway container; generated here, masked in logs, never stored.
           PASSWORD="Ci-$(openssl rand -hex 12)-Aa1!"
           echo "::add-mask::$PASSWORD"
-          docker run -d --name cms-sql -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e "MSSQL_SA_PASSWORD=$PASSWORD" \
+          docker run -d --name constructopx-sql -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e "MSSQL_SA_PASSWORD=$PASSWORD" \
             -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
-          echo "CMS_TEST_SQLSERVER=Server=localhost,1433;User Id=sa;Password=$PASSWORD;TrustServerCertificate=True" >> "$GITHUB_ENV"
+          echo "CONSTRUCTOPX_TEST_SQLSERVER=Server=localhost,1433;User Id=sa;Password=$PASSWORD;TrustServerCertificate=True" >> "$GITHUB_ENV"
           for attempt in $(seq 1 40); do
-            if docker exec -e SQLCMDPASSWORD="$PASSWORD" cms-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -Q "SELECT 1" -b >/dev/null 2>&1; then exit 0; fi
+            if docker exec -e SQLCMDPASSWORD="$PASSWORD" constructopx-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -Q "SELECT 1" -b >/dev/null 2>&1; then exit 0; fi
             sleep 3
           done
-          docker logs cms-sql | tail -30
+          docker logs constructopx-sql | tail -30
           exit 1
 
       - name: Restore (locked)
-        run: dotnet restore ConstructionManagementSystem.sln --locked-mode
+        run: dotnet restore ConstructOPX.sln --locked-mode
       - name: Build
-        run: dotnet build ConstructionManagementSystem.sln --configuration Release --no-restore
+        run: dotnet build ConstructOPX.sln --configuration Release --no-restore
       - name: Test
-        run: dotnet test ConstructionManagementSystem.sln --configuration Release --no-build --logger "trx;LogFileName=results.trx"
+        run: dotnet test ConstructOPX.sln --configuration Release --no-build --logger "trx;LogFileName=results.trx"
       - name: Verify the EF Core model has no changes without a migration
         run: |
           dotnet tool restore
-          dotnet ef migrations has-pending-model-changes --project src/Cms.Infrastructure --startup-project src/Cms.Api --no-build --configuration Release
+          dotnet ef migrations has-pending-model-changes --project src/ConstructOPX.Infrastructure --startup-project src/ConstructOPX.Api --no-build --configuration Release
       - name: Produce the idempotent migration script
-        run: dotnet ef migrations script --idempotent --project src/Cms.Infrastructure --startup-project src/Cms.Api --no-build --configuration Release -o artifacts/migrate.sql
+        run: dotnet ef migrations script --idempotent --project src/ConstructOPX.Infrastructure --startup-project src/ConstructOPX.Api --no-build --configuration Release -o artifacts/migrate.sql
       - uses: actions/upload-artifact@v4
         with:
           name: migration-script
@@ -77,6 +77,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build API image (tagged with the commit)
-        run: docker build -f src/Cms.Api/Dockerfile --build-arg CMS_RELEASE_SHA=${{ github.sha }} -t cms-api:${{ github.sha }} .
+        run: docker build -f src/ConstructOPX.Api/Dockerfile --build-arg CONSTRUCTOPX_RELEASE_SHA=${{ github.sha }} -t constructopx-api:${{ github.sha }} .
       - name: Build web image (tagged with the commit)
-        run: docker build -f deploy/web/Dockerfile --build-arg CMS_RELEASE_SHA=${{ github.sha }} -t cms-web:${{ github.sha }} .
+        run: docker build -f deploy/web/Dockerfile --build-arg CONSTRUCTOPX_RELEASE_SHA=${{ github.sha }} -t constructopx-web:${{ github.sha }} .

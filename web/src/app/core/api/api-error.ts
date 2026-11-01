@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-/** The codes the API puts on its problem responses (see src/Cms.Api/Errors). */
+/** The codes the API puts on its problem responses (see src/ConstructOPX.Api/Errors). */
 export const ApiErrorCode = {
   validationFailed: 'validation_failed',
   concurrencyConflict: 'concurrency_conflict',

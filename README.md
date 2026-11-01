@@ -1,6 +1,6 @@
-# Construction Management System
+# ConstructOPX
 
-Budget and cost control, workforce and payroll, and warehouse stock for a construction company, as a web application.
+ConstructOPX is a multi-tenant SaaS platform for construction companies: budget and cost control, progress and client billing, purchasing and subcontracts, workforce and payroll, and warehouse stock, in one web application. Every company's records are kept apart.
 
 It replaces the earlier Windows desktop program (WinForms and MySQL/SQL Express, last present at commit `93da838`) and is built on the
 DriveOPX stack: **Angular 22**, **ASP.NET Core 10** Minimal APIs, **EF Core 10**, **SQL Server 2022**, as a monolith-first Clean
@@ -39,9 +39,9 @@ You need the .NET 10 SDK (the version in `global.json`), Node 22, and a SQL Serv
 cp .env.example .env                                  # then replace every REPLACE-ME (SQL Server needs a strong password)
 docker compose -f deploy/docker-compose.yml up -d sql
 
-export CMS_DATABASE_CONNECTION="Server=localhost,1433;Database=Cms;User Id=sa;Password=<CMS_DB_PASSWORD>;TrustServerCertificate=True"
+export CONSTRUCTOPX_DATABASE_CONNECTION="Server=localhost,1433;Database=ConstructOpx;User Id=sa;Password=<CONSTRUCTOPX_DB_PASSWORD>;TrustServerCertificate=True"
 export Seeding__Enabled=true                          # optional demo company; development only, empty database only
-dotnet run --project src/Cms.Api                      # http://localhost:5100 (creates the database on first start)
+dotnet run --project src/ConstructOPX.Api                      # http://localhost:5100 (creates the database on first start)
 
 npm ci --prefix web
 npm start --prefix web                                # http://localhost:4200, proxies /api to the API
@@ -54,10 +54,10 @@ first-time setup, which creates your company and administrator (turn `Bootstrap:
 ## Repository map
 
 ```
-src/Cms.Domain          entities, value objects and business rules (no dependencies)
-src/Cms.Application     use cases, ports, DTOs, the permission matrix
-src/Cms.Infrastructure  EF Core and SQL Server, password hashing, repositories and readers, migrations, development seeder
-src/Cms.Api             Minimal API endpoints, cookie sessions, error handling, health checks, composition root
+src/ConstructOPX.Domain          entities, value objects and business rules (no dependencies)
+src/ConstructOPX.Application     use cases, ports, DTOs, the permission matrix
+src/ConstructOPX.Infrastructure  EF Core and SQL Server, password hashing, repositories and readers, migrations, development seeder
+src/ConstructOPX.Api             Minimal API endpoints, cookie sessions, error handling, health checks, composition root
 web/                    Angular 22 client (core, shared, features)
 tests/                  domain, API, integration, architecture tests
 docs/                   business rules, architecture, development guides, operations runbooks
@@ -68,10 +68,10 @@ deploy/  scripts/       compose and nginx files; backup, restore-check and sourc
 ## Testing
 
 ```bash
-dotnet test tests/Cms.Domain.UnitTests          # rules, no database
-dotnet test tests/Cms.ArchitectureTests         # layering, tenant filters, money and date types, permissions on every endpoint
-export CMS_TEST_SQLSERVER="Server=localhost,1433;User Id=sa;Password=<CMS_DB_PASSWORD>;TrustServerCertificate=True"
-dotnet test ConstructionManagementSystem.sln    # adds the API and database tests (skipped, never "passed", without the variable)
+dotnet test tests/ConstructOPX.Domain.UnitTests          # rules, no database
+dotnet test tests/ConstructOPX.ArchitectureTests         # layering, tenant filters, money and date types, permissions on every endpoint
+export CONSTRUCTOPX_TEST_SQLSERVER="Server=localhost,1433;User Id=sa;Password=<CONSTRUCTOPX_DB_PASSWORD>;TrustServerCertificate=True"
+dotnet test ConstructOPX.sln    # adds the API and database tests (skipped, never "passed", without the variable)
 npm test --prefix web -- --watch=false
 npm run validate                                # everything, as CI does
 ```

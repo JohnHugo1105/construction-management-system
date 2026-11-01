@@ -65,8 +65,8 @@ a focused UI correction into a redesign.
 
 Read and follow `.claude/skills/ui-presentation-audit/SKILL.md` in full,
 including its live-app evidence rule. If the user did not attach images or
-videos of the target screens, start or reuse local CMS (SQL Server from
-`deploy/docker-compose.yml`, `dotnet run --project src/Cms.Api`, `npm start --prefix web`), seed demo
+videos of the target screens, start or reuse local ConstructOPX (SQL Server from
+`deploy/docker-compose.yml`, `dotnet run --project src/ConstructOPX.Api`, `npm start --prefix web`), seed demo
 data through the development seeder only when the use case needs realistic data, then browse the named
 pages before answering the five questions. Do not invent a seed path, reset a
 healthy local database that already shows the job, or touch a shared or hosted environment.

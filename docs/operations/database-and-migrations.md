@@ -7,8 +7,8 @@ SQL Server 2022 with EF Core 10. The schema changes only through **migrations** 
 
 ```bash
 dotnet tool restore
-dotnet ef migrations add <Name> --project src/Cms.Infrastructure --startup-project src/Cms.Api --output-dir Persistence/Migrations
-dotnet ef migrations has-pending-model-changes --project src/Cms.Infrastructure --startup-project src/Cms.Api   # must say none
+dotnet ef migrations add <Name> --project src/ConstructOPX.Infrastructure --startup-project src/ConstructOPX.Api --output-dir Persistence/Migrations
+dotnet ef migrations has-pending-model-changes --project src/ConstructOPX.Infrastructure --startup-project src/ConstructOPX.Api   # must say none
 ```
 
 Rules:
@@ -24,7 +24,7 @@ Rules:
 Production applies a **reviewed script**, not `Database:MigrateOnStartup` (which exists for development and tests only):
 
 ```bash
-dotnet ef migrations script --idempotent --project src/Cms.Infrastructure --startup-project src/Cms.Api -o artifacts/migrate-<release>.sql
+dotnet ef migrations script --idempotent --project src/ConstructOPX.Infrastructure --startup-project src/ConstructOPX.Api -o artifacts/migrate-<release>.sql
 ```
 
 1. **Review the script** (the diff of the schema, any data statements) and attach it to the release record.

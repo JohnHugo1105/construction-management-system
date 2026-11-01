@@ -1,4 +1,4 @@
-// The billing API's shapes (src/Cms.Application/Features/Billing/BillingContracts.cs). Money is whole minor units; rates are basis
+// The billing API's shapes (src/ConstructOPX.Application/Features/Billing/BillingContracts.cs). Money is whole minor units; rates are basis
 // points; dates are business dates ("2026-10-31"). Every figure here was worked out by the server.
 
 import { PagedResult } from '../../core/api/paged-result';

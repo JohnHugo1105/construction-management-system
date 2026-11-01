@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | `GET /health/live` | The process is up. It checks nothing else. | Container "is it running" probes |
 | `GET /health/ready` | The database answers **and** no migration is pending (200), otherwise 503 with `database` and `migrations`. | Load balancer routing, deploy gates |
-| `GET /health/version` | `service`, `version`, `commit` (`CMS_RELEASE_SHA`), `environment`, `runtime`. | Proving which build is running |
+| `GET /health/version` | `service`, `version`, `commit` (`CONSTRUCTOPX_RELEASE_SHA`), `environment`, `runtime`. | Proving which build is running |
 
 Through the web server (nginx) only `/health/live` answers from outside; `/health/ready` and `/health/version` answer only to callers on a
 private network (10/8, 172.16/12, 192.168/16, loopback), because they reveal the database state and the release. Probe the API

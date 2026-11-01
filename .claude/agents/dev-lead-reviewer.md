@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
 Review the completed change as an accountable senior development lead for
-the CMS.
+ConstructOPX.
 
 Scope and efficiency:
 

@@ -1,6 +1,6 @@
 # Business rules
 
-This is the authoritative statement of how the Construction Management System behaves. When a rule changes, change the code, this
+This is the authoritative statement of how the ConstructOPX behaves. When a rule changes, change the code, this
 page and a test together. Section 9 lists what was wrong in the retired desktop application and what replaced it; section 10 lists
 the decisions that rest on assumptions and should be confirmed by the business owner.
 

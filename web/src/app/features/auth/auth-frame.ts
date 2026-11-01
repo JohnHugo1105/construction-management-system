@@ -11,7 +11,7 @@ import { Icon } from '../../shared/ui/icon/icon';
       <div class="auth__card card">
         <p class="auth__brand">
           <app-icon name="construction" [size]="28" />
-          Construction Management
+          ConstructOPX
         </p>
         <h1 class="auth__title">{{ title() }}</h1>
         @if (intro()) {

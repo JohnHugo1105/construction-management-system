@@ -1,16 +1,16 @@
 # How to add a feature slice
 
 A feature is one vertical slice through the four layers. Identity, Organizations, Projects and Audit are the reference slices:
-copy their shape. A slice adds files in its own folders and **edits no shared file** (`Program.cs`, `CmsDbContext`, dependency
+copy their shape. A slice adds files in its own folders and **edits no shared file** (`Program.cs`, `ConstructOpxDbContext`, dependency
 registration and endpoint registration all discover new classes by convention).
 
 ```
-src/Cms.Domain/Features/<Feature>/            entities, value objects, rules (already written for every feature)
-src/Cms.Application/Features/<Feature>/       <Feature>Contracts.cs (ports + DTOs + mapper), <Name>Service.cs
-src/Cms.Infrastructure/Features/<Feature>/    <Feature>Configurations.cs, <Name>Repository.cs, <Name>Reader.cs
-src/Cms.Api/Endpoints/<Feature>Endpoints.cs   one or more IEndpointModule classes
-tests/Cms.Api.Tests/Features/<Feature>ApiTests.cs
-tests/Cms.Domain.UnitTests/Features/...        only for domain rules or application logic you add
+src/ConstructOPX.Domain/Features/<Feature>/            entities, value objects, rules (already written for every feature)
+src/ConstructOPX.Application/Features/<Feature>/       <Feature>Contracts.cs (ports + DTOs + mapper), <Name>Service.cs
+src/ConstructOPX.Infrastructure/Features/<Feature>/    <Feature>Configurations.cs, <Name>Repository.cs, <Name>Reader.cs
+src/ConstructOPX.Api/Endpoints/<Feature>Endpoints.cs   one or more IEndpointModule classes
+tests/ConstructOPX.Api.Tests/Features/<Feature>ApiTests.cs
+tests/ConstructOPX.Domain.UnitTests/Features/...        only for domain rules or application logic you add
 ```
 
 ## Application layer
@@ -63,17 +63,17 @@ Messages are written for the end user (plain words, what happened, what to do ne
 ## API layer
 
 * Implement `IEndpointModule` and map under the `/api` group you are given: `api.MapFeature("/things", "Things")`.
-* **Every endpoint ends with `.RequirePermission(Permissions.X)`** (the matrix is `Cms.Application.Common.Permissions`). Architecture
+* **Every endpoint ends with `.RequirePermission(Permissions.X)`** (the matrix is `ConstructOPX.Application.Common.Permissions`). Architecture
   tests fail an endpoint without one. Writes are protected by the anti-forgery filter on the group automatically.
 * `POST` that creates returns `Results.Created(location, dto)`; other writes return `Results.Ok(dto)` or `Results.NoContent()`.
 * Add no exception handling in endpoints; the central handler maps exceptions.
 
 ## Tests
 
-* API tests use `[SqlServerFact]`, `IClassFixture<CmsApiFactory>`, `TenantSeeder.CreateTenantAsync` (a private company per test) and
-  `ApiClient` (cookies and anti-forgery handled like the browser). Set `CMS_TEST_SQLSERVER` (see `testing.md`).
+* API tests use `[SqlServerFact]`, `IClassFixture<ConstructOpxApiFactory>`, `TenantSeeder.CreateTenantAsync` (a private company per test) and
+  `ApiClient` (cookies and anti-forgery handled like the browser). Set `CONSTRUCTOPX_TEST_SQLSERVER` (see `testing.md`).
 * Cover, for every endpoint family: the happy path, validation errors per field, a stale `version` (409), a wrong role (403), a
   second company reading or changing your data (404), and each business rule you added. Assert exact figures for money.
-* Run only your tests while working: `dotnet test tests/Cms.Api.Tests --filter "FullyQualifiedName~YourFeature"`.
-* Before you finish also run `dotnet test tests/Cms.ArchitectureTests` and `dotnet test tests/Cms.Domain.UnitTests`.
+* Run only your tests while working: `dotnet test tests/ConstructOPX.Api.Tests --filter "FullyQualifiedName~YourFeature"`.
+* Before you finish also run `dotnet test tests/ConstructOPX.ArchitectureTests` and `dotnet test tests/ConstructOPX.Domain.UnitTests`.
 * When your endpoints land, delete your permissions from `ExpectedUnusedWhileBuilding` in `EndpointSecurityTests`.
