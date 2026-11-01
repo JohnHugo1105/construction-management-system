@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup><Using Include="Xunit" /></ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Cms.TestSupport\Cms.TestSupport.csproj" />
     <ProjectReference Include="..\..\src\Cms.Infrastructure\Cms.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

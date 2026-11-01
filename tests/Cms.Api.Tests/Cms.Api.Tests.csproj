@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup><Using Include="Xunit" /></ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Cms.TestSupport\Cms.TestSupport.csproj" />
     <ProjectReference Include="..\..\src\Cms.Api\Cms.Api.csproj" />
   </ItemGroup>
 </Project>

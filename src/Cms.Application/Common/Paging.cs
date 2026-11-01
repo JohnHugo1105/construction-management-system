@@ -1,0 +1,17 @@
+namespace Cms.Application.Common;
+
+public sealed record PageRequest(int Page = 1, int PageSize = PageRequest.DefaultPageSize)
+{
+    public const int DefaultPageSize = 25;
+    public const int MaximumPageSize = 100;
+
+    public int SafePage => Page < 1 ? 1 : Page;
+    public int SafePageSize => PageSize < 1 ? DefaultPageSize : Math.Min(PageSize, MaximumPageSize);
+    public int Skip => (SafePage - 1) * SafePageSize;
+}
+
+public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Total, int Page, int PageSize)
+{
+    public static PagedResult<T> Of(IReadOnlyList<T> items, int total, PageRequest request) =>
+        new(items, total, request.SafePage, request.SafePageSize);
+}
