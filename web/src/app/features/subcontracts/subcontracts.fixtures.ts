@@ -1,5 +1,10 @@
 import { Permission } from '../../core/session/permissions';
-import { Subcontract, SubcontractClaim, SubcontractListItem, SubcontractPayment } from './subcontracts.models';
+import {
+  Subcontract,
+  SubcontractClaim,
+  SubcontractListItem,
+  SubcontractPayment,
+} from './subcontracts.models';
 
 export const READER = [Permission.projectsRead, Permission.subcontractsRead];
 export const DRAFTER = [...READER, Permission.subcontractsManage];
@@ -100,6 +105,8 @@ export function subcontract(overrides: Partial<Subcontract> = {}): Subcontract {
     vatRateBps: 1_200,
     retentionBps: 1_000,
     withholdingBps: 200,
+    wbsCode: '3300',
+    workItem: 'Cast-In-Place Concrete',
     contractSumMinor: 100_000_000,
     variationsMinor: 0,
     revisedSumMinor: 100_000_000,

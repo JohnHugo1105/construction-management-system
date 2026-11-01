@@ -107,6 +107,55 @@ public sealed class SubcontractApiTests : IClassFixture<CmsApiFactory>
     }
 
     [SqlServerFact]
+    public async Task A_certified_claim_is_counted_under_the_subcontracts_work_item_not_as_unclassified()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var project = await CostingTestKit.CreateProjectAsync(client);
+        var firm = await SubcontractorAsync(client);
+
+        // An unknown code is refused with its field, and a draft with a standard code keeps it.
+        var bad = NewSubcontract(project.Id, firm);
+        bad["wbsCode"] = "9999-nope";
+        Assert.Contains("wbsCode", await ErrorFieldsAsync(await client.PostAsync("/api/subcontracts", bad)));
+        var good = NewSubcontract(project.Id, firm);
+        good["wbsCode"] = "3300";
+        var draft = await client.PostAsync<SubcontractDto>("/api/subcontracts", good);
+        Assert.Equal(("3300", 3), (draft.WbsCode, draft.Division));
+        Assert.False(string.IsNullOrWhiteSpace(draft.WorkItem));
+
+        var awarded = await AwardAsync(client, draft);
+        var certified = await CertifiedAsync(client, awarded, 250_000_00);
+        var cost = await client.GetAsync<CostEntryDto>($"/api/cost-entries/{ClaimNumbered(certified, 1).CostEntryId}");
+        Assert.Equal((3, "3300"), (cost.Division, cost.WbsCode));
+
+        // The cost summary counts it in Division 3, not in "Unclassified", so it is compared with the budget for that work.
+        var summary = await client.GetAsync<CostSummaryDto>($"/api/projects/{project.Id}/cost-summary");
+        Assert.Equal(3, Assert.Single(summary.ByDivision).Division);
+
+        // Once awarded the work item is fixed: it decides where every claim lands.
+        var change = await client.PutAsync($"/api/subcontracts/{certified.Id}", new
+        {
+            subcontractorId = firm, subProjectId = (Guid?)null, title = "Electrical works", notes = (string?)null, contractSumMinor = 1_000_000_00,
+            vatTreatment = "Exclusive", retentionBps = 1_000, withholdingBps = 200, version = certified.Version, wbsCode = "3400"
+        });
+        Assert.Equal(HttpStatusCode.Conflict, change.StatusCode);
+    }
+
+    [SqlServerFact]
+    public async Task A_subcontract_with_no_work_item_still_posts_unclassified_cost()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var certified = await CertifiedAsync(client, await AwardedAsync(client), 100_000_00);
+
+        var cost = await client.GetAsync<CostEntryDto>($"/api/cost-entries/{ClaimNumbered(certified, 1).CostEntryId}");
+
+        Assert.Null(cost.Division);
+        Assert.Null(cost.WbsCode);
+    }
+
+    [SqlServerFact]
     public async Task The_dashboard_commitment_shrinks_as_claims_are_certified_and_ends_at_completion()
     {
         var (client, _) = await SignedInAsync(_factory);

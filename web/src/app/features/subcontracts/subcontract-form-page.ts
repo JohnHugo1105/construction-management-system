@@ -84,7 +84,11 @@ import { Subcontract, SubcontractTerms } from './subcontracts.models';
           />
         }
 
-        <app-form-field label="Subcontractor" [control]="form.controls.subcontractorId" requiredMessage="Choose the firm doing the work.">
+        <app-form-field
+          label="Subcontractor"
+          [control]="form.controls.subcontractorId"
+          requiredMessage="Choose the firm doing the work."
+        >
           <select appControl formControlName="subcontractorId">
             <option value="" disabled>Choose a firm</option>
             @for (firm of firms(); track firm.id) {
@@ -94,7 +98,11 @@ import { Subcontract, SubcontractTerms } from './subcontracts.models';
         </app-form-field>
 
         <div class="form__row">
-          <app-form-field label="Project" [control]="form.controls.projectId" requiredMessage="Choose the project.">
+          <app-form-field
+            label="Project"
+            [control]="form.controls.projectId"
+            requiredMessage="Choose the project."
+          >
             <select appControl formControlName="projectId">
               <option value="" disabled>Choose a project</option>
               @for (project of projects(); track project.id) {
@@ -103,7 +111,11 @@ import { Subcontract, SubcontractTerms } from './subcontracts.models';
             </select>
           </app-form-field>
           @if (subProjects().length > 0) {
-            <app-form-field label="Sub-project" [optional]="true" [control]="form.controls.subProjectId">
+            <app-form-field
+              label="Sub-project"
+              [optional]="true"
+              [control]="form.controls.subProjectId"
+            >
               <select appControl formControlName="subProjectId">
                 <option value="">The whole project</option>
                 @for (sub of subProjects(); track sub.id) {
@@ -114,8 +126,18 @@ import { Subcontract, SubcontractTerms } from './subcontracts.models';
           }
         </div>
 
-        <app-form-field label="Scope of work" [control]="form.controls.title" requiredMessage="Say what work is being given.">
-          <input appControl formControlName="title" maxlength="200" autocomplete="off" placeholder="Electrical rough-in, Tower A" />
+        <app-form-field
+          label="Scope of work"
+          [control]="form.controls.title"
+          requiredMessage="Say what work is being given."
+        >
+          <input
+            appControl
+            formControlName="title"
+            maxlength="200"
+            autocomplete="off"
+            placeholder="Electrical rough-in, Tower A"
+          />
         </app-form-field>
 
         <app-form-field
@@ -131,11 +153,31 @@ import { Subcontract, SubcontractTerms } from './subcontracts.models';
             @for (choice of vatChoices; track choice.value) {
               <label class="choice">
                 <input type="radio" formControlName="vatTreatment" [value]="choice.value" />
-                <span class="choice__text"><span class="choice__label">{{ choice.label }}</span></span>
+                <span class="choice__text"
+                  ><span class="choice__label">{{ choice.label }}</span></span
+                >
               </label>
             }
           </div>
         </app-field-group>
+
+        <app-form-field
+          label="Count the cost under"
+          [optional]="true"
+          hint="The part of the project budget this work is compared with. Leave it empty if it does not fit one."
+          [control]="form.controls.wbsCode"
+        >
+          <select appControl formControlName="wbsCode">
+            <option value="">Not placed in the work breakdown</option>
+            @for (division of workItems(); track division.number) {
+              <optgroup [label]="division.mainScope">
+                @for (scope of division.scopes; track scope.code) {
+                  <option [value]="scope.code">{{ scope.code }} {{ scope.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        </app-form-field>
 
         <div class="form__row">
           <app-form-field
@@ -162,7 +204,9 @@ import { Subcontract, SubcontractTerms } from './subcontracts.models';
 
         <div class="form__actions form__actions--sticky">
           <a appButton [routerLink]="id() ? ['/subcontracts', id()] : ['/subcontracts']">Cancel</a>
-          <button appButton variant="primary" type="submit" [busy]="saving()">Save draft subcontract</button>
+          <button appButton variant="primary" type="submit" [busy]="saving()">
+            Save draft subcontract
+          </button>
         </div>
       </form>
     }
@@ -186,21 +230,35 @@ export class SubcontractFormPage {
     subcontractorId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     projectId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     subProjectId: new FormControl('', { nonNullable: true }),
-    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(200)] }),
+    title: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(200)],
+    }),
     contractSumMinor: new FormControl<number | null>(null, { validators: [Validators.required] }),
     vatTreatment: new FormControl<VatTreatment>('Exclusive', { nonNullable: true }),
     retentionBps: new FormControl<number | null>(1_000, { validators: [Validators.required] }),
     withholdingBps: new FormControl<number | null>(0, { validators: [Validators.required] }),
+    wbsCode: new FormControl('', { nonNullable: true }),
     notes: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
   });
 
+  private readonly workItemList = rxResource({ stream: () => this.api.workItems() });
+  protected readonly workItems = computed(() =>
+    this.workItemList.hasValue() ? this.workItemList.value() : [],
+  );
   private readonly firmList = rxResource({ stream: () => this.api.firms() });
   private readonly projectList = rxResource({ stream: () => this.api.projects() });
-  protected readonly firms = computed(() => (this.firmList.hasValue() ? this.firmList.value() : []));
-  protected readonly projects = computed(() =>
-    (this.projectList.hasValue() ? this.projectList.value() : []).filter((project) => project.status !== 'Archived'),
+  protected readonly firms = computed(() =>
+    this.firmList.hasValue() ? this.firmList.value() : [],
   );
-  private readonly chosenProject = toSignal(this.form.controls.projectId.valueChanges, { initialValue: '' });
+  protected readonly projects = computed(() =>
+    (this.projectList.hasValue() ? this.projectList.value() : []).filter(
+      (project) => project.status !== 'Archived',
+    ),
+  );
+  private readonly chosenProject = toSignal(this.form.controls.projectId.valueChanges, {
+    initialValue: '',
+  });
   protected readonly subProjects = computed(
     () =>
       this.projects()
@@ -211,7 +269,10 @@ export class SubcontractFormPage {
   private readonly existing = signal<Subcontract | null>(null);
   private readonly existingLoaded = signal(false);
   protected readonly loading = computed(
-    () => this.firmList.isLoading() || this.projectList.isLoading() || (!!this.id() && !this.existingLoaded()),
+    () =>
+      this.firmList.isLoading() ||
+      this.projectList.isLoading() ||
+      (!!this.id() && !this.existingLoaded()),
   );
   protected readonly saving = signal(false);
   protected readonly error = signal<ApiError | null>(null);
@@ -251,6 +312,7 @@ export class SubcontractFormPage {
       vatTreatment: value.vatTreatment,
       retentionBps: value.retentionBps,
       withholdingBps: value.withholdingBps,
+      wbsCode: value.wbsCode || null,
     };
 
     this.saving.set(true);
@@ -262,7 +324,9 @@ export class SubcontractFormPage {
         ? await firstValueFrom(this.api.update(current.id, terms, current.version))
         : await firstValueFrom(this.api.create(value.projectId, terms, this.requestId.current));
       this.requestId.renew();
-      this.toast.success(current ? 'Draft subcontract saved.' : `Subcontract ${saved.number} drafted.`);
+      this.toast.success(
+        current ? 'Draft subcontract saved.' : `Subcontract ${saved.number} drafted.`,
+      );
       await this.router.navigate(['/subcontracts', saved.id]);
     } catch (failure) {
       const outcome = describeFormFailure(this.form, asApiError(failure));
@@ -287,6 +351,7 @@ export class SubcontractFormPage {
         vatTreatment: subcontract.vatTreatment,
         retentionBps: subcontract.retentionBps,
         withholdingBps: subcontract.withholdingBps,
+        wbsCode: subcontract.wbsCode ?? '',
         notes: subcontract.notes ?? '',
       });
       // The project of a subcontract doesn't change; a draft can still move to another of its sub-projects.

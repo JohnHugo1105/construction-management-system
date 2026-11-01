@@ -42,7 +42,10 @@ import { Subcontract, SubcontractClaim, SubcontractPayment } from './subcontract
 type OpenDialog =
   | { readonly kind: 'award' | 'complete' | 'cancel' | 'variation' | 'release' }
   | { readonly kind: 'claim'; readonly claim: SubcontractClaim | null }
-  | { readonly kind: 'certify' | 'discard' | 'void-claim' | 'pay'; readonly claim: SubcontractClaim }
+  | {
+      readonly kind: 'certify' | 'discard' | 'void-claim' | 'pay';
+      readonly claim: SubcontractClaim;
+    }
   | { readonly kind: 'void-payment'; readonly payment: SubcontractPayment };
 
 /**
@@ -82,7 +85,9 @@ export class SubcontractPage {
 
   protected readonly open = signal<OpenDialog | null>(null);
 
-  private readonly ready = computed(() => (this.state.status() === 'ready' ? this.state.subcontract() : null));
+  private readonly ready = computed(() =>
+    this.state.status() === 'ready' ? this.state.subcontract() : null,
+  );
 
   protected readonly title = computed(() => {
     const value = this.ready();
@@ -117,40 +122,90 @@ export class SubcontractPage {
     const currency = this.session.currencyCode();
     const zone = this.session.timeZoneId();
     const money = (minor: number) => formatMoney(minor, currency);
-    const place = value.subProjectName ? `${value.projectName}, ${value.subProjectName}` : value.projectName;
+    const place = value.subProjectName
+      ? `${value.projectName}, ${value.subProjectName}`
+      : value.projectName;
     const figures: { label: string; amount: string; note?: string; lead?: boolean }[] = [];
     const vat = VAT_WORDS[value.vatTreatment];
     if (value.status === 'Draft' || value.status === 'Cancelled') {
-      figures.push({ label: 'Contract sum', amount: money(value.revisedSumMinor), note: vat, lead: true });
+      figures.push({
+        label: 'Contract sum',
+        amount: money(value.revisedSumMinor),
+        note: vat,
+        lead: true,
+      });
     } else {
       figures.push({
         label: 'Certified',
         amount: money(value.certifiedWorkMinor),
-        note: value.percentCertifiedBps === null ? vat : `${formatBps(value.percentCertifiedBps)} of ${money(value.revisedSumMinor)} ${vat}`,
+        note:
+          value.percentCertifiedBps === null
+            ? vat
+            : `${formatBps(value.percentCertifiedBps)} of ${money(value.revisedSumMinor)} ${vat}`,
         lead: true,
       });
       if (value.remainingWorkMinor > 0 && value.status === 'Active')
-        figures.push({ label: 'Still to claim', amount: money(value.remainingWorkMinor), note: vat });
+        figures.push({
+          label: 'Still to claim',
+          amount: money(value.remainingWorkMinor),
+          note: vat,
+        });
       // Show what is still owed; once everything certified is paid, say what was paid instead of a zero.
-      if (value.outstandingMinor > 0) figures.push({ label: 'Owed', amount: money(value.outstandingMinor), note: 'on certified claims' });
-      else if (value.paidOnClaimsMinor > 0) figures.push({ label: 'Paid', amount: money(value.paidOnClaimsMinor), note: 'all certified claims' });
+      if (value.outstandingMinor > 0)
+        figures.push({
+          label: 'Owed',
+          amount: money(value.outstandingMinor),
+          note: 'on certified claims',
+        });
+      else if (value.paidOnClaimsMinor > 0)
+        figures.push({
+          label: 'Paid',
+          amount: money(value.paidOnClaimsMinor),
+          note: 'all certified claims',
+        });
       if (value.retentionBalanceMinor > 0)
-        figures.push({ label: 'Retention held', amount: money(value.retentionBalanceMinor), note: value.retentionReleasedMinor > 0 ? `${money(value.retentionReleasedMinor)} released` : 'paid at completion' });
+        figures.push({
+          label: 'Retention held',
+          amount: money(value.retentionBalanceMinor),
+          note:
+            value.retentionReleasedMinor > 0
+              ? `${money(value.retentionReleasedMinor)} released`
+              : 'paid at completion',
+        });
       else if (value.retentionReleasedMinor > 0)
-        figures.push({ label: 'Retention released', amount: money(value.retentionReleasedMinor), note: 'nothing more held' });
+        figures.push({
+          label: 'Retention released',
+          amount: money(value.retentionReleasedMinor),
+          note: 'nothing more held',
+        });
     }
     const terms = [
+      value.workItem ? `Counted under ${value.workItem}` : 'Not placed in the work breakdown',
       `Retention ${formatBps(value.retentionBps)}`,
       `Withholding tax ${formatBps(value.withholdingBps)}`,
       value.vatTreatment === 'Exempt' ? 'No VAT' : `VAT ${formatBps(value.vatRateBps)}`,
     ];
     if (value.variationsMinor !== 0)
-      terms.push(`Original sum ${money(value.contractSumMinor)}, variations ${value.variationsMinor > 0 ? '+' : '-'}${money(Math.abs(value.variationsMinor))}`);
+      terms.push(
+        `Original sum ${money(value.contractSumMinor)}, variations ${value.variationsMinor > 0 ? '+' : '-'}${money(Math.abs(value.variationsMinor))}`,
+      );
     const history: string[] = [];
-    if (value.createdByName) history.push(`Drafted by ${value.createdByName} on ${formatDateTime(value.createdAtUtc, zone)}`);
-    if (value.awardedAtUtc) history.push(`Awarded by ${value.awardedByName ?? 'someone'} on ${formatDateTime(value.awardedAtUtc, zone)}`);
-    if (value.completedAtUtc) history.push(`Completed by ${value.completedByName ?? 'someone'} on ${formatDateTime(value.completedAtUtc, zone)}`);
-    if (value.cancelledAtUtc) history.push(`Cancelled by ${value.cancelledByName ?? 'someone'} on ${formatDateTime(value.cancelledAtUtc, zone)}`);
+    if (value.createdByName)
+      history.push(
+        `Drafted by ${value.createdByName} on ${formatDateTime(value.createdAtUtc, zone)}`,
+      );
+    if (value.awardedAtUtc)
+      history.push(
+        `Awarded by ${value.awardedByName ?? 'someone'} on ${formatDateTime(value.awardedAtUtc, zone)}`,
+      );
+    if (value.completedAtUtc)
+      history.push(
+        `Completed by ${value.completedByName ?? 'someone'} on ${formatDateTime(value.completedAtUtc, zone)}`,
+      );
+    if (value.cancelledAtUtc)
+      history.push(
+        `Cancelled by ${value.cancelledByName ?? 'someone'} on ${formatDateTime(value.cancelledAtUtc, zone)}`,
+      );
     return {
       status: SUBCONTRACT_STATUS[value.status],
       who: `${value.subcontractorName} · ${place}`,
@@ -170,14 +225,22 @@ export class SubcontractPage {
         thisClaim: money(claim.thisClaimBaseMinor),
         gross: money(claim.grossMinor),
         payable: money(claim.netPayableMinor),
-        owed: claim.status === 'Certified' && claim.outstandingMinor > 0 ? money(claim.outstandingMinor) : '',
+        owed:
+          claim.status === 'Certified' && claim.outstandingMinor > 0
+            ? money(claim.outstandingMinor)
+            : '',
         voided: claim.status === 'Voided',
         reason: claim.voidReason,
       })),
       payments: value.payments.map((payment) => ({
         payment,
-        what: payment.kind === 'RetentionRelease' ? 'Retention released' : `Claim ${payment.claimNumber}`,
-        detail: [formatDate(payment.paidOn), methodLabel(payment.method), payment.reference].filter(Boolean).join(' · '),
+        what:
+          payment.kind === 'RetentionRelease'
+            ? 'Retention released'
+            : `Claim ${payment.claimNumber}`,
+        detail: [formatDate(payment.paidOn), methodLabel(payment.method), payment.reference]
+          .filter(Boolean)
+          .join(' · '),
         amount: money(payment.amountMinor),
         voided: payment.status === 'Voided',
         reason: payment.voidReason,
@@ -215,7 +278,9 @@ export class SubcontractPage {
       case 'pay': {
         const claim = value.claims.find((item) => item.id === step.claimId);
         if (!claim) return;
-        this.open.set(step.kind === 'update-claim' ? { kind: 'claim', claim } : { kind: step.kind, claim });
+        this.open.set(
+          step.kind === 'update-claim' ? { kind: 'claim', claim } : { kind: step.kind, claim },
+        );
         return;
       }
       case 'new-claim':
@@ -227,24 +292,52 @@ export class SubcontractPage {
   }
 
   /** The requests the confirm and reason dialogs run, bound to the subcontract as it is now. */
-  protected readonly award = () => this.api.award(this.state.subcontract().id, this.state.subcontract().version);
-  protected readonly complete = () => this.api.complete(this.state.subcontract().id, this.state.subcontract().version);
+  protected readonly award = () =>
+    this.api.award(this.state.subcontract().id, this.state.subcontract().version);
+  protected readonly complete = () =>
+    this.api.complete(this.state.subcontract().id, this.state.subcontract().version);
   protected readonly cancel = (reason: string) =>
     this.api.cancel(this.state.subcontract().id, reason, this.state.subcontract().version);
-  protected readonly addVariation = (variation: { description: string; amountMinor: number | null; variationDate: string }) =>
+  protected readonly addVariation = (variation: {
+    description: string;
+    amountMinor: number | null;
+    variationDate: string;
+  }) =>
     this.api.addVariation(this.state.subcontract().id, variation, this.state.subcontract().version);
   protected certify(claim: SubcontractClaim) {
-    return () => this.api.certifyClaim(this.state.subcontract().id, claim.id, this.state.subcontract().version);
+    return () =>
+      this.api.certifyClaim(
+        this.state.subcontract().id,
+        claim.id,
+        this.state.subcontract().version,
+      );
   }
   protected discard(claim: SubcontractClaim) {
-    return (reason: string) => this.api.discardClaim(this.state.subcontract().id, claim.id, reason, this.state.subcontract().version);
+    return (reason: string) =>
+      this.api.discardClaim(
+        this.state.subcontract().id,
+        claim.id,
+        reason,
+        this.state.subcontract().version,
+      );
   }
   protected voidClaim(claim: SubcontractClaim) {
-    return (reason: string) => this.api.voidClaim(this.state.subcontract().id, claim.id, reason, this.state.subcontract().version);
+    return (reason: string) =>
+      this.api.voidClaim(
+        this.state.subcontract().id,
+        claim.id,
+        reason,
+        this.state.subcontract().version,
+      );
   }
   protected voidPayment(payment: SubcontractPayment) {
     return (reason: string) =>
-      this.api.voidPayment(this.state.subcontract().id, payment.id, reason, this.state.subcontract().version);
+      this.api.voidPayment(
+        this.state.subcontract().id,
+        payment.id,
+        reason,
+        this.state.subcontract().version,
+      );
   }
 
   protected certifyMessage(claim: SubcontractClaim): string {

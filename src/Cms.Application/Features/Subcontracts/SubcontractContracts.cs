@@ -72,7 +72,7 @@ public sealed record SubcontractDto(Guid Id, string Number, string Title, string
     long NetPayableMinor, long PaidOnClaimsMinor, long OutstandingMinor, string? CreatedByName, DateTimeOffset CreatedAtUtc, string? AwardedByName,
     DateTimeOffset? AwardedAtUtc, string? CompletedByName, DateTimeOffset? CompletedAtUtc, string? CancelledByName, DateTimeOffset? CancelledAtUtc,
     string? CancelReason, IReadOnlyList<SubcontractClaimDto> Claims, IReadOnlyList<SubcontractPaymentDto> Payments,
-    IReadOnlyList<SubcontractVariationDto> Variations, int Version);
+    IReadOnlyList<SubcontractVariationDto> Variations, int Version, string? WbsCode = null, string? WorkItem = null, int? Division = null);
 
 /// <summary>What a claim for the given work to date would be, worked out by the server before anything is saved.</summary>
 public sealed record ClaimPreviewDto(long CumulativeWorkMinor, long PreviousCumulativeMinor, long ThisClaimBaseMinor, long NetMinor, long VatMinor,
@@ -84,10 +84,10 @@ public sealed record ClaimPreviewDto(long CumulativeWorkMinor, long PreviousCumu
 /// <param name="RetentionBps">Basis points held back from each claim; 1,000 (10%) when not given.</param>
 /// <param name="WithholdingBps">Basis points of the amount before VAT withheld as tax; 0 when not given.</param>
 public sealed record CreateSubcontractRequest(Guid SubcontractorId, Guid ProjectId, Guid? SubProjectId, string? Title, string? Notes,
-    long ContractSumMinor, string? VatTreatment, int? RetentionBps, int? WithholdingBps, string? ClientRequestId);
+    long ContractSumMinor, string? VatTreatment, int? RetentionBps, int? WithholdingBps, string? ClientRequestId, string? WbsCode = null);
 
 public sealed record UpdateSubcontractRequest(Guid SubcontractorId, Guid? SubProjectId, string? Title, string? Notes, long ContractSumMinor,
-    string? VatTreatment, int? RetentionBps, int? WithholdingBps, int Version);
+    string? VatTreatment, int? RetentionBps, int? WithholdingBps, int Version, string? WbsCode = null);
 
 public sealed record SubcontractReasonRequest(string? Reason, int Version);
 

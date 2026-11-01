@@ -108,6 +108,10 @@ export interface Subcontract {
   readonly vatRateBps: number;
   readonly retentionBps: number;
   readonly withholdingBps: number;
+  /** The standard work-breakdown code the certified work is counted under, or null when it is not placed in the breakdown. */
+  readonly wbsCode?: string | null;
+  /** The name of that work item, for display. */
+  readonly workItem?: string | null;
   readonly contractSumMinor: number;
   readonly variationsMinor: number;
   readonly revisedSumMinor: number;
@@ -163,6 +167,7 @@ export interface SubcontractTerms {
   readonly vatTreatment: VatTreatment;
   readonly retentionBps: number | null;
   readonly withholdingBps: number | null;
+  readonly wbsCode: string | null;
 }
 
 export interface ClaimInput {
@@ -199,5 +204,9 @@ export interface ProjectChoice {
   readonly id: string;
   readonly name: string;
   readonly status: string;
-  readonly subProjects: readonly { readonly id: string; readonly name: string; readonly status: string }[];
+  readonly subProjects: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly status: string;
+  }[];
 }

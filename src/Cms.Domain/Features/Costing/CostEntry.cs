@@ -108,13 +108,14 @@ public sealed class CostEntry : AggregateRoot
     /// </summary>
     public static CostEntry RecordSystem(Guid id, Guid tenantId, Project projectContext, Guid? subProjectId, CostOrigin origin,
         Guid originReferenceId, string description, ItemType itemType, decimal quantity, string unit, long unitCostMinor,
-        VatTreatment vatTreatment, int vatRateBps, DateOnly entryDate, Guid createdByUserId, DateTimeOffset now, string? sourceName = null)
+        VatTreatment vatTreatment, int vatRateBps, DateOnly entryDate, Guid createdByUserId, DateTimeOffset now, string? sourceName = null, CostClassification? classification = null)
     {
         if (origin == CostOrigin.Manual) throw new ArgumentException("Use RecordManual for manual entries.", nameof(origin));
         if (originReferenceId == Guid.Empty) throw new ArgumentException("A system cost needs its source.", nameof(originReferenceId));
         projectContext.EnsureCanReceiveRecordsFor(subProjectId);
-        var values = CostLineRules.Validate(null, null, null, null, description, itemType, quantity, unit, unitCostMinor,
-            vatTreatment, vatRateBps, entryDate, null, latestAllowedDate: null);
+        // A system cost may be placed in the work breakdown (a subcontract names its work item); payroll and stock leave it unclassified.
+        var values = CostLineRules.Validate(classification?.Division, classification?.MainScope, classification?.SubScope, classification?.WbsCode,
+            description, itemType, quantity, unit, unitCostMinor, vatTreatment, vatRateBps, entryDate, null, latestAllowedDate: null);
 
         var entry = new CostEntry
         {

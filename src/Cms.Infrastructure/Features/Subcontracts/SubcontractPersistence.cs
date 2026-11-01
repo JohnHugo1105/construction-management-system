@@ -1,6 +1,7 @@
 using Cms.Application.Common;
 using Cms.Application.Features.Costing;
 using Cms.Application.Features.Subcontracts;
+using Cms.Domain.Features.Costing;
 using Cms.Domain.Features.Identity;
 using Cms.Domain.Features.Projects;
 using Cms.Domain.Features.Subcontracts;
@@ -176,7 +177,8 @@ internal sealed class SubcontractReader(CmsDbContext db) : ISubcontractReader
             Subcontract.PercentCertifiedBps(s.CertifiedWorkMinor, s.RevisedSumMinor), s.CertifiedNetMinor, s.CertifiedGrossMinor, s.RetentionHeldMinor,
             s.RetentionReleasedMinor, s.RetentionHeldMinor - s.RetentionReleasedMinor, s.WithholdingMinor, s.NetPayableMinor, s.PaidOnClaimsMinor,
             s.NetPayableMinor - s.PaidOnClaimsMinor, head.CreatedBy, s.CreatedAtUtc, head.AwardedBy, s.AwardedAtUtc, head.CompletedBy, s.CompletedAtUtc,
-            head.CancelledBy, s.CancelledAtUtc, s.CancelReason, claimDtos, paymentDtos, variationDtos, s.Version);
+            head.CancelledBy, s.CancelledAtUtc, s.CancelReason, claimDtos, paymentDtos, variationDtos, s.Version, s.WbsCode,
+            WbsCatalog.FindByCode(s.WbsCode ?? "")?.SubScope, WbsCatalog.FindByCode(s.WbsCode ?? "")?.Division);
     }
 }
 

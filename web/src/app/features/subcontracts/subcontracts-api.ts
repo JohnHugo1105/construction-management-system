@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { PagedResult } from '../../core/api/paged-result';
+import { CostingReference, WbsDivision } from '../costing/costing.models';
 import {
   ClaimInput,
   ClaimPreview,
@@ -32,7 +33,11 @@ export class SubcontractsApi {
     return this.http.get<Subcontract>(`${this.base}/${id}`);
   }
 
-  create(projectId: string, terms: SubcontractTerms, clientRequestId: string): Observable<Subcontract> {
+  create(
+    projectId: string,
+    terms: SubcontractTerms,
+    clientRequestId: string,
+  ): Observable<Subcontract> {
     return this.http.post<Subcontract>(this.base, { ...terms, projectId, clientRequestId });
   }
 
@@ -66,16 +71,41 @@ export class SubcontractsApi {
     });
   }
 
-  draftClaim(id: string, claim: ClaimInput, version: number, clientRequestId: string): Observable<Subcontract> {
-    return this.http.post<Subcontract>(`${this.base}/${id}/claims`, { ...claim, version, clientRequestId });
+  draftClaim(
+    id: string,
+    claim: ClaimInput,
+    version: number,
+    clientRequestId: string,
+  ): Observable<Subcontract> {
+    return this.http.post<Subcontract>(`${this.base}/${id}/claims`, {
+      ...claim,
+      version,
+      clientRequestId,
+    });
   }
 
-  updateClaim(id: string, claimId: string, claim: ClaimInput, version: number): Observable<Subcontract> {
-    return this.http.put<Subcontract>(`${this.base}/${id}/claims/${claimId}`, { ...claim, version });
+  updateClaim(
+    id: string,
+    claimId: string,
+    claim: ClaimInput,
+    version: number,
+  ): Observable<Subcontract> {
+    return this.http.put<Subcontract>(`${this.base}/${id}/claims/${claimId}`, {
+      ...claim,
+      version,
+    });
   }
 
-  discardClaim(id: string, claimId: string, reason: string, version: number): Observable<Subcontract> {
-    return this.http.post<Subcontract>(`${this.base}/${id}/claims/${claimId}/discard`, { reason, version });
+  discardClaim(
+    id: string,
+    claimId: string,
+    reason: string,
+    version: number,
+  ): Observable<Subcontract> {
+    return this.http.post<Subcontract>(`${this.base}/${id}/claims/${claimId}/discard`, {
+      reason,
+      version,
+    });
   }
 
   certifyClaim(id: string, claimId: string, version: number): Observable<Subcontract> {
@@ -83,24 +113,63 @@ export class SubcontractsApi {
   }
 
   voidClaim(id: string, claimId: string, reason: string, version: number): Observable<Subcontract> {
-    return this.http.post<Subcontract>(`${this.base}/${id}/claims/${claimId}/void`, { reason, version });
+    return this.http.post<Subcontract>(`${this.base}/${id}/claims/${claimId}/void`, {
+      reason,
+      version,
+    });
   }
 
-  payClaim(id: string, claimId: string, payment: PaymentInput, version: number, clientRequestId: string): Observable<Subcontract> {
-    return this.http.post<Subcontract>(`${this.base}/${id}/claims/${claimId}/payments`, { ...payment, version, clientRequestId });
+  payClaim(
+    id: string,
+    claimId: string,
+    payment: PaymentInput,
+    version: number,
+    clientRequestId: string,
+  ): Observable<Subcontract> {
+    return this.http.post<Subcontract>(`${this.base}/${id}/claims/${claimId}/payments`, {
+      ...payment,
+      version,
+      clientRequestId,
+    });
   }
 
-  releaseRetention(id: string, payment: PaymentInput, version: number, clientRequestId: string): Observable<Subcontract> {
-    return this.http.post<Subcontract>(`${this.base}/${id}/retention-releases`, { ...payment, version, clientRequestId });
+  releaseRetention(
+    id: string,
+    payment: PaymentInput,
+    version: number,
+    clientRequestId: string,
+  ): Observable<Subcontract> {
+    return this.http.post<Subcontract>(`${this.base}/${id}/retention-releases`, {
+      ...payment,
+      version,
+      clientRequestId,
+    });
   }
 
-  voidPayment(id: string, paymentId: string, reason: string, version: number): Observable<Subcontract> {
-    return this.http.post<Subcontract>(`${this.base}/${id}/payments/${paymentId}/void`, { reason, version });
+  voidPayment(
+    id: string,
+    paymentId: string,
+    reason: string,
+    version: number,
+  ): Observable<Subcontract> {
+    return this.http.post<Subcontract>(`${this.base}/${id}/payments/${paymentId}/void`, {
+      reason,
+      version,
+    });
   }
 
   /** Active firms that do subcontract work, for the picker. */
   firms(): Observable<readonly FirmChoice[]> {
-    return this.http.get<readonly FirmChoice[]>('/api/suppliers/lookup', { params: new HttpParams().set('kind', 'Subcontractor') });
+    return this.http.get<readonly FirmChoice[]>('/api/suppliers/lookup', {
+      params: new HttpParams().set('kind', 'Subcontractor'),
+    });
+  }
+
+  /** The standard work items (by division) a subcontract's cost can be counted under: the same reference the cost forms use. */
+  workItems(): Observable<readonly WbsDivision[]> {
+    return this.http
+      .get<CostingReference>('/api/costing/reference')
+      .pipe(map((reference) => reference.divisions));
   }
 
   /** Projects that can still receive records, for the picker. */

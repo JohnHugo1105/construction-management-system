@@ -16,6 +16,8 @@ internal sealed class SubcontractConfiguration : IEntityTypeConfiguration<Subcon
         builder.Property(item => item.Number).HasMaxLength(20).IsRequired();
         builder.Property(item => item.Title).HasMaxLength(200).IsRequired();
         builder.Property(item => item.Notes).HasMaxLength(500);
+        builder.Property(item => item.WbsCode).HasMaxLength(20);
+        builder.Ignore(item => item.Classification);
         builder.Property(item => item.VatTreatment).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.CancelReason).HasMaxLength(300);

@@ -59,6 +59,16 @@ public sealed class Subcontract : AggregateRoot
     public long RevisedVatMinor { get; private set; }
     public long RevisedGrossMinor { get; private set; }
 
+    /// <summary>
+    /// The standard work-breakdown code the certified work is counted under (for example 3300 for cast-in-place concrete), or null when the
+    /// work is not placed in the breakdown. It decides which division of the project's budget the cost is compared with.
+    /// </summary>
+    public string? WbsCode { get; private set; }
+
+    /// <summary>Where a certified claim's cost goes in the work breakdown.</summary>
+    public CostClassification Classification =>
+        WbsCode is null ? CostClassification.Unclassified : CostClassification.Create(null, null, null, WbsCode);
+
     /// <summary>The base amount of all certified work (the latest certified claim's work to date).</summary>
     public long CertifiedWorkMinor { get; private set; }
 
@@ -121,6 +131,19 @@ public sealed class Subcontract : AggregateRoot
         subcontract.Initialize(id, tenantId, now);
         subcontract.ApplyTerms(subcontractor.Id, subProjectId, title, notes, contractSumMinor, vatTreatment, retentionBps, withholdingBps);
         return subcontract;
+    }
+
+    /// <summary>
+    /// Places the work in the standard work breakdown, or clears it. Only while drafting: the work item decides where every certified claim's
+    /// cost is counted, so it is not changed once claims can exist.
+    /// </summary>
+    public void SetWorkItem(string? wbsCode)
+    {
+        if (Status != SubcontractStatus.Draft) throw new DomainRuleException("The work item can only be changed while the subcontract is a draft.");
+        var code = Guard.OptionalText(wbsCode, "wbsCode", "the work item", 20);
+        if (code is not null && WbsCatalog.FindByCode(code) is null)
+            throw new ValidationFailedException("wbsCode", "Choose a work item from the list, or leave it empty so the cost shows as unclassified.");
+        WbsCode = code is null ? null : WbsCatalog.FindByCode(code)!.Code;
     }
 
     /// <summary>Gives the subcontract its number. Taken after the details pass their checks, so a refused form uses no number.</summary>

@@ -71,6 +71,7 @@ public sealed class SubcontractService(ISubcontractRepository subcontracts, ISub
             request.ContractSumMinor, CostingInput.ParseVatTreatment(request.VatTreatment), organization.VatRateBps,
             request.RetentionBps ?? Subcontract.DefaultRetentionBps, request.WithholdingBps ?? Subcontract.DefaultWithholdingBps, currentUser.UserId,
             requestId, clock.UtcNow);
+        subcontract.SetWorkItem(request.WbsCode);
         // The number is taken only once the details pass their checks, so a refused form leaves no gap.
         subcontract.AssignNumber(Subcontract.FormatNumber(await numbers.NextAsync(SequenceKey, cancellationToken)));
 
@@ -98,6 +99,7 @@ public sealed class SubcontractService(ISubcontractRepository subcontracts, ISub
         subcontract.UpdateDraft(supplier, project, request.SubProjectId, request.Title, request.Notes, request.ContractSumMinor,
             CostingInput.ParseVatTreatment(request.VatTreatment), request.RetentionBps ?? Subcontract.DefaultRetentionBps,
             request.WithholdingBps ?? Subcontract.DefaultWithholdingBps, clock.UtcNow);
+        subcontract.SetWorkItem(request.WbsCode);
         audit.Record("Subcontract.Updated", nameof(Subcontract), subcontract.Id, $"Updated draft subcontract {subcontract.Number} with {supplier.Name}.");
         return await SaveAndReadAsync(subcontract, cancellationToken);
     }
@@ -207,7 +209,7 @@ public sealed class SubcontractService(ISubcontractRepository subcontracts, ISub
         var claim = subcontract.CertifyClaim(claimId, checked((int)number), costId, currentUser.UserId, now);
         var cost = CostEntry.RecordSystem(costId, currentUser.TenantId, project, subcontract.SubProjectId, CostOrigin.Subcontract, claim.Id,
             CostDescription(subcontract, claim), ItemType.Subcontract, 1m, "l.s", claim.ThisClaimBaseMinor, subcontract.VatTreatment,
-            subcontract.VatRateBps, claim.ClaimDate, currentUser.UserId, now, supplier.Name);
+            subcontract.VatRateBps, claim.ClaimDate, currentUser.UserId, now, supplier.Name, subcontract.Classification);
 
         // The rule that matters most: the project is charged exactly what was certified. A mismatch is a defect, so nothing is saved.
         if (cost.NetMinor != claim.NetMinor || cost.VatMinor != claim.VatMinor || cost.GrossMinor != claim.GrossMinor)
