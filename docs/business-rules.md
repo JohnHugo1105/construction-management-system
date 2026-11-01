@@ -229,9 +229,9 @@ Each attendance entry is paid at the rate **in force on its work date**, so a ra
 * Each figure is rounded once per entry; a worker's pay and each project's share are sums of those rounded figures, so project shares
   always add up to the worker's pay exactly.
 
-Not computed, on purpose: holiday and rest-day premiums, night differential, and statutory contributions and taxes (SSS, PhilHealth,
-Pag-IBIG, withholding tax). They change by law and company policy. Premium hours are entered as overtime hours; contributions and
-advances are entered by a person as **deductions**.
+Not computed, on purpose: holiday and rest-day premiums, night differential and 13th-month pay. They change by law and company
+policy. Premium hours are entered as overtime hours; advances and other deductions are entered by a person. SSS, PhilHealth,
+Pag-IBIG and withholding tax are computed from the effective-dated tables (sections 6.4 to 6.7).
 
 ### 6.3 Payroll runs
 1. **Draft:** for a pay period (at most 31 days counting both ends, so 1 to 31 October but not 1 October to 1 November; not ending in
