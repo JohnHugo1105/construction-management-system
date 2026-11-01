@@ -1,0 +1,258 @@
+<app-dialog [title]="title()" [locked]="saving()" (closed)="dismissed.emit()">
+  @if (reference(); as ref) {
+    <div class="stack">
+      @if (error(); as problem) {
+        <app-api-error-alert
+          [error]="problem"
+          [extra]="extraMessages()"
+          [reloadLabel]="'Reload this ' + noun()"
+          (reload)="reload()"
+        />
+      } @else if (showSummary()) {
+        <app-alert tone="danger" title="Some details need your attention"
+          >Check the highlighted fields and try again.</app-alert
+        >
+      }
+
+      <form
+        id="line-form"
+        class="form line-form"
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        #formElement
+      >
+        @if (isCost()) {
+          <div class="form__row">
+            <app-form-field
+              label="Supplier"
+              [control]="form.controls.sourceDealer"
+              requiredMessage="Enter the supplier's name."
+            >
+              <input appControl formControlName="sourceDealer" autocomplete="off" />
+            </app-form-field>
+            <div class="line-form__invoice">
+              <app-form-field
+                label="Invoice or receipt number"
+                [control]="form.controls.invoiceNumber"
+                requiredMessage="Enter the invoice or receipt number."
+              >
+                <input
+                  appControl
+                  formControlName="invoiceNumber"
+                  autocomplete="off"
+                  placeholder="e.g. INV-2026-0412"
+                />
+              </app-form-field>
+              @if (duplicate()) {
+                <button appButton variant="ghost" type="button" (click)="openExisting()">
+                  Open the existing entry
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <app-form-field
+          label="Description"
+          [control]="form.controls.description"
+          requiredMessage="Describe the item, for example 'Ready-mix concrete 4000 psi'."
+        >
+          <input appControl formControlName="description" autocomplete="off" />
+        </app-form-field>
+
+        <app-field-group
+          label="Item type"
+          [control]="form.controls.itemType"
+          requiredMessage="Choose what this line pays for."
+        >
+          <div class="choice-list choice-list--compact">
+            @for (type of ref.itemTypes; track type.value) {
+              <label class="choice">
+                <input type="radio" formControlName="itemType" [value]="type.value" />
+                <span class="choice__text"
+                  ><span class="choice__label">{{ type.label }}</span></span
+                >
+              </label>
+            }
+          </div>
+        </app-field-group>
+
+        @if (subProjectOptions().length > 0) {
+          <app-form-field
+            label="Sub-project"
+            [optional]="true"
+            hint="Leave it as the whole project if it is not for one part."
+            [control]="form.controls.subProjectId"
+          >
+            <select appControl formControlName="subProjectId">
+              <option value="">Whole project</option>
+              @for (sub of subProjectOptions(); track sub.id) {
+                <option [value]="sub.id">{{ sub.name }}</option>
+              }
+            </select>
+          </app-form-field>
+        }
+
+        <div class="form__row">
+          <app-form-field
+            label="Division"
+            [optional]="true"
+            hint="Groups this line in the cost breakdown."
+            [control]="form.controls.division"
+          >
+            <select appControl formControlName="division" (change)="divisionChanged()">
+              <option value="">Not classified</option>
+              @for (division of ref.divisions; track division.number) {
+                <option [value]="division.number">
+                  {{ division.number }} · {{ division.mainScope }}
+                </option>
+              }
+            </select>
+          </app-form-field>
+
+          @if (division() !== '') {
+            <app-form-field
+              label="Work item"
+              [control]="form.controls.wbsChoice"
+              requiredMessage="Choose the work item, or use a custom code."
+            >
+              <select appControl formControlName="wbsChoice">
+                <option value="">Choose a work item</option>
+                @for (scope of scopes(); track scope.code) {
+                  <option [value]="scope.code">{{ scope.code }} · {{ scope.name }}</option>
+                }
+                <option [value]="customChoice">Use a custom code</option>
+              </select>
+            </app-form-field>
+          }
+        </div>
+
+        @if (division() !== '' && customCode()) {
+          <div class="form__row">
+            <app-form-field
+              label="Code"
+              [control]="form.controls.wbsCode"
+              requiredMessage="Enter the work-breakdown code."
+            >
+              <input appControl formControlName="wbsCode" autocomplete="off" />
+            </app-form-field>
+            <app-form-field
+              label="Sub-scope name"
+              hint="The part of the division this code covers."
+              [control]="form.controls.subScope"
+              requiredMessage="Enter the name of the sub-scope this code covers."
+            >
+              <input appControl formControlName="subScope" autocomplete="off" />
+            </app-form-field>
+          </div>
+        }
+
+        <div class="line-form__amounts">
+          <app-form-field
+            label="Quantity"
+            [control]="form.controls.quantity"
+            requiredMessage="Enter the quantity."
+          >
+            <app-number-input formControlName="quantity" [decimals]="4" placeholder="0" />
+          </app-form-field>
+          <app-form-field
+            label="Unit"
+            [control]="form.controls.unit"
+            requiredMessage="Enter the unit, for example pc, bag or m³."
+          >
+            <input
+              appControl
+              formControlName="unit"
+              autocomplete="off"
+              [attr.list]="ids.units"
+              placeholder="e.g. bag"
+            />
+            <datalist [id]="ids.units">
+              @for (unit of ref.units; track unit) {
+                <option [value]="unit"></option>
+              }
+            </datalist>
+          </app-form-field>
+          <app-form-field
+            label="Unit cost"
+            [control]="form.controls.unitCostMinor"
+            requiredMessage="Enter the cost of one unit."
+          >
+            <app-money-input formControlName="unitCostMinor" placeholder="0.00" />
+          </app-form-field>
+        </div>
+
+        @if (previewText(); as preview) {
+          <div class="line-total" role="status">
+            <p class="line-total__row">
+              <span>Line total (preview)</span>
+              <strong class="money">{{ preview }}</strong>
+            </p>
+            <p class="line-total__note">
+              Quantity times unit cost. The saved amounts, with VAT, are worked out when you save.
+            </p>
+          </div>
+        }
+
+        <app-field-group
+          label="VAT"
+          [hint]="vatHint()"
+          [control]="form.controls.vatTreatment"
+          requiredMessage="Choose whether the unit cost includes VAT."
+        >
+          <div class="choice-list">
+            @for (treatment of ref.vatTreatments; track treatment.value) {
+              <label class="choice">
+                <input type="radio" formControlName="vatTreatment" [value]="treatment.value" />
+                <span class="choice__text">
+                  <span class="choice__label">{{ treatment.label }}</span>
+                  <span class="choice__hint">{{ treatment.hint }}</span>
+                </span>
+              </label>
+            }
+          </div>
+        </app-field-group>
+
+        <app-form-field
+          label="Date"
+          [hint]="
+            isCost()
+              ? 'The date on the invoice or receipt. It can\'t be in the future.'
+              : 'The date this budget line was prepared.'
+          "
+          [control]="form.controls.entryDate"
+          requiredMessage="Choose a date."
+        >
+          <input
+            appControl
+            type="date"
+            formControlName="entryDate"
+            [attr.max]="isCost() ? today : null"
+          />
+        </app-form-field>
+
+        <app-form-field label="Remarks" [optional]="true" [control]="form.controls.remarks">
+          <textarea appControl formControlName="remarks" rows="2" maxlength="500"></textarea>
+        </app-form-field>
+      </form>
+    </div>
+  } @else if (referenceState.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="retryReference()"
+    />
+  } @else {
+    <app-skeleton [lines]="5" label="Loading the form" />
+  }
+
+  <div dialogActions class="dialog-actions">
+    <button appButton type="button" [attr.disabled]="saving() ? '' : null" (click)="cancel()">
+      Cancel
+    </button>
+    <button appButton variant="primary" type="submit" form="line-form" [busy]="saving()">
+      {{ saveLabel() }}
+    </button>
+  </div>
+</app-dialog>

@@ -1,0 +1,73 @@
+:host {
+  display: block;
+}
+
+.entry__name {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.entry__total {
+  display: block;
+  font-weight: 650;
+}
+
+.entry__date,
+.nowrap {
+  white-space: nowrap;
+}
+
+th[scope='row'] {
+  min-width: 13rem;
+}
+
+// Cards sit two across once there is room, instead of one long column.
+@media (min-width: 40rem) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.entry__card-total {
+  flex: none;
+  font-weight: 650;
+}
+
+.entry__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+.entry__system {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+// A voided entry stays listed (when asked for) but is plainly out of the totals.
+.entry--voided .entry__name,
+.entry--voided .num {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.entry__note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.entry__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+
+  .btn {
+    flex: 1 1 8rem;
+  }
+}

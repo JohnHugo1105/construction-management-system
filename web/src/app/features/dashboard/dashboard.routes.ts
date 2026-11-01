@@ -1,9 +1,8 @@
 import { Routes } from '@angular/router';
 
 /**
- * STUB. Everything under `/dashboard` (needs `costs.read`, checked where app.routes.ts loads this file). Replace the routes
- * here and the page component; keep the exported name `DASHBOARD_ROUTES`. When the dashboard is ready, point the `''` redirect in
- * app.routes.ts at 'dashboard' so it becomes the home page.
+ * Everything under `/dashboard` (it needs `costs.read`, checked where app.routes.ts loads this file). The dashboard is one page:
+ * the company's budget against spent cost, with a row per project that opens that project's Budget tab.
  */
 export const DASHBOARD_ROUTES: Routes = [
   {

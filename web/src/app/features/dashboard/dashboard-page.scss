@@ -1,0 +1,116 @@
+:host {
+  display: block;
+}
+
+.refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}
+
+// The one fact the page leads with: big words, a calm surface, no decoration.
+.lead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.lead__icon {
+  margin-top: 2px;
+}
+
+.lead__icon--warning {
+  color: var(--color-warning);
+}
+
+.lead__icon--success {
+  color: var(--color-success);
+}
+
+.lead__icon--neutral {
+  color: var(--color-text-muted);
+}
+
+.lead__headline {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+
+.lead__detail {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  margin-left: auto;
+  cursor: pointer;
+
+  input {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--color-brand);
+  }
+}
+
+.used {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 5rem;
+}
+
+.over {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.idle {
+  color: var(--color-text-muted);
+}
+
+th[scope='row'] {
+  min-width: 11rem;
+}
+
+.card__remaining {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 650;
+}
+
+.card__used {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+// Cards sit two across once there is room, instead of one long column.
+@media (min-width: 40rem) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+}

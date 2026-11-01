@@ -1,0 +1,274 @@
+<div class="stack stack--loose">
+  @if (state.summaryError(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reloadSummary()"
+    />
+  }
+
+  @if (state.summaryLoading()) {
+    <app-skeleton variant="card" [lines]="2" label="Loading the budget position" />
+  } @else if (state.summary(); as summary) {
+    @if (hasPosition()) {
+      <section class="card" aria-labelledby="position-heading">
+        <div class="panel-head">
+          <h2 id="position-heading" class="card__title">Where the project stands</h2>
+          <p class="text-muted text-small">{{ basisLine() }}</p>
+        </div>
+        <app-cost-position [figures]="summary.position">
+          @if (margins(); as margin) {
+            <dl class="margins">
+              <div>
+                <dt>Margin so far</dt>
+                <dd class="money" [class.margins__negative]="margin.soFar.negative">
+                  {{ margin.soFar.text }}
+                </dd>
+                <dd class="margins__note">Contract price minus what is spent</dd>
+              </div>
+              <div>
+                <dt>Margin if finished on budget</dt>
+                <dd class="money" [class.margins__negative]="margin.onBudget.negative">
+                  {{ margin.onBudget.text }}
+                </dd>
+                <dd class="margins__note">Contract price minus the budget</dd>
+              </div>
+            </dl>
+            @if (margin.vatNote) {
+              <p class="text-muted text-small">
+                Margins always use amounts with VAT, because the contract price includes VAT.
+              </p>
+            }
+          }
+        </app-cost-position>
+      </section>
+
+      <app-cost-breakdown [summary]="summary" />
+    }
+  }
+
+  @if (noBudgetYet()) {
+    <app-empty-state
+      icon="payroll"
+      title="No budget yet"
+      [message]="
+        canWrite()
+          ? 'This project has no budget yet. Add your first budget line to start tracking cost.'
+          : 'This project has no budget yet. A cost engineer can add the first budget line.'
+      "
+    >
+      @if (canWrite()) {
+        <button appButton variant="primary" type="button" (click)="openAdd()">
+          <app-icon name="plus" [size]="18" />
+          Add budget line
+        </button>
+      } @else if (archivedNote()) {
+        <p class="text-muted">This project is archived, so its budget can't be changed.</p>
+      }
+    </app-empty-state>
+  } @else {
+    <section class="stack" aria-labelledby="lines-heading">
+      <div class="panel-head">
+        <h2 id="lines-heading" class="card__title">Budget lines</h2>
+        @if (canWrite()) {
+          <button appButton variant="primary" type="button" (click)="openAdd()">
+            <app-icon name="plus" [size]="18" />
+            Add budget line
+          </button>
+        } @else if (archivedNote()) {
+          <p class="text-muted text-small">Archived: lines can't be added, changed or removed.</p>
+        }
+      </div>
+
+      <div class="toolbar">
+        <app-search-box
+          class="toolbar__search"
+          label="Search budget lines"
+          placeholder="Search budget lines"
+          [value]="state.query.values().search"
+          (searched)="state.query.set({ search: $event }, { replace: true })"
+        />
+        <app-filter-toggle
+          controls="budget-filters"
+          [open]="filtersOpen()"
+          [activeCount]="state.activeFilterCount()"
+          (toggled)="filtersOpen.set(!filtersOpen())"
+        />
+      </div>
+
+      @if (filtersOpen()) {
+        <div id="budget-filters" class="card filters">
+          <div class="form__row">
+            @if (subProjects().length > 0) {
+              <app-form-field label="Sub-project">
+                <select appControl #subProject (change)="setSubProject(subProject.value)">
+                  <option value="" [selected]="state.query.values().subProject === ''">
+                    All parts of the project
+                  </option>
+                  @for (sub of subProjects(); track sub.id) {
+                    <option
+                      [value]="sub.id"
+                      [selected]="state.query.values().subProject === sub.id"
+                    >
+                      {{ sub.name }}{{ sub.status === 'Archived' ? ' (archived)' : '' }}
+                    </option>
+                  }
+                </select>
+              </app-form-field>
+            }
+            <app-form-field label="Division">
+              <select appControl #division (change)="setDivision(division.value)">
+                <option value="0" [selected]="state.query.values().division === 0">
+                  All divisions
+                </option>
+                @for (item of divisions(); track item.number) {
+                  <option
+                    [value]="item.number"
+                    [selected]="state.query.values().division === item.number"
+                  >
+                    {{ item.number }} · {{ item.mainScope }}
+                  </option>
+                }
+              </select>
+            </app-form-field>
+            <app-form-field label="Item type">
+              <select appControl #itemType (change)="setItemType(itemType.value)">
+                <option value="" [selected]="state.query.values().itemType === ''">
+                  All types
+                </option>
+                @for (type of itemTypes(); track type.value) {
+                  <option
+                    [value]="type.value"
+                    [selected]="state.query.values().itemType === type.value"
+                  >
+                    {{ type.label }}
+                  </option>
+                }
+              </select>
+            </app-form-field>
+          </div>
+          <label class="choice filters__check">
+            <input
+              type="checkbox"
+              #removedBox
+              [checked]="state.query.values().removed"
+              (change)="state.query.set({ removed: removedBox.checked })"
+            />
+            <span class="choice__text">
+              <span class="choice__label">Show removed lines</span>
+              <span class="choice__hint"
+                >They stay on record but are not counted in any total.</span
+              >
+            </span>
+          </label>
+          @if (state.activeFilterCount() > 0) {
+            <div class="filters__clear">
+              <button appButton variant="ghost" type="button" (click)="state.clearFilters()">
+                Clear filters
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (state.error(); as problem) {
+        <app-api-error-alert
+          [error]="problem"
+          [allowRetry]="true"
+          reloadLabel="Try again"
+          (reload)="state.reloadLines()"
+        />
+      }
+
+      @if (state.loadingFirst()) {
+        <app-skeleton variant="card" [lines]="4" label="Loading budget lines" />
+      } @else if (state.lines().length > 0) {
+        <div
+          class="results"
+          [class.results--refreshing]="state.refreshing()"
+          [attr.aria-busy]="state.refreshing()"
+        >
+          <app-budget-lines-list
+            [lines]="state.lines()"
+            [canWrite]="canWrite()"
+            (edit)="openEdit($event)"
+            (remove)="removing.set($event)"
+          />
+
+          @if (totalsView(); as totals) {
+            <div class="totals" role="status" aria-label="Totals of the budget lines that match">
+              <p class="totals__main">
+                <span>{{ totalsLabel() }}</span>
+                <strong class="money">{{ totals.gross }}</strong>
+              </p>
+              <p class="totals__detail">
+                Before VAT <span class="money">{{ totals.net }}</span> · VAT
+                <span class="money">{{ totals.vat }}</span>
+              </p>
+            </div>
+          }
+        </div>
+
+        @if (anyRemovedShown()) {
+          <p class="text-muted text-small">
+            Removed lines are shown but are not counted in the totals.
+          </p>
+        }
+
+        <app-pager
+          [page]="state.query.values().page"
+          [pageSize]="state.pageSize"
+          [total]="state.total()"
+          noun="budget lines"
+          (pageChange)="state.query.setPage($event)"
+        />
+      } @else if (!state.error()) {
+        <app-empty-state
+          icon="search"
+          title="No budget lines match"
+          message="Try a different search, or clear the filters."
+        >
+          <button appButton type="button" (click)="state.query.reset()">
+            Show all budget lines
+          </button>
+        </app-empty-state>
+      }
+
+      @if (state.lines().length > 0 || hasPosition()) {
+        <div class="downloads">
+          @if (state.lines().length > 0) {
+            <a appButton [href]="budgetCsv()" download>Download budget (CSV)</a>
+          }
+          @if (hasPosition()) {
+            <a appButton [href]="summaryCsv()" download>Download cost summary (CSV)</a>
+          }
+        </div>
+      }
+    </section>
+  }
+</div>
+
+@if (dialog()) {
+  <app-line-dialog
+    kind="budget"
+    [line]="editing()"
+    (saved)="saved()"
+    (refreshed)="state.reload()"
+    (dismissed)="dialog.set(null)"
+  />
+}
+
+@if (removing()) {
+  <app-reason-dialog
+    title="Remove this budget line?"
+    message="It stays on record and no longer counts in totals."
+    reasonLabel="Why is it being removed?"
+    requiredMessage="Say why this budget line is being removed."
+    confirmLabel="Remove budget line"
+    [perform]="performRemove"
+    (done)="removed()"
+    (reloadRequested)="removalOutdated()"
+    (dismissed)="removing.set(null)"
+  />
+}

@@ -1,0 +1,122 @@
+:host {
+  display: block;
+}
+
+// A division you can open to see its codes. The whole name is the button, so the target is at least 44px tall.
+.expander {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  margin: -10px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-text);
+  }
+}
+
+.expander--card {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.breakdown {
+  th[scope='row'] {
+    min-width: 12rem;
+  }
+
+  // A division row with codes under it reads as a group: the codes sit in a quieter tone.
+  .breakdown__code > * {
+    background: var(--color-surface-2);
+    font-size: var(--text-sm);
+  }
+
+  .breakdown__code th[scope='row'] {
+    padding-left: var(--space-10);
+    background: var(--color-surface-2);
+    font-weight: 500;
+  }
+
+  tbody:last-child > tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+.breakdown__name {
+  display: block;
+}
+
+.breakdown__used {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 5rem;
+}
+
+.breakdown__over {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.breakdown__attention {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+// Phone cards ---------------------------------------------------------------------------------------------------------
+.breakdown-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.breakdown-card__used {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.code-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.code-card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+
+.code-card__name {
+  min-width: 0;
+  font-weight: 600;
+}
+
+// Cards sit two across once there is room, instead of one long column.
+@media (min-width: 40rem) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
