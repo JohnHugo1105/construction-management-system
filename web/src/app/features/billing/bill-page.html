@@ -1,0 +1,223 @@
+<app-page-header [title]="title()" [backLabel]="backLabel()" [backLink]="backLink()" />
+
+@switch (state.status()) {
+  @case ('loading') {
+    <app-skeleton [lines]="4" label="Loading bill" />
+  }
+  @case ('error') {
+    <div class="stack">
+      <app-api-error-alert
+        [error]="state.error()"
+        [allowRetry]="!state.error()?.isNotFound"
+        reloadLabel="Try again"
+        (reload)="reload()"
+      />
+      <p><a appButton routerLink="/billing">Back to billing</a></p>
+    </div>
+  }
+  @case ('ready') {
+    @if (view(); as info) {
+      <div class="stack" [attr.aria-busy]="state.refreshing()">
+        <div class="head">
+          <div class="head__info">
+            <app-status-chip
+              [label]="info.status.label"
+              [tone]="info.status.tone"
+              [icon]="info.status.icon"
+            />
+            <p class="head__kind">{{ info.kind }} · {{ info.billingDate }}</p>
+          </div>
+          <div class="head__actions">
+            @if (actions().issue) {
+              <button
+                appButton
+                variant="primary"
+                type="button"
+                [busy]="issuing()"
+                (click)="issue()"
+              >
+                Issue bill
+              </button>
+            }
+            @if (actions().recordPayment) {
+              <button appButton variant="primary" type="button" (click)="paying.set(true)">
+                Record payment
+              </button>
+            }
+            @if (actions().edit) {
+              <button appButton type="button" [busy]="opening()" (click)="edit()">
+                Change draft
+              </button>
+            }
+            @if (actions().discard) {
+              <button appButton variant="ghost" type="button" (click)="reasonFor.set('discard')">
+                Discard draft
+              </button>
+            }
+            @if (actions().void) {
+              <button appButton variant="ghost" type="button" (click)="reasonFor.set('void')">
+                Void bill
+              </button>
+            }
+          </div>
+        </div>
+
+        <p class="description">{{ info.description }}</p>
+
+        @if (issueError(); as problem) {
+          <app-api-error-alert
+            [error]="problem"
+            [allowRetry]="problem.status === 409"
+            reloadLabel="Reload bill"
+            (reload)="reload()"
+          />
+        }
+
+        @if (info.archived) {
+          <p class="text-muted text-small">
+            This project is archived, so its bills can't change. Restore the project to make
+            changes.
+          </p>
+        }
+
+        @if (state.bill().isStale && info.draft) {
+          <app-alert tone="warning" title="This draft is out of date">
+            Another bill was issued or voided after it was prepared. Change the draft and save it
+            again before it is issued.
+          </app-alert>
+        }
+
+        @if (actions().approverNote) {
+          <app-alert tone="info" title="An accountant issues bills">
+            Check the figures, then ask an accountant to issue this bill. It gets its number when it
+            is issued.
+          </app-alert>
+        }
+
+        @if (info.voidReason) {
+          <app-alert
+            tone="warning"
+            [title]="
+              info.issued || state.bill().number
+                ? 'This bill was voided'
+                : 'This draft was discarded'
+            "
+          >
+            Reason: {{ info.voidReason }}. It no longer counts in what the client owes.
+          </app-alert>
+        }
+
+        @if (info.issued) {
+          <dl class="totals">
+            <div class="totals__item totals__item--main">
+              <dt>Still to collect</dt>
+              <dd class="money">{{ info.outstanding }}</dd>
+            </div>
+            <div class="totals__item">
+              <dt>Paid</dt>
+              <dd class="money">{{ info.paid }}</dd>
+            </div>
+            <div class="totals__item">
+              <dt>Due</dt>
+              <dd>{{ info.dueDate }}</dd>
+            </div>
+          </dl>
+        }
+
+        <section class="panel" aria-labelledby="breakdown-heading">
+          <h2 id="breakdown-heading" class="panel__title">Breakdown</h2>
+          <dl class="rows">
+            @for (row of info.work; track row.label) {
+              <div class="rows__row">
+                <dt>{{ row.label }}</dt>
+                <dd class="money">{{ row.amount }}</dd>
+              </div>
+            }
+            @for (row of info.rows; track row.label) {
+              <div class="rows__row" [class.rows__row--total]="row.total">
+                <dt>{{ row.label }}</dt>
+                <dd class="money">{{ row.amount }}</dd>
+              </div>
+            }
+          </dl>
+          @if (!info.issued) {
+            <p class="text-muted text-small">Due {{ info.dueDate }} once issued on this date.</p>
+          }
+        </section>
+
+        @if (info.payments.length > 0) {
+          <section class="panel" aria-labelledby="payments-heading">
+            <h2 id="payments-heading" class="panel__title">Payments received</h2>
+            <ul class="payments">
+              @for (item of info.payments; track item.id) {
+                <li class="payment" [class.payment--void]="item.voided">
+                  <div class="payment__main">
+                    <span class="money payment__amount">{{ item.amount }}</span>
+                    <span class="text-small">{{ item.when }} · {{ item.how }}</span>
+                    @if (item.note) {
+                      <span class="text-small text-muted">{{ item.note }}</span>
+                    }
+                    @if (item.voided) {
+                      <span class="text-small text-muted">Voided: {{ item.voidReason }}</span>
+                    }
+                  </div>
+                  @if (actions().voidPayment && !item.voided) {
+                    <button
+                      appButton
+                      variant="ghost"
+                      type="button"
+                      (click)="reasonFor.set({ payment: item.payment })"
+                    >
+                      Void payment
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (info.history.length > 0) {
+          <p class="text-muted text-small history">
+            @for (entry of info.history; track entry) {
+              <span>{{ entry }}</span>
+            }
+          </p>
+        }
+      </div>
+    }
+  }
+}
+
+@if (editing() && formContext(); as context) {
+  @if (state.status() === 'ready') {
+    <app-bill-form-dialog
+      [context]="context"
+      [bill]="state.bill()"
+      (saved)="saved($event, 'Draft saved.')"
+      (dismissed)="editing.set(false)"
+      (reloaded)="reload()"
+    />
+  }
+}
+@if (paying() && state.status() === 'ready') {
+  <app-payment-dialog
+    [bill]="state.bill()"
+    (saved)="saved($event, 'Payment recorded.')"
+    (dismissed)="paying.set(false)"
+    (reloaded)="reload()"
+  />
+}
+@if (prompt(); as ask) {
+  <app-reason-dialog
+    [title]="ask.title"
+    [message]="ask.message"
+    [label]="ask.label"
+    [confirmLabel]="ask.confirm"
+    [keepLabel]="ask.keep"
+    [action]="ask.action"
+    (done)="saved($event, ask.done)"
+    (dismissed)="reasonFor.set(null)"
+    (reloaded)="reload()"
+  />
+}

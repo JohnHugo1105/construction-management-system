@@ -1,0 +1,181 @@
+// Reset, typography, focus and small utilities. Element rules use :where() so they never out-rank a component's own look.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+.boot-message {
+  margin: var(--space-12) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+:where(h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset) {
+  margin: 0;
+}
+
+:where(h1, h2, h3, h4) {
+  line-height: var(--leading-tight);
+  font-weight: 650;
+}
+
+:where(h1) {
+  font-size: var(--text-xl);
+}
+
+:where(h2) {
+  font-size: var(--text-lg);
+}
+
+:where(h3) {
+  font-size: var(--text-base);
+}
+
+:where(ul[class], ol[class]) {
+  padding: 0;
+  list-style: none;
+}
+
+:where(a) {
+  color: var(--color-brand-text);
+  text-underline-offset: 3px;
+}
+
+:where(a:hover) {
+  text-decoration-thickness: 2px;
+}
+
+:where(img, svg) {
+  display: block;
+  max-width: 100%;
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+
+// Visible focus on everything a person can reach with the keyboard.
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:where([tabindex='-1']):focus {
+  outline: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-200%);
+
+  &:focus {
+    transform: none;
+  }
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-small {
+  font-size: var(--text-sm);
+}
+
+.text-right {
+  text-align: right;
+}
+
+.money {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// A vertical rhythm helper.
+// A single column that can shrink below the width of its widest child, so a scrolling tab row or table stays inside the screen.
+.stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-content: start;
+}
+
+// The same for every other one-column layout: children may shrink instead of pushing the page wider than the screen.
+.field,
+.field-group,
+.choice-list,
+.choice__text,
+.form,
+.form__section,
+.card-list,
+.row-card,
+.alert__body,
+.menu__header {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stack--tight {
+  gap: var(--space-2);
+}
+
+.stack--loose {
+  gap: var(--space-6);
+}
+
+// A wrapping row.
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

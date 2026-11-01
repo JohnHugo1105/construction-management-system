@@ -1,0 +1,399 @@
+<div class="stack">
+  <div class="day-bar">
+    <label class="day-bar__date">
+      <span class="field__label">Day</span>
+      <input
+        class="input"
+        type="date"
+        [value]="state.date()"
+        [max]="state.today()"
+        (change)="dateChosen($event)"
+      />
+    </label>
+    @if (!state.isToday()) {
+      <button appButton type="button" (click)="today()">Today</button>
+    }
+    @if (canRecord() && context.activeSubProjects().length > 0 && state.rows().length > 0) {
+      <label class="day-bar__sub">
+        <span class="field__label">Record against</span>
+        <select class="input" (change)="subProjectChosen($event)">
+          <option value="" [selected]="state.subProjectId() === ''">Whole project</option>
+          @for (sub of context.activeSubProjects(); track sub.id) {
+            <option [value]="sub.id" [selected]="state.subProjectId() === sub.id">
+              {{ sub.name }}
+            </option>
+          }
+        </select>
+      </label>
+    }
+  </div>
+
+  @if (context.isArchived()) {
+    <app-alert tone="warning" title="This project is archived">
+      Attendance can be read but not recorded. Restore the project to record attendance again.
+    </app-alert>
+  }
+
+  @if (state.futureDate()) {
+    <app-alert tone="warning" title="That day hasn't happened yet">
+      Attendance can only be recorded for today or an earlier day.
+      <div alertActions>
+        <button appButton type="button" (click)="today()">Go to today</button>
+      </div>
+    </app-alert>
+  } @else if (state.loadError(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  } @else if (state.loading() && !state.sheet()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading the day" />
+  } @else if (state.sheet()) {
+    @if (state.error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        reloadLabel="Reload the day"
+        (reload)="state.reload()"
+      />
+    }
+    @if (state.general().length > 0) {
+      <app-alert tone="danger" title="The day couldn't be saved">
+        @for (message of state.general(); track message) {
+          <span class="general">{{ message }}</span>
+        }
+      </app-alert>
+    }
+
+    @if (state.rows().length === 0 && entries().length === 0) {
+      <app-empty-state
+        icon="users"
+        title="No one is posted here on {{ dayLabel() }}"
+        message="Post workers to this project, then record their hours here."
+      >
+        <a appButton routerLink="/workers">Go to workers</a>
+      </app-empty-state>
+    } @else {
+      @if (state.rows().length > 0) {
+        <section class="sheet" aria-labelledby="todo-heading">
+          <h2 id="todo-heading" class="sheet__title">{{ crewLabel() }}</h2>
+          @if (canRecord()) {
+            <p class="text-muted text-small">
+              Everyone starts as a full day. Untick anyone who didn't work.
+            </p>
+          }
+          <ul class="sheet__list" [class.sheet__list--busy]="state.saving()">
+            @for (row of state.rows(); track row.workerId) {
+              @let problem = state.problems().get(row.workerId);
+              @if (canRecord()) {
+                <li class="line line--draft" [class.line--away]="!row.worked">
+                  <div class="line__who">
+                    <label class="worked">
+                      <input
+                        type="checkbox"
+                        [checked]="row.worked"
+                        (change)="state.updateRow(row.workerId, { worked: checked($event) })"
+                      />
+                      <span class="worked__text">
+                        <span class="worked__name">{{ row.name }}</span>
+                        <span class="worked__sub"
+                          >{{ row.employeeNumber }} ·
+                          {{ row.worked ? 'Worked' : 'Did not work' }}</span
+                        >
+                      </span>
+                    </label>
+                    <span class="line__badge"
+                      ><app-icon name="pencil" [size]="14" /> Not saved yet</span
+                    >
+                  </div>
+
+                  @if (row.worked) {
+                    <div class="line__field">
+                      <span class="line__label">Regular hours</span>
+                      <app-hours-field
+                        [value]="row.regular"
+                        [label]="'Regular hours for ' + row.name"
+                        [max]="state.hoursPerDay()"
+                        [invalid]="!!problem?.regular"
+                        [disabled]="state.saving()"
+                        (valueChange)="state.updateRow(row.workerId, { regular: $event })"
+                      />
+                      @if (problem?.regular; as message) {
+                        <p class="field__error" role="alert">
+                          <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                        </p>
+                      }
+                    </div>
+                    <div class="line__field">
+                      <span class="line__label">Overtime hours</span>
+                      <app-hours-field
+                        [value]="row.overtime"
+                        [label]="'Overtime hours for ' + row.name"
+                        [stepBy]="0.5"
+                        [invalid]="!!problem?.overtime"
+                        [disabled]="state.saving()"
+                        (valueChange)="state.updateRow(row.workerId, { overtime: $event })"
+                      />
+                      @if (problem?.overtime; as message) {
+                        <p class="field__error" role="alert">
+                          <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                        </p>
+                      }
+                    </div>
+                    <div class="line__remarks">
+                      @if (row.remarksOpen || row.remarks) {
+                        <input
+                          class="input"
+                          type="text"
+                          maxlength="300"
+                          autocomplete="off"
+                          placeholder="Remark, for example left early"
+                          [attr.aria-label]="'Remark for ' + row.name"
+                          [value]="row.remarks"
+                          (input)="state.updateRow(row.workerId, { remarks: remarksTyped($event) })"
+                        />
+                      } @else {
+                        <button
+                          appButton
+                          variant="ghost"
+                          type="button"
+                          (click)="state.updateRow(row.workerId, { remarksOpen: true })"
+                        >
+                          Add a remark
+                        </button>
+                      }
+                      @if (problem?.remarks; as message) {
+                        <p class="field__error" role="alert">
+                          <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                        </p>
+                      }
+                    </div>
+                  }
+                  @if (problem?.worker; as message) {
+                    <p class="field__error line__error" role="alert">
+                      <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                    </p>
+                  }
+                </li>
+              } @else {
+                <li class="line line--read">
+                  <div class="line__who">
+                    <span class="worked__text">
+                      <span class="worked__name">{{ row.name }}</span>
+                      <span class="worked__sub">{{ row.employeeNumber }}</span>
+                    </span>
+                    <span class="text-muted text-small">No hours recorded</span>
+                  </div>
+                </li>
+              }
+            }
+          </ul>
+        </section>
+      } @else if (canRecord() && entries().length > 0) {
+        <p class="all-done">
+          <app-icon name="check-circle" [size]="18" /> Everyone posted here has been recorded for
+          {{ dayLabel() }}.
+        </p>
+      }
+
+      @if (entries().length > 0) {
+        <section class="sheet" aria-labelledby="saved-heading">
+          <h2 id="saved-heading" class="sheet__title">Recorded for {{ dayLabel() }}</h2>
+          <p class="text-muted text-small">{{ summary() }}</p>
+          <ul class="sheet__list">
+            @for (item of entries(); track item.entry.id) {
+              <li
+                class="line line--saved"
+                [class.line--editing]="state.editing()?.entry?.id === item.entry.id"
+              >
+                <div class="line__who">
+                  <span class="worked__text">
+                    <span class="worked__name">{{ item.entry.workerName }}</span>
+                    <span class="worked__sub"
+                      >{{ item.entry.employeeNumber }}
+                      @if (item.place) {
+                        · {{ item.place }}
+                      }
+                    </span>
+                  </span>
+                  @if (item.entry.isLocked) {
+                    <app-status-chip label="In a payroll run" tone="neutral" icon="lock" />
+                  }
+                </div>
+
+                @if (state.editing()?.entry?.id === item.entry.id) {
+                  @let edit = state.editing()!;
+                  <div class="line__field">
+                    <span class="line__label">Regular hours</span>
+                    <app-hours-field
+                      [value]="edit.regular"
+                      [label]="'Regular hours for ' + item.entry.workerName"
+                      [max]="state.hoursPerDay()"
+                      [invalid]="!!edit.problems.regular"
+                      [disabled]="edit.saving"
+                      (valueChange)="state.updateEdit({ regular: $event })"
+                    />
+                    @if (edit.problems.regular; as message) {
+                      <p class="field__error" role="alert">
+                        <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                      </p>
+                    }
+                  </div>
+                  <div class="line__field">
+                    <span class="line__label">Overtime hours</span>
+                    <app-hours-field
+                      [value]="edit.overtime"
+                      [label]="'Overtime hours for ' + item.entry.workerName"
+                      [stepBy]="0.5"
+                      [invalid]="!!edit.problems.overtime"
+                      [disabled]="edit.saving"
+                      (valueChange)="state.updateEdit({ overtime: $event })"
+                    />
+                    @if (edit.problems.overtime; as message) {
+                      <p class="field__error" role="alert">
+                        <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                      </p>
+                    }
+                  </div>
+                  <div class="line__remarks">
+                    <input
+                      class="input"
+                      type="text"
+                      maxlength="300"
+                      autocomplete="off"
+                      placeholder="Remark (optional)"
+                      [attr.aria-label]="'Remark for ' + item.entry.workerName"
+                      [value]="edit.remarks"
+                      (input)="state.updateEdit({ remarks: remarksTyped($event) })"
+                    />
+                    @if (edit.problems.remarks; as message) {
+                      <p class="field__error" role="alert">
+                        <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                      </p>
+                    }
+                  </div>
+                  @if (edit.error; as problem) {
+                    <app-api-error-alert
+                      [error]="problem"
+                      reloadLabel="Reload the day"
+                      (reload)="state.cancelEdit(); state.reload()"
+                    />
+                  }
+                  <div class="line__actions">
+                    <button
+                      appButton
+                      type="button"
+                      [attr.disabled]="edit.saving ? '' : null"
+                      (click)="state.cancelEdit()"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      appButton
+                      variant="primary"
+                      type="button"
+                      [busy]="edit.saving"
+                      (click)="saveEdit()"
+                    >
+                      Save hours
+                    </button>
+                  </div>
+                } @else {
+                  <div class="line__summary">
+                    <p class="line__hours">
+                      {{ item.hours }}
+                      @if (item.entry.remarks) {
+                        <span class="text-muted text-small"> · {{ item.entry.remarks }}</span>
+                      }
+                    </p>
+                    @if (item.editable) {
+                      @if (viewport.isTablet()) {
+                        <div class="line__actions">
+                          <button appButton type="button" (click)="state.startEdit(item.entry)">
+                            Change hours
+                          </button>
+                          <button
+                            appButton
+                            variant="ghost"
+                            type="button"
+                            (click)="removing.set(item.entry)"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      } @else {
+                        <app-menu
+                          [iconOnly]="true"
+                          [ariaLabel]="'Actions for ' + item.entry.workerName"
+                          align="end"
+                          variant="ghost"
+                        >
+                          <app-icon menuTrigger name="more" />
+                          <button
+                            type="button"
+                            class="menu__item"
+                            (click)="state.startEdit(item.entry)"
+                          >
+                            Change hours
+                          </button>
+                          <button
+                            type="button"
+                            class="menu__item menu__item--danger"
+                            (click)="removing.set(item.entry)"
+                          >
+                            Remove entry
+                          </button>
+                        </app-menu>
+                      }
+                    }
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+          @if (anyLocked()) {
+            <p class="text-muted text-small">
+              Hours in a payroll run can't be changed. Void the payroll run first to change them.
+            </p>
+          }
+        </section>
+      }
+    }
+
+    @if (canRecord() && state.rows().length > 0 && state.toRecord().length === 0) {
+      <p class="text-muted text-small" aria-live="polite">
+        {{ saveSummary() }} Tick a worker above to record their hours.
+      </p>
+    }
+    @if (canRecord() && state.toRecord().length > 0) {
+      <div class="save-bar" role="region" aria-label="Save the day">
+        <p class="save-bar__summary" aria-live="polite">{{ saveSummary() }}</p>
+        <button appButton variant="primary" type="button" [busy]="state.saving()" (click)="save()">
+          Save the day
+        </button>
+      </div>
+    }
+  }
+</div>
+
+@if (removing(); as entry) {
+  <app-void-attendance-dialog
+    [entry]="entry"
+    (voided)="removed()"
+    (dismissed)="removing.set(null)"
+    (reloaded)="removing.set(null); state.reload()"
+  />
+}
+
+@if (pendingDay()) {
+  <app-confirm-dialog
+    title="Leave this day without saving?"
+    message="The hours you entered for this day haven't been saved. Opening another day throws them away."
+    confirmLabel="Discard and open that day"
+    cancelLabel="Keep editing"
+    tone="danger"
+    (confirmed)="discardAndOpen()"
+    (cancelled)="keepEditing()"
+  />
+}

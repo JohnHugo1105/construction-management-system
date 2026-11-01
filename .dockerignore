@@ -1,0 +1,17 @@
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.angular
+**/TestResults
+.git
+.claude
+.agents
+.vs
+.vscode
+.env
+.env.*
+!.env.example
+backups
+docs
+tests

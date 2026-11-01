@@ -1,0 +1,56 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.toolbar__search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toolbar .btn {
+  flex: none;
+}
+
+// The area gets a row of its own on a phone; the two dates sit side by side.
+.filters {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.filters__area,
+.filters__toggle {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 48rem) {
+  .filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filters__area {
+    grid-column: auto;
+  }
+}
+
+.filters__clear {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.results--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}
+
+.when {
+  white-space: nowrap;
+}

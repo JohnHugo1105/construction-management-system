@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}

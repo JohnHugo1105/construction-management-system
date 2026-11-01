@@ -1,0 +1,223 @@
+:host {
+  display: block;
+}
+
+.shell {
+  min-height: 100dvh;
+}
+
+.shell--minimal {
+  --bottom-chrome: 0px;
+}
+
+.shell__column {
+  min-width: 0;
+}
+
+// Header ----------------------------------------------------------------------------------------------------------
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--header-height);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.header__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-lg);
+  line-height: var(--leading-tight);
+}
+
+// Content ---------------------------------------------------------------------------------------------------------
+.main {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4)
+    calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-8));
+}
+
+.shell--minimal .main {
+  padding-bottom: var(--space-8);
+}
+
+// Bottom navigation (phones and tablets) --------------------------------------------------------------------------
+.bottom-nav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 25;
+  padding-bottom: var(--safe-bottom);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.bottom-nav__list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.bottom-nav__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  height: var(--bottom-nav-height);
+  padding: var(--space-1) 2px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.bottom-nav__item--active {
+  color: var(--color-brand-text);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--color-brand);
+  }
+}
+
+.more-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.more-list__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--color-surface-2);
+  }
+}
+
+// Navigation rail (wide screens) ----------------------------------------------------------------------------------
+@media (min-width: 64rem) {
+  .shell {
+    display: grid;
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
+  }
+
+  .shell--minimal {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100dvh;
+    padding: var(--space-4) var(--space-3);
+    border-right: 1px solid var(--color-border);
+    background: var(--color-surface);
+    overflow-y: auto;
+  }
+
+  .rail__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    color: var(--color-brand-text);
+    font-weight: 700;
+  }
+
+  .rail__company {
+    min-width: 0;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+  }
+
+  .rail__list {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rail__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--touch-target);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--color-surface-2);
+      color: var(--color-text);
+    }
+  }
+
+  .rail__link--active {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-text);
+  }
+
+  .header {
+    padding-left: var(--space-8);
+    padding-right: var(--space-4);
+  }
+
+  .main {
+    padding: var(--space-6) var(--space-8) var(--space-12);
+  }
+}

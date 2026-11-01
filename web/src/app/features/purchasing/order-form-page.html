@@ -1,0 +1,155 @@
+<app-page-header
+  [title]="isEdit() ? 'Edit draft order' : 'New purchase order'"
+  [backLabel]="backLabel()"
+  [backLink]="backLink()"
+/>
+
+@if (loadingOrder() && !loaded()) {
+  <app-skeleton [lines]="6" label="Loading the order" />
+} @else if (isEdit() && !loaded()) {
+  @if (error(); as problem) {
+    <div class="stack">
+      <app-api-error-alert [error]="problem" [allowRetry]="!problem.isNotFound" reloadLabel="Try again" (reload)="reload()" />
+      <p><a appButton routerLink="/purchasing">Back to purchase orders</a></p>
+    </div>
+  }
+} @else {
+  <div class="stack">
+    @if (error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [extra]="extraMessages()"
+        reloadLabel="Reload this order"
+        (reload)="reload()"
+      />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention"
+        >Check the highlighted fields and try again.</app-alert
+      >
+    }
+
+    @if (noSuppliers()) {
+      <app-alert tone="warning" title="There is no supplier to order from yet">
+        Add the firm first, then come back to raise the order.
+        <a appButton routerLink="/purchasing/suppliers/new">Add a supplier</a>
+      </app-alert>
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      <div class="form__row">
+        <app-form-field label="Supplier" [control]="form.controls.supplierId" requiredMessage="Choose the supplier this order is for.">
+          <select appControl formControlName="supplierId">
+            <option value="">Choose a supplier</option>
+            @for (supplier of supplierOptions(); track supplier.id) {
+              <option [value]="supplier.id">{{ supplier.name }}</option>
+            }
+          </select>
+        </app-form-field>
+        <app-form-field label="Project" [control]="form.controls.projectId" requiredMessage="Choose the project this order is for.">
+          <select appControl formControlName="projectId" (change)="projectChanged()">
+            <option value="">Choose a project</option>
+            @for (project of projectOptions(); track project.id) {
+              <option [value]="project.id">{{ project.name }}</option>
+            }
+          </select>
+        </app-form-field>
+      </div>
+
+      @if (subProjectOptions().length > 0) {
+        <app-form-field
+          label="Sub-project"
+          [optional]="true"
+          hint="Leave it as the whole project if it is not for one part."
+          [control]="form.controls.subProjectId"
+        >
+          <select appControl formControlName="subProjectId">
+            <option value="">Whole project</option>
+            @for (sub of subProjectOptions(); track sub.id) {
+              <option [value]="sub.id">{{ sub.name }}</option>
+            }
+          </select>
+        </app-form-field>
+      }
+
+      <section class="lines" aria-labelledby="lines-heading">
+        <div class="lines__head">
+          <h2 id="lines-heading" class="card__title">Lines</h2>
+          <button appButton type="button" (click)="addLine()">
+            <app-icon name="plus" [size]="18" />
+            Add a line
+          </button>
+        </div>
+        @if (linesProblem(); as problem) {
+          <p class="field__error" role="alert">{{ problem }}</p>
+        }
+        @if (lineRows().length === 0) {
+          <p class="text-muted">No lines yet. Add what you are ordering, one line at a time.</p>
+        } @else {
+          <ol class="lines__list">
+            @for (row of lineRows(); track row.index) {
+              <li class="lines__item">
+                <div class="lines__text">
+                  <p class="lines__description">{{ row.description }}</p>
+                  <p class="text-muted text-small">{{ row.detail }}</p>
+                </div>
+                <div class="lines__actions">
+                  <button appButton variant="ghost" type="button" (click)="changeLine(row.index)">
+                    Change
+                  </button>
+                  <button appButton variant="ghost" type="button" (click)="removeLine(row.index)">
+                    Remove
+                  </button>
+                </div>
+              </li>
+            }
+          </ol>
+          <p class="text-muted text-small">
+            @if (savedTotal(); as total) {
+              Saved total with VAT: {{ total }}. It is worked out again when you save.
+            } @else {
+              The total with VAT is worked out when you save.
+            }
+          </p>
+        }
+      </section>
+
+      <div class="form__row">
+        <app-form-field
+          label="Order date"
+          hint="It can't be in the future."
+          [control]="form.controls.orderDate"
+          requiredMessage="Choose the order date."
+        >
+          <input appControl type="date" formControlName="orderDate" [attr.max]="todayDate" />
+        </app-form-field>
+        <app-form-field label="Expected delivery" [optional]="true" [control]="form.controls.expectedDate">
+          <input appControl type="date" formControlName="expectedDate" />
+        </app-form-field>
+      </div>
+
+      <app-form-field label="Supplier's reference" [optional]="true" hint="Their quotation or order number, if they gave one." [control]="form.controls.supplierReference">
+        <input appControl formControlName="supplierReference" autocomplete="off" maxlength="80" />
+      </app-form-field>
+
+
+      <app-form-field label="Notes" [optional]="true" [control]="form.controls.notes">
+        <textarea appControl formControlName="notes" rows="2" maxlength="500"></textarea>
+      </app-form-field>
+
+      <div class="form__actions form__actions--sticky">
+        <a appButton [routerLink]="backLink()">Cancel</a>
+        <button appButton variant="primary" type="submit" [busy]="saving()">
+          {{ isEdit() ? 'Save draft' : 'Save purchase order' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  @if (editing() !== null) {
+    <app-order-line-dialog
+      [line]="editingLine()"
+      (saved)="lineSaved($event)"
+      (dismissed)="closeLineDialog()"
+    />
+  }
+}

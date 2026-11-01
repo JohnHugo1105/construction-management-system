@@ -1,0 +1,41 @@
+# .NET
+**/bin/
+**/obj/
+**/TestResults/
+**/coverage/
+*.user
+*.suo
+*.nupkg
+*.pfx
+*.snk
+.vs/
+.vscode/
+artifacts/
+/.artifacts/
+.tools/
+
+# Node / Angular
+**/node_modules/
+**/.angular/
+web/dist/
+playwright-report/
+test-results/
+
+# Local configuration and secrets (the example file is the only one tracked)
+.env
+.env.*
+!.env.example
+**/appsettings.Staging.json
+**/appsettings.Production.json
+**/appsettings.Local.json
+**/data-protection-keys/
+**/logs/
+
+# Claude Code agent worktrees (local, never committed)
+.claude/worktrees/
+
+# OS / editor noise
+**/desktop.ini
+.DS_Store
+Thumbs.db
+tmp/

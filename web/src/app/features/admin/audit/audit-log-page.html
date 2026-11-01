@@ -1,0 +1,156 @@
+<app-page-header title="Activity log" />
+
+<div class="stack">
+  <div class="toolbar">
+    <app-search-box
+      class="toolbar__search"
+      label="Search activity"
+      placeholder="Search activity"
+      [value]="state.query.values().search"
+      (searched)="state.query.set({ search: $event }, { replace: true })"
+    />
+    <button
+      appButton
+      type="button"
+      aria-controls="audit-filters"
+      [attr.aria-expanded]="filtersOpen()"
+      (click)="filtersOpen.set(!filtersOpen())"
+    >
+      Filters
+      <app-icon [name]="filtersOpen() ? 'close' : 'chevron-down'" [size]="16" />
+    </button>
+  </div>
+
+  @if (!filtersOpen() && filterSummary()) {
+    <p class="text-muted text-small">Showing: {{ filterSummary() }}</p>
+  }
+
+  @if (filtersOpen()) {
+    <div id="audit-filters" class="card filters">
+      <app-form-field class="filters__area" label="Area">
+        <select appControl (change)="setArea($event)">
+          <option value="All" [selected]="state.query.values().area === allAreas">
+            All activity
+          </option>
+          @for (area of areas; track area.value) {
+            <option [value]="area.value" [selected]="state.query.values().area === area.value">
+              {{ area.label }}
+            </option>
+          }
+        </select>
+      </app-form-field>
+      <app-form-field label="From">
+        <input
+          appControl
+          type="date"
+          [value]="state.query.values().from"
+          (change)="setFrom($event)"
+        />
+      </app-form-field>
+      <app-form-field label="To" [error]="rangeError()">
+        <input appControl type="date" [value]="state.query.values().to" (change)="setTo($event)" />
+      </app-form-field>
+      <div class="filters__toggle">
+        <label class="choice">
+          <input
+            type="checkbox"
+            [checked]="state.query.values().signIns"
+            (change)="setSignIns($event)"
+          />
+          <span class="choice__text">
+            <span class="choice__label">Show sign-ins</span>
+            <span class="choice__hint">Routine sign-ins are hidden. Failed sign-ins are always shown.</span>
+          </span>
+        </label>
+      </div>
+      @if (filterSummary()) {
+        <div class="filters__clear">
+          <button appButton variant="ghost" type="button" (click)="clearFilters()">
+            Clear filters
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading activity" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Activity log" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col">Who</th>
+                <th scope="col">What happened</th>
+                <th scope="col">Area</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row" class="when">{{ row.when }}</th>
+                  <td>{{ row.who }}</td>
+                  <td>{{ row.what }}</td>
+                  <td>{{ row.area }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card">
+              <p>{{ row.what }}</p>
+              <div class="row-card__meta">
+                <span>{{ row.when }}</span>
+                <span>{{ row.who }}</span>
+                <span>{{ row.area }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="entries"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state
+        icon="search"
+        title="No activity matches"
+        message="Try a different search, area or dates."
+      >
+        <button appButton type="button" (click)="state.query.reset()">Show all activity</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="clock"
+        title="No activity yet"
+        message="Changes people make will be listed here."
+      />
+    }
+  }
+</div>

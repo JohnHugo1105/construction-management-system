@@ -1,0 +1,196 @@
+<app-page-header title="Stock" />
+
+<div class="stack">
+  <div class="filters">
+    <div class="toolbar">
+      <app-search-box
+        class="toolbar__search"
+        label="Search stock by name, serial number or brand"
+        placeholder="Search stock"
+        [value]="state.query.values().search"
+        (searched)="state.query.set({ search: $event }, { replace: true })"
+      />
+      @if (canManage()) {
+        <a appButton variant="primary" routerLink="/stock/new">
+          <app-icon name="plus" [size]="18" />
+          Add an item
+        </a>
+      }
+    </div>
+
+    <div class="filter-chips" role="group" aria-label="Filter by category">
+      @for (filter of filters; track filter) {
+        <button
+          type="button"
+          class="filter-chip"
+          [attr.aria-pressed]="state.query.values().category === filter"
+          (click)="state.query.set({ category: filter })"
+        >
+          {{ filterLabel(filter) }}
+        </button>
+      }
+    </div>
+
+    <div class="more-filters">
+      <div class="place-filter">
+        <label class="place-filter__label" for="place-filter">Place</label>
+        <select id="place-filter" class="input" (change)="placeChanged($event)">
+          @for (option of state.placeOptions(); track option.value) {
+            <option [value]="option.value" [selected]="option.value === state.query.values().place">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+      <label class="toggle">
+        <input
+          type="checkbox"
+          [checked]="state.query.values().retired"
+          (change)="retiredChanged($event)"
+        />
+        <span>Show retired</span>
+      </label>
+    </div>
+    @if (state.query.values().retired) {
+      <p class="text-muted text-small">Only retired items are listed.</p>
+    }
+  </div>
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading stock" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Stock items" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col">Category</th>
+                <th scope="col" class="num">Quantity</th>
+                <th scope="col">Where it is</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/stock', row.id]">{{ row.description }}</a>
+                    @if (row.subtitle) {
+                      <span class="cell-sub">{{ row.subtitle }}</span>
+                    }
+                  </th>
+                  <td>
+                    <div class="chips">
+                      <app-status-chip
+                        [label]="row.category.label"
+                        tone="neutral"
+                        [icon]="row.category.icon"
+                      />
+                      @if (row.retired; as retired) {
+                        <app-status-chip
+                          [label]="retired.label"
+                          [tone]="retired.tone"
+                          [icon]="retired.icon"
+                        />
+                      }
+                    </div>
+                  </td>
+                  <td class="num">{{ row.quantity }}</td>
+                  <td><app-balance-chips [balances]="row.balances" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a
+                  class="row-card__title row-link row-link--stretch"
+                  [routerLink]="['/stock', row.id]"
+                  >{{ row.description }}</a
+                >
+                <div class="chips">
+                  <app-status-chip
+                    [label]="row.category.label"
+                    tone="neutral"
+                    [icon]="row.category.icon"
+                  />
+                  @if (row.retired; as retired) {
+                    <app-status-chip
+                      [label]="retired.label"
+                      [tone]="retired.tone"
+                      [icon]="retired.icon"
+                    />
+                  }
+                </div>
+              </div>
+              @if (row.subtitle) {
+                <p class="text-muted text-small">{{ row.subtitle }}</p>
+              }
+              @if (row.quantity) {
+                <p class="row-card__quantity">{{ row.quantity }}</p>
+              }
+              <app-balance-chips [balances]="row.balances" />
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="items"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state
+        icon="search"
+        title="No items match"
+        [message]="
+          state.query.values().retired
+            ? 'No retired items match. Turn off Show retired to see active items.'
+            : 'Try a different search, or look at another place or category.'
+        "
+      >
+        <button appButton type="button" (click)="state.query.reset()">Show all items</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="stock"
+        title="No stock items yet"
+        [message]="
+          canManage()
+            ? 'Add your first item to start tracking tools, equipment and machinery.'
+            : 'A warehouse keeper can add the first item.'
+        "
+      >
+        @if (canManage()) {
+          <a appButton variant="primary" routerLink="/stock/new">
+            <app-icon name="plus" [size]="18" />
+            Add an item
+          </a>
+        }
+      </app-empty-state>
+    }
+  }
+</div>

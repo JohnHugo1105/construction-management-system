@@ -1,0 +1,90 @@
+<app-page-header
+  [title]="context.name() || 'Project'"
+  backLabel="All projects"
+  [backLink]="['/projects']"
+/>
+
+@switch (context.status()) {
+  @case ('loading') {
+    <app-skeleton [lines]="4" label="Loading project" />
+  }
+  @case ('error') {
+    <div class="stack">
+      <app-api-error-alert
+        [error]="context.error()"
+        [allowRetry]="!context.error()?.isNotFound"
+        reloadLabel="Try again"
+        (reload)="reload()"
+      />
+      <p><a appButton routerLink="/projects">Back to projects</a></p>
+    </div>
+  }
+  @case ('ready') {
+    @if (summary(); as info) {
+      <div class="stack">
+        @if (context.isArchived()) {
+          <app-alert tone="warning" title="This project is archived">
+            It is read-only{{ info.archiveNote }}. Restore it to make changes.
+          </app-alert>
+        }
+
+        @if (actionError(); as problem) {
+          <app-api-error-alert [error]="problem" reloadLabel="Reload project" (reload)="reload()" />
+        }
+
+        <div class="summary">
+          <div class="summary__info">
+            <app-status-chip
+              [label]="info.status.label"
+              [tone]="info.status.tone"
+              [icon]="info.status.icon"
+            />
+            @if (info.about) {
+              <p class="summary__about">{{ info.about }}</p>
+            }
+          </div>
+
+          @if (canManage()) {
+            <div class="summary__actions">
+              @if (info.plan.primary; as primary) {
+                <button
+                  appButton
+                  variant="primary"
+                  type="button"
+                  [busy]="busyAction() === primary"
+                  (click)="perform(primary)"
+                >
+                  {{ labels[primary] }}
+                </button>
+              }
+              @if (info.plan.more.length > 0) {
+                <app-menu label="More" ariaLabel="More project actions" align="end">
+                  @for (action of info.plan.more; track action) {
+                    <button type="button" class="menu__item" (click)="perform(action)">
+                      {{ labels[action] }}
+                    </button>
+                  }
+                </app-menu>
+              }
+            </div>
+          }
+        </div>
+
+        @if (tabs().length > 1) {
+          <app-tab-nav label="Project sections" [tabs]="tabs()" />
+        }
+
+        <router-outlet />
+      </div>
+    }
+  }
+}
+
+@if (archiveOpen() && context.status() === 'ready') {
+  <app-archive-project-dialog
+    [project]="context.project()"
+    (archived)="archived($event)"
+    (dismissed)="archiveOpen.set(false)"
+    (reloaded)="reload()"
+  />
+}

@@ -1,0 +1,327 @@
+<app-page-header [title]="title()" backLabel="All subcontracts" [backLink]="['/subcontracts']" />
+
+@switch (state.status()) {
+  @case ('loading') {
+    <app-skeleton [lines]="4" label="Loading subcontract" />
+  }
+  @case ('error') {
+    <div class="stack">
+      <app-api-error-alert
+        [error]="state.error()"
+        [allowRetry]="!state.error()?.isNotFound"
+        reloadLabel="Try again"
+        (reload)="reload()"
+      />
+      <p><a appButton routerLink="/subcontracts">Back to subcontracts</a></p>
+    </div>
+  }
+  @case ('ready') {
+    @if (view(); as info) {
+      <div class="stack" [attr.aria-busy]="state.refreshing()">
+        <div class="head">
+          <app-status-chip [label]="info.status.label" [tone]="info.status.tone" [icon]="info.status.icon" />
+          <p class="head__who">{{ info.who }}</p>
+        </div>
+
+        @if (waiting()) {
+          <p class="waiting text-small">{{ waiting() }}</p>
+        }
+        @if (info.cancelReason) {
+          <app-alert tone="warning" title="This subcontract was cancelled">Reason: {{ info.cancelReason }}</app-alert>
+        }
+
+        <dl class="figures">
+          @for (figure of info.figures; track figure.label) {
+            <div class="figures__item" [class.figures__item--lead]="figure.lead">
+              <dt>{{ figure.label }}</dt>
+              <dd class="money">{{ figure.amount }}</dd>
+              @if (figure.note) {
+                <dd class="figures__note">{{ figure.note }}</dd>
+              }
+            </div>
+          }
+        </dl>
+        <p class="text-small text-muted">{{ info.terms }}</p>
+
+        @if (actions(); as can) {
+          @if (step() || can.edit || can.addVariation || can.complete || can.cancel) {
+            <div class="actions">
+              @if (step(); as next) {
+                <button appButton variant="primary" type="button" (click)="runStep(next)">{{ next.label }}</button>
+              }
+              @if (can.edit) {
+                <a appButton [routerLink]="['/subcontracts', state.subcontract().id, 'edit']">Edit draft</a>
+              }
+              @if (can.addVariation) {
+                <button appButton type="button" (click)="open.set({ kind: 'variation' })">Record variation</button>
+              }
+              @if (can.complete) {
+                <button appButton type="button" (click)="open.set({ kind: 'complete' })">Mark completed</button>
+              }
+              @if (can.cancel) {
+                <button appButton variant="ghost" type="button" (click)="open.set({ kind: 'cancel' })">Cancel subcontract</button>
+              }
+            </div>
+          }
+
+          @if (info.showClaims) {
+            <section class="section" aria-labelledby="claims-heading">
+              <h2 id="claims-heading" class="section__title">Claims</h2>
+              @if (info.claims.length === 0) {
+                <p class="text-muted">
+                  No claims yet. When the subcontractor bills for work done, record a claim with the value of all work done to date.
+                </p>
+              } @else {
+                <ul class="card-list">
+                  @for (row of info.claims; track row.claim.id) {
+                    <li class="row-card claim" [class.claim--voided]="row.voided">
+                      <div class="row-card__head">
+                        <p class="row-card__title">{{ row.name }}</p>
+                        <app-status-chip [label]="row.look.label" [tone]="row.look.tone" [icon]="row.look.icon" />
+                      </div>
+                      <p class="text-small text-muted">{{ row.dates }}</p>
+                      <dl class="claim__figures">
+                        <div><dt>Work to date</dt><dd class="money">{{ row.toDate }}</dd></div>
+                        <div><dt>This claim</dt><dd class="money">{{ row.thisClaim }}</dd></div>
+                        <div><dt>With VAT</dt><dd class="money">{{ row.gross }}</dd></div>
+                        <div><dt>To pay</dt><dd class="money">{{ row.payable }}</dd></div>
+                        @if (row.owed) {
+                          <div class="claim__owed"><dt>Still owed</dt><dd class="money">{{ row.owed }}</dd></div>
+                        }
+                      </dl>
+                      @if (row.claim.isStale) {
+                        <p class="text-small">Certified work changed after this draft was made. Save it again to bring it up to date.</p>
+                      }
+                      @if (row.claim.status === 'Certified') {
+                        <p class="text-small text-muted">
+                          Posted to the project's
+                          <a [routerLink]="['/projects', info.projectId, 'costs']">costs</a>.
+                        </p>
+                      }
+                      @if (row.reason) {
+                        <p class="text-small text-muted">Reason: {{ row.reason }}</p>
+                      }
+                      <div class="claim__actions">
+                        @if (row.claim.status === 'Draft' && can.editDraft) {
+                          <button appButton type="button" (click)="open.set({ kind: 'claim', claim: row.claim })">Edit claim</button>
+                          <button appButton variant="ghost" type="button" (click)="open.set({ kind: 'discard', claim: row.claim })">
+                            Discard
+                          </button>
+                        }
+                        @if (row.owed && can.pay && row.claim.id !== stepClaimId()) {
+                          <button appButton type="button" (click)="open.set({ kind: 'pay', claim: row.claim })">Record payment</button>
+                        }
+                        @if (can.voidableClaimId === row.claim.id) {
+                          <button appButton variant="ghost" type="button" (click)="open.set({ kind: 'void-claim', claim: row.claim })">
+                            Void claim
+                          </button>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+          }
+
+          @if (info.payments.length > 0) {
+            <section class="section" aria-labelledby="payments-heading">
+              <h2 id="payments-heading" class="section__title">Payments recorded</h2>
+              <ul class="lines">
+                @for (row of info.payments; track row.payment.id) {
+                  <li class="line" [class.line--voided]="row.voided">
+                    <div class="line__text">
+                      <p>{{ row.what }}@if (row.voided) { <span class="text-muted"> (voided)</span> }</p>
+                      <p class="text-small text-muted">{{ row.detail }}</p>
+                      @if (row.reason) {
+                        <p class="text-small text-muted">Reason: {{ row.reason }}</p>
+                      }
+                    </div>
+                    <span class="money line__amount">{{ row.amount }}</span>
+                    @if (!row.voided && can.voidPayment) {
+                      <button
+                        appButton
+                        variant="ghost"
+                        type="button"
+                        class="line__action"
+                        [attr.aria-label]="'Void payment: ' + row.what + ', ' + row.amount"
+                        (click)="open.set({ kind: 'void-payment', payment: row.payment })"
+                      >
+                        Void
+                      </button>
+                    }
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        }
+
+        @if (info.variations.length > 0) {
+          <details class="section folded">
+            <summary class="folded__summary">Variations ({{ info.variations.length }})</summary>
+            <ul class="lines">
+              @for (row of info.variations; track row.id) {
+                <li class="line">
+                  <div class="line__text">
+                    <p>{{ row.text }}</p>
+                    <p class="text-small text-muted">{{ row.date }}</p>
+                  </div>
+                  <span class="money line__amount">{{ row.amount }}</span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+
+        @if (info.notes) {
+          <p class="text-small">{{ info.notes }}</p>
+        }
+        @if (info.history.length > 0) {
+          <p class="text-muted text-small history">
+            @for (entry of info.history; track entry) {
+              <span>{{ entry }}</span>
+            }
+          </p>
+        }
+      </div>
+    }
+  }
+}
+
+@if (open(); as dialog) {
+  @if (state.status() === 'ready') {
+    @switch (dialog.kind) {
+      @case ('award') {
+        <app-confirm-action-dialog
+          title="Award this subcontract?"
+          message="Awarding commits the contract sum to this project. Claims can then be recorded and certified."
+          confirmLabel="Award subcontract"
+          [run]="award"
+          (done)="done($event, 'Subcontract awarded.')"
+          (dismissed)="open.set(null)"
+          (reloaded)="reload()"
+        />
+      }
+      @case ('complete') {
+        <app-confirm-action-dialog
+          title="Mark this subcontract completed?"
+          message="No more claims can be recorded. Retention still held can then be released."
+          confirmLabel="Mark completed"
+          [run]="complete"
+          (done)="done($event, 'Subcontract completed.')"
+          (dismissed)="open.set(null)"
+          (reloaded)="reload()"
+        />
+      }
+      @case ('cancel') {
+        <app-reason-dialog
+          title="Cancel this subcontract?"
+          message="It stays on record as cancelled and commits nothing. Any draft claim is discarded."
+          reasonLabel="Why is it being cancelled?"
+          confirmLabel="Cancel subcontract"
+          keepLabel="Keep subcontract"
+          [run]="cancel"
+          (done)="done($event, 'Subcontract cancelled.')"
+          (dismissed)="open.set(null)"
+          (reloaded)="reload()"
+        />
+      }
+      @case ('variation') {
+        <app-variation-dialog
+          [run]="addVariation"
+          (done)="done($event, 'Variation recorded.')"
+          (dismissed)="open.set(null)"
+          (reloaded)="reload()"
+        />
+      }
+      @case ('claim') {
+        @if (dialog.kind === 'claim') {
+          <app-claim-dialog
+            [subcontract]="state.subcontract()"
+            [claim]="dialog.claim"
+            (saved)="done($event, 'Claim saved as a draft.')"
+            (dismissed)="open.set(null)"
+            (reloaded)="reload()"
+          />
+        }
+      }
+      @case ('certify') {
+        @if (dialog.kind === 'certify') {
+          <app-confirm-action-dialog
+            title="Certify this claim?"
+            [message]="certifyMessage(dialog.claim)"
+            confirmLabel="Certify claim"
+            [run]="certify(dialog.claim)"
+            (done)="done($event, 'Claim certified and posted to project cost.')"
+            (dismissed)="open.set(null)"
+            (reloaded)="reload()"
+          />
+        }
+      }
+      @case ('discard') {
+        @if (dialog.kind === 'discard') {
+          <app-reason-dialog
+            title="Discard this draft claim?"
+            message="It stays on record as discarded and changes nothing."
+            confirmLabel="Discard claim"
+            keepLabel="Keep claim"
+            [run]="discard(dialog.claim)"
+            (done)="done($event, 'Draft claim discarded.')"
+            (dismissed)="open.set(null)"
+            (reloaded)="reload()"
+          />
+        }
+      }
+      @case ('void-claim') {
+        @if (dialog.kind === 'void-claim') {
+          <app-reason-dialog
+            title="Void this claim?"
+            message="Voiding takes its work back out of the project's cost. The claim stays on record as voided."
+            reasonLabel="Why is it being voided?"
+            confirmLabel="Void claim"
+            keepLabel="Keep claim"
+            [run]="voidClaim(dialog.claim)"
+            (done)="done($event, 'Claim voided and its cost reversed.')"
+            (dismissed)="open.set(null)"
+            (reloaded)="reload()"
+          />
+        }
+      }
+      @case ('pay') {
+        @if (dialog.kind === 'pay') {
+          <app-payment-dialog
+            [subcontract]="state.subcontract()"
+            [claim]="dialog.claim"
+            (saved)="done($event, 'Payment recorded.')"
+            (dismissed)="open.set(null)"
+            (reloaded)="reload()"
+          />
+        }
+      }
+      @case ('release') {
+        <app-payment-dialog
+          [subcontract]="state.subcontract()"
+          (saved)="done($event, 'Retention release recorded.')"
+          (dismissed)="open.set(null)"
+          (reloaded)="reload()"
+        />
+      }
+      @case ('void-payment') {
+        @if (dialog.kind === 'void-payment') {
+          <app-reason-dialog
+            title="Void this payment?"
+            message="The amount becomes owed again. The payment stays on record as voided."
+            reasonLabel="Why is it being voided?"
+            confirmLabel="Void payment"
+            keepLabel="Keep payment"
+            [run]="voidPayment(dialog.payment)"
+            (done)="done($event, 'Payment voided.')"
+            (dismissed)="open.set(null)"
+            (reloaded)="reload()"
+          />
+        }
+      }
+    }
+  }
+}

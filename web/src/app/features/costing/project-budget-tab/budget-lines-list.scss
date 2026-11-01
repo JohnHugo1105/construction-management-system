@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+.line__name {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.line__total {
+  display: block;
+  font-weight: 650;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+th[scope='row'] {
+  min-width: 13rem;
+}
+
+// Cards sit two across once there is room, instead of one long column.
+@media (min-width: 40rem) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.line__card-total {
+  flex: none;
+  font-weight: 650;
+}
+
+// A removed line stays listed (when asked for) but is plainly out of the totals.
+.line--removed .line__name,
+.line--removed .num {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.line__removed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.line__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+
+  .btn {
+    flex: 1 1 8rem;
+  }
+}
+
+/* The change order that added a line (slice C). */
+.line__change-order {
+  display: block;
+  margin-block: var(--space-1);
+}

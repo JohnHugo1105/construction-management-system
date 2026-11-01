@@ -1,0 +1,139 @@
+@if (viewport.isTablet() && roomForTable()) {
+  <app-scroll-region label="Cost entries">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col" class="num">Total</th>
+          <th scope="col">Date</th>
+          <th scope="col">Source</th>
+          @if (canWrite()) {
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.entry.id) {
+          <tr [class.entry--voided]="row.voided">
+            <th scope="row">
+              <span class="entry__name">{{ row.entry.description }}</span>
+              <span class="cell-sub">{{ row.source }}</span>
+              <span class="cell-sub">{{ row.about }}</span>
+              @if (row.voided) {
+                <span class="entry__note">
+                  <app-status-chip label="Voided" tone="neutral" icon="close" />
+                  <span class="cell-sub">{{ row.entry.voidReason }}</span>
+                </span>
+              }
+            </th>
+            <td class="num">
+              <span class="entry__total">{{ row.gross }}</span>
+              <span class="cell-sub">Before VAT {{ row.net }}</span>
+              <span class="cell-sub">VAT {{ row.vat }}</span>
+            </td>
+            <td class="entry__date">{{ row.date }}</td>
+            <td>
+              <app-status-chip
+                [label]="row.origin.label"
+                [tone]="row.origin.tone"
+                [icon]="row.origin.icon"
+              />
+              @if (row.systemNote) {
+                <span class="cell-sub entry__system">{{ row.systemNote }}</span>
+              }
+            </td>
+            @if (canWrite()) {
+              <td class="actions">
+                @if (row.canEdit) {
+                  <button
+                    appButton
+                    variant="ghost"
+                    type="button"
+                    [attr.aria-label]="'Edit ' + row.entry.description"
+                    (click)="edit.emit(row.entry)"
+                  >
+                    Edit
+                  </button>
+                }
+                @if (row.canVoid) {
+                  <button
+                    appButton
+                    variant="ghost"
+                    type="button"
+                    [attr.aria-label]="'Void ' + row.entry.description"
+                    (click)="voidEntry.emit(row.entry)"
+                  >
+                    Void
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-scroll-region>
+} @else {
+  <ul class="card-list">
+    @for (row of rows(); track row.entry.id) {
+      <li class="row-card" [class.entry--voided]="row.voided">
+        <div class="row-card__head">
+          <p class="row-card__title entry__name">{{ row.entry.description }}</p>
+          <p class="entry__card-total money">{{ row.gross }}</p>
+        </div>
+        <p class="text-small">{{ row.source }}</p>
+        <p class="text-muted text-small">{{ row.about }}</p>
+        <div class="entry__meta">
+          <app-status-chip
+            [label]="row.origin.label"
+            [tone]="row.origin.tone"
+            [icon]="row.origin.icon"
+          />
+          <span class="text-muted text-small">{{ row.date }}</span>
+          <span class="text-muted text-small">
+            <span class="nowrap"
+              >Before VAT <span class="money">{{ row.net }}</span></span
+            >
+            ·
+            <span class="nowrap"
+              >VAT <span class="money">{{ row.vat }}</span></span
+            >
+          </span>
+        </div>
+        @if (row.systemNote) {
+          <p class="text-small entry__system">{{ row.systemNote }}</p>
+        }
+        @if (row.voided) {
+          <div class="entry__note">
+            <app-status-chip label="Voided" tone="neutral" icon="close" />
+            <span class="text-muted text-small">{{ row.entry.voidReason }}</span>
+          </div>
+        }
+        @if (row.canEdit || row.canVoid) {
+          <div class="entry__actions">
+            @if (row.canEdit) {
+              <button
+                appButton
+                type="button"
+                [attr.aria-label]="'Edit ' + row.entry.description"
+                (click)="edit.emit(row.entry)"
+              >
+                Edit
+              </button>
+            }
+            @if (row.canVoid) {
+              <button
+                appButton
+                type="button"
+                [attr.aria-label]="'Void ' + row.entry.description"
+                (click)="voidEntry.emit(row.entry)"
+              >
+                Void
+              </button>
+            }
+          </div>
+        }
+      </li>
+    }
+  </ul>
+}

@@ -1,0 +1,219 @@
+@if (error(); as problem) {
+  <app-api-error-alert
+    [error]="problem"
+    [allowRetry]="true"
+    reloadLabel="Try again"
+    (reload)="reload()"
+  />
+}
+
+@if (loading()) {
+  <app-skeleton variant="card" [lines]="3" label="Loading billing" />
+} @else if (view(); as info) {
+  <div class="stack">
+    @if (isArchived()) {
+      <p class="text-muted text-small">
+        This project is archived, so its billing is read-only. Restore it to make changes.
+      </p>
+    }
+
+    @if (!info.hasPrice && !info.hasBills) {
+      <app-empty-state
+        title="Add the contract price to bill the client"
+        message="Bills are worked out from the contract price. Someone who manages projects adds it on the project's details."
+        icon="receipt"
+      />
+    } @else {
+      <dl class="money-line">
+        <div class="money-line__item money-line__item--main">
+          <dt>Still to collect</dt>
+          <dd class="money">{{ info.outstanding }}</dd>
+          @if (info.overdue) {
+            <dd class="money-line__overdue">{{ info.overdue }}</dd>
+          }
+        </div>
+        <div class="money-line__item">
+          <dt>Billed to date</dt>
+          <dd class="money">{{ info.billed }}</dd>
+          @if (info.percentBilled) {
+            <dd class="money-line__note">{{ info.percentBilled }}</dd>
+          }
+        </div>
+        <div class="money-line__item">
+          <dt>Collected</dt>
+          <dd class="money">{{ info.collected }}</dd>
+        </div>
+        @if (info.hasPrice) {
+          <div class="money-line__item">
+            <dt>Contract price</dt>
+            <dd class="money">{{ info.price }}</dd>
+          </div>
+        }
+        @if (info.showRetention) {
+          <div class="money-line__item">
+            <dt>Retention held</dt>
+            <dd class="money">{{ info.retentionHeld }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if ((info.canBill && info.hasBills) || info.canRelease) {
+        <div class="toolbar">
+          @if (info.canRelease) {
+            <button
+              appButton
+              [variant]="info.canBill && info.hasBills ? 'secondary' : 'primary'"
+              type="button"
+              (click)="newBill.set('RetentionRelease')"
+            >
+              Release retention
+            </button>
+          }
+          @if (info.canBill && info.hasBills) {
+            <button appButton variant="primary" type="button" (click)="newBill.set('Progress')">
+              <app-icon name="plus" [size]="18" />
+              New bill
+            </button>
+          }
+        </div>
+      } @else if (info.fullyBilled && !info.canRelease) {
+        <p class="text-muted text-small">The whole contract price has been billed.</p>
+      }
+
+      <details class="terms">
+        <summary class="terms__summary">
+          <span>Billing terms: {{ info.terms }}{{ info.termsDefault ? ' (standard)' : '' }}</span>
+        </summary>
+        <div class="terms__body">
+          <p class="text-small text-muted">
+            Each progress bill holds back the retention until the project is completed. Withholding
+            tax is taken from the amount before VAT, and the client gives a certificate for it.
+          </p>
+          @if (info.canEditTerms) {
+            <button appButton type="button" (click)="editingTerms.set(true)">
+              Change billing terms
+            </button>
+          }
+        </div>
+      </details>
+
+      @if (info.hasBills) {
+        <section class="bills" aria-labelledby="bills-heading">
+          <h2 id="bills-heading" class="bills__title">Bills</h2>
+          @if (viewport.isTablet()) {
+            <div class="table-wrap" role="region" aria-label="Bills" tabindex="0">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Bill</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Billed on</th>
+                    <th scope="col">Due</th>
+                    <th scope="col" class="num">Amount</th>
+                    <th scope="col" class="num">Still to collect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of info.rows; track row.id) {
+                    <tr>
+                      <th scope="row">
+                        <a class="row-link" [routerLink]="['/billing/bills', row.id]">{{
+                          row.name
+                        }}</a>
+                        <span class="cell-sub">{{ row.kind }}</span>
+                      </th>
+                      <td>
+                        <app-status-chip
+                          [label]="row.status.label"
+                          [tone]="row.status.tone"
+                          [icon]="row.status.icon"
+                        />
+                      </td>
+                      <td>{{ row.date }}</td>
+                      <td>{{ row.due }}</td>
+                      <td class="num">{{ row.amount }}</td>
+                      <td class="num">{{ row.outstanding }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <ul class="card-list">
+              @for (row of info.rows; track row.id) {
+                <li class="row-card">
+                  <div class="row-card__head">
+                    <a
+                      class="row-card__title row-link row-link--stretch"
+                      [routerLink]="['/billing/bills', row.id]"
+                      >{{ row.name }}</a
+                    >
+                    <app-status-chip
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [icon]="row.status.icon"
+                    />
+                  </div>
+                  <p class="text-small text-muted">{{ row.kind }} · {{ row.date }}</p>
+                  <dl class="bill-figures">
+                    <div>
+                      <dt>Amount</dt>
+                      <dd class="money">{{ row.amount }}</dd>
+                    </div>
+                    @if (row.outstanding) {
+                      <div>
+                        <dt>Still to collect</dt>
+                        <dd class="money">{{ row.outstanding }}</dd>
+                      </div>
+                    }
+                  </dl>
+                </li>
+              }
+            </ul>
+          }
+          <app-pager
+            [page]="page()"
+            [pageSize]="info.pageSize"
+            [total]="info.total"
+            noun="bills"
+            (pageChange)="goTo($event)"
+          />
+        </section>
+      } @else {
+        <app-empty-state
+          title="No bills yet"
+          message="Bill the client for the work completed so far. You see what the bill comes to before saving it."
+          icon="receipt"
+        >
+          @if (info.canBill) {
+            <button appButton variant="primary" type="button" (click)="newBill.set('Progress')">
+              <app-icon name="plus" [size]="18" />
+              New bill
+            </button>
+          }
+        </app-empty-state>
+      }
+    }
+  </div>
+}
+
+@if (newBill(); as kind) {
+  @if (formContext(); as context) {
+    <app-bill-form-dialog
+      [context]="context"
+      [kind]="kind"
+      (saved)="billSaved($event)"
+      (dismissed)="newBill.set(null)"
+      (reloaded)="newBill.set(null); reload()"
+    />
+  }
+}
+@if (editingTerms() && billing(); as current) {
+  <app-terms-dialog
+    [projectId]="current.projectId"
+    [terms]="current.terms"
+    (saved)="termsSaved()"
+    (dismissed)="editingTerms.set(false)"
+    (reloaded)="editingTerms.set(false); reload()"
+  />
+}

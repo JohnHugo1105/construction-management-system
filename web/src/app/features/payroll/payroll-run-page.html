@@ -1,0 +1,330 @@
+<app-page-header [title]="title()" backLabel="All payroll runs" [backLink]="['/payroll']" />
+
+@switch (state.status()) {
+  @case ('loading') {
+    <app-skeleton [lines]="4" label="Loading payroll run" />
+  }
+  @case ('error') {
+    <div class="stack">
+      <app-api-error-alert
+        [error]="state.error()"
+        [allowRetry]="!state.error()?.isNotFound"
+        reloadLabel="Try again"
+        (reload)="reload()"
+      />
+      <p><a appButton routerLink="/payroll">Back to payroll runs</a></p>
+    </div>
+  }
+  @case ('ready') {
+    @if (summary(); as info) {
+      <div class="stack" [attr.aria-busy]="state.refreshing()">
+        <div class="head">
+          <div class="head__info">
+            <app-status-chip
+              [label]="info.status.label"
+              [tone]="info.status.tone"
+              [icon]="info.status.icon"
+            />
+            <p class="head__workers">{{ info.workers }}</p>
+          </div>
+
+          <div class="head__actions">
+            @if (actions().approve) {
+              <button appButton variant="primary" type="button" (click)="approving.set(true)">
+                Approve payroll
+              </button>
+            }
+            @if (actions().exportRegister) {
+              <a appButton [href]="info.exportUrl" download>Export register</a>
+            }
+            @if (actions().void) {
+              <button appButton type="button" (click)="voiding.set(true)">Void payroll</button>
+            }
+          </div>
+        </div>
+
+        @if (info.history.length > 0) {
+          <p class="text-muted text-small head__history">
+            @for (entry of info.history; track entry) {
+              <span>{{ entry }}</span>
+            }
+          </p>
+        }
+
+        @if (info.voidReason) {
+          <app-alert tone="warning" title="This payroll was voided">
+            Reason: {{ info.voidReason }}. Its attendance is free to be paid in a new payroll.
+          </app-alert>
+        }
+
+        @if (actions().approverNote) {
+          <app-alert tone="info" title="An accountant approves payroll">
+            @if (canRun()) {
+              You can enter deductions and check the figures. Once they look right, ask an
+              accountant to approve this payroll.
+            } @else {
+              This payroll is waiting for an accountant to approve it.
+            }
+          </app-alert>
+        }
+
+        <dl class="totals">
+          <div class="totals__item totals__item--net">
+            <dt>Net pay</dt>
+            <dd class="money">{{ info.net }}</dd>
+          </div>
+          <div class="totals__item">
+            <dt>Gross pay</dt>
+            <dd class="money">{{ info.gross }}</dd>
+          </div>
+          <div class="totals__item">
+            <dt>Deductions</dt>
+            <dd class="money">{{ info.deductions }}</dd>
+          </div>
+        </dl>
+
+        @for (setup of setupLines(); track setup) {
+          <p class="text-muted text-small setup-line">{{ setup }}</p>
+        }
+
+        @if (remit(); as owed) {
+          <section class="card remit" aria-labelledby="remit-heading">
+            <div class="panel-head">
+              <h2 id="remit-heading" class="card__title">
+                {{
+                  setupLines().length > 0
+                    ? 'Calculated contributions and tax'
+                    : 'Contributions and tax to remit'
+                }}
+              </h2>
+              @if (canRecalculate()) {
+                <button appButton type="button" (click)="recalculating.set(true)">
+                  Recalculate
+                </button>
+              }
+            </div>
+            <ul class="remit__list">
+              @for (agency of owed.agencies; track agency.key) {
+                <li class="remit__row">
+                  <span class="remit__who">
+                    <strong>{{ agency.label }}</strong>
+                    <span class="text-muted text-small">
+                      From pay <span class="money">{{ agency.employee }}</span>
+                      @if (agency.employer) {
+                        · employer adds <span class="money">{{ agency.employer }}</span>
+                      }
+                      · {{ agency.workers }}
+                    </span>
+                  </span>
+                  <span class="money remit__amount">{{ agency.toRemit }}</span>
+                </li>
+              }
+            </ul>
+            <p class="remit__total">
+              <span>Total to remit</span><span class="money">{{ owed.total }}</span>
+            </p>
+            @if (setupLines().length > 0) {
+              <p class="text-muted text-small">
+                Amounts you typed in by hand for an agency without a table are not in these totals.
+                Add them to what you remit.
+              </p>
+            }
+            @if (info.draft) {
+              <p class="text-muted text-small">
+                Monthly tables use this run's pay times the pay runs a month, as an estimate of the
+                month's pay. Open a worker's details to adjust an amount.
+              </p>
+            }
+          </section>
+        } @else if (canRecalculate()) {
+          <p>
+            <button appButton type="button" (click)="recalculating.set(true)">
+              Calculate contributions and tax
+            </button>
+          </p>
+        }
+
+        <section aria-labelledby="lines-heading" class="lines">
+          <h2 id="lines-heading" class="lines__title">Pay by worker</h2>
+
+          @if (viewport.isTablet()) {
+            <div class="table-wrap" role="region" aria-label="Pay by worker" tabindex="0">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Worker</th>
+                    <th scope="col">Hours</th>
+                    <th scope="col" class="num">Gross pay</th>
+                    <th scope="col" class="num">Deductions</th>
+                    <th scope="col" class="num">Net pay</th>
+                    <th scope="col"><span class="visually-hidden">Details</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of lines(); track item.id) {
+                    <tr>
+                      <th scope="row">
+                        {{ item.name }}
+                        <span class="cell-sub">{{ item.sub }}</span>
+                      </th>
+                      <td>{{ item.hours }}</td>
+                      <td class="num">{{ item.gross }}</td>
+                      <td class="num">
+                        {{ item.deductions }}
+                        @if (actions().editDeductions) {
+                          <button
+                            appButton
+                            variant="ghost"
+                            type="button"
+                            class="cell-action"
+                            (click)="editing.set(item.line)"
+                          >
+                            Edit deductions
+                          </button>
+                        }
+                      </td>
+                      <td class="num">{{ item.net }}</td>
+                      <td class="actions">
+                        <button
+                          appButton
+                          variant="ghost"
+                          type="button"
+                          [attr.aria-expanded]="isOpen(item.id)"
+                          [attr.aria-controls]="'detail-' + item.id"
+                          (click)="toggle(item.id)"
+                        >
+                          <app-icon
+                            [name]="isOpen(item.id) ? 'chevron-down' : 'chevron-right'"
+                            [size]="18"
+                          />
+                          {{ isOpen(item.id) ? 'Hide details' : 'Show details' }}
+                        </button>
+                      </td>
+                    </tr>
+                    @if (isOpen(item.id)) {
+                      <tr class="detail-row">
+                        <td colspan="6" [id]="'detail-' + item.id">
+                          <app-payroll-line-detail
+                            [item]="item"
+                            [canAdjust]="actions().editDeductions"
+                            (adjust)="adjusting.set({ line: item.line, deduction: $event })"
+                          />
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <ul class="card-list">
+              @for (item of lines(); track item.id) {
+                <li class="row-card">
+                  <div class="row-card__head">
+                    <div class="line__who">
+                      <p class="row-card__title">{{ item.name }}</p>
+                      <p class="text-muted text-small">{{ item.sub }}</p>
+                    </div>
+                  </div>
+                  <p class="text-small">{{ item.hours }}</p>
+                  <dl class="line__figures">
+                    <div>
+                      <dt>Gross pay</dt>
+                      <dd class="money">{{ item.gross }}</dd>
+                    </div>
+                    <div>
+                      <dt>Deductions</dt>
+                      <dd class="money">{{ item.deductions }}</dd>
+                    </div>
+                    <div class="line__net">
+                      <dt>Net pay</dt>
+                      <dd class="money">{{ item.net }}</dd>
+                    </div>
+                  </dl>
+                  <div class="line__actions">
+                    @if (actions().editDeductions) {
+                      <button appButton type="button" (click)="editing.set(item.line)">
+                        Edit deductions
+                      </button>
+                    }
+                    <button
+                      appButton
+                      variant="ghost"
+                      type="button"
+                      [attr.aria-expanded]="isOpen(item.id)"
+                      [attr.aria-controls]="'detail-' + item.id"
+                      (click)="toggle(item.id)"
+                    >
+                      <app-icon
+                        [name]="isOpen(item.id) ? 'chevron-down' : 'chevron-right'"
+                        [size]="18"
+                      />
+                      {{ isOpen(item.id) ? 'Hide details' : 'Show details' }}
+                    </button>
+                  </div>
+                  @if (isOpen(item.id)) {
+                    <div [id]="'detail-' + item.id">
+                      <app-payroll-line-detail
+                        [item]="item"
+                        [canAdjust]="actions().editDeductions"
+                        (adjust)="adjusting.set({ line: item.line, deduction: $event })"
+                      />
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      </div>
+    }
+  }
+}
+
+@if (approving() && state.status() === 'ready') {
+  <app-approve-run-dialog
+    [run]="state.run()"
+    (approved)="approved($event)"
+    (dismissed)="approving.set(false)"
+    (reloaded)="reload()"
+  />
+}
+@if (voiding() && state.status() === 'ready') {
+  <app-void-run-dialog
+    [run]="state.run()"
+    (voided)="voided($event)"
+    (dismissed)="voiding.set(false)"
+    (reloaded)="reload()"
+  />
+}
+@if (editing(); as line) {
+  @if (state.status() === 'ready') {
+    <app-deductions-dialog
+      [run]="state.run()"
+      [line]="line"
+      (saved)="deductionsSaved($event)"
+      (dismissed)="editing.set(null)"
+      (reloaded)="reload()"
+    />
+  }
+}
+@if (adjusting(); as target) {
+  @if (state.status() === 'ready') {
+    <app-adjust-statutory-dialog
+      [run]="state.run()"
+      [line]="target.line"
+      [deduction]="target.deduction"
+      (saved)="adjustSaved($event)"
+      (dismissed)="adjusting.set(null)"
+      (reloaded)="reload()"
+    />
+  }
+}
+@if (recalculating() && state.status() === 'ready') {
+  <app-recalculate-statutory-dialog
+    [run]="state.run()"
+    (recalculated)="recalculated($event)"
+    (dismissed)="recalculating.set(false)"
+    (reloaded)="reload()"
+  />
+}

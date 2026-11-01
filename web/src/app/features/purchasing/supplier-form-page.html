@@ -1,0 +1,105 @@
+<app-page-header
+  [title]="isEdit() ? (loaded()?.name ?? 'Firm') : 'Add a firm'"
+  backLabel="All suppliers"
+  [backLink]="['/purchasing/suppliers']"
+/>
+
+@if (loadingFirm() && !loaded()) {
+  <app-skeleton [lines]="6" label="Loading the firm" />
+} @else if (isEdit() && !loaded()) {
+  @if (error(); as problem) {
+    <div class="stack">
+      <app-api-error-alert [error]="problem" [allowRetry]="!problem.isNotFound" reloadLabel="Try again" (reload)="load()" />
+      <p><a appButton routerLink="/purchasing/suppliers">Back to suppliers</a></p>
+    </div>
+  }
+} @else {
+  <div class="stack">
+    @if (error(); as problem) {
+      <app-api-error-alert [error]="problem" [extra]="extraMessages()" reloadLabel="Reload this firm" (reload)="load()" />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention">Check the highlighted fields and try again.</app-alert>
+    }
+
+    @if (archived()) {
+      <app-alert tone="warning" title="This firm is archived">
+        It stays on every order and invoice it was named on, and can't be chosen for a new order until it is restored.
+      </app-alert>
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      <app-form-field label="Firm name" [control]="form.controls.name" requiredMessage="Enter the firm's name.">
+        <input appControl formControlName="name" autocomplete="organization" />
+      </app-form-field>
+
+      <fieldset class="kinds">
+        <legend class="field__legend">What the firm is to you</legend>
+        <label class="toggle">
+          <input type="checkbox" formControlName="isSupplier" />
+          <span>Supplier: we buy materials or equipment from it</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" formControlName="isSubcontractor" />
+          <span>Subcontractor: we hire it to do work</span>
+        </label>
+        @if (kindProblem(); as problem) {
+          <p class="field__error" role="alert">{{ problem }}</p>
+        }
+      </fieldset>
+
+      <div class="form__row">
+        <app-form-field label="Contact person" [optional]="true" [control]="form.controls.contactPerson">
+          <input appControl formControlName="contactPerson" autocomplete="off" />
+        </app-form-field>
+        <app-form-field label="Phone" [optional]="true" [control]="form.controls.phone">
+          <input appControl type="tel" formControlName="phone" autocomplete="off" />
+        </app-form-field>
+      </div>
+      <div class="form__row">
+        <app-form-field label="Email" [optional]="true" [control]="form.controls.email">
+          <input appControl type="email" formControlName="email" autocomplete="off" />
+        </app-form-field>
+        <app-form-field label="Tax number (TIN)" [optional]="true" [control]="form.controls.tin">
+          <input appControl formControlName="tin" autocomplete="off" />
+        </app-form-field>
+      </div>
+      <app-form-field label="Address" [optional]="true" [control]="form.controls.address">
+        <input appControl formControlName="address" autocomplete="off" />
+      </app-form-field>
+      <app-form-field label="Notes" [optional]="true" [control]="form.controls.notes">
+        <textarea appControl formControlName="notes" rows="2" maxlength="500"></textarea>
+      </app-form-field>
+
+      @if (canChange()) {
+        <div class="form__actions form__actions--sticky">
+          <a appButton routerLink="/purchasing/suppliers">Cancel</a>
+          @if (isEdit()) {
+            @if (archived()) {
+              <button appButton type="button" (click)="confirming.set('restore')">Restore firm</button>
+            } @else {
+              <button appButton variant="ghost" type="button" (click)="confirming.set('archive')">Archive firm</button>
+            }
+          }
+          <button appButton variant="primary" type="submit" [busy]="saving()">
+            {{ isEdit() ? 'Save firm' : 'Add firm' }}
+          </button>
+        </div>
+      }
+    </form>
+  </div>
+
+  @if (confirming(); as step) {
+    <app-confirm-dialog
+      [title]="step === 'archive' ? 'Archive this firm?' : 'Restore this firm?'"
+      [message]="
+        step === 'archive'
+          ? 'It stays on every order and invoice it was named on, but can no longer be chosen for a new order or contract. You can restore it later.'
+          : 'It can be chosen for new orders and contracts again.'
+      "
+      [confirmLabel]="step === 'archive' ? 'Archive firm' : 'Restore firm'"
+      [busy]="working()"
+      (confirmed)="confirmed()"
+      (cancelled)="confirming.set(null)"
+    />
+  }
+}

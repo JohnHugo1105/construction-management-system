@@ -1,0 +1,351 @@
+// Buttons and form controls. These classes are the shared look; the components in shared/ui add behaviour around them.
+
+// Buttons ---------------------------------------------------------------------------------------------------------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--duration-fast),
+    border-color var(--duration-fast),
+    transform var(--duration-fast);
+
+  &:hover {
+    background: var(--color-surface-2);
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &[aria-busy='true'] {
+    pointer-events: none;
+    cursor: progress;
+
+    &::after {
+      content: '';
+      width: 1em;
+      height: 1em;
+      flex: none;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: btn-spin 0.8s linear infinite;
+    }
+  }
+}
+
+.btn--primary {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+
+  &:hover {
+    border-color: var(--color-brand-hover);
+    background: var(--color-brand-hover);
+  }
+}
+
+.btn--danger {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-on-danger);
+
+  &:hover {
+    background: var(--color-danger);
+    filter: brightness(0.92);
+  }
+}
+
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-brand-text);
+
+  &:hover {
+    background: var(--color-brand-soft);
+  }
+}
+
+.btn--icon {
+  padding: var(--space-2);
+}
+
+// An icon-only button is quiet: neutral until pointed at.
+.btn--ghost.btn--icon {
+  color: var(--color-text-muted);
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.btn--block {
+  width: 100%;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Fields ----------------------------------------------------------------------------------------------------------
+.field {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+
+.field__label,
+.field__legend {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.field__optional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.field__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-danger);
+
+  app-icon {
+    flex: none;
+    margin-top: 2px;
+  }
+}
+
+.input {
+  display: block;
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: 10px var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  line-height: 1.4;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
+  &:disabled {
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
+
+  // The border changes without changing the box, so nothing below it jumps.
+  &[aria-invalid='true'] {
+    border-color: var(--color-danger);
+    box-shadow: inset 0 0 0 1px var(--color-danger);
+  }
+}
+
+textarea.input {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+select.input {
+  appearance: none;
+  padding-right: 40px;
+  background-image: var(--select-caret);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+}
+
+// A value with a fixed unit beside it (a currency symbol, a percent sign).
+.input-group {
+  display: flex;
+  align-items: stretch;
+
+  .input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.input-group__affix {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.input-group__affix--start {
+  border-right: 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+
+  + .input {
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+}
+
+.input-group__affix--end {
+  border-left: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.input-group:has(.input-group__affix--end) .input {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+// Radios and checkboxes as wrapping rows, one choice per row (the standard for sentence-like choices).
+.field-group {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  &:has(input:checked) {
+    border-color: var(--color-brand);
+    background: var(--color-brand-soft);
+  }
+
+  &:has(input:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    accent-color: var(--color-brand);
+  }
+}
+
+.choice__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.choice__label {
+  font-weight: 600;
+}
+
+.choice__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+// Forms -----------------------------------------------------------------------------------------------------------
+.form {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 40rem;
+}
+
+.form__section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.form__row {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+.form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+// On phones the main action stays on screen, just above the bottom navigation.
+.form__actions--sticky {
+  position: sticky;
+  bottom: var(--bottom-chrome, calc(var(--bottom-nav-height) + var(--safe-bottom)));
+  z-index: 5;
+  margin: 0 calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+
+  .btn {
+    flex: 1 1 auto;
+  }
+}
+
+@media (min-width: 64rem) {
+  .form__actions--sticky {
+    position: static;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+
+    .btn {
+      flex: 0 0 auto;
+    }
+  }
+}

@@ -1,0 +1,191 @@
+<section class="card" aria-labelledby="breakdown-heading">
+  <div class="panel-head">
+    <h2 id="breakdown-heading" class="card__title">Where the money goes</h2>
+    @if (choices().length > 1) {
+      <app-segmented-control
+        label="Split the budget"
+        [options]="choices()"
+        [value]="view()"
+        (selected)="show($event)"
+      />
+    }
+  </div>
+
+  @if (viewport.isTablet() && roomForTable()) {
+    <app-scroll-region [label]="'Budget against cost, ' + heading().toLowerCase()">
+      <table class="data-table breakdown">
+        <thead>
+          <tr>
+            <th scope="col">{{ heading() }}</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="num">Remaining</th>
+            <th scope="col">Used</th>
+            <th scope="col" class="num">Budget</th>
+            <th scope="col" class="num">Spent</th>
+          </tr>
+        </thead>
+        @for (item of rows(); track item.row.key) {
+          <tbody [id]="'breakdown-' + item.row.key">
+            <tr class="breakdown__group">
+              <th scope="row">
+                @if (item.children.length > 0) {
+                  <button
+                    type="button"
+                    class="expander"
+                    [attr.aria-expanded]="item.open"
+                    [attr.aria-controls]="'breakdown-' + item.row.key"
+                    (click)="toggle(item.row.key, item.open)"
+                  >
+                    <app-icon [name]="item.open ? 'chevron-down' : 'chevron-right'" [size]="18" />
+                    {{ item.row.name }}
+                  </button>
+                } @else {
+                  <span class="breakdown__name">{{ item.row.name }}</span>
+                }
+                @if (item.row.note) {
+                  <span class="cell-sub">{{ item.row.note }}</span>
+                }
+                @if (item.row.attention) {
+                  <span class="cell-sub breakdown__attention"
+                    >Needs a look: {{ item.row.attention }}</span
+                  >
+                }
+              </th>
+              <td>
+                <app-status-chip
+                  [label]="item.figures.health.label"
+                  [tone]="item.figures.health.tone"
+                  [icon]="item.figures.health.icon"
+                />
+              </td>
+              <td class="num" [class.breakdown__over]="item.figures.over">
+                {{ item.figures.remaining }}
+              </td>
+              <td>
+                <span class="breakdown__used">
+                  <span class="money">{{ item.figures.used }}</span>
+                  <app-used-bar
+                    [usedBps]="item.row.figures.usedBps"
+                    [health]="item.row.figures.health"
+                  />
+                </span>
+              </td>
+              <td class="num">{{ item.figures.budget }}</td>
+              <td class="num">{{ item.figures.spent }}</td>
+            </tr>
+            @if (item.open) {
+              @for (child of item.children; track child.row.key) {
+                <tr class="breakdown__code">
+                  <th scope="row">
+                    <span class="breakdown__name">{{ child.row.name }}</span>
+                    @if (child.row.note) {
+                      <span class="cell-sub">{{ child.row.note }}</span>
+                    }
+                  </th>
+                  <td>
+                    <app-status-chip
+                      [label]="child.figures.health.label"
+                      [tone]="child.figures.health.tone"
+                      [icon]="child.figures.health.icon"
+                    />
+                  </td>
+                  <td class="num" [class.breakdown__over]="child.figures.over">
+                    {{ child.figures.remaining }}
+                  </td>
+                  <td>
+                    <span class="breakdown__used">
+                      <span class="money">{{ child.figures.used }}</span>
+                      <app-used-bar
+                        [usedBps]="child.row.figures.usedBps"
+                        [health]="child.row.figures.health"
+                      />
+                    </span>
+                  </td>
+                  <td class="num">{{ child.figures.budget }}</td>
+                  <td class="num">{{ child.figures.spent }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        }
+      </table>
+    </app-scroll-region>
+  } @else {
+    <ul class="card-list">
+      @for (item of rows(); track item.row.key) {
+        <li class="breakdown-card">
+          <div class="row-card__head">
+            @if (item.children.length > 0) {
+              <button
+                type="button"
+                class="expander expander--card"
+                [attr.aria-expanded]="item.open"
+                [attr.aria-controls]="item.open ? 'breakdown-card-' + item.row.key : null"
+                (click)="toggle(item.row.key, item.open)"
+              >
+                <app-icon [name]="item.open ? 'chevron-down' : 'chevron-right'" [size]="18" />
+                {{ item.row.name }}
+              </button>
+            } @else {
+              <p class="row-card__title">{{ item.row.name }}</p>
+            }
+            <app-status-chip
+              [label]="item.figures.health.label"
+              [tone]="item.figures.health.tone"
+              [icon]="item.figures.health.icon"
+            />
+          </div>
+          @if (item.row.note) {
+            <p class="text-muted text-small">{{ item.row.note }}</p>
+          }
+          @if (item.row.attention) {
+            <p class="breakdown__attention text-small">Needs a look: {{ item.row.attention }}</p>
+          }
+          <p class="text-small">
+            <span class="money">{{ item.figures.spent }}</span> spent of
+            <span class="money">{{ item.figures.budget }}</span>
+          </p>
+          <p class="text-small" [class.breakdown__over]="item.figures.over">
+            <span class="text-muted">Remaining</span>
+            <span class="money"> {{ item.figures.remaining }}</span>
+          </p>
+          <div class="breakdown-card__used">
+            <app-used-bar [usedBps]="item.row.figures.usedBps" [health]="item.row.figures.health" />
+            <span class="money text-small">{{ item.figures.used }} used</span>
+          </div>
+
+          @if (item.open && item.children.length > 0) {
+            <ul class="code-list" [id]="'breakdown-card-' + item.row.key">
+              @for (child of item.children; track child.row.key) {
+                <li class="code-card">
+                  <div class="row-card__head">
+                    <p class="code-card__name">{{ child.row.name }}</p>
+                    <app-status-chip
+                      [label]="child.figures.health.label"
+                      [tone]="child.figures.health.tone"
+                      [icon]="child.figures.health.icon"
+                    />
+                  </div>
+                  @if (child.row.note) {
+                    <p class="text-muted text-small">{{ child.row.note }}</p>
+                  }
+                  <p class="text-small">
+                    <span class="money">{{ child.figures.spent }}</span> spent of
+                    <span class="money">{{ child.figures.budget }}</span>
+                  </p>
+                  <p class="text-small" [class.breakdown__over]="child.figures.over">
+                    <span class="text-muted">Remaining</span>
+                    <span class="money"> {{ child.figures.remaining }}</span>
+                    @if (child.row.figures.usedBps !== null) {
+                      <span class="text-muted"> · {{ child.figures.used }} used</span>
+                    }
+                  </p>
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

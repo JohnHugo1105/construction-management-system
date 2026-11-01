@@ -1,0 +1,140 @@
+:host {
+  display: block;
+}
+
+// The money line: what is still to collect leads, because it is the question the accounts side asks first.
+.money-line {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.money-line__item {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+
+  dt {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: 650;
+    overflow-wrap: anywhere;
+  }
+}
+
+.money-line__item--main {
+  grid-column: 1 / -1;
+
+  > dd.money {
+    font-size: var(--text-2xl);
+  }
+}
+
+.money-line__item dd.money-line__note,
+.money-line__item dd.money-line__overdue {
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.money-line__item dd.money-line__note {
+  color: var(--color-text-muted);
+}
+
+.money-line__item dd.money-line__overdue {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.terms {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.terms__summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.terms__body {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.bills {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.bills__title {
+  font-size: var(--text-lg);
+}
+
+.bill-figures {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+
+  dt {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+@media (min-width: 48rem) {
+  .money-line {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .money-line__item--main {
+    grid-column: 1 / -1;
+  }
+}
+
+// Wide screens: one row, with room for the largest figure in the leading card.
+@media (min-width: 64rem) {
+  .money-line {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .money-line__item--main {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .toolbar .btn {
+    flex: 1 1 auto;
+  }
+}

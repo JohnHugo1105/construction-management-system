@@ -1,0 +1,207 @@
+@if (openOrderId(); as orderId) {
+  <app-change-order-page [orderId]="orderId" (changed)="changed()" />
+} @else {
+  <div class="stack stack--loose">
+    @if (baselineError(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [allowRetry]="true"
+        reloadLabel="Try again"
+        (reload)="loadBaseline()"
+      />
+    }
+    @if (actionError(); as problem) {
+      <app-api-error-alert [error]="problem" (reload)="loadBaseline()" />
+    }
+
+    @if (card(); as baseline) {
+      @if (baseline.locked) {
+        <section class="card stack" aria-labelledby="baseline-heading">
+          <div class="panel-head">
+            <h2 id="baseline-heading" class="card__title">Budget baseline</h2>
+            <app-status-chip label="Locked" tone="info" icon="lock" />
+          </div>
+          <table class="baseline-table">
+            <caption class="visually-hidden">
+              Original, approved changes and revised, with VAT
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col"><span class="visually-hidden">Figure</span></th>
+                <th scope="col" class="num">Original</th>
+                <th scope="col" class="num">Changes</th>
+                <th scope="col" class="num">Revised</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of baseline.view.rows; track row.label) {
+                <tr>
+                  <th scope="row">{{ row.label }}</th>
+                  <td class="num money" data-label="Original">{{ row.original }}</td>
+                  <td class="num money" data-label="Changes">{{ row.changes }}</td>
+                  <td class="num money baseline-table__revised" data-label="Revised">
+                    {{ row.revised }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <p class="text-small">{{ baseline.view.sentence }} Amounts include VAT.</p>
+          @if (baseline.view.pending; as pending) {
+            <p class="text-small text-muted">{{ pending }}</p>
+          }
+          @if (!baseline.view.reconciles) {
+            <app-alert tone="warning" title="The budget lines don't add up to the baseline">
+              The active budget lines differ from the original plus the approved changes. Ask an
+              administrator to check this project.
+            </app-alert>
+          }
+          <p class="text-muted text-small">{{ baseline.since }}</p>
+          @if (baseline.canUnlock) {
+            <div>
+              <button appButton variant="ghost" type="button" (click)="unlocking.set(true)">
+                Unlock the budget
+              </button>
+            </div>
+          }
+        </section>
+      } @else {
+        <section class="card stack" aria-labelledby="baseline-heading">
+          <h2 id="baseline-heading" class="card__title">The budget is not locked yet</h2>
+          <p>
+            Lock the budget once it is agreed. It becomes the original, and later changes to the
+            scope or the price are recorded as change orders, so the revised budget is always
+            explained.
+          </p>
+          @if (baseline.lines === 0) {
+            <p class="text-muted text-small">
+              Add the budget lines on the
+              <a routerLink="../budget">Budget tab</a> first.
+            </p>
+          } @else if (canApprove()) {
+            <div>
+              <button appButton variant="primary" type="button" (click)="confirmingLock.set(true)">
+                <app-icon name="lock" [size]="18" />
+                Lock the budget
+              </button>
+            </div>
+          } @else if (!context.isArchived()) {
+            <p class="text-muted text-small">A project manager can lock it.</p>
+          }
+        </section>
+      }
+    } @else if (!baselineError()) {
+      <app-skeleton variant="card" [lines]="3" label="Loading the budget baseline" />
+    }
+
+    @if (context.isArchived()) {
+      <p class="text-muted text-small">
+        This project is archived, so its baseline and change orders can't change.
+      </p>
+    }
+
+    @if (ordersError(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [allowRetry]="true"
+        reloadLabel="Try again"
+        (reload)="loadOrders()"
+      />
+    }
+
+    @if (orders(); as list) {
+      @if (list.total > 0) {
+        <section class="stack" aria-labelledby="orders-heading">
+          <div class="panel-head">
+            <h2 id="orders-heading" class="card__title">Change orders</h2>
+            @if (canCreate()) {
+              <button appButton variant="primary" type="button" (click)="creating.set(true)">
+                <app-icon name="plus" [size]="18" />
+                New change order
+              </button>
+            }
+          </div>
+          <ul class="card-list">
+            @for (row of rows(); track row.item.id) {
+              <li>
+                <a
+                  class="row-card order-row"
+                  routerLink="."
+                  [queryParams]="{ order: row.item.id }"
+                  queryParamsHandling="merge"
+                >
+                  <span class="row-card__head">
+                    <span class="row-card__title">{{ row.label }} · {{ row.item.title }}</span>
+                    <app-status-chip
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [icon]="row.status.icon"
+                    />
+                  </span>
+                  <span class="text-small order-row__effect">
+                    @for (part of row.effect; track $index) {
+                      @if (!$first) {
+                        <span aria-hidden="true"> · </span>
+                      }
+                      <span class="nowrap">{{ part }}</span>
+                    }
+                  </span>
+                  <span class="text-muted text-small">{{ row.when }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+          <app-pager
+            [page]="page()"
+            [pageSize]="pageSize"
+            [total]="list.total"
+            noun="change orders"
+            (pageChange)="setPage($event)"
+          />
+        </section>
+      } @else if (canCreate()) {
+        <app-empty-state
+          icon="contract"
+          title="No change orders yet"
+          message="When the scope or the price changes, record it as a change order. Once approved it updates the budget."
+        >
+          <button appButton variant="primary" type="button" (click)="creating.set(true)">
+            <app-icon name="plus" [size]="18" />
+            New change order
+          </button>
+        </app-empty-state>
+      } @else if (baseline()?.locked) {
+        <p class="text-muted">No change orders yet.</p>
+      }
+    }
+  </div>
+
+  @if (creating()) {
+    <app-change-order-form-dialog (saved)="created($event)" (dismissed)="creating.set(false)" />
+  }
+
+  @if (confirmingLock()) {
+    <app-confirm-dialog
+      title="Lock the budget?"
+      [message]="lockMessage()"
+      confirmLabel="Lock the budget"
+      [busy]="locking()"
+      (confirmed)="lock()"
+      (cancelled)="confirmingLock.set(false)"
+    />
+  }
+
+  @if (unlocking()) {
+    <app-reason-dialog
+      title="Unlock the budget?"
+      message="The baseline is cleared and budget lines can be changed directly again. Lock it again when the budget is agreed."
+      reasonLabel="Why is it being unlocked?"
+      requiredMessage="Say why the budget is being unlocked."
+      confirmLabel="Unlock the budget"
+      [perform]="performUnlock"
+      (done)="unlocked()"
+      (reloadRequested)="unlockOutdated()"
+      (dismissed)="unlocking.set(false)"
+    />
+  }
+}

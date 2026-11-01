@@ -1,0 +1,34 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.quiet-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.results--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}
+
+.run__net {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 650;
+}
+
+@media (max-width: 47.99rem) {
+  .toolbar .btn {
+    flex: 1 1 auto;
+  }
+}

@@ -1,0 +1,186 @@
+<app-page-header title="Dashboard" />
+
+<div class="stack stack--loose">
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Retry"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading the dashboard" />
+  } @else if (state.dashboard(); as data) {
+    <div
+      [class.refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+      class="stack stack--loose"
+    >
+      @if (lead(); as fact) {
+        @if (rows().length > 0) {
+          <section class="lead" aria-labelledby="lead-heading">
+            <app-icon
+              [class]="'lead__icon lead__icon--' + fact.tone"
+              [name]="fact.icon"
+              [size]="28"
+            />
+            <div>
+              <h2 id="lead-heading" class="lead__headline">{{ fact.headline }}</h2>
+              @if (fact.detail) {
+                <p class="lead__detail">{{ fact.detail }}</p>
+              }
+            </div>
+          </section>
+        }
+      }
+
+      @if (showBand()) {
+        <section class="card" aria-labelledby="band-heading">
+          <div class="panel-head">
+            <h2 id="band-heading" class="card__title">All projects</h2>
+            <p class="text-muted text-small">{{ basisLine() }}</p>
+          </div>
+          <app-cost-position [figures]="data.totals" [commitments]="data.totals.commitments" />
+        </section>
+      }
+
+      <div class="list-head">
+        @if (rows().length > 1) {
+          <p class="text-muted text-small">Sorted with what needs attention first.</p>
+        }
+        <label class="toggle">
+          <input
+            type="checkbox"
+            #archived
+            [checked]="state.includeArchived()"
+            (change)="state.setArchived(archived.checked)"
+          />
+          Show archived projects
+        </label>
+      </div>
+
+      @if (rows().length === 0) {
+        <app-empty-state
+          icon="building"
+          title="No projects yet"
+          [message]="
+            canManageProjects()
+              ? 'Add your first project to start tracking budgets and costs.'
+              : 'A project manager can add the first project.'
+          "
+        >
+          @if (canManageProjects()) {
+            <a appButton variant="primary" routerLink="/projects/new">
+              <app-icon name="plus" [size]="18" />
+              New project
+            </a>
+          }
+        </app-empty-state>
+      } @else if (viewport.isTablet() && roomForTable()) {
+        <app-scroll-region label="Projects, budget against spent cost">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Project</th>
+                <th scope="col">Health</th>
+                <th scope="col" class="num">Remaining</th>
+                <th scope="col">Used</th>
+                <th scope="col" class="num">Budget</th>
+                <th scope="col" class="num">Spent</th>
+                @if (showMargin()) {
+                  <th scope="col" class="num">Margin so far</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of rows(); track item.row.id) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="item.link">{{ item.row.name }}</a>
+                    <span class="cell-sub">{{ item.status }}</span>
+                    <app-commitment-line [commitments]="item.row.commitments" />
+                  </th>
+                  <td>
+                    <app-status-chip
+                      [label]="item.health.label"
+                      [tone]="item.health.tone"
+                      [icon]="item.health.icon"
+                    />
+                  </td>
+                  @if (item.idle) {
+                    <td class="idle" colspan="4">Nothing budgeted or spent yet</td>
+                  } @else {
+                    <td class="num" [class.over]="item.remaining.over">
+                      {{ item.remaining.text }}
+                    </td>
+                    <td>
+                      <span class="used">
+                        <span class="money">{{ item.used }}</span>
+                        <app-used-bar [usedBps]="item.row.usedBps" [health]="item.row.health" />
+                      </span>
+                    </td>
+                    <td class="num">{{ item.budget }}</td>
+                    <td class="num">{{ item.spent }}</td>
+                  }
+                  @if (showMargin()) {
+                    <td class="num" [class.over]="item.margin?.negative">
+                      {{ item.margin ? item.margin.text : '' }}
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </app-scroll-region>
+      } @else {
+        <ul class="card-list">
+          @for (item of rows(); track item.row.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a class="row-card__title row-link row-link--stretch" [routerLink]="item.link">{{
+                  item.row.name
+                }}</a>
+                <app-status-chip
+                  [label]="item.health.label"
+                  [tone]="item.health.tone"
+                  [icon]="item.health.icon"
+                />
+              </div>
+              <p class="text-muted text-small">{{ item.status }}</p>
+              @if (item.idle) {
+                <p class="text-muted text-small">Nothing budgeted or spent yet.</p>
+              } @else {
+                <p class="card__remaining" [class.over]="item.remaining.over">
+                  <span class="text-muted text-small">Remaining</span>
+                  <span class="money">{{ item.remaining.text }}</span>
+                </p>
+                <div class="card__used">
+                  <app-used-bar [usedBps]="item.row.usedBps" [health]="item.row.health" />
+                  <span class="money text-small">{{ item.used }} used</span>
+                </div>
+                <p class="text-muted text-small">
+                  <span class="nowrap"
+                    >Budget <span class="money">{{ item.budget }}</span></span
+                  >
+                  ·
+                  <span class="nowrap"
+                    >Spent <span class="money">{{ item.spent }}</span></span
+                  >
+                </p>
+              }
+              <app-commitment-line [commitments]="item.row.commitments" />
+              @if (item.margin) {
+                <p class="text-small" [class.over]="item.margin.negative">
+                  <span class="text-muted">Margin so far</span>
+                  <span class="money"> {{ item.margin.text }}</span>
+                </p>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,137 @@
+@if (viewport.isTablet() && roomForTable()) {
+  <app-scroll-region label="Budget lines">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col" class="num">Total</th>
+          <th scope="col" class="num">Quantity × unit cost</th>
+          @if (canWrite()) {
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.line.id) {
+          <tr [class.line--removed]="row.removed">
+            <th scope="row">
+              <span class="line__name">{{ row.line.description }}</span>
+              @if (row.line.changeOrderNumber) {
+                <span class="line__change-order">
+                  <app-status-chip
+                    [label]="'Change order ' + row.line.changeOrderNumber"
+                    tone="info"
+                    icon="contract"
+                  />
+                </span>
+              }
+              <span class="cell-sub">{{ row.about }}</span>
+              <span class="cell-sub">{{ row.date }}</span>
+              @if (row.removed) {
+                <span class="line__removed">
+                  <app-status-chip label="Removed" tone="neutral" icon="archive" />
+                  <span class="cell-sub">{{ row.line.removedReason }}</span>
+                </span>
+              }
+            </th>
+            <td class="num">
+              <span class="line__total">{{ row.gross }}</span>
+              <span class="cell-sub">Before VAT {{ row.net }}</span>
+              <span class="cell-sub">VAT {{ row.vat }}</span>
+            </td>
+            <td class="num">
+              {{ row.quantity }} × {{ row.unitCost }}
+              <span class="cell-sub">{{ row.vatNote }}</span>
+            </td>
+            @if (canWrite()) {
+              <td class="actions">
+                @if (!row.removed) {
+                  <button
+                    appButton
+                    variant="ghost"
+                    type="button"
+                    [attr.aria-label]="'Edit ' + row.line.description"
+                    (click)="edit.emit(row.line)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    appButton
+                    variant="ghost"
+                    type="button"
+                    [attr.aria-label]="'Remove ' + row.line.description"
+                    (click)="remove.emit(row.line)"
+                  >
+                    Remove
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-scroll-region>
+} @else {
+  <ul class="card-list">
+    @for (row of rows(); track row.line.id) {
+      <li class="row-card" [class.line--removed]="row.removed">
+        <div class="row-card__head">
+          <p class="row-card__title line__name">{{ row.line.description }}</p>
+          <p class="line__card-total money">{{ row.gross }}</p>
+        </div>
+        @if (row.line.changeOrderNumber) {
+          <div class="line__change-order">
+            <app-status-chip
+              [label]="'Change order ' + row.line.changeOrderNumber"
+              tone="info"
+              icon="contract"
+            />
+          </div>
+        }
+        <p class="text-muted text-small">{{ row.about }}</p>
+        <p class="text-small">
+          <span class="money">{{ row.quantity }} × {{ row.unitCost }}</span>
+          <span class="text-muted"> ({{ row.vatNote }})</span>
+        </p>
+        <p class="text-muted text-small">
+          <span class="nowrap"
+            >Before VAT <span class="money">{{ row.net }}</span></span
+          >
+          ·
+          <span class="nowrap"
+            >VAT <span class="money">{{ row.vat }}</span></span
+          >
+          ·
+          <span class="nowrap">{{ row.date }}</span>
+        </p>
+        @if (row.removed) {
+          <div class="line__removed">
+            <app-status-chip label="Removed" tone="neutral" icon="archive" />
+            <span class="text-muted text-small">{{ row.line.removedReason }}</span>
+          </div>
+        }
+        @if (canWrite() && !row.removed) {
+          <div class="line__actions">
+            <button
+              appButton
+              type="button"
+              [attr.aria-label]="'Edit ' + row.line.description"
+              (click)="edit.emit(row.line)"
+            >
+              Edit
+            </button>
+            <button
+              appButton
+              type="button"
+              [attr.aria-label]="'Remove ' + row.line.description"
+              (click)="remove.emit(row.line)"
+            >
+              Remove
+            </button>
+          </div>
+        }
+      </li>
+    }
+  </ul>
+}

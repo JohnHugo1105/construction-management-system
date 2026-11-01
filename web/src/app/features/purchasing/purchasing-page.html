@@ -1,0 +1,167 @@
+<app-page-header title="Purchasing" />
+<app-purchasing-tabs />
+
+<div class="stack">
+  @if (!bare()) {
+  <div class="filters">
+    <div class="toolbar">
+      <app-search-box
+        class="toolbar__search"
+        label="Search orders by number, supplier or the supplier's reference"
+        placeholder="Search orders"
+        [value]="state.query.values().search"
+        (searched)="state.query.set({ search: $event }, { replace: true })"
+      />
+      @if (canManage()) {
+        <a appButton variant="primary" routerLink="/purchasing/orders/new">
+          <app-icon name="plus" [size]="18" />
+          New purchase order
+        </a>
+      }
+    </div>
+
+    <div class="filter-chips" role="group" aria-label="Filter by status">
+      @for (filter of filters; track filter) {
+        <button
+          type="button"
+          class="filter-chip"
+          [attr.aria-pressed]="state.query.values().status === filter"
+          (click)="state.query.set({ status: filter })"
+        >
+          {{ filter }}
+        </button>
+      }
+    </div>
+
+    @if (projectOptions().length > 1) {
+      <div class="project-filter">
+        <label class="project-filter__label" for="project-filter">Project</label>
+        <select id="project-filter" class="input" (change)="projectChanged($event)">
+          <option value="" [selected]="state.query.values().project === ''">All projects</option>
+          @for (project of projectOptions(); track project.id) {
+            <option [value]="project.id" [selected]="project.id === state.query.values().project">
+              {{ project.name }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading purchase orders" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Purchase orders" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Supplier</th>
+                <th scope="col">Project</th>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="num">Total with VAT</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/purchasing/orders', row.id]">{{
+                      row.number
+                    }}</a>
+                    <span class="cell-sub">{{ row.lines }}</span>
+                  </th>
+                  <td>{{ row.supplier }}</td>
+                  <td>{{ row.project }}</td>
+                  <td>{{ row.orderDate }}</td>
+                  <td>
+                    <app-status-chip
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [icon]="row.status.icon"
+                    />
+                  </td>
+                  <td class="num money">{{ row.total }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a
+                  class="row-card__title row-link row-link--stretch"
+                  [routerLink]="['/purchasing/orders', row.id]"
+                  >{{ row.number }} · {{ row.supplier }}</a
+                >
+                <app-status-chip
+                  [label]="row.status.label"
+                  [tone]="row.status.tone"
+                  [icon]="row.status.icon"
+                />
+              </div>
+              <p class="text-muted text-small">{{ row.project }} · {{ row.orderDate }}</p>
+              <p class="row-card__total money">{{ row.total }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="orders"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state
+        icon="search"
+        title="No orders match"
+        message="Try a different search, status or project."
+      >
+        <button appButton type="button" (click)="state.query.reset()">Show all orders</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="cart"
+        title="No purchase orders yet"
+        [message]="
+          canManage()
+            ? 'Raise a purchase order to a supplier. Once it is approved, what has not been invoiced counts in the project forecast.'
+            : 'A cost engineer or accountant can raise the first purchase order.'
+        "
+      >
+        @if (canManage()) {
+          <a appButton variant="primary" routerLink="/purchasing/orders/new">
+            <app-icon name="plus" [size]="18" />
+            New purchase order
+          </a>
+        }
+      </app-empty-state>
+    }
+  }
+</div>

@@ -1,0 +1,341 @@
+// Cards, alerts, chips, and the table/card pattern every list uses.
+
+// Surfaces --------------------------------------------------------------------------------------------------------
+.card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.card__title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-base);
+}
+
+// A card that holds one form: no wider than its fields need.
+.form-card,
+.password-card {
+  max-width: 44rem;
+}
+
+// A card's heading with the one action for that card beside it.
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+
+  .card__title {
+    margin: 0;
+  }
+}
+
+@media (min-width: 48rem) {
+  .card {
+    padding: var(--space-6);
+  }
+}
+
+// Alerts ----------------------------------------------------------------------------------------------------------
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--alert-border, var(--color-info-border));
+  border-radius: var(--radius-md);
+  background: var(--alert-bg, var(--color-info-soft));
+  color: var(--color-text);
+
+  > app-icon {
+    flex: none;
+    margin-top: 2px;
+    color: var(--alert-accent, var(--color-info));
+  }
+}
+
+.alert__body {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.alert__title {
+  font-weight: 650;
+  color: var(--alert-accent, var(--color-info));
+}
+
+.alert__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.alert--danger {
+  --alert-border: var(--color-danger-border);
+  --alert-bg: var(--color-danger-soft);
+  --alert-accent: var(--color-danger);
+}
+
+.alert--warning {
+  --alert-border: var(--color-warning-border);
+  --alert-bg: var(--color-warning-soft);
+  --alert-accent: var(--color-warning);
+}
+
+.alert--success {
+  --alert-border: var(--color-success-border);
+  --alert-bg: var(--color-success-soft);
+  --alert-accent: var(--color-success);
+}
+
+// Chips: a state, always an icon plus words. ------------------------------------------------------------------------
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 2px 10px 2px 8px;
+  border: 1px solid var(--chip-border, var(--color-border));
+  border-radius: var(--radius-pill);
+  background: var(--chip-bg, var(--color-surface-2));
+  color: var(--chip-fg, var(--color-text-muted));
+  font-size: var(--text-xs);
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.chip--success {
+  --chip-bg: var(--color-success-soft);
+  --chip-fg: var(--color-success);
+  --chip-border: var(--color-success-border);
+}
+
+.chip--warning {
+  --chip-bg: var(--color-warning-soft);
+  --chip-fg: var(--color-warning);
+  --chip-border: var(--color-warning-border);
+}
+
+.chip--danger {
+  --chip-bg: var(--color-danger-soft);
+  --chip-fg: var(--color-danger);
+  --chip-border: var(--color-danger-border);
+}
+
+.chip--info {
+  --chip-bg: var(--color-info-soft);
+  --chip-fg: var(--color-info);
+  --chip-border: var(--color-info-border);
+}
+
+.chip--unbudgeted {
+  --chip-bg: var(--health-unbudgeted-soft);
+  --chip-fg: var(--health-unbudgeted);
+  --chip-border: var(--color-border);
+}
+
+// A row of filter chips: real buttons, so they keep a 44px target.
+.filter-chips {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 calc(var(--space-4) * -1);
+  padding: var(--space-1) var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.filter-chip {
+  flex: none;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-2);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--color-brand);
+    background: var(--color-brand-soft);
+    color: var(--color-brand-text);
+  }
+}
+
+@media (min-width: 48rem) {
+  .filter-chips {
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
+
+// Lists: a table on wide screens, cards on phones. -------------------------------------------------------------------
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  tbody tr:hover > * {
+    background: var(--color-surface-2);
+  }
+
+  // The first column stays put when the table scrolls sideways.
+  th[scope='row'] {
+    position: sticky;
+    left: 0;
+    background: var(--color-surface);
+    font-weight: 600;
+  }
+
+  // The name link keeps a 44px target without making the row taller.
+  .row-link {
+    display: inline-block;
+    padding: 14px 0;
+    margin: -14px 0;
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+.row-link {
+  color: var(--color-text);
+  font-weight: 650;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-brand-text);
+    text-decoration: underline;
+  }
+}
+
+// Makes a whole card one tap target: the title link stretches over the card.
+.row-link--stretch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+}
+
+.cell-sub {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.card-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.row-card {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.row-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.row-card__title {
+  font-size: var(--text-base);
+  font-weight: 650;
+  min-width: 0;
+}
+
+.row-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+// Label and value pairs.
+.def-list {
+  display: grid;
+  gap: var(--space-4) var(--space-6);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+
+  dt {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin-top: 2px;
+    font-weight: 600;
+  }
+}
