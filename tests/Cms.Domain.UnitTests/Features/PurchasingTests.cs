@@ -191,15 +191,15 @@ public sealed class PurchaseOrderTests
         var supplier = NewSupplier();
         var project = TestData.NewProject();
         var draft = NewOrder(supplier, project);
-        Assert.Contains("reason", Assert.Throws<ValidationFailedException>(() => draft.Cancel(project, " ", false, TestData.UserId, TestData.Now)).Errors.Keys);
+        Assert.Contains("reason", Assert.Throws<ValidationFailedException>(() => draft.Cancel(project, " ", false, false, TestData.UserId, TestData.Now)).Errors.Keys);
 
-        draft.Cancel(project, " Supplier out of stock ", false, TestData.UserId, TestData.Now);
+        draft.Cancel(project, " Supplier out of stock ", false, false, TestData.UserId, TestData.Now);
         Assert.Equal(PurchaseOrderStatus.Cancelled, draft.Status);
         Assert.Equal("Supplier out of stock", draft.CancelReason);
 
         var approved = NewOrder(supplier, project);
         approved.Approve(supplier, project, TestData.UserId, TestData.Now);
-        approved.Cancel(project, "Changed design", hasMatchedInvoices: false, TestData.UserId, TestData.Now);
+        approved.Cancel(project, "Changed design", hasMatchedInvoices: false, hasDeliveries: false, TestData.UserId, TestData.Now);
         Assert.Equal(PurchaseOrderStatus.Cancelled, approved.Status);
     }
 
@@ -211,7 +211,7 @@ public sealed class PurchaseOrderTests
         var order = NewOrder(supplier, project);
         order.Approve(supplier, project, TestData.UserId, TestData.Now);
 
-        var refused = Assert.Throws<DomainRuleException>(() => order.Cancel(project, "Mistake", hasMatchedInvoices: true, TestData.UserId, TestData.Now));
+        var refused = Assert.Throws<DomainRuleException>(() => order.Cancel(project, "Mistake", hasMatchedInvoices: true, hasDeliveries: false, TestData.UserId, TestData.Now));
         Assert.Contains("Close it instead", refused.Message);
         Assert.Equal(PurchaseOrderStatus.Approved, order.Status);
 
@@ -219,6 +219,22 @@ public sealed class PurchaseOrderTests
         Assert.Equal(PurchaseOrderStatus.Closed, order.Status);
         Assert.Null(order.CloseReason);
         Assert.NotNull(order.ClosedAtUtc);
+    }
+
+    [Fact]
+    public void An_approved_order_with_a_recorded_delivery_cannot_be_cancelled_but_can_be_closed()
+    {
+        var supplier = NewSupplier();
+        var project = TestData.NewProject();
+        var order = NewOrder(supplier, project);
+        order.Approve(supplier, project, TestData.UserId, TestData.Now);
+
+        var refused = Assert.Throws<DomainRuleException>(() => order.Cancel(project, "Mistake", hasMatchedInvoices: false, hasDeliveries: true, TestData.UserId, TestData.Now));
+        Assert.Equal("Deliveries are already recorded against this order, so it can't be cancelled. Close it instead to release what was not delivered.", refused.Message);
+        Assert.Equal(PurchaseOrderStatus.Approved, order.Status);
+
+        order.Close(project, null, TestData.UserId, TestData.Now);
+        Assert.Equal(PurchaseOrderStatus.Closed, order.Status);
     }
 
     [Fact]
@@ -234,7 +250,7 @@ public sealed class PurchaseOrderTests
         Assert.Equal("Delivered 8 of 10", draft.CloseReason);
         Assert.True(draft.IsFinal);
         Assert.Contains("already closed", Assert.Throws<DomainRuleException>(() => draft.Close(project, null, TestData.UserId, TestData.Now)).Message);
-        Assert.Contains("already closed", Assert.Throws<DomainRuleException>(() => draft.Cancel(project, "x", false, TestData.UserId, TestData.Now)).Message);
+        Assert.Contains("already closed", Assert.Throws<DomainRuleException>(() => draft.Cancel(project, "x", false, false, TestData.UserId, TestData.Now)).Message);
         Assert.Contains("can't be approved", Assert.Throws<DomainRuleException>(() => draft.Approve(supplier, project, TestData.UserId, TestData.Now)).Message);
         Assert.Contains("can't be changed", Assert.Throws<DomainRuleException>(() => draft.ReviseDraft(supplier, project, null, TestData.Today, null, null, null, [Line()], 1_200, TestData.Today, TestData.Now)).Message);
     }
@@ -249,7 +265,7 @@ public sealed class PurchaseOrderTests
         project.Archive(ArchiveReason.Finished, null, TestData.Now);
 
         Assert.Contains("Restore it", Assert.Throws<DomainRuleException>(() => order.Close(project, null, TestData.UserId, TestData.Now)).Message);
-        Assert.Contains("Restore it", Assert.Throws<DomainRuleException>(() => order.Cancel(project, "x", false, TestData.UserId, TestData.Now)).Message);
+        Assert.Contains("Restore it", Assert.Throws<DomainRuleException>(() => order.Cancel(project, "x", false, false, TestData.UserId, TestData.Now)).Message);
     }
 
     [Fact]

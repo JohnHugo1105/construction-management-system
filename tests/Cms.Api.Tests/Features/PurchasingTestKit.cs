@@ -53,6 +53,31 @@ internal static class PurchasingTestKit
 
     public static Task<PurchaseOrderDto> GetOrderAsync(ApiClient client, Guid id) => client.GetAsync<PurchaseOrderDto>($"/api/purchase-orders/{id}");
 
+    /// <summary>A delivery request: what arrived per line (by the line's number on the order), and the supplier's delivery receipt number.</summary>
+    public static Dictionary<string, object?> DeliveryBody(PurchaseOrderDto order, IEnumerable<(int LineNumber, decimal Quantity)> lines, string? number = "DR-0001",
+        string? receivedDate = PastDate, string? note = null, string? clientRequestId = null) => new()
+    {
+        ["receivedDate"] = receivedDate, ["deliveryReceiptNumber"] = number, ["note"] = note, ["clientRequestId"] = clientRequestId,
+        ["lines"] = lines.Select(line => new { purchaseOrderLineId = order.Lines.Single(item => item.LineNumber == line.LineNumber).Id, quantity = line.Quantity }).ToArray()
+    };
+
+    public static Task<HttpResponseMessage> TryReceiveAsync(ApiClient client, PurchaseOrderDto order, string? number, params (int LineNumber, decimal Quantity)[] lines) =>
+        client.PostAsync($"/api/purchase-orders/{order.Id}/receipts", DeliveryBody(order, lines, number));
+
+    /// <summary>Records a delivery and returns the order as the server now shows it.</summary>
+    public static async Task<PurchaseOrderDto> ReceiveAsync(ApiClient client, PurchaseOrderDto order, string? number, params (int LineNumber, decimal Quantity)[] lines)
+    {
+        var response = await TryReceiveAsync(client, order, number, lines);
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+        return await client.ReadAsync<PurchaseOrderDto>(response);
+    }
+
+    public static Task<HttpResponseMessage> TryVoidDeliveryAsync(ApiClient client, Guid orderId, GoodsReceiptDto receipt, string? reason = "Counted the wrong truck", int? version = null) =>
+        client.PostAsync($"/api/purchase-orders/{orderId}/receipts/{receipt.Id}/void", new { reason, version = version ?? receipt.Version });
+
+    public static async Task<PurchaseOrderDto> VoidDeliveryAsync(ApiClient client, Guid orderId, GoodsReceiptDto receipt, string reason = "Counted the wrong truck") =>
+        await client.ReadAsync<PurchaseOrderDto>(await TryVoidDeliveryAsync(client, orderId, receipt, reason));
+
     /// <summary>A supplier invoice matched to an order line (one unit at the given amount, no VAT unless told).</summary>
     public static Task<CostEntryDto> InvoiceAsync(ApiClient client, Guid projectId, Guid? lineId, long amountMinor, string vat = "Exempt", string dealer = "Visayas Steel Corp.") =>
         client.PostAsync<CostEntryDto>($"/api/projects/{projectId}/cost-entries",

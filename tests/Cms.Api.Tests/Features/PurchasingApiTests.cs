@@ -645,11 +645,12 @@ public sealed class PurchasingApiTests : IClassFixture<CmsApiFactory>
         var large = await MeasureAsync(big.Id);
 
         Assert.Equal(small, large);
-        // The count and the page of orders; the order, its lines, what each line is invoiced and the newest invoices; the project and the
+        // The count and the page of orders (the page carries each order's delivery state); the order, its lines, what each line is invoiced,
+        // the newest invoices, what each line has received, and the newest deliveries with their lines; the project and the
         // approved lines with what is invoiced; the company, projects, budget, actual and one grouped statement for every commitment source;
         // the project, company, six grouped sums and the sources; the cost list's project check, totals and page.
         var sources = _factory.CommitmentSourceCount();
-        Assert.Equal((2, 4, 3, 4 + sources, 8 + sources, 3), large);
+        Assert.Equal((2, 7, 3, 4 + sources, 8 + sources, 3), large);
         Assert.Equal(13, (await client.GetAsync<PagedResult<PurchaseOrderListItemDto>>("/api/purchase-orders?pageSize=100")).Total);
     }
 

@@ -17,8 +17,9 @@ namespace Cms.Application.Features.Purchasing;
 /// An order is cancelled before anything is invoiced against it, or closed when the supplier delivered less. Each step is one save with
 /// its audit line, so the order and its history change together or not at all. Orders are never deleted.
 /// </summary>
-public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IPurchaseOrderReader reader, ISupplierRepository suppliers, IProjectRepository projects,
-    IOrganizationRepository organizations, INumberSequence numbers, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
+public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IGoodsReceiptRepository receipts, IPurchaseOrderReader reader, ISupplierRepository suppliers,
+    IProjectRepository projects, IOrganizationRepository organizations, INumberSequence numbers, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork,
+    IAuditTrail audit)
 {
     public const string NumberSequenceKey = "purchase-order";
 
@@ -101,8 +102,9 @@ public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IPurch
         ConcurrencyGuard.Ensure(order.Version, request.Version);
         var project = await LoadProjectAsync(order.ProjectId, cancellationToken);
         var hasInvoices = await orders.HasMatchedInvoicesAsync(order.Id, cancellationToken);
+        var hasDeliveries = await receipts.HasPostedAsync(order.Id, cancellationToken);
 
-        order.Cancel(project, request.Reason, hasInvoices, currentUser.UserId, clock.UtcNow);
+        order.Cancel(project, request.Reason, hasInvoices, hasDeliveries, currentUser.UserId, clock.UtcNow);
 
         audit.Record("PurchaseOrder.Cancelled", nameof(PurchaseOrder), order.Id, $"Cancelled purchase order {order.Number} of {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);

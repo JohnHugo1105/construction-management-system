@@ -9,6 +9,7 @@ import {
   PurchaseOrderFields,
   PurchaseOrderListItem,
   PurchaseOrderListParams,
+  RecordDeliveryFields,
   Supplier,
   SupplierFields,
   SupplierListItem,
@@ -54,6 +55,31 @@ export class PurchasingApi {
 
   closeOrder(id: string, reason: string | null, version: number): Observable<PurchaseOrder> {
     return this.http.post<PurchaseOrder>(`/api/purchase-orders/${id}/close`, { reason, version });
+  }
+
+  /** Records what arrived against an approved order. The same request id with every attempt means a retry never records it twice. */
+  recordDelivery(
+    id: string,
+    fields: RecordDeliveryFields,
+    clientRequestId: string,
+  ): Observable<PurchaseOrder> {
+    return this.http.post<PurchaseOrder>(`/api/purchase-orders/${id}/receipts`, {
+      ...fields,
+      clientRequestId,
+    });
+  }
+
+  /** Voids a delivery entered by mistake, with the version the person saw. */
+  voidDelivery(
+    id: string,
+    receiptId: string,
+    reason: string,
+    version: number,
+  ): Observable<PurchaseOrder> {
+    return this.http.post<PurchaseOrder>(`/api/purchase-orders/${id}/receipts/${receiptId}/void`, {
+      reason,
+      version,
+    });
   }
 
   /** Id, name, state and sub-projects of the projects for a picker. */

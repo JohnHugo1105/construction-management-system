@@ -71,4 +71,12 @@ describe('ProjectPurchasesTab', () => {
     expect(root.textContent).toContain('No purchase orders for this project');
     expect(root.textContent).toContain('Raise one to a supplier.');
   });
+
+  it('shows the same delivery chip as the orders list, and none on an order nobody is waiting on', async () => {
+    const { root } = await open({
+      items: [listItem({ deliveryState: 'PartlyReceived' }), listItem({ id: 'order-2', number: 'PO-0002', deliveryState: 'NotReceived' })],
+    });
+
+    expect(texts(root, 'app-status-chip')).toEqual(['Approved', 'Partly delivered', 'Approved']);
+  });
 });

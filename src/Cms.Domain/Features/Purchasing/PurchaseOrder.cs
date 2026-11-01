@@ -186,14 +186,16 @@ public sealed class PurchaseOrder : AggregateRoot
         Touch(now);
     }
 
-    /// <summary>Calls off a draft, or an approved order that nothing has been invoiced against. Needs a reason.</summary>
-    public void Cancel(Project project, string? reason, bool hasMatchedInvoices, Guid userId, DateTimeOffset now)
+    /// <summary>Calls off a draft, or an approved order that nothing has been invoiced against and nothing has been delivered for. Needs a reason.</summary>
+    public void Cancel(Project project, string? reason, bool hasMatchedInvoices, bool hasDeliveries, Guid userId, DateTimeOffset now)
     {
         if (IsFinal) throw new DomainRuleException($"This order was already {Status.ToString().ToLowerInvariant()}.");
         if (project.Id != ProjectId) throw new ArgumentException("The project doesn't match this order.", nameof(project));
         project.EnsureNotArchived();
         if (Status == PurchaseOrderStatus.Approved && hasMatchedInvoices)
             throw new DomainRuleException("Invoices are already matched to this order, so it can't be cancelled. Close it instead to release what was not delivered.");
+        if (Status == PurchaseOrderStatus.Approved && hasDeliveries)
+            throw new DomainRuleException("Deliveries are already recorded against this order, so it can't be cancelled. Close it instead to release what was not delivered.");
         var cleanReason = Guard.RequiredText(reason, "reason", "the reason for cancelling this order", 300);
 
         Status = PurchaseOrderStatus.Cancelled;
@@ -211,6 +213,28 @@ public sealed class PurchaseOrder : AggregateRoot
     {
         if (Status != PurchaseOrderStatus.Approved)
             throw new DomainRuleException($"{Number} was {Status.ToString().ToLowerInvariant()} while you were recording the invoice. Reload and choose another order, or leave the invoice unmatched.");
+        Touch(now);
+    }
+
+    /// <summary>Refuses a delivery against an order that is not approved: a draft is not an order yet, and a closed or cancelled one is final.</summary>
+    public void EnsureCanReceive()
+    {
+        if (Status == PurchaseOrderStatus.Approved) return;
+        throw new DomainRuleException(Status switch
+        {
+            PurchaseOrderStatus.Draft => $"{Number} is not approved yet. Approve it before recording a delivery.",
+            PurchaseOrderStatus.Closed => "This order is closed.",
+            _ => "This order was cancelled."
+        });
+    }
+
+    /// <summary>
+    /// Called when a delivery is recorded against this order. It re-checks that the order is still approved and touches the order, so two
+    /// deliveries of the last quantity, or a delivery and a close or cancel, collide on the order's version instead of both succeeding.
+    /// </summary>
+    public void NoteDeliveryRecorded(DateTimeOffset now)
+    {
+        EnsureCanReceive();
         Touch(now);
     }
 

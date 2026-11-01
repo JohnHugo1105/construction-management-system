@@ -1,4 +1,10 @@
-import { PurchaseOrder, PurchaseOrderLine, PurchaseOrderListItem, Supplier } from './purchasing.models';
+import {
+  GoodsReceipt,
+  PurchaseOrder,
+  PurchaseOrderLine,
+  PurchaseOrderListItem,
+  Supplier,
+} from './purchasing.models';
 
 export const RIVERSIDE_ID = '11111111-1111-1111-1111-111111111111';
 export const FIRM_ID = '22222222-2222-2222-2222-222222222222';
@@ -26,6 +32,40 @@ export function orderLine(overrides: Partial<PurchaseOrderLine> = {}): PurchaseO
     remainingNetMinor: 500_000,
     remainingGrossMinor: 500_000,
     overByGrossMinor: 0,
+    receivedQuantity: 0,
+    toReceiveQuantity: 10,
+    receivedValueNetMinor: 0,
+    receivedValueGrossMinor: 0,
+    invoicedAheadOfDelivery: false,
+    ...overrides,
+  };
+}
+
+/** A delivery of 4 pc against the order's first line, entered by the warehouse and still standing. */
+export function receiptFixture(overrides: Partial<GoodsReceipt> = {}): GoodsReceipt {
+  return {
+    id: 'receipt-1',
+    receivedDate: '2026-10-28',
+    deliveryReceiptNumber: 'DR-0012',
+    note: null,
+    status: 'Posted',
+    recordedByName: 'Wally Warehouse',
+    recordedAtUtc: '2026-10-28T03:00:00Z',
+    voidedByName: null,
+    voidedAtUtc: null,
+    voidReason: null,
+    canVoid: true,
+    lines: [
+      {
+        id: 'rl-1',
+        purchaseOrderLineId: 'line-1',
+        lineNumber: 1,
+        description: 'Rebar 16 mm',
+        unit: 'pc',
+        quantity: 4,
+      },
+    ],
+    version: 0,
     ...overrides,
   };
 }
@@ -71,6 +111,10 @@ export function orderFixture(overrides: Partial<PurchaseOrder> = {}): PurchaseOr
     canApprove: true,
     canCancel: true,
     canClose: false,
+    deliveryState: 'NotReceived',
+    receipts: [],
+    receiptCount: 0,
+    canReceive: false,
     version: 0,
     ...overrides,
   };
@@ -86,6 +130,7 @@ export function approvedOrder(overrides: Partial<PurchaseOrder> = {}): PurchaseO
     canEdit: false,
     canApprove: false,
     canClose: true,
+    canReceive: true,
     version: 1,
     ...overrides,
   });
@@ -106,6 +151,7 @@ export function listItem(overrides: Partial<PurchaseOrderListItem> = {}): Purcha
     netMinor: 500_000,
     vatMinor: 0,
     grossMinor: 500_000,
+    deliveryState: null,
     ...overrides,
   };
 }

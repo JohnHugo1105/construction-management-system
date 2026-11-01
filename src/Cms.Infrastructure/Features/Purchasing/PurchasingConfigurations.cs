@@ -60,3 +60,51 @@ internal sealed class PurchaseOrderLineConfiguration : IEntityTypeConfiguration<
         builder.HasIndex(item => new { item.TenantId, item.PurchaseOrderId });
     }
 }
+
+internal sealed class GoodsReceiptConfiguration : IEntityTypeConfiguration<GoodsReceipt>
+{
+    public void Configure(EntityTypeBuilder<GoodsReceipt> builder)
+    {
+        builder.ToTable("GoodsReceipts");
+        builder.HasKey(item => item.Id);
+        builder.Property(item => item.DeliveryReceiptNumber).HasMaxLength(GoodsReceipt.MaximumNumberLength);
+        builder.Property(item => item.NormalizedDeliveryReceiptNumber).HasMaxLength(GoodsReceipt.MaximumNumberLength);
+        builder.Property(item => item.Note).HasMaxLength(GoodsReceipt.MaximumNoteLength);
+        builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(10);
+        builder.Property(item => item.ClientRequestId).HasMaxLength(80);
+        builder.Property(item => item.VoidReason).HasMaxLength(300);
+        builder.Ignore(item => item.IsVoid);
+
+        // A delivery never points at an order, firm or project that isn't there. Deliveries are voided, never deleted.
+        builder.HasOne<PurchaseOrder>().WithMany().HasForeignKey(item => item.PurchaseOrderId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Supplier>().WithMany().HasForeignKey(item => item.SupplierId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Project>().WithMany().HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(item => item.Lines).WithOne().HasForeignKey(line => line.GoodsReceiptId).OnDelete(DeleteBehavior.Restrict);
+        builder.Navigation(item => item.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasIndex(item => new { item.TenantId, item.PurchaseOrderId, item.Status });
+        // The same supplier's delivery receipt is recorded once while it stands: the database backs the service's check when two people save the
+        // same one at the same moment. A voided delivery frees its number so the delivery can be entered again.
+        builder.HasIndex(item => new { item.TenantId, item.SupplierId, item.NormalizedDeliveryReceiptNumber }).IsUnique()
+            .HasFilter("[Status] = 'Posted' AND [NormalizedDeliveryReceiptNumber] IS NOT NULL").HasDatabaseName("IX_GoodsReceipts_OnePostedNumberPerSupplier");
+        builder.HasIndex(item => new { item.TenantId, item.ClientRequestId }).IsUnique().HasFilter("[ClientRequestId] IS NOT NULL");
+    }
+}
+
+internal sealed class GoodsReceiptLineConfiguration : IEntityTypeConfiguration<GoodsReceiptLine>
+{
+    public void Configure(EntityTypeBuilder<GoodsReceiptLine> builder)
+    {
+        builder.ToTable("GoodsReceiptLines");
+        builder.HasKey(item => item.Id);
+        builder.Property(item => item.Id).ValueGeneratedNever();
+        builder.Property(item => item.Quantity).HasPrecision(18, 4);
+
+        builder.HasOne<PurchaseOrderLine>().WithMany().HasForeignKey(item => item.PurchaseOrderLineId).OnDelete(DeleteBehavior.Restrict);
+
+        // What has been received of an order line is a sum over this index.
+        builder.HasIndex(item => new { item.TenantId, item.PurchaseOrderLineId });
+        builder.HasIndex(item => item.GoodsReceiptId);
+    }
+}

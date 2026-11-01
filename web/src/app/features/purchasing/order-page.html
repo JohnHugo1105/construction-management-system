@@ -33,13 +33,21 @@
       <div class="summary">
         <div class="summary__info">
           <app-status-chip [label]="v.status.label" [tone]="v.status.tone" [icon]="v.status.icon" />
+          @if (v.showDelivery) {
+            <app-status-chip [label]="v.delivery.label" [tone]="v.delivery.tone" [icon]="v.delivery.icon" />
+          }
           <p class="text-muted">{{ v.status.meaning }}</p>
         </div>
-        @if (showApprove() || showEdit() || showCancel() || showClose()) {
+        @if (showApprove() || showReceive() || showEdit() || showCancel() || showClose()) {
           <div class="summary__actions">
             @if (showApprove()) {
               <button appButton variant="primary" type="button" (click)="open('approve')">
                 Approve purchase order
+              </button>
+            }
+            @if (showReceive()) {
+              <button appButton variant="primary" type="button" (click)="open('receive')">
+                Record delivery
               </button>
             }
             @if (showEdit()) {
@@ -102,8 +110,14 @@
                 <div class="line__text">
                   <p class="line__description">{{ line.description }}</p>
                   <p class="text-muted text-small">{{ line.detail }}</p>
+                  @if (line.flow) {
+                    <p class="text-small line__flow">{{ line.flow }}</p>
+                  }
                   @if (line.standing) {
                     <p class="text-small" [class.line__over]="line.over">{{ line.standing }}</p>
+                  }
+                  @if (line.ahead) {
+                    <p class="text-small line__ahead">{{ line.ahead }}</p>
                   }
                 </div>
                 <span class="money line__total">{{ line.total }}</span>
@@ -112,6 +126,47 @@
           }
         </ol>
       </section>
+
+      @if (v.showDelivery) {
+        <section class="card" aria-labelledby="order-deliveries">
+          <h2 id="order-deliveries" class="card__title">Deliveries</h2>
+          <ul class="lines">
+            @for (receipt of v.receipts; track receipt.id) {
+              <li class="line" [class.line--void]="receipt.void">
+                <div class="line__main">
+                  <div class="line__text">
+                    <p class="line__description">
+                      {{ receipt.title }}
+                      @if (receipt.void) {
+                        <span class="line__void">Voided</span>
+                      }
+                    </p>
+                    <p class="text-small">{{ receipt.items }}</p>
+                    @if (receipt.note) {
+                      <p class="text-muted text-small">{{ receipt.note }}</p>
+                    }
+                    <p class="text-muted text-small">{{ receipt.recorded }}</p>
+                    @if (receipt.voided) {
+                      <p class="text-muted text-small">{{ receipt.voided }}</p>
+                    }
+                  </div>
+                  @if (receipt.canVoid && showVoidDelivery()) {
+                    <button appButton variant="ghost" type="button" (click)="openVoid(receipt.id)">
+                      Void delivery
+                    </button>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+          @if (v.moreReceipts > 0) {
+            <p class="text-muted text-small">
+              Showing the newest {{ v.receipts.length }}. {{ v.moreReceipts }} older deliveries are on
+              record.
+            </p>
+          }
+        </section>
+      }
 
       @if (v.invoices.length > 0) {
         <section class="card" aria-labelledby="order-invoices">
@@ -220,6 +275,27 @@
           confirmLabel="Cancel order"
           [perform]="cancelOrder"
           (done)="finished('Purchase order cancelled.')"
+          (dismissed)="closeDialog()"
+          (reloadRequested)="reloadAfterConflict()"
+        />
+      }
+      @case ('receive') {
+        <app-record-delivery-dialog
+          [order]="o"
+          (saved)="delivered($event)"
+          (dismissed)="closeDialog()"
+          (reloaded)="reloadAfterConflict()"
+        />
+      }
+      @case ('voidDelivery') {
+        <app-reason-dialog
+          title="Void this delivery?"
+          message="It stays on record with your reason and no longer counts as received, so the quantity can be entered again. Nothing else changes."
+          reasonLabel="Reason"
+          requiredMessage="Say why the delivery is being voided."
+          confirmLabel="Void delivery"
+          [perform]="voidDelivery"
+          (done)="finished('Delivery voided.')"
           (dismissed)="closeDialog()"
           (reloadRequested)="reloadAfterConflict()"
         />

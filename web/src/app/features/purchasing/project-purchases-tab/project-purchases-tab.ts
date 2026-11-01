@@ -16,7 +16,7 @@ import { Skeleton } from '../../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../../shared/ui/status-chip/status-chip';
 import { ProjectContext } from '../../projects/project-context';
 import { PurchasingApi } from '../purchasing-api';
-import { presentStatus } from '../purchasing-presentation';
+import { listDeliveryChip, presentStatus } from '../purchasing-presentation';
 import { PurchaseOrderListItem } from '../purchasing.models';
 
 /**
@@ -53,6 +53,11 @@ import { PurchaseOrderListItem } from '../purchasing.models';
                 <app-status-chip [label]="row.status.label" [tone]="row.status.tone" [icon]="row.status.icon" />
               </div>
               <p class="text-muted text-small">{{ row.date }}</p>
+              @if (row.delivery; as delivery) {
+                <p>
+                  <app-status-chip [label]="delivery.label" [tone]="delivery.tone" [icon]="delivery.icon" />
+                </p>
+              }
               <p class="money">{{ row.total }}</p>
             </li>
           }
@@ -108,6 +113,7 @@ export class ProjectPurchasesTab {
       number: order.number,
       supplier: order.supplierName,
       status: presentStatus(order.status),
+      delivery: listDeliveryChip(order),
       date: formatDate(order.orderDate),
       total: formatMoney(order.grossMinor, this.currency()),
     })),

@@ -93,11 +93,20 @@
                   <td>{{ row.project }}</td>
                   <td>{{ row.orderDate }}</td>
                   <td>
-                    <app-status-chip
-                      [label]="row.status.label"
-                      [tone]="row.status.tone"
-                      [icon]="row.status.icon"
-                    />
+                    <div class="chips">
+                      <app-status-chip
+                        [label]="row.status.label"
+                        [tone]="row.status.tone"
+                        [icon]="row.status.icon"
+                      />
+                      @if (row.delivery; as delivery) {
+                        <app-status-chip
+                          [label]="delivery.label"
+                          [tone]="delivery.tone"
+                          [icon]="delivery.icon"
+                        />
+                      }
+                    </div>
                   </td>
                   <td class="num money">{{ row.total }}</td>
                 </tr>
@@ -122,6 +131,15 @@
                 />
               </div>
               <p class="text-muted text-small">{{ row.project }} · {{ row.orderDate }}</p>
+              @if (row.delivery; as delivery) {
+                <p>
+                  <app-status-chip
+                    [label]="delivery.label"
+                    [tone]="delivery.tone"
+                    [icon]="delivery.icon"
+                  />
+                </p>
+              }
               <p class="row-card__total money">{{ row.total }}</p>
             </li>
           }

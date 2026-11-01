@@ -12,12 +12,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Cms.Infrastructure.Features.Purchasing;
 
 /// <summary>
-/// Reads orders straight into DTOs. The list is two statements (a count and a page); one order is four (the order, its lines, what is
-/// invoiced per line, and the newest invoices), however many orders, lines or invoices exist.
+/// Reads orders straight into DTOs. The list is two statements (a count and a page, the page carrying each order's delivery state as
+/// correlated subqueries); one order is seven (the order, its lines, what is invoiced per line, the newest invoices, what has been received per
+/// line, the newest deliveries and their lines), however many orders, lines, invoices or deliveries exist.
 /// </summary>
 internal sealed class PurchaseOrderReader(CmsDbContext db) : IPurchaseOrderReader
 {
     private const int InvoicesShown = 100;
+    private const int ReceiptsShown = 100;
     private const int OpenLinesShown = 500;
 
     public async Task<PagedResult<PurchaseOrderListItemDto>> ListAsync(PurchaseOrderFilter filter, PageRequest page, CancellationToken cancellationToken)
@@ -43,12 +45,19 @@ internal sealed class PurchaseOrderReader(CmsDbContext db) : IPurchaseOrderReade
                 SupplierName = db.Set<Supplier>().Where(supplier => supplier.Id == order.SupplierId).Select(supplier => supplier.Name).FirstOrDefault(),
                 order.ProjectId,
                 ProjectName = db.Set<Project>().Where(project => project.Id == order.ProjectId).Select(project => project.Name).FirstOrDefault(),
-                order.OrderDate, order.ExpectedDate, order.Status, LineCount = order.Lines.Count, order.NetMinor, order.VatMinor, order.GrossMinor
+                order.OrderDate, order.ExpectedDate, order.Status, LineCount = order.Lines.Count, order.NetMinor, order.VatMinor, order.GrossMinor,
+                // Only an approved order has a delivery state to show: has anything arrived, and is any line still short.
+                AnyReceived = db.Set<GoodsReceipt>().Any(receipt => receipt.PurchaseOrderId == order.Id && receipt.Status == GoodsReceiptStatus.Posted),
+                AnyShort = order.Lines.Any(line =>
+                    (db.Set<GoodsReceiptLine>().Where(received => received.PurchaseOrderLineId == line.Id &&
+                        db.Set<GoodsReceipt>().Any(receipt => receipt.Id == received.GoodsReceiptId && receipt.Status == GoodsReceiptStatus.Posted))
+                        .Sum(received => (decimal?)received.Quantity) ?? 0m) < line.Quantity)
             })
             .ToListAsync(cancellationToken);
 
         var items = rows.Select(row => new PurchaseOrderListItemDto(row.Id, row.Number, row.SupplierId, row.SupplierName ?? "", row.ProjectId,
-            row.ProjectName ?? "", row.OrderDate, row.ExpectedDate, row.Status.ToString(), row.LineCount, row.NetMinor, row.VatMinor, row.GrossMinor)).ToArray();
+            row.ProjectName ?? "", row.OrderDate, row.ExpectedDate, row.Status.ToString(), row.LineCount, row.NetMinor, row.VatMinor, row.GrossMinor,
+            row.Status != PurchaseOrderStatus.Approved ? null : (!row.AnyReceived ? DeliveryState.NotReceived : row.AnyShort ? DeliveryState.PartlyReceived : DeliveryState.FullyReceived).ToString())).ToArray();
         return PagedResult<PurchaseOrderListItemDto>.Of(items, total, page);
     }
 
@@ -72,6 +81,7 @@ internal sealed class PurchaseOrderReader(CmsDbContext db) : IPurchaseOrderReade
                 ClosedByName = db.Set<User>().Where(user => user.Id == order.ClosedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
                 order.CancelledAtUtc, order.CancelReason,
                 CancelledByName = db.Set<User>().Where(user => user.Id == order.CancelledByUserId).Select(user => user.DisplayName).FirstOrDefault(),
+                ReceiptCount = db.Set<GoodsReceipt>().Count(receipt => receipt.PurchaseOrderId == order.Id),
                 order.Version
             })
             .SingleOrDefaultAsync(cancellationToken);
@@ -94,22 +104,61 @@ internal sealed class PurchaseOrderReader(CmsDbContext db) : IPurchaseOrderReade
             })
             .ToListAsync(cancellationToken);
 
+        // What posted deliveries say arrived, per line (a voided delivery counts for nothing).
+        var receivedByLine = await db.Set<GoodsReceiptLine>().AsNoTracking()
+            .Where(received => lineIds.Contains(received.PurchaseOrderLineId) &&
+                db.Set<GoodsReceipt>().Any(receipt => receipt.Id == received.GoodsReceiptId && receipt.Status == GoodsReceiptStatus.Posted))
+            .GroupBy(received => received.PurchaseOrderLineId)
+            .Select(group => new { LineId = group.Key, Quantity = group.Sum(received => received.Quantity) })
+            .ToListAsync(cancellationToken);
+        var receipts = await db.Set<GoodsReceipt>().AsNoTracking().Where(receipt => receipt.PurchaseOrderId == id)
+            .OrderByDescending(receipt => receipt.ReceivedDate).ThenByDescending(receipt => receipt.CreatedAtUtc).ThenBy(receipt => receipt.Id)
+            .Take(ReceiptsShown)
+            .Select(receipt => new
+            {
+                receipt.Id, receipt.ReceivedDate, receipt.DeliveryReceiptNumber, receipt.Note, receipt.Status,
+                RecordedByName = db.Set<User>().Where(user => user.Id == receipt.RecordedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
+                RecordedAtUtc = receipt.CreatedAtUtc, receipt.VoidedAtUtc, receipt.VoidReason,
+                VoidedByName = db.Set<User>().Where(user => user.Id == receipt.VoidedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
+                receipt.Version
+            })
+            .ToListAsync(cancellationToken);
+        var receiptIds = receipts.Select(receipt => receipt.Id).ToList();
+        // Always asked, even when there are no deliveries, so the order read costs the same number of statements whatever it holds.
+        var receiptLines = await db.Set<GoodsReceiptLine>().AsNoTracking().Where(received => receiptIds.Contains(received.GoodsReceiptId))
+            .Select(received => new { received.Id, received.GoodsReceiptId, received.PurchaseOrderLineId, received.Quantity })
+            .ToListAsync(cancellationToken);
+
         var matchedByLine = matched.ToDictionary(item => item.LineId);
+        var receivedQuantities = receivedByLine.ToDictionary(item => item.LineId, item => item.Quantity);
         var lineNumbers = lines.ToDictionary(line => line.Id, line => line.LineNumber);
         var lineDtos = lines.Select(line =>
         {
             matchedByLine.TryGetValue(line.Id, out var match);
             var invoicedNet = match?.Net ?? 0;
             var invoicedGross = match?.Gross ?? 0;
+            var received = receivedQuantities.GetValueOrDefault(line.Id);
+            var receivedValue = DeliveryRules.ReceivedValue(received, line.UnitCostMinor, line.VatTreatment, line.VatRateBps);
             return new PurchaseOrderLineDto(line.Id, line.LineNumber, line.Division, line.MainScope, line.SubScope, line.WbsCode, line.Description,
                 line.ItemType.ToString(), line.Quantity, line.Unit, line.UnitCostMinor, line.VatTreatment.ToString(), line.VatRateBps, line.NetMinor,
                 line.VatMinor, line.GrossMinor, invoicedNet, invoicedGross, Math.Max(0, line.NetMinor - invoicedNet), Math.Max(0, line.GrossMinor - invoicedGross),
-                Math.Max(0, invoicedGross - line.GrossMinor));
+                Math.Max(0, invoicedGross - line.GrossMinor), received, GoodsReceipt.LeftToReceive(line.Quantity, received), receivedValue.NetMinor,
+                receivedValue.GrossMinor, DeliveryRules.InvoicedAheadOfDelivery(invoicedGross, receivedValue.GrossMinor));
         }).ToArray();
 
         var approved = header.Status == PurchaseOrderStatus.Approved;
         var invoiceCount = matched.Sum(item => item.Count);
         var canChange = !header.ProjectArchived;
+        var deliveryState = DeliveryRules.StateOf(lines.Select(line => (line.Quantity, receivedQuantities.GetValueOrDefault(line.Id))));
+        var receiptDtos = receipts.Select(receipt => new GoodsReceiptDto(receipt.Id, receipt.ReceivedDate, receipt.DeliveryReceiptNumber, receipt.Note,
+            receipt.Status.ToString(), receipt.RecordedByName ?? "", receipt.RecordedAtUtc, receipt.VoidedByName, receipt.VoidedAtUtc, receipt.VoidReason,
+            CanVoid: canChange && receipt.Status == GoodsReceiptStatus.Posted,
+            receiptLines.Where(received => received.GoodsReceiptId == receipt.Id)
+                .Select(received => new { received, Line = lines.First(line => line.Id == received.PurchaseOrderLineId) })
+                .OrderBy(pair => pair.Line.LineNumber)
+                .Select(pair => new GoodsReceiptLineDto(pair.received.Id, pair.received.PurchaseOrderLineId, pair.Line.LineNumber, pair.Line.Description,
+                    pair.Line.Unit, pair.received.Quantity)).ToArray(),
+            receipt.Version)).ToArray();
         return new PurchaseOrderDto(header.Id, header.Number, header.Status.ToString(), header.SupplierId, header.SupplierName ?? "", header.ProjectId,
             header.ProjectName ?? "", header.ProjectArchived, header.SubProjectId, header.SubProjectName, header.OrderDate, header.ExpectedDate,
             header.SupplierReference, header.Notes, header.NetMinor, header.VatMinor, header.GrossMinor, lineDtos.Sum(line => line.InvoicedNetMinor),
@@ -120,8 +169,9 @@ internal sealed class PurchaseOrderReader(CmsDbContext db) : IPurchaseOrderReade
             invoiceCount, header.CreatedByName ?? "", header.CreatedAtUtc, header.ApprovedByName, header.ApprovedAtUtc, header.ClosedByName,
             header.ClosedAtUtc, header.CloseReason, header.CancelledByName, header.CancelledAtUtc, header.CancelReason,
             CanEdit: canChange && header.Status == PurchaseOrderStatus.Draft, CanApprove: canChange && header.Status == PurchaseOrderStatus.Draft,
-            CanCancel: canChange && (header.Status == PurchaseOrderStatus.Draft || (approved && invoiceCount == 0)),
-            CanClose: canChange && approved, header.Version);
+            CanCancel: canChange && (header.Status == PurchaseOrderStatus.Draft || (approved && invoiceCount == 0 && receivedByLine.Count == 0)),
+            CanClose: canChange && approved, deliveryState.ToString(), receiptDtos, header.ReceiptCount,
+            CanReceive: canChange && approved && lineDtos.Any(line => line.ToReceiveQuantity > 0m), header.Version);
     }
 
     public async Task<IReadOnlyList<OpenPurchaseOrderLineDto>> ListOpenLinesAsync(Guid projectId, CancellationToken cancellationToken)

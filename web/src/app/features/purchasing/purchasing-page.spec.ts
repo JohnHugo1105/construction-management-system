@@ -110,4 +110,24 @@ describe('PurchasingPage', () => {
     const without = await open({ permissions: READER });
     expect(without.root.querySelector('.tab')).toBeNull();
   });
+
+  it('shows a delivery chip only on an approved order that has had something arrive or says when it is expected', async () => {
+    const { root } = await open({
+      items: [
+        listItem({ id: 'o1', number: 'PO-0001', deliveryState: 'PartlyReceived' }),
+        listItem({ id: 'o2', number: 'PO-0002', deliveryState: 'NotReceived', expectedDate: '2026-11-10' }),
+        listItem({ id: 'o3', number: 'PO-0003', deliveryState: 'NotReceived' }),
+        listItem({ id: 'o4', number: 'PO-0004', status: 'Draft', deliveryState: null, expectedDate: '2026-11-10' }),
+      ],
+    });
+
+    const statusCells = texts(root, 'tbody tr td:nth-child(5)');
+    expect(statusCells).toEqual(['Approved Partly delivered', 'Approved Expected 10 Nov 2026', 'Approved', 'Draft']);
+  });
+
+  it('shows the delivery chip on a phone card too', async () => {
+    const { root } = await open({ tablet: false, items: [listItem({ deliveryState: 'FullyReceived' })] });
+
+    expect(texts(root, '.row-card app-status-chip')).toEqual(['Approved', 'Delivered in full']);
+  });
 });
