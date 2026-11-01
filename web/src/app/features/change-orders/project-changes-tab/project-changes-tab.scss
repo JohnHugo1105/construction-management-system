@@ -21,35 +21,52 @@
 }
 
 /*
- * At phone width each figure (Budget, Contract price) takes a full line of its own, with Original, Changes and Revised side by side
- * under it, so neither the label nor an amount is squeezed. The header row keeps the three column names over the same grid.
+ * At phone width each figure (Budget, Contract price) is a short list of its own: Original, Changes and Revised one under the other,
+ * the name on the left and the amount on the right. Three amounts of fourteen characters do not fit side by side at 375 px without
+ * touching, and a stacked list reads like a receipt.
  */
 @media (max-width: 30rem) {
-  .baseline-table thead tr,
-  .baseline-table tbody tr {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: var(--space-2);
+  .baseline-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
-  .baseline-table thead th:first-child {
-    display: none;
+  .baseline-table,
+  .baseline-table tbody,
+  .baseline-table tbody tr {
+    display: block;
+  }
+
+  .baseline-table tbody tr {
+    padding-block: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .baseline-table tbody th {
-    grid-column: 1 / -1;
-    padding-bottom: 0;
+    display: block;
+    padding: 0 0 var(--space-1);
     border-bottom: 0;
     font-weight: 600;
   }
 
-  .baseline-table th,
   .baseline-table td {
-    padding-inline: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: 2px 0;
+    border-bottom: 0;
+    overflow-wrap: anywhere;
   }
 
-  .baseline-table td {
-    overflow-wrap: anywhere;
+  .baseline-table td::before {
+    content: attr(data-label);
+    color: var(--color-text-muted);
+    font-weight: 400;
   }
 }
 

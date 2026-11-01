@@ -4,16 +4,19 @@ import { formatMoney } from '../../../shared/presentation/money';
 import { StatusChip } from '../../../shared/ui/status-chip/status-chip';
 import { CommitmentPosition, Health } from '../costing.models';
 
-/** What the forecast chip says for each judgement. Only a forecast that needs a look gets a chip; "on track" is the quiet default. */
+/**
+ * What the chip says for each judgement of "spent and committed" against the budget. Only one that needs a look gets a chip; "on track" is the
+ * quiet default. Worded as spent plus committed, not "forecast", so it is never mistaken for the progress forecast (cost to finish).
+ */
 const FORECAST_WORDS: Partial<Record<Health, string>> = {
-  OverBudget: 'Forecast over budget',
-  NearLimit: 'Forecast near the limit',
-  Unbudgeted: 'Forecast with no budget',
+  OverBudget: 'Over budget once orders are paid',
+  NearLimit: 'Near the limit once orders are paid',
+  Unbudgeted: 'Committed with no budget',
 };
 
 /**
- * "Committed ₱x · Forecast ₱y" for a project or for all projects: what is promised but not yet invoiced, and what the project is
- * on course to cost. Shows nothing when nothing is committed, so a project without open orders carries no extra figures. The
+ * "Committed ₱x · Spent and committed ₱y" for a project or for all projects: what is promised but not yet invoiced, and what the
+ * project has cost plus what it is already committed to. Shows nothing when nothing is committed, so a project without open orders carries no extra figures. The
  * dashboard row and the Budget tab use this one component from the same server calculation, so they can never word it differently.
  */
 @Component({
@@ -23,8 +26,12 @@ const FORECAST_WORDS: Partial<Record<Health, string>> = {
   template: `
     @if (view(); as v) {
       <p class="commitments">
-        <span class="nowrap">Committed <span class="money">{{ v.committed }}</span></span>
-        <span class="nowrap">Forecast <span class="money">{{ v.forecast }}</span></span>
+        <span class="nowrap"
+          >Committed <span class="money">{{ v.committed }}</span></span
+        >
+        <span class="nowrap"
+          >Spent and committed <span class="money">{{ v.forecast }}</span></span
+        >
         @if (v.chip; as chip) {
           <app-status-chip [label]="chip.label" [tone]="chip.tone" [icon]="chip.icon" />
         }

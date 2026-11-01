@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 export interface TabLink {
@@ -18,7 +18,7 @@ export interface TabLink {
   imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="tabs" [attr.aria-label]="label()">
+    <nav class="tabs" #row [attr.aria-label]="label()">
       <ul class="tabs__list">
         @for (tab of tabs(); track tab.label) {
           <li>
@@ -28,6 +28,8 @@ export interface TabLink {
               routerLinkActive="tab--active"
               ariaCurrentWhenActive="page"
               [routerLinkActiveOptions]="{ exact: tab.exact ?? false }"
+              (isActiveChange)="showWhenActive($event, anchor)"
+              #anchor
             >
               {{ tab.label }}
             </a>
@@ -91,4 +93,17 @@ export interface TabLink {
 export class TabNav {
   readonly label = input.required<string>();
   readonly tabs = input.required<readonly TabLink[]>();
+
+  private readonly row = viewChild.required<ElementRef<HTMLElement>>('row');
+
+  /**
+   * With many tabs the row scrolls sideways on a phone, and the open tab could be off screen, leaving the person with no sign of where
+   * they are. Bring the open tab to the middle of the row (the row only: the page does not move).
+   */
+  protected showWhenActive(active: boolean, anchor: HTMLElement): void {
+    if (!active) return;
+    const row = this.row().nativeElement;
+    if (row.scrollWidth <= row.clientWidth) return;
+    row.scrollLeft = Math.max(0, anchor.offsetLeft - (row.clientWidth - anchor.offsetWidth) / 2);
+  }
 }

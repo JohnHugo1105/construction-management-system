@@ -37,9 +37,11 @@
               @for (row of baseline.view.rows; track row.label) {
                 <tr>
                   <th scope="row">{{ row.label }}</th>
-                  <td class="num money">{{ row.original }}</td>
-                  <td class="num money">{{ row.changes }}</td>
-                  <td class="num money baseline-table__revised">{{ row.revised }}</td>
+                  <td class="num money" data-label="Original">{{ row.original }}</td>
+                  <td class="num money" data-label="Changes">{{ row.changes }}</td>
+                  <td class="num money baseline-table__revised" data-label="Revised">
+                    {{ row.revised }}
+                  </td>
                 </tr>
               }
             </tbody>

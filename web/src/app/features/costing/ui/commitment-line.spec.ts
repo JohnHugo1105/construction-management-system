@@ -34,25 +34,37 @@ describe('CommitmentLine', () => {
   it('shows what is committed and the forecast, with no chip while the forecast is on track', async () => {
     const root = await show(position('OnTrack'));
 
-    expect(text(root, '.commitments')).toBe('Committed ₱800,000.00Forecast ₱1,200,000.00');
+    expect(text(root, '.commitments')).toBe(
+      'Committed ₱800,000.00Spent and committed ₱1,200,000.00',
+    );
     expect(root.querySelector('app-status-chip')).toBeNull();
   });
 
   it('warns, in the warning tone and in words, when the forecast is over budget or near the limit', async () => {
     const over = await show(position('OverBudget'));
-    expect(text(over, 'app-status-chip')).toBe('Forecast over budget');
+    expect(text(over, 'app-status-chip')).toBe('Over budget once orders are paid');
     expect(over.querySelector('.chip--warning')).not.toBeNull();
     expect(over.querySelector('.chip--danger')).toBeNull();
     TestBed.resetTestingModule();
 
-    expect(text(await show(position('NearLimit')), 'app-status-chip')).toBe('Forecast near the limit');
+    expect(text(await show(position('NearLimit')), 'app-status-chip')).toBe(
+      'Near the limit once orders are paid',
+    );
   });
 
   it('sits under the figures of the cost position when given, and leaves them alone when not', async () => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     await signInForTest(TestBed.inject(SessionState), TestBed.inject(HttpTestingController));
     const fixture = TestBed.createComponent(CostPosition);
-    fixture.componentRef.setInput('figures', { budgetMinor: 100, actualMinor: 50, remainingMinor: 50, usedBps: 5000, health: 'OnTrack' });
+    fixture.componentRef.setInput('figures', {
+      budgetMinor: 100,
+      actualMinor: 50,
+      remainingMinor: 50,
+      usedBps: 5000,
+      health: 'OnTrack',
+    });
     await settle(fixture);
     expect(fixture.nativeElement.querySelector('app-commitment-line')).toBeNull();
 

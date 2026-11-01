@@ -357,8 +357,8 @@ describe('DashboardPage committed cost', () => {
       item.textContent?.includes('Tower B'),
     )!;
     expect(text(tower, 'app-commitment-line')).toContain('Committed ₱3,000.00');
-    expect(text(tower, 'app-commitment-line')).toContain('Forecast ₱11,800.00');
-    expect(text(tower, 'app-commitment-line app-status-chip')).toBe('Forecast over budget');
+    expect(text(tower, 'app-commitment-line')).toContain('Spent and committed ₱11,800.00');
+    expect(text(tower, 'app-commitment-line app-status-chip')).toBe('Over budget once orders are paid');
     expect(
       text(root, 'section[aria-labelledby="band-heading"] app-commitment-line'),
     ).toContain('Committed ₱3,000.00');
