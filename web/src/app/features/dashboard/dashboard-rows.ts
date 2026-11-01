@@ -18,8 +18,8 @@ export interface LeadFact {
 
 /**
  * "2 projects need attention", worked out from the rows' health: a project counts when it is over budget, unbudgeted or near its
- * limit. The API judges each project on its whole budget, so when none counts the headline says "within budget" (not "nothing
- * needs a look") and points to the project's own breakdown, where a single part can still be over.
+ * limit. The API judges each project on its whole budget, so when none counts the headline says only what that proves ("no project is
+ * over its total budget", never "everything is fine") and points to the project's own breakdown, where a single part can still be over.
  */
 export function leadFact(rows: readonly DashboardRow[]): LeadFact {
   const counts = countAttention(rows);
@@ -36,7 +36,7 @@ export function leadFact(rows: readonly DashboardRow[]): LeadFact {
   }
   if (rows.some((row) => healthOf(row.health) === 'OnTrack')) {
     return {
-      headline: 'Every project is within budget',
+      headline: 'No project is over its total budget',
       detail:
         "This looks at each project's whole budget. Open one to see which parts are close to their limit.",
       tone: 'success',

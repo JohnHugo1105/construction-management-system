@@ -5,6 +5,7 @@ import {
   adminGuard,
   authGuard,
   guestGuard,
+  homeGuard,
   permissionGuard,
   setupGuard,
 } from './core/session/auth-guards';
@@ -33,8 +34,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [
-      // The dashboard replaces this redirect when it is built: point '' at 'dashboard' instead.
-      { path: '', pathMatch: 'full', redirectTo: 'projects' },
+      { path: '', pathMatch: 'full', canActivate: [homeGuard], children: [] },
       {
         path: 'change-password',
         loadComponent: () =>

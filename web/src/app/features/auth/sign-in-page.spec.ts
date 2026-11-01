@@ -75,7 +75,7 @@ describe('SignInPage', () => {
     expect(router.url).toBe('/projects/42');
   });
 
-  it('refuses a return address that points outside the app and goes to the projects instead', async () => {
+  it('refuses a return address that points outside the app and goes home instead', async () => {
     const { harness, root, backend, router } = await open(
       '/sign-in?returnUrl=https%3A%2F%2Fevil.example',
     );
@@ -88,7 +88,7 @@ describe('SignInPage', () => {
     await flushMicrotasks(6);
     await harness.fixture.whenStable();
 
-    expect(router.url).toBe('/projects');
+    expect(router.url).toBe('/');
   });
 
   it('says the username or password is wrong without blaming either field', async () => {

@@ -16,7 +16,7 @@ export const PAYROLL_STATUS: Record<PayrollStatus, StatusPresentation> = {
   Voided: { label: 'Voided', tone: 'neutral', icon: 'minus-circle' },
 };
 
-/** The most days a pay period may span (the API's own limit, counted from the first day to the last). */
+/** The most days a pay period may span, counting both the first and the last day (1 to 31 October is fine; 1 October to 1 November is not). */
 export const LONGEST_PERIOD_DAYS = 31;
 
 /** The pay period offered first: the 14 days that ended yesterday. Today is not yet worked, so it is left out. */
@@ -48,7 +48,7 @@ export function checkPeriod(start: string, end: string, today: string): PeriodPr
   if (end === '') return { end: 'Choose the last day of the pay period.' };
   if (end < start) return { end: "The last day can't be before the first day." };
   if (end > today) return { end: "The pay period can't end in the future." };
-  if (daysBetween(start, end) > LONGEST_PERIOD_DAYS)
+  if (daysBetween(start, end) + 1 > LONGEST_PERIOD_DAYS)
     return { end: `A pay period is at most ${LONGEST_PERIOD_DAYS} days.` };
   return {};
 }

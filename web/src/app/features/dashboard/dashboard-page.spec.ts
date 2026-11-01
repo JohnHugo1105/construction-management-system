@@ -261,10 +261,10 @@ describe('DashboardPage', () => {
     expect(root.querySelector('section[aria-labelledby="band-heading"]')).toBeNull();
   });
 
-  it('says every project is within budget when none needs attention, and points to the breakdown', async () => {
+  it('says no project is over its total budget when none needs attention, and points to the breakdown', async () => {
     const { root } = await open({ data: dashboard([fine, idle]) });
 
-    expect(text(root, '.lead__headline')).toBe('Every project is within budget');
+    expect(text(root, '.lead__headline')).toBe('No project is over its total budget');
     expect(text(root, '.lead__detail')).toContain(
       'Open one to see which parts are close to their limit.',
     );

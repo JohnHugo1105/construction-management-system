@@ -22,7 +22,11 @@ describe('the pay period', () => {
   it('accepts a period that ends today or earlier and lasts at most 31 days', () => {
     expect(checkPeriod('2026-10-18', '2026-10-31', '2026-11-01')).toEqual({});
     expect(checkPeriod('2026-11-01', '2026-11-01', '2026-11-01')).toEqual({});
-    expect(checkPeriod('2026-10-01', '2026-11-01', '2026-11-01')).toEqual({});
+    // 1 to 31 October is 31 days counting both ends; 1 October to 1 November is 32 and is refused, as the server refuses it.
+    expect(checkPeriod('2026-10-01', '2026-10-31', '2026-11-01')).toEqual({});
+    expect(checkPeriod('2026-10-01', '2026-11-01', '2026-11-01')).toEqual({
+      end: 'A pay period is at most 31 days.',
+    });
   });
 
   it('asks for both days', () => {

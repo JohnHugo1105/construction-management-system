@@ -14,6 +14,7 @@ import {
   adminGuard,
   authGuard,
   guestGuard,
+  homeGuard,
   permissionGuard,
   safeReturnUrl,
   setupGuard,
@@ -80,7 +81,26 @@ describe('guestGuard', () => {
     expect(run(guestGuard, '/sign-in')).toBe(true);
 
     await signInForTest(session, backend);
-    expect(asUrl(run(guestGuard, '/sign-in'))).toBe('/projects');
+    expect(asUrl(run(guestGuard, '/sign-in'))).toBe('/');
+  });
+});
+
+describe('homeGuard', () => {
+  it('starts people who see money on the dashboard', async () => {
+    const { session, backend } = setup();
+    await signInForTest(session, backend);
+
+    expect(asUrl(run(homeGuard, '/'))).toBe('/dashboard');
+  });
+
+  it('starts everyone else on the project list, which every role may open', async () => {
+    const { session, backend } = setup();
+    await signInForTest(session, backend, {
+      roles: ['WarehouseKeeper'],
+      permissions: [Permission.projectsRead, Permission.inventoryRead],
+    });
+
+    expect(asUrl(run(homeGuard, '/'))).toBe('/projects');
   });
 });
 
@@ -138,13 +158,13 @@ describe('safeReturnUrl', () => {
   });
 
   it('refuses anything that could leave the app or loop', () => {
-    expect(safeReturnUrl('https://evil.example/steal')).toBe('/projects');
-    expect(safeReturnUrl('//evil.example')).toBe('/projects');
-    expect(safeReturnUrl('/\\evil.example')).toBe('/projects');
-    expect(safeReturnUrl('javascript:alert(1)')).toBe('/projects');
-    expect(safeReturnUrl('/sign-in?returnUrl=%2F')).toBe('/projects');
-    expect(safeReturnUrl('/setup')).toBe('/projects');
-    expect(safeReturnUrl(null)).toBe('/projects');
-    expect(safeReturnUrl('')).toBe('/projects');
+    expect(safeReturnUrl('https://evil.example/steal')).toBe('/');
+    expect(safeReturnUrl('//evil.example')).toBe('/');
+    expect(safeReturnUrl('/\\evil.example')).toBe('/');
+    expect(safeReturnUrl('javascript:alert(1)')).toBe('/');
+    expect(safeReturnUrl('/sign-in?returnUrl=%2F')).toBe('/');
+    expect(safeReturnUrl('/setup')).toBe('/');
+    expect(safeReturnUrl(null)).toBe('/');
+    expect(safeReturnUrl('')).toBe('/');
   });
 });

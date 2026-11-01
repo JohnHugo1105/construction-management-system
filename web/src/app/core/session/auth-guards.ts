@@ -3,8 +3,8 @@ import { CanActivateFn, Router } from '@angular/router';
 import { Permission } from './permissions';
 import { SessionState } from './session-state';
 
-/** Where a signed-in person lands when nothing else was asked for. */
-export const HOME_URL = '/projects';
+/** Where a signed-in person lands when nothing else was asked for. The home route sends them to the page that suits what they may do. */
+export const HOME_URL = '/';
 export const SIGN_IN_URL = '/sign-in';
 export const CHANGE_PASSWORD_URL = '/change-password';
 export const NOT_ALLOWED_URL = '/not-allowed';
@@ -69,6 +69,15 @@ export function permissionGuard(...permissions: readonly string[]): CanActivateF
       : inject(Router).createUrlTree([NOT_ALLOWED_URL]);
   };
 }
+
+/**
+ * The home address: people who see money start on the dashboard (every project's position at a glance), everyone else on the project
+ * list, which every role may open.
+ */
+export const homeGuard: CanActivateFn = () =>
+  inject(Router).createUrlTree([
+    inject(SessionState).hasAnyPermission(Permission.costsRead) ? '/dashboard' : '/projects',
+  ]);
 
 /** The Administration area opens for anyone who may use at least one of its pages. */
 export const adminGuard: CanActivateFn = permissionGuard(

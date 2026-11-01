@@ -99,7 +99,7 @@ describe('SetupPage', () => {
     backend.expectNone('/api/identity/bootstrap');
   });
 
-  it('creates the company and goes to the projects', async () => {
+  it('creates the company and goes home', async () => {
     const { harness, root, backend, router } = await open();
     fillValid(root);
 
@@ -116,7 +116,7 @@ describe('SetupPage', () => {
     await flushMicrotasks(6);
     await harness.fixture.whenStable();
 
-    expect(router.url).toBe('/projects');
+    expect(router.url).toBe('/');
   });
 
   it('shows the API company-name message under the company name field', async () => {

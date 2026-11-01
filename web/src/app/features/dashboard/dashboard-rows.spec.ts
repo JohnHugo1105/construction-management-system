@@ -67,10 +67,10 @@ describe('leadFact', () => {
     });
   });
 
-  it('says plainly that every project is within budget when none needs attention, and points to the breakdown', () => {
+  it('says plainly that no project is over its total budget when none needs attention, and points to the breakdown', () => {
     const fact = leadFact([row('A', 'OnTrack'), row('B', 'NoActivity')]);
 
-    expect(fact.headline).toBe('Every project is within budget');
+    expect(fact.headline).toBe('No project is over its total budget');
     expect(fact.detail).toContain('whole budget');
     expect(fact.tone).toBe('success');
   });
