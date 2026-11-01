@@ -27,7 +27,10 @@ public sealed class ProgressApiTests : IClassFixture<CmsApiFactory>
 
     private Task<(ApiClient Client, SeededUser User)> AdminAsync() => SignedInAsync(_factory);
 
-    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
+    // The company's calendar day (Asia/Manila by default), which is what the API reads as "today". The UTC day is a day behind it
+    // from 16:00 UTC, so a test that compared against the UTC day failed whenever it ran in that window.
+    private static DateOnly Today => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(
+        DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Cms.Domain.Features.Organizations.Organization.DefaultTimeZoneId)).DateTime);
 
     private static Task<ProjectDto> NewProjectAsync(ApiClient client, long? price = 3_000_000, string? end = End, string? name = null) =>
         client.PostAsync<ProjectDto>("/api/projects", new
