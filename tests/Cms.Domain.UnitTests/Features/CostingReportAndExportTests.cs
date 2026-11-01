@@ -158,6 +158,51 @@ public sealed class CostReportBuilderTests
     }
 
     [Fact]
+    public void Open_commitments_give_a_forecast_that_the_dashboard_and_the_summary_judge_the_same_way()
+    {
+        var project = new ProjectHeader(Guid.NewGuid(), "Tower", "Active", 900_000);
+        var other = new ProjectHeader(Guid.NewGuid(), "Quiet", "Active", null);
+        var budgets = new[] { new ProjectAmounts(project.Id, 80_000, 100_000), new ProjectAmounts(other.Id, 8_000, 10_000) };
+        var actuals = new[] { new ProjectAmounts(project.Id, 56_000, 70_000) };
+        // 25,000 is promised and not yet invoiced: actual 70,000 + 25,000 = a forecast of 95,000 against a budget of 100,000.
+        var commitments = new[] { new ProjectAmounts(project.Id, 20_000, 25_000) };
+
+        var dashboard = CostReportBuilder.BuildDashboard(VarianceBasis.IncludingVat, [project, other], budgets, actuals, commitments);
+
+        // Today it is on track (70% used); counting what is promised, it is near its limit.
+        Assert.Equal("OnTrack", dashboard.Projects[0].Health);
+        Assert.Equal(new CommitmentPositionDto(25_000, 95_000, 5_000, "NearLimit"), dashboard.Projects[0].Commitments);
+        // A project with nothing committed carries no extra figures at all.
+        Assert.Null(dashboard.Projects[1].Commitments);
+        Assert.Equal(new CommitmentPositionDto(25_000, 95_000, 15_000, "OnTrack"), dashboard.Totals.Commitments);
+
+        var summary = CostReportBuilder.BuildSummary(project, new Dictionary<Guid, string>(), VarianceBasis.IncludingVat,
+            new GroupedSums([], [], [Type(ItemType.Material, 80_000, 100_000)]), new GroupedSums([], [], [Type(ItemType.Material, 56_000, 70_000)]),
+            new MeasuredAmounts(20_000, 25_000));
+        Assert.Equal(dashboard.Projects[0].Commitments, summary.Commitments);
+    }
+
+    [Fact]
+    public void Commitments_follow_the_comparison_basis_and_a_forecast_over_budget_says_so()
+    {
+        var project = new ProjectHeader(Guid.NewGuid(), "Tower", "Active", null);
+        var summary = CostReportBuilder.BuildSummary(project, new Dictionary<Guid, string>(), VarianceBasis.ExcludingVat,
+            new GroupedSums([], [], [Type(ItemType.Material, 80_000, 100_000)]), new GroupedSums([], [], [Type(ItemType.Material, 56_000, 70_000)]),
+            new MeasuredAmounts(30_000, 37_500));
+
+        // Without VAT: actual 56,000 + committed 30,000 = 86,000 against 80,000, so over budget by 6,000.
+        Assert.Equal(new CommitmentPositionDto(30_000, 86_000, -6_000, "OverBudget"), summary.Commitments);
+        Assert.Equal("OnTrack", summary.Position.Health);
+    }
+
+    [Fact]
+    public void Nothing_committed_leaves_the_commitment_figures_out()
+    {
+        Assert.Null(CostReportBuilder.Forecast(new BudgetPosition(100_000, 10_000), 0));
+        Assert.Null(CostReportBuilder.Forecast(new BudgetPosition(100_000, 10_000), -5));
+    }
+
+    [Fact]
     public void The_dashboard_totals_are_no_activity_when_there_are_no_projects()
     {
         var dashboard = CostReportBuilder.BuildDashboard(VarianceBasis.ExcludingVat, [], [], []);

@@ -42,6 +42,7 @@ public static class CostingLabels
     {
         CostOrigin.Payroll => "Payroll",
         CostOrigin.Inventory => "Warehouse",
+        CostOrigin.Subcontract => "Subcontractor",
         _ => "Entered by a person"
     };
 

@@ -41,6 +41,46 @@ export const PROJECT_ROUTES: Routes = [
           ),
       },
       {
+        path: 'progress',
+        canActivate: [permissionGuard(Permission.progressRead)],
+        loadComponent: () =>
+          import('../progress/project-progress-tab/project-progress-tab').then(
+            (m) => m.ProjectProgressTab,
+          ),
+      },
+      {
+        path: 'changes',
+        canActivate: [permissionGuard(Permission.changeOrdersRead)],
+        loadComponent: () =>
+          import('../change-orders/project-changes-tab/project-changes-tab').then(
+            (m) => m.ProjectChangesTab,
+          ),
+      },
+      {
+        path: 'purchases',
+        canActivate: [permissionGuard(Permission.purchasingRead)],
+        loadComponent: () =>
+          import('../purchasing/project-purchases-tab/project-purchases-tab').then(
+            (m) => m.ProjectPurchasesTab,
+          ),
+      },
+      {
+        path: 'subcontracts',
+        canActivate: [permissionGuard(Permission.subcontractsRead)],
+        loadComponent: () =>
+          import('../subcontracts/project-subcontracts-tab/project-subcontracts-tab').then(
+            (m) => m.ProjectSubcontractsTab,
+          ),
+      },
+      {
+        path: 'billing',
+        canActivate: [permissionGuard(Permission.billingRead)],
+        loadComponent: () =>
+          import('../billing/project-billing-tab/project-billing-tab').then(
+            (m) => m.ProjectBillingTab,
+          ),
+      },
+      {
         path: 'costs',
         canActivate: [permissionGuard(Permission.costsRead)],
         loadComponent: () =>

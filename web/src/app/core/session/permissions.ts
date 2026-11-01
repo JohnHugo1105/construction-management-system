@@ -18,6 +18,23 @@ export const Permission = {
   usersManage: 'users.manage',
   settingsManage: 'settings.manage',
   auditRead: 'audit.read',
+  suppliersRead: 'suppliers.read',
+  suppliersManage: 'suppliers.manage',
+  purchasingRead: 'purchasing.read',
+  purchasingManage: 'purchasing.manage',
+  purchasingApprove: 'purchasing.approve',
+  progressRead: 'progress.read',
+  progressWrite: 'progress.write',
+  changeOrdersRead: 'changeorders.read',
+  changeOrdersManage: 'changeorders.manage',
+  changeOrdersApprove: 'changeorders.approve',
+  billingRead: 'billing.read',
+  billingManage: 'billing.manage',
+  billingApprove: 'billing.approve',
+  subcontractsRead: 'subcontracts.read',
+  subcontractsManage: 'subcontracts.manage',
+  subcontractsApprove: 'subcontracts.approve',
+  statutoryManage: 'statutory.manage',
 } as const;
 
 export type PermissionName = (typeof Permission)[keyof typeof Permission];

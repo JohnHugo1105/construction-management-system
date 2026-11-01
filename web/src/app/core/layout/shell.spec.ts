@@ -89,6 +89,9 @@ describe('Shell on a wide screen', () => {
       'Workers',
       'Payroll',
       'Stock',
+      'Purchasing',
+      'Subcontracts',
+      'Billing',
       'Admin',
     ]);
     expect(text(root, '.rail__brand')).toBe('Acme Builders');
@@ -169,7 +172,13 @@ describe('Shell on a phone', () => {
     await settle(harness.fixture);
     const sheet = root.querySelector<HTMLDialogElement>('dialog')!;
     expect(sheet.hasAttribute('open')).toBe(true);
-    expect(texts(sheet, '.more-list__link')).toEqual(['Stock', 'Admin']);
+    expect(texts(sheet, '.more-list__link')).toEqual([
+      'Stock',
+      'Purchasing',
+      'Subcontracts',
+      'Billing',
+      'Admin',
+    ]);
 
     buttonNamed(sheet, 'Stock').click();
     await settle(harness.fixture);

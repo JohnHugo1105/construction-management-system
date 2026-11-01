@@ -24,6 +24,25 @@ public static class Permissions
     public const string SettingsManage = "settings.manage";
     public const string AuditRead = "audit.read";
 
+    // Commercial control: suppliers and purchasing, progress and earned value, change orders, client billing, subcontracts, statutory deductions.
+    public const string SuppliersRead = "suppliers.read";
+    public const string SuppliersManage = "suppliers.manage";
+    public const string PurchasingRead = "purchasing.read";
+    public const string PurchasingManage = "purchasing.manage";
+    public const string PurchasingApprove = "purchasing.approve";
+    public const string ProgressRead = "progress.read";
+    public const string ProgressWrite = "progress.write";
+    public const string ChangeOrdersRead = "changeorders.read";
+    public const string ChangeOrdersManage = "changeorders.manage";
+    public const string ChangeOrdersApprove = "changeorders.approve";
+    public const string BillingRead = "billing.read";
+    public const string BillingManage = "billing.manage";
+    public const string BillingApprove = "billing.approve";
+    public const string SubcontractsRead = "subcontracts.read";
+    public const string SubcontractsManage = "subcontracts.manage";
+    public const string SubcontractsApprove = "subcontracts.approve";
+    public const string StatutoryManage = "statutory.manage";
+
     private const AccessRole Admin = AccessRole.Administrator;
     private const AccessRole Pm = AccessRole.ProjectManager;
     private const AccessRole Cost = AccessRole.CostEngineer;
@@ -50,7 +69,29 @@ public static class Permissions
         [InventoryManage] = Admin | Wh,
         [UsersManage] = Admin,
         [SettingsManage] = Admin,
-        [AuditRead] = Admin | Acct
+        [AuditRead] = Admin | Acct,
+
+        // Commercial control. Money screens follow the people who see costs; whoever drafts is never the only one who can commit money.
+        // A warehouse keeper needs to name a supplier when registering stock, so supplier names are theirs to read; amounts are not.
+        [SuppliersRead] = Admin | Pm | Cost | Acct | Wh | View,
+        [SuppliersManage] = Admin | Cost | Acct,
+        [PurchasingRead] = Admin | Pm | Cost | Acct | View,
+        [PurchasingManage] = Admin | Cost | Acct,
+        [PurchasingApprove] = Admin | Pm | Acct,
+        [ProgressRead] = Admin | Pm | Cost | Acct | View,
+        [ProgressWrite] = Admin | Pm | Cost,
+        [ChangeOrdersRead] = Admin | Pm | Cost | Acct | View,
+        [ChangeOrdersManage] = Admin | Pm | Cost,
+        // Approving a change order, and freezing the budget baseline, change what the company expects to earn and spend.
+        [ChangeOrdersApprove] = Admin | Pm,
+        [BillingRead] = Admin | Pm | Cost | Acct | View,
+        [BillingManage] = Admin | Pm | Acct,
+        [BillingApprove] = Admin | Acct,
+        [SubcontractsRead] = Admin | Pm | Cost | Acct | View,
+        [SubcontractsManage] = Admin | Pm | Cost,
+        [SubcontractsApprove] = Admin | Acct,
+        // The statutory contribution and tax tables change by law; the accountant owns them. HR reads them through payroll.read.
+        [StatutoryManage] = Admin | Acct
     };
 
     public static IReadOnlyCollection<string> All => Matrix.Keys;

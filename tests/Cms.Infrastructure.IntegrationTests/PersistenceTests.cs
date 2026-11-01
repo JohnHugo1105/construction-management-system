@@ -156,3 +156,55 @@ public sealed class PersistenceTests : IClassFixture<PersistenceFixture>
         await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
     }
 }
+
+/// <summary>Numbers handed out for purchase orders, change orders, invoices and the like.</summary>
+public sealed class NumberSequenceTests(PersistenceFixture fixture) : IClassFixture<PersistenceFixture>
+{
+    private async Task<long> NextAsync(Guid tenant, string key)
+    {
+        await using var db = fixture.Create(tenant);
+        return await new Cms.Infrastructure.Persistence.NumberSequenceStore(db, new FixedTenant(tenant)).NextAsync(key, CancellationToken.None);
+    }
+
+    [SqlServerFact]
+    public async Task Numbers_rise_one_at_a_time_and_each_company_and_sequence_counts_on_its_own()
+    {
+        var key = "po-" + Guid.NewGuid().ToString("N")[..8];
+
+        Assert.Equal(1, await NextAsync(PersistenceFixture.TenantA, key));
+        Assert.Equal(2, await NextAsync(PersistenceFixture.TenantA, key));
+        Assert.Equal(1, await NextAsync(PersistenceFixture.TenantB, key));
+        Assert.Equal(1, await NextAsync(PersistenceFixture.TenantA, key + "-other"));
+        Assert.Equal(3, await NextAsync(PersistenceFixture.TenantA, key));
+    }
+
+    [SqlServerFact]
+    public async Task Callers_at_the_same_moment_never_get_the_same_number()
+    {
+        var key = "race-" + Guid.NewGuid().ToString("N")[..8];
+
+        var numbers = await Task.WhenAll(Enumerable.Range(0, 40).Select(_ => Task.Run(() => NextAsync(PersistenceFixture.TenantA, key))));
+
+        Assert.Equal(Enumerable.Range(1, 40).Select(value => (long)value), numbers.Order());
+    }
+
+    [SqlServerFact]
+    public async Task Nobody_signed_in_gets_no_number()
+    {
+        await using var db = fixture.Create(Guid.Empty);
+        var store = new Cms.Infrastructure.Persistence.NumberSequenceStore(db, new FixedTenant(Guid.Empty));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.NextAsync("anything", CancellationToken.None));
+    }
+
+    private sealed class FixedTenant(Guid tenantId) : Cms.Application.Common.ICurrentUser
+    {
+        public bool IsAuthenticated => tenantId != Guid.Empty;
+        public Guid UserId => Guid.NewGuid();
+        public Guid TenantId => tenantId;
+        public string UserName => "test";
+        public string DisplayName => "Test";
+        public Cms.Domain.Features.Identity.AccessRole Roles => Cms.Domain.Features.Identity.AccessRole.Administrator;
+        public string? CorrelationId => null;
+    }
+}

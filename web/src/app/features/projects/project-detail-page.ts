@@ -88,12 +88,22 @@ export class ProjectDetailPage {
   protected readonly tabs = computed<TabLink[]>(() => {
     const base = ['/projects', this.id()];
     const tabs: TabLink[] = [{ label: 'Overview', link: base, exact: true }];
-    if (this.session.can(Permission.costsRead)) {
-      tabs.push(
-        { label: 'Budget', link: [...base, 'budget'] },
-        { label: 'Costs', link: [...base, 'costs'] },
-      );
-    }
+    // Money first, in the order a project manager asks the questions: what we planned, how far along, what changed, what we have
+    // spent, what is promised, who we owe, what we bill. Each tab is hidden from anyone who may not read it.
+    if (this.session.can(Permission.costsRead))
+      tabs.push({ label: 'Budget', link: [...base, 'budget'] });
+    if (this.session.can(Permission.progressRead))
+      tabs.push({ label: 'Progress', link: [...base, 'progress'] });
+    if (this.session.can(Permission.changeOrdersRead))
+      tabs.push({ label: 'Changes', link: [...base, 'changes'] });
+    if (this.session.can(Permission.costsRead))
+      tabs.push({ label: 'Costs', link: [...base, 'costs'] });
+    if (this.session.can(Permission.purchasingRead))
+      tabs.push({ label: 'Purchases', link: [...base, 'purchases'] });
+    if (this.session.can(Permission.subcontractsRead))
+      tabs.push({ label: 'Subcontracts', link: [...base, 'subcontracts'] });
+    if (this.session.can(Permission.billingRead))
+      tabs.push({ label: 'Billing', link: [...base, 'billing'] });
     if (this.session.can(Permission.workforceRead))
       tabs.push({ label: 'Team', link: [...base, 'team'] });
     if (this.session.can(Permission.inventoryRead))

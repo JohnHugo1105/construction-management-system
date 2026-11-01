@@ -30,6 +30,19 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Payroll', link: '/payroll', icon: 'payroll', permissions: [Permission.payrollRead] },
   { label: 'Stock', link: '/stock', icon: 'stock', permissions: [Permission.inventoryRead] },
   {
+    label: 'Purchasing',
+    link: '/purchasing',
+    icon: 'cart',
+    permissions: [Permission.purchasingRead],
+  },
+  {
+    label: 'Subcontracts',
+    link: '/subcontracts',
+    icon: 'contract',
+    permissions: [Permission.subcontractsRead],
+  },
+  { label: 'Billing', link: '/billing', icon: 'receipt', permissions: [Permission.billingRead] },
+  {
     label: 'Admin',
     link: '/admin',
     icon: 'shield',

@@ -30,6 +30,20 @@ public interface ICostReportReader
     Task<GroupedSums> SumProjectAsync(Guid projectId, CostMeasure measure, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// A source of money the company has promised to spend but has not yet been invoiced for or certified: open purchase orders, subcontracts
+/// not yet claimed. Reports add every source's remainder to the actual cost to give the forecast. A source never counts what has already
+/// become actual cost, so nothing is counted twice. Implementations are classes named <c>*CommitmentSource</c> in Infrastructure.
+/// </summary>
+public interface ICommitmentSource
+{
+    /// <summary>
+    /// The open remainder per project, net and gross. <paramref name="projectId"/> narrows it to one project; otherwise every project that
+    /// is visible (archived ones only when asked). A project with nothing open is simply absent.
+    /// </summary>
+    Task<IReadOnlyList<ProjectAmounts>> OpenCommitmentsAsync(Guid? projectId, bool includeArchived, CancellationToken cancellationToken);
+}
+
 public sealed record ProjectHeader(Guid Id, string Name, string Status, long? ContractPriceMinor);
 
 public sealed record ProjectAmounts(Guid ProjectId, long NetMinor, long GrossMinor);
@@ -68,15 +82,18 @@ public readonly record struct MeasuredAmounts(long NetMinor, long GrossMinor)
 /// <param name="Health">OnTrack, NearLimit, OverBudget, Unbudgeted or NoActivity.</param>
 /// <param name="MarginAfterActualMinor">Contract price minus actual gross cost so far.</param>
 /// <param name="BudgetMarginMinor">Contract price minus budgeted gross cost: the margin if the project is delivered on budget.</param>
+/// <param name="Commitments">What is promised but not yet spent, and the forecast it implies. Null when nothing is open, so a project without
+/// purchase orders or subcontracts shows no empty figures.</param>
 public sealed record DashboardProjectRowDto(Guid Id, string Name, string Status, long? ContractPriceMinor, long BudgetMinor, long ActualMinor,
-    long RemainingMinor, int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor);
+    long RemainingMinor, int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor,
+    CommitmentPositionDto? Commitments = null);
 
 /// <summary>
 /// The overall row. Budget, actual and remaining add up every project in the list. The contract price and the two margins add up only the
 /// projects that have a contract price (null when none has), so a project with no price does not distort the margin.
 /// </summary>
 public sealed record DashboardTotalsDto(int ProjectCount, long? ContractPriceMinor, long BudgetMinor, long ActualMinor, long RemainingMinor,
-    int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor);
+    int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor, CommitmentPositionDto? Commitments = null);
 
 /// <param name="Basis">IncludingVat or ExcludingVat: which amounts budget and actual are compared on.</param>
 public sealed record DashboardDto(string Basis, IReadOnlyList<DashboardProjectRowDto> Projects, DashboardTotalsDto Totals);
@@ -99,9 +116,16 @@ public sealed record ItemTypeSummaryDto(string ItemType, string Label, long Budg
 public sealed record BudgetPositionDto(long BudgetMinor, long ActualMinor, long RemainingMinor, int? UsedBps, string Health);
 
 /// <summary>
+/// Money promised but not yet invoiced or certified, and the forecast it gives: <c>Forecast = actual + committed</c>, on the same basis as
+/// the budget. <c>ForecastHealth</c> judges the forecast against the budget the way <c>Health</c> judges actual cost, so a project can read
+/// "on track" today and "forecast over budget" once its orders are counted.
+/// </summary>
+public sealed record CommitmentPositionDto(long CommittedMinor, long ForecastMinor, long ForecastRemainingMinor, string ForecastHealth);
+
+/// <summary>
 /// A project's position plus where the money goes. Inside each breakdown the rows run from the biggest overrun to the most money left, so
 /// problems come first. A row with actual cost but no budget is Unbudgeted.
 /// </summary>
 public sealed record CostSummaryDto(Guid ProjectId, string ProjectName, string ProjectStatus, string Basis, long? ContractPriceMinor,
     BudgetPositionDto Position, long? MarginAfterActualMinor, long? BudgetMarginMinor, IReadOnlyList<DivisionSummaryDto> ByDivision,
-    IReadOnlyList<SubProjectSummaryDto> BySubProject, IReadOnlyList<ItemTypeSummaryDto> ByItemType);
+    IReadOnlyList<SubProjectSummaryDto> BySubProject, IReadOnlyList<ItemTypeSummaryDto> ByItemType, CommitmentPositionDto? Commitments = null);

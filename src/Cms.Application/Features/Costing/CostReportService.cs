@@ -13,7 +13,8 @@ namespace Cms.Application.Features.Costing;
 /// and actual are compared on the company's basis (with or without VAT); removed budget lines and voided cost entries never count.
 /// Every report is a fixed number of grouped SQL statements, however many projects or lines exist.
 /// </summary>
-public sealed class CostReportService(ICostReportReader reader, IProjectRepository projects, IOrganizationRepository organizations, IClock clock)
+public sealed class CostReportService(ICostReportReader reader, IProjectRepository projects, IOrganizationRepository organizations, IClock clock,
+    IEnumerable<ICommitmentSource> commitmentSources)
 {
     public async Task<DashboardDto> DashboardAsync(bool includeArchived, CancellationToken cancellationToken)
     {
@@ -21,7 +22,9 @@ public sealed class CostReportService(ICostReportReader reader, IProjectReposito
         var headers = await reader.ListProjectsAsync(includeArchived, cancellationToken);
         var budgets = await reader.SumByProjectAsync(CostMeasure.Budget, includeArchived, cancellationToken);
         var actuals = await reader.SumByProjectAsync(CostMeasure.Actual, includeArchived, cancellationToken);
-        return CostReportBuilder.BuildDashboard(organization.VarianceBasis, headers, budgets, actuals);
+        var commitments = new List<ProjectAmounts>();
+        foreach (var source in commitmentSources) commitments.AddRange(await source.OpenCommitmentsAsync(null, includeArchived, cancellationToken));
+        return CostReportBuilder.BuildDashboard(organization.VarianceBasis, headers, budgets, actuals, commitments);
     }
 
     public async Task<CostSummaryDto> ProjectSummaryAsync(Guid projectId, CancellationToken cancellationToken) =>
@@ -59,10 +62,14 @@ public sealed class CostReportService(ICostReportReader reader, IProjectReposito
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         var budget = await reader.SumProjectAsync(projectId, CostMeasure.Budget, cancellationToken);
         var actual = await reader.SumProjectAsync(projectId, CostMeasure.Actual, cancellationToken);
+        var commitment = default(MeasuredAmounts);
+        foreach (var source in commitmentSources)
+            foreach (var open in await source.OpenCommitmentsAsync(projectId, includeArchived: true, cancellationToken))
+                commitment += new MeasuredAmounts(open.NetMinor, open.GrossMinor);
 
         var header = new ProjectHeader(project.Id, project.Name, project.Status.ToString(), project.ContractPriceMinor);
         var subProjectNames = project.SubProjects.ToDictionary(sub => sub.Id, sub => sub.Name);
-        return (CostReportBuilder.BuildSummary(header, subProjectNames, organization.VarianceBasis, budget, actual), organization, project.Name);
+        return (CostReportBuilder.BuildSummary(header, subProjectNames, organization.VarianceBasis, budget, actual, commitment), organization, project.Name);
     }
 
     private static string HealthLabel(string health) => CostingLabels.HealthLabel(Enum.Parse<BudgetHealth>(health));

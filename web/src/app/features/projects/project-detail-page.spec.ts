@@ -177,7 +177,18 @@ describe('ProjectDetailPage lifecycle actions', () => {
 describe('ProjectDetailPage tabs', () => {
   it('links to a tab for each area the person may read, and hides the rest', async () => {
     const full = await open();
-    expect(texts(full.root, '.tab')).toEqual(['Overview', 'Budget', 'Costs', 'Team', 'Stock']);
+    expect(texts(full.root, '.tab')).toEqual([
+      'Overview',
+      'Budget',
+      'Progress',
+      'Changes',
+      'Costs',
+      'Purchases',
+      'Subcontracts',
+      'Billing',
+      'Team',
+      'Stock',
+    ]);
     TestBed.resetTestingModule();
 
     const warehouse = await open({

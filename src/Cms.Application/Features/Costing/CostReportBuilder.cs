@@ -15,13 +15,15 @@ public static class CostReportBuilder
     // ---- Dashboard ----------------------------------------------------------------------------------------------------------
 
     public static DashboardDto BuildDashboard(VarianceBasis basis, IReadOnlyList<ProjectHeader> projects, IReadOnlyList<ProjectAmounts> budgets,
-        IReadOnlyList<ProjectAmounts> actuals)
+        IReadOnlyList<ProjectAmounts> actuals, IReadOnlyList<ProjectAmounts>? commitments = null)
     {
+        var commitmentByProject = (commitments ?? []).GroupBy(item => item.ProjectId)
+            .ToDictionary(group => group.Key, group => new MeasuredAmounts(group.Sum(item => item.NetMinor), group.Sum(item => item.GrossMinor)));
         var budgetByProject = budgets.ToDictionary(item => item.ProjectId, item => new MeasuredAmounts(item.NetMinor, item.GrossMinor));
         var actualByProject = actuals.ToDictionary(item => item.ProjectId, item => new MeasuredAmounts(item.NetMinor, item.GrossMinor));
 
         var rows = new List<DashboardProjectRowDto>(projects.Count);
-        long totalBudget = 0, totalActual = 0;
+        long totalBudget = 0, totalActual = 0, totalCommitted = 0;
         long? totalPrice = null, totalMargin = null, totalBudgetMargin = null;
 
         foreach (var project in projects)
@@ -32,11 +34,14 @@ public static class CostReportBuilder
             var margin = Margin(project.ContractPriceMinor, actual.GrossMinor);
             var budgetMargin = Margin(project.ContractPriceMinor, budget.GrossMinor);
 
+            var committed = commitmentByProject.GetValueOrDefault(project.Id).On(basis);
             rows.Add(new DashboardProjectRowDto(project.Id, project.Name, project.Status, project.ContractPriceMinor, position.BudgetMinor,
-                position.ActualMinor, position.RemainingMinor, position.UsedBps, position.Health.ToString(), margin, budgetMargin));
+                position.ActualMinor, position.RemainingMinor, position.UsedBps, position.Health.ToString(), margin, budgetMargin,
+                Forecast(position, committed)));
 
             totalBudget = checked(totalBudget + position.BudgetMinor);
             totalActual = checked(totalActual + position.ActualMinor);
+            totalCommitted = checked(totalCommitted + committed);
             totalPrice = AddOptional(totalPrice, project.ContractPriceMinor);
             totalMargin = AddOptional(totalMargin, margin);
             totalBudgetMargin = AddOptional(totalBudgetMargin, budgetMargin);
@@ -44,7 +49,7 @@ public static class CostReportBuilder
 
         var overall = new BudgetPosition(totalBudget, totalActual);
         var totals = new DashboardTotalsDto(rows.Count, totalPrice, overall.BudgetMinor, overall.ActualMinor, overall.RemainingMinor,
-            overall.UsedBps, overall.Health.ToString(), totalMargin, totalBudgetMargin);
+            overall.UsedBps, overall.Health.ToString(), totalMargin, totalBudgetMargin, Forecast(overall, totalCommitted));
         return new DashboardDto(basis.ToString(), rows, totals);
     }
 
@@ -52,7 +57,7 @@ public static class CostReportBuilder
 
     /// <param name="subProjectNames">Every sub-project of the project by id, so rows carry names.</param>
     public static CostSummaryDto BuildSummary(ProjectHeader project, IReadOnlyDictionary<Guid, string> subProjectNames, VarianceBasis basis,
-        GroupedSums budget, GroupedSums actual)
+        GroupedSums budget, GroupedSums actual, MeasuredAmounts commitment = default)
     {
         // Every line has exactly one item type, so the item-type groups add up to the whole project.
         var budgetTotal = Total(budget.ByItemType);
@@ -84,7 +89,18 @@ public static class CostReportBuilder
         return new CostSummaryDto(project.Id, project.Name, project.Status, basis.ToString(), project.ContractPriceMinor,
             new BudgetPositionDto(position.BudgetMinor, position.ActualMinor, position.RemainingMinor, position.UsedBps, position.Health.ToString()),
             Margin(project.ContractPriceMinor, actualTotal.GrossMinor), Margin(project.ContractPriceMinor, budgetTotal.GrossMinor),
-            BuildDivisions(budget, actual, basis), bySubProject, byItemType);
+            BuildDivisions(budget, actual, basis), bySubProject, byItemType, Forecast(position, commitment.On(basis)));
+    }
+
+    /// <summary>
+    /// The forecast (actual cost plus what is still committed) judged against the budget; null when nothing is committed, so a project
+    /// with no open orders or subcontracts carries no extra figures. One place, so the dashboard row and the project page agree.
+    /// </summary>
+    public static CommitmentPositionDto? Forecast(BudgetPosition position, long committedMinor)
+    {
+        if (committedMinor <= 0) return null;
+        var forecast = new BudgetPosition(position.BudgetMinor, checked(position.ActualMinor + committedMinor));
+        return new CommitmentPositionDto(committedMinor, forecast.ActualMinor, forecast.RemainingMinor, forecast.Health.ToString());
     }
 
     private static DivisionSummaryDto[] BuildDivisions(GroupedSums budget, GroupedSums actual, VarianceBasis basis)

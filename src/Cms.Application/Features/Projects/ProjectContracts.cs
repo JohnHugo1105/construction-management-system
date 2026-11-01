@@ -43,8 +43,6 @@ public sealed record UpdateProjectRequest(string? Name, string? Client, string? 
 
 public sealed record ArchiveProjectRequest(string? Reason, string? Note, int Version);
 
-public sealed record VersionRequest(int Version);
-
 public sealed record SaveSubProjectRequest(string? Name, DateOnly StartDate, int Version);
 
 public static class ProjectMapper

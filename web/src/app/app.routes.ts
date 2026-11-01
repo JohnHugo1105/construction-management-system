@@ -71,6 +71,24 @@ export const routes: Routes = [
           import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
       },
       {
+        path: 'purchasing',
+        canActivate: [permissionGuard(Permission.purchasingRead)],
+        loadChildren: () =>
+          import('./features/purchasing/purchasing.routes').then((m) => m.PURCHASING_ROUTES),
+      },
+      {
+        path: 'subcontracts',
+        canActivate: [permissionGuard(Permission.subcontractsRead)],
+        loadChildren: () =>
+          import('./features/subcontracts/subcontracts.routes').then((m) => m.SUBCONTRACT_ROUTES),
+      },
+      {
+        path: 'billing',
+        canActivate: [permissionGuard(Permission.billingRead)],
+        loadChildren: () =>
+          import('./features/billing/billing.routes').then((m) => m.BILLING_ROUTES),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),

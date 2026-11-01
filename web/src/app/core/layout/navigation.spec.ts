@@ -56,11 +56,11 @@ describe('navigation', () => {
     expect(overflow).toHaveLength(0);
   });
 
-  it('turns the fifth slot into "More" when there are six, so no destination is lost', () => {
+  it('turns the fifth slot into "More" when there are more than five, so no destination is lost', () => {
     const { primary, overflow } = splitForBottomBar(NAV_ITEMS);
 
     expect(labels(primary)).toEqual(['Dashboard', 'Projects', 'Workers', 'Payroll']);
-    expect(labels(overflow)).toEqual(['Stock', 'Admin']);
+    expect(labels(overflow)).toEqual(['Stock', 'Purchasing', 'Subcontracts', 'Billing', 'Admin']);
     expect(primary.length + 1).toBeLessThanOrEqual(5);
   });
 });

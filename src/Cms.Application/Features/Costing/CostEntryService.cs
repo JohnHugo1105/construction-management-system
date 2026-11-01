@@ -106,9 +106,12 @@ public sealed class CostEntryService(ICostEntryRepository entries, ICostEntryRea
         var project = await LoadProject(entry.ProjectId, cancellationToken);
         ConcurrencyGuard.Ensure(entry.Version, request.Version);
         if (entry.Origin != CostOrigin.Manual)
-            throw new DomainRuleException(entry.Origin == CostOrigin.Payroll
-                ? "This cost was made by payroll. Void the payroll run instead, so the pay and the cost stay in step."
-                : "This cost was made by a stock transfer. Reverse the transfer instead, so the stock and the cost stay in step.");
+            throw new DomainRuleException(entry.Origin switch
+            {
+                CostOrigin.Payroll => "This cost was made by payroll. Void the payroll run instead, so the pay and the cost stay in step.",
+                CostOrigin.Subcontract => "This cost was made by a subcontractor payment certificate. Void the certificate instead, so what is owed and the cost stay in step.",
+                _ => "This cost was made by a stock transfer. Reverse the transfer instead, so the stock and the cost stay in step."
+            });
         // An archived project is read-only: restore it first, so a finished project's figures don't change unnoticed.
         project.EnsureNotArchived();
 

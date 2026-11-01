@@ -19,7 +19,10 @@ public enum CostOrigin
     Payroll = 1,
 
     /// <summary>A stock transfer charged to the project.</summary>
-    Inventory = 2
+    Inventory = 2,
+
+    /// <summary>A certified subcontractor progress claim posted the work done.</summary>
+    Subcontract = 3
 }
 
 /// <summary>
@@ -102,7 +105,7 @@ public sealed class CostEntry : AggregateRoot
     /// </summary>
     public static CostEntry RecordSystem(Guid id, Guid tenantId, Project projectContext, Guid? subProjectId, CostOrigin origin,
         Guid originReferenceId, string description, ItemType itemType, decimal quantity, string unit, long unitCostMinor,
-        VatTreatment vatTreatment, int vatRateBps, DateOnly entryDate, Guid createdByUserId, DateTimeOffset now)
+        VatTreatment vatTreatment, int vatRateBps, DateOnly entryDate, Guid createdByUserId, DateTimeOffset now, string? sourceName = null)
     {
         if (origin == CostOrigin.Manual) throw new ArgumentException("Use RecordManual for manual entries.", nameof(origin));
         if (originReferenceId == Guid.Empty) throw new ArgumentException("A system cost needs its source.", nameof(originReferenceId));
@@ -120,7 +123,13 @@ public sealed class CostEntry : AggregateRoot
         };
         entry.Initialize(id, tenantId, now);
         entry.Apply(values);
-        entry.SetSource(origin == CostOrigin.Payroll ? "Payroll" : "Warehouse", null);
+        // A subcontract cost names the subcontractor it was certified for; payroll and stock name what they are.
+        entry.SetSource(origin switch
+        {
+            CostOrigin.Payroll => "Payroll",
+            CostOrigin.Subcontract => string.IsNullOrWhiteSpace(sourceName) ? "Subcontractor" : sourceName.Trim(),
+            _ => "Warehouse"
+        }, null);
         return entry;
     }
 
