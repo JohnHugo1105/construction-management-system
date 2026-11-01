@@ -50,6 +50,8 @@ interface Options {
   readonly list?: (params: ProjectListParams) => Observable<PagedResult<ProjectListItem>>;
   readonly tablet?: boolean;
   readonly viewer?: boolean;
+  /** Someone who cannot see costs (a warehouse keeper): the contract price is not theirs to see. */
+  readonly withoutMoney?: boolean;
 }
 
 async function open(options: Options = {}) {
@@ -73,7 +75,11 @@ async function open(options: Options = {}) {
   await signInForTest(
     TestBed.inject(SessionState),
     TestBed.inject(HttpTestingController),
-    options.viewer ? { roles: ['Viewer'], permissions: VIEWER_PERMISSIONS } : {},
+    options.withoutMoney
+      ? { roles: ['WarehouseKeeper'], permissions: ['projects.read', 'inventory.read'] }
+      : options.viewer
+        ? { roles: ['Viewer'], permissions: VIEWER_PERMISSIONS }
+        : {},
   );
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(options.url ?? '/projects', ProjectListPage);
@@ -90,6 +96,23 @@ const requests = (list: ReturnType<typeof vi.fn>) =>
   list.mock.calls.map(([params]) => params as ProjectListParams);
 const paramsOf = (url: string) =>
   Object.fromEntries(new URL(url, 'http://app.test').searchParams.entries());
+
+describe('ProjectListPage for someone who cannot see costs', () => {
+  it('has no contract price column on a wide screen', async () => {
+    const { root } = await open({ withoutMoney: true });
+
+    expect(texts(root, 'thead th')).toEqual(['Project', 'Status', 'Dates', 'Sub-projects']);
+    expect(texts(root.querySelectorAll('tbody tr')[0]!, 'th, td')).not.toContain('Not set');
+    expect(root.textContent).not.toContain('Contract price');
+  });
+
+  it('has no price on the phone cards either', async () => {
+    const { root } = await open({ withoutMoney: true, tablet: false });
+
+    expect(root.querySelector('.money')).toBeNull();
+    expect(root.textContent).not.toContain('Not set');
+  });
+});
 
 describe('ProjectListPage on a wide screen', () => {
   it('shows a row per project with the price in the company currency and dates in the house style', async () => {

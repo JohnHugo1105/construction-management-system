@@ -43,6 +43,8 @@ export class ProjectListPage {
   private readonly session = inject(SessionState);
 
   protected readonly canManage = this.session.permit(Permission.projectsManage);
+  /** The contract price is what the company will be paid: the API sends it only to people who see costs, so the column is theirs too. */
+  protected readonly canSeePrice = this.session.permit(Permission.costsRead);
   protected readonly filters = PROJECT_FILTERS;
   protected readonly filterLabel = filterLabel;
 

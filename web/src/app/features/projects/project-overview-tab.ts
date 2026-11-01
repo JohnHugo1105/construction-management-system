@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Permission } from '../../core/session/permissions';
 import { SessionState } from '../../core/session/session-state';
 import { formatDate } from '../../shared/presentation/business-time';
 import { formatMoney } from '../../shared/presentation/money';
@@ -62,12 +63,17 @@ export class ProjectOverviewTab {
     return [
       row('Client', project.client),
       row('Location', project.location),
-      row(
-        'Contract price',
-        project.contractPriceMinor === null
-          ? null
-          : formatMoney(project.contractPriceMinor, this.session.currencyCode()),
-      ),
+      // Only people who see costs are told the price; for everyone else the row is absent, not "Not set".
+      ...(this.session.can(Permission.costsRead)
+        ? [
+            row(
+              'Contract price',
+              project.contractPriceMinor === null
+                ? null
+                : formatMoney(project.contractPriceMinor, this.session.currencyCode()),
+            ),
+          ]
+        : []),
       row('Start date', formatDate(project.startDate)),
       row('Target end date', project.targetEndDate ? formatDate(project.targetEndDate) : null),
     ];
