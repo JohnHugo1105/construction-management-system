@@ -34,7 +34,8 @@ a concurrency token, every string column has a length, and every API endpoint ou
 
 1. The Angular service (`*-api.ts`) calls `/api/...`. A session cookie and, for writes, the `X-XSRF-TOKEN` header travel with it.
 2. The API pipeline: exception handler, security headers, forwarded headers, routing, rate limiter (sign-in), authentication (the cookie's
-   principal is **re-checked against the database** for an active account and unchanged roles), correlation id, "password change
+   principal is **re-checked against the database** for an active account, unchanged roles and an unchanged security stamp, so a
+   copied cookie dies when the person signs out, changes a password or is turned off), correlation id, "password change
    required" gate, authorization (a named permission per endpoint), then the endpoint filters (private/no-store, anti-forgery on writes).
 3. The endpoint calls one application service. The service takes the person and company from `ICurrentUser`, loads aggregates through
    repositories (the tenant filter is added by `CmsDbContext` to every query), calls domain methods that validate and enforce rules,
@@ -65,7 +66,7 @@ token catches two saves racing in the same instant. Either way: 409 `concurrency
 | --- | --- |
 | Money as `long` minor units, `decimal` quantities | Exact arithmetic; the retired app's `double` text money drifted. A currency is a company setting, so lines don't repeat it. |
 | `net + VAT = gross` by construction | Compute one rounded base, derive the rest, so no total ever disagrees with its parts. |
-| Cookie sessions with anti-forgery, not JWT | The browser client is first-party; an HttpOnly, SameSite=Strict cookie plus a per-identity anti-forgery token is simpler and safer than tokens in script-readable storage, and a session can be revoked at once by re-checking the account each request. |
+| Cookie sessions with anti-forgery, not JWT | The browser client is first-party; an HttpOnly, SameSite=Strict cookie plus a per-identity anti-forgery token is simpler and safer than tokens in script-readable storage, and a session can be revoked at once: the account and a per-user security stamp are re-checked each request (15 s cache), and signing out, a password change or turning the account off changes the stamp. Signing out therefore signs the person out on every device. |
 | Integer `Version` instead of `rowversion` | Portable, visible in DTOs for the explicit stale-form check, and testable on any provider. DriveOPX uses integer revisions in most places too. |
 | EF global query filters for tenancy | A forgotten `Where` in a new query can't leak data. Explicit `IgnoreQueryFilters()` appears only in sign-in and first-time setup. |
 | No MediatR, no CQRS framework | Services per use case, and `*Reader` ports for projected reads, give the same separation with less indirection (YAGNI, per AGENTS.md). |

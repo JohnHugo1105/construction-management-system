@@ -31,7 +31,7 @@ jobs:
             -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
           echo "CMS_TEST_SQLSERVER=Server=localhost,1433;User Id=sa;Password=$PASSWORD;TrustServerCertificate=True" >> "$GITHUB_ENV"
           for attempt in $(seq 1 40); do
-            if docker exec cms-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$PASSWORD" -Q "SELECT 1" -b >/dev/null 2>&1; then exit 0; fi
+            if docker exec -e SQLCMDPASSWORD="$PASSWORD" cms-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -Q "SELECT 1" -b >/dev/null 2>&1; then exit 0; fi
             sleep 3
           done
           docker logs cms-sql | tail -30
