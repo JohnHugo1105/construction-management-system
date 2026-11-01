@@ -2,6 +2,8 @@ using Cms.Infrastructure.Persistence;
 using Cms.TestSupport;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +16,9 @@ namespace Cms.Api.Tests.Infrastructure;
 public sealed class CmsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private TestDatabase? _database;
+
+    /// <summary>Counts every SQL command the API runs, so a test can assert a read path's statement count doesn't grow with its rows.</summary>
+    public SqlStatementCounter Sql { get; } = new();
 
     public async Task InitializeAsync()
     {
@@ -41,6 +46,7 @@ public sealed class CmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
             ["Database:MigrateOnStartup"] = "false"
         };
         foreach (var (key, value) in settings) builder.UseSetting(key, value);
+        builder.ConfigureTestServices(services => services.AddSingleton<IInterceptor>(Sql));
     }
 
     async Task IAsyncLifetime.DisposeAsync()

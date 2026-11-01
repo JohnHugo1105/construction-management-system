@@ -2,6 +2,7 @@ using Cms.Application.Common;
 using Cms.Infrastructure.Persistence;
 using Cms.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +22,10 @@ public static class DependencyInjection
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new InvalidOperationException($"The connection string \"{ConnectionStringName}\" is not configured. Set ConnectionStrings__{ConnectionStringName} or CMS_DATABASE_CONNECTION.");
 
-        services.AddDbContext<CmsDbContext>(options => options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure(3)));
+        // Interceptors registered in the container (tests add a statement counter) are attached to every context.
+        services.AddDbContext<CmsDbContext>((provider, options) => options
+            .UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure(3))
+            .AddInterceptors(provider.GetServices<IInterceptor>()));
         services.Configure<PasswordHashingOptions>(options =>
         {
             if (int.TryParse(configuration[$"{PasswordHashingOptions.SectionName}:Iterations"], out var iterations)) options.Iterations = iterations;
