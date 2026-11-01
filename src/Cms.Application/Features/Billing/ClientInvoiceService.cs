@@ -107,7 +107,8 @@ public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBil
 
     /// <summary>
     /// Issues a draft: checks again that its figures follow the project's latest issued bill (another bill may have been issued or voided
-    /// since it was prepared), takes the next bill number and locks it. Two issues at the same moment can't both follow the same bill.
+    /// since it was prepared) and, for a down payment, the contract price and terms now; takes the next bill number and locks it. Two
+    /// issues at the same moment can't both follow the same bill.
     /// </summary>
     public async Task<ClientInvoiceDto> IssueAsync(Guid id, VersionRequest request, CancellationToken cancellationToken)
     {
@@ -116,12 +117,13 @@ public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBil
         var project = await LoadProjectAsync(invoice.ProjectId, cancellationToken);
         var head = await invoices.GetChainHeadAsync(invoice.ProjectId, cancellationToken);
         var ledger = await invoices.GetLedgerAsync(invoice.ProjectId, cancellationToken);
+        var terms = await TermsAsync(invoice.ProjectId, cancellationToken);
 
         // Check before taking a number, so a refusal doesn't use one up.
-        invoice.EnsureCanIssue(project, ledger);
+        invoice.EnsureCanIssue(project, ledger, terms);
         var sequence = await numbers.NextAsync(NumberSequenceKey, cancellationToken);
         var now = clock.UtcNow;
-        BillingChain.Issue(invoice, project, head, ledger, sequence, currentUser.UserId, now);
+        BillingChain.Issue(invoice, project, head, ledger, terms, sequence, currentUser.UserId, now);
 
         audit.Record("Billing.Issued", nameof(ClientInvoice), invoice.Id, $"Issued {invoice.Number}, a {KindWords(invoice.Kind)} for {project.Name}.");
         await SaveChainChangeAsync(cancellationToken);

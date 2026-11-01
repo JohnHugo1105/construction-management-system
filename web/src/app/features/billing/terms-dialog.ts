@@ -26,7 +26,7 @@ import { BillingTerms } from './billing.models';
 /**
  * Edits how a project is billed: retention, both withholdings, payment terms, the down payment and whether the client is a
  * government agency. The new terms apply to bills prepared from now on; bills already made keep theirs, and a down payment already
- * billed is recovered at the rate it was billed at.
+ * billed is recovered as billed, in proportion to the work.
  */
 @Component({
   selector: 'app-terms-dialog',

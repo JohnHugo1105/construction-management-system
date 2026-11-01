@@ -49,9 +49,11 @@ newest billing date.
 **A bill** (`ClientInvoiceDto`) adds the project's name, status and current contract price, `cumulativeWorkMinor` (progress bills),
 `previousCumulativeWorkMinor`, `netMinor`, `vatMinor`, `vatRateBps`, `retentionBps`, `retentionMinor`, `withholdingBps`,
 `withholdingMinor`, `vatWithholdingBps` and `vatWithholdingMinor` (VAT the client withholds), `advanceBps` (a down payment bill's own
-rate, or the rate a progress bill recovered at), `advanceRecoveryMinor` (what a progress bill recovers of the down payment),
-`paymentTermsDays`, `isLatestIssued` (only the latest issued bill can be voided), `isStale` (a draft whose figures no
-longer follow from what is billed now: save it again before issuing), who prepared, issued and voided it and when, `voidReason`, and its
+rate, or the issued down payment's rate on a progress bill; the recovery is proportional to the work, not at this rate),
+`advanceRecoveryMinor` (what a progress bill recovers of the down payment), `paymentTermsDays`, `isLatestIssued` (only the latest issued
+bill can be voided), `isStale` (a draft whose figures no longer follow from what is billed now, or for a down payment from the contract
+price and terms now: save it again before issuing), `canOnlyBeDiscarded` (a down payment draft once a progress bill is issued: it can
+only be discarded), who prepared, issued and voided it and when, `voidReason`, and its
 `payments` (`amountMinor`, `paidOn`, `method`, `reference`, `note`, who recorded it, `isVoided`, `voidReason`; at most 100).
 
 **Receivables** returns the company totals `outstandingMinor`, `overdueMinor`, `retentionHeldMinor` and `rows` (paged): one per project
@@ -76,7 +78,8 @@ are optional: left out (or null), they keep what is saved (none, none and no whe
 clientRequestId }`. A `Progress` bill needs `cumulativeWorkMinor`, the VAT-included value of all work completed to date; a
 `RetentionRelease` needs `amountMinor`; an `Advance` (the down payment) takes neither: it is the terms' `advanceBps` of the contract
 price, with no VAT split and nothing retained or withheld. Each progress bill then deducts
-`min(down payment, round(work to date x rate)) - recovered before` (all of what is left on the bill that reaches the contract price). Returns `201` with the bill. A repeated `clientRequestId` returns the original draft; reused for
+`min(down payment, round(down payment x work to date / contract price now)) - recovered before`, which is exactly what is left on the
+bill that reaches the contract price. Returns `201` with the bill. A repeated `clientRequestId` returns the original draft; reused for
 another project or kind it is `409`.
 
 `PUT /client-invoices/{id}`: `{ billingDate, description, cumulativeWorkMinor | amountMinor, version }` re-saves a draft with figures
@@ -94,7 +97,7 @@ version }` with the bill's version. Returns `201` with the bill. A repeated `cli
 | Status | When |
 | --- | --- |
 | `422` | Field errors, all at once: `billingDate` (missing, in the future), `description`, `cumulativeWorkMinor` (not more than already billed, more than the contract price), `amountMinor` (release more than held, payment more than outstanding), `paidOn`, `method`, `reference`, `note`, `retentionBps`, `creditableWithholdingBps`, `paymentTermsDays`, `advanceBps` (out of range, or more than 15% for a government client), `vatWithholdingBps`, `kind`. |
-| `409 rule_violation` | No contract price; the whole price already billed; a down payment with none in the terms, after a progress bill is issued ("Bill the down payment before the first progress bill."), or when one already exists; deductions more than the bill ("The deductions are more than this bill..."); issuing a progress draft made before the down payment was issued (the stale-draft message); the project is archived (every write); a release on a project not Completed or with no retention held; issuing a stale draft ("Another bill was issued or voided after this draft was prepared..."); issuing when the price dropped below the work billed; voiding a bill that is not the latest ("Void BILL-0005 first."); voiding a bill with payments; voiding a draft (discard it) or discarding an issued bill; a payment on a draft, a void bill or a fully paid bill; two issues or voids of the same project at the same moment; a request id reused for something else. |
+| `409 rule_violation` | No contract price; the whole price already billed; a down payment with none in the terms, after a progress bill is issued ("Bill the down payment before the first progress bill."), or when one already exists; deductions more than the bill ("The deductions are more than this bill..."); issuing a progress draft made before the down payment was issued (the stale-draft message); the project is archived (every write); a release on a project not Completed or with no retention held; issuing a stale draft, including a down payment draft whose contract price or terms changed ("Another bill was issued or voided after this draft was prepared..."); issuing when the price dropped below the work billed; voiding a bill that is not the latest ("Void BILL-0005 first."); voiding a bill with payments; voiding a draft (discard it) or discarding an issued bill; a payment on a draft, a void bill or a fully paid bill; two issues or voids of the same project at the same moment; a request id reused for something else. |
 | `409 concurrency_conflict` | The `version` sent is not the current one. Issuing a bill changes the bill before it (it now points at its successor), so that bill's version moves too. |
 | `404` | No such project, bill or payment in this company. |
 | `403` | The permission in the table above is missing. |

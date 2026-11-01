@@ -641,9 +641,15 @@ the recommended defaults below. None is confirmed yet; each is reversible, so co
    progress bills at the full value of the work. The accountant confirms the VAT treatment of advances (one function,
    `BillingCalculator.Advance`).
 2. **Down payment defaults:** no down payment, no VAT withheld and not a government client until someone sets them.
-3. **Last-bill recovery:** the bill that brings the work to the contract price recovers whatever is left of the down payment, even when
-   a change order moved the price since the down payment was billed (the formula alone would leave some behind when the price fell).
-4. **A pending down payment draft does not block progress billing:** once a progress bill is issued the draft can only be discarded.
+3. **Proportional recovery:** each progress bill recovers the down payment in proportion to the work billed against the contract
+   price **as it is now** (round(down payment × work to date ÷ contract price), less what earlier bills recovered), so the down payment
+   is recovered exactly when the work reaches the price, whatever change orders did to the price. Recovering at the fixed down payment
+   rate instead, with the last bill taking whatever was left, could leave the final bill of a project whose price was cut with more to
+   recover than the bill itself, so it could never be issued. While the price is unchanged the two give the same figures to within a
+   centavo.
+4. **A pending down payment draft does not block progress billing:** once a progress bill is issued the draft can only be discarded
+   (the bill page offers nothing else on it and says why). A down payment draft whose contract price or terms changed before it was
+   issued is out of date and must be saved again.
 5. **Government variation limit is advisory:** the system warns past 10% of the original price; the agency's approval is outside it.
    Only price increases of approved change orders count; a rejected or discarded order counts nothing.
 6. **Government limit needs a locked baseline:** without one there is no original price, and nothing is shown.
@@ -975,8 +981,8 @@ bills ₱3,360,000.00: retention ₱336,000.00, withholding ₱60,000.00, the cl
 Example with a down payment (the same contract, 12% VAT, 10% retention, 2% withholding, 5% VAT withheld, 15% down payment): the down
 payment bill asks for ₱1,680,000.00. Work to date ₱2,240,000.00 gives net ₱2,000,000.00, retention ₱224,000.00, withholding
 ₱40,000.00, VAT withheld ₱100,000.00, down payment recovered ₱336,000.00, and the client pays ₱1,540,000.00. At ₱5,600,000.00 to date
-the bill is ₱3,360,000.00: recovered ₱840,000.00 − ₱336,000.00 = ₱504,000.00, the client pays ₱2,310,000.00. The last bill, to
-₱11,200,000.00, recovers the ₱840,000.00 left and the client pays ₱3,850,000.00. Over the contract the client is asked for
+the bill is ₱3,360,000.00: half the price billed recovers half the down payment, ₱840,000.00 − ₱336,000.00 = ₱504,000.00, the client
+pays ₱2,310,000.00. The last bill, to ₱11,200,000.00, recovers the ₱840,000.00 left and the client pays ₱3,850,000.00. Over the contract the client is asked for
 ₱9,380,000.00 = the price less retention ₱1,120,000.00, withholding ₱200,000.00 and VAT withheld ₱500,000.00: the down payment is never
 billed twice.
 
@@ -1023,16 +1029,26 @@ An archived project's billing is read-only: no new bills, issuing, voiding, paym
   is billed on the progress bills at the full value of the work, so it is never counted twice.
 * It takes the next company bill number **when it is issued**, like any bill, and it must be issued **before the first progress bill**:
   preparing or issuing it after a progress bill is issued is refused with "Bill the down payment before the first progress bill."
-* It keeps its own rate. Changing the down payment in the terms later changes nothing already billed, and recovery always uses the rate
-  on the down payment bill.
-* **Recovery** on each progress bill is worked out on the work to date, so it is exact when the work reaches the price:
-  recovered = min(down payment, round(work to date × rate)) − recovered on earlier issued progress bills, never below zero. The bill
-  that brings the work to the contract price recovers **everything still to recover**, so a price changed by a change order since the
-  down payment was billed still leaves nothing behind. Without an issued down payment nothing is recovered.
+* It keeps its own rate and amount. Changing the down payment in the terms later changes nothing already billed, and recovery always
+  works from the down payment bill's amount.
+* **Recovery** on each progress bill is in proportion to the work against the project's contract price **now**, worked out on the work
+  to date so it is exact when the work reaches the price: recovered to date = round(down payment × work to date ÷ contract price),
+  multiplied first and rounded once, never more than the down payment; the bill recovers that less what earlier issued progress bills
+  recovered, never below zero. At 100% of the price it is exactly the down payment, so a price cut or raised by a change order still
+  leaves nothing behind and never asks a small final bill for more than it is. Without an issued down payment nothing is recovered. A
+  bill shows the amount as "Down payment recovered", without a rate: after a price change it is no longer the down payment rate.
+  Example: a ₱10,000,000.00 contract with a 15% down payment (₱1,500,000.00), 10% retention and 2% withholding, billed to
+  ₱4,000,000.00 (₱600,000.00 recovered); a change order cuts the price to ₱9,000,000.00; billing to ₱8,800,000.00 recovers
+  ₱1,466,666.67 to date (₱866,666.67 on that bill); the final ₱200,000.00 bill recovers the ₱33,333.33 left and the client pays
+  ₱143,095.24.
 * Nothing is stored on the down payment: recovery is part of each progress bill. **Voiding the latest progress bill gives back the
   recovery it took**, and the next bill recovers it again.
-* A progress draft prepared before the down payment was issued (or before a price change made it the last bill) is out of date: issuing
-  it is refused with the usual reload message until it is saved again, when it takes its recovery.
+* A progress draft prepared before the down payment was issued, or before the contract price changed, is out of date: issuing it is
+  refused with the usual reload message until it is saved again, when it takes its recovery.
+* A **down payment draft** is out of date when what it would ask for now (the contract price now × the terms' down payment rate now,
+  within a government client's 15% cap) differs from what it holds, or when the terms no longer take a down payment. Issuing it is
+  refused with the usual reload message until it is saved again (or discarded, when the terms take none). Once a progress bill is
+  issued a leftover down payment draft can only be discarded.
 * A down payment bill is voided like any bill: only while it is the latest issued bill (no progress bill after it) and with no payment
   recorded; a draft is discarded with a reason.
 * The project's billing shows the down payment billed, recovered and **still to recover**. What is owed counts the down payment bill

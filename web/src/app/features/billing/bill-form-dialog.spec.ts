@@ -56,10 +56,31 @@ class AdvanceHost {
   readonly saved = signal<Bill | null>(null);
 }
 
+/** A down payment draft at 20% after the terms changed to 15%: its own figures are out of date. */
+@Component({
+  imports: [BillFormDialog],
+  template: `<app-bill-form-dialog
+    [context]="context"
+    [bill]="draft"
+    (saved)="saved.set($event)"
+  />`,
+})
+class StaleAdvanceHost {
+  readonly context: BillFormContext = { ...CONTEXT, billedToDateMinor: 0, advanceBps: 1_500 };
+  readonly draft = advanceBill({
+    status: 'Draft',
+    isStale: true,
+    advanceBps: 2_000,
+    grossMinor: 224_000_000,
+    netReceivableMinor: 224_000_000,
+  });
+  readonly saved = signal<Bill | null>(null);
+}
+
 async function open(
   api: Record<string, Mock<Call>>,
   permissions: readonly string[],
-  host: typeof Host | typeof AdvanceHost = Host,
+  host: typeof Host | typeof AdvanceHost | typeof StaleAdvanceHost = Host,
 ) {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   TestBed.configureTestingModule({
@@ -73,7 +94,7 @@ async function open(
     roles: ['Custom'],
     permissions,
   });
-  const fixture = TestBed.createComponent<Host | AdvanceHost>(host);
+  const fixture = TestBed.createComponent<Host | AdvanceHost | StaleAdvanceHost>(host);
   await settle(fixture);
   return { fixture, dialog: () => document.querySelector('app-bill-form-dialog')! };
 }
@@ -199,6 +220,16 @@ describe('BillFormDialog', () => {
       }),
     );
     expect(fixture.componentInstance.saved()?.kind).toBe('Advance');
+  });
+
+  it('does not show an out-of-date down payment draft’s old figures: saving works them out again', async () => {
+    const { dialog } = await open({}, MANAGER, StaleAdvanceHost);
+
+    expect(text(dialog(), 'h2')).toBe('Change draft bill');
+    expect(dialog().querySelector('.breakdown__row')).toBeNull();
+    expect(text(dialog(), '.breakdown')).toContain(
+      'Worked out from the contract price and the billing terms when you save.',
+    );
   });
 
   it('suggests the percent complete when progress answers, and says nothing when it refuses', async () => {

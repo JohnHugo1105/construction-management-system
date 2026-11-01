@@ -110,6 +110,30 @@ describe('BillPage', () => {
     const stale = await open(bill({ isStale: true }), APPROVER);
     expect(actions(stale.root)).toEqual(['Change draft', 'Discard draft']);
     expect(text(stale.root, 'app-alert .alert__title')).toBe('This draft is out of date');
+    expect(text(stale.root, 'app-alert')).toContain('Another bill was issued or voided');
+  });
+
+  it('holds back a down payment draft the contract price or the terms made out of date', async () => {
+    const { root } = await open(advanceBill({ status: 'Draft', isStale: true }), APPROVER);
+
+    expect(actions(root)).toEqual(['Change draft', 'Discard draft']);
+    expect(text(root, 'app-alert .alert__title')).toBe('This draft is out of date');
+    expect(text(root, 'app-alert')).toContain(
+      'The contract price or the down payment in the billing terms changed after it was prepared.',
+    );
+  });
+
+  it('offers only discarding a down payment draft once a progress bill is issued, and says why', async () => {
+    const { root } = await open(
+      advanceBill({ status: 'Draft', isStale: true, canOnlyBeDiscarded: true }),
+      APPROVER,
+    );
+
+    expect(actions(root)).toEqual(['Discard draft']);
+    expect(root.querySelector('app-alert')).toBeNull();
+    expect(text(root, '.stack > p.text-muted')).toBe(
+      'A progress bill has been issued, so this down payment can no longer be billed. Discard this draft.',
+    );
   });
 
   it('shows the refusal in plain words when issuing fails', async () => {

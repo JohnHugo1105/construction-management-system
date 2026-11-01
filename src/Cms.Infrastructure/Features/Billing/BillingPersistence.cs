@@ -252,6 +252,8 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
                 ProjectName = project.Name,
                 ProjectStatus = project.Status,
                 project.ContractPriceMinor,
+                // A down payment draft is checked against the terms now; read with the bill so it costs no extra statement.
+                Terms = db.Set<ProjectBillingTerms>().Where(terms => terms.ProjectId == item.ProjectId).FirstOrDefault(),
                 CreatedBy = db.Set<User>().Where(user => user.Id == item.CreatedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
                 IssuedBy = db.Set<User>().Where(user => user.Id == item.IssuedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
                 VoidedBy = db.Set<User>().Where(user => user.Id == item.VoidedByUserId).Select(user => user.DisplayName).FirstOrDefault()
@@ -279,9 +281,11 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
             }).Take(MaximumPaymentsShown).ToListAsync(cancellationToken);
 
         var invoice = bill.Bill;
-        // A draft's figures were worked out from what was billed when it was saved; say when that is no longer true.
-        var stale = invoice.Status == ClientInvoiceStatus.Draft &&
-            invoice.IsStale(await BillingQueries.LedgerAsync(db, invoice.ProjectId, cancellationToken), bill.ContractPriceMinor);
+        // A draft's figures were worked out from what was billed (and the terms) when it was saved; say when that is no longer true.
+        var draft = invoice.Status == ClientInvoiceStatus.Draft;
+        var ledger = draft ? await BillingQueries.LedgerAsync(db, invoice.ProjectId, cancellationToken) : BillingLedger.Empty;
+        var stale = draft && invoice.IsStale(ledger, bill.ContractPriceMinor, bill.Terms?.Snapshot ?? BillingTermsSnapshot.Defaults);
+        var onlyDiscard = draft && invoice.CanOnlyBeDiscarded(ledger);
         var paid = payments.Where(payment => !payment.IsVoided).Sum(payment => payment.AmountMinor);
         var issued = invoice.Status == ClientInvoiceStatus.Issued;
         var outstanding = issued ? invoice.NetReceivableMinor - paid : 0;
@@ -291,7 +295,7 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
             invoice.PreviousCumulativeWorkMinor, invoice.GrossMinor, invoice.NetMinor, invoice.VatMinor, invoice.VatRateBps, invoice.RetentionBps,
             invoice.RetentionMinor, invoice.WithholdingBps, invoice.WithholdingMinor, invoice.VatWithholdingBps, invoice.VatWithholdingMinor,
             invoice.AdvanceBps, invoice.AdvanceRecoveryMinor, invoice.NetReceivableMinor, invoice.PaymentTermsDays, paid, outstanding,
-            issued && outstanding > 0 && today > invoice.DueDate, issued && invoice.NextInvoiceId is null, stale, bill.CreatedBy, invoice.CreatedAtUtc,
+            issued && outstanding > 0 && today > invoice.DueDate, issued && invoice.NextInvoiceId is null, stale, onlyDiscard, bill.CreatedBy, invoice.CreatedAtUtc,
             bill.IssuedBy, invoice.IssuedAtUtc, bill.VoidedBy, invoice.VoidedAtUtc, invoice.VoidReason,
             payments.Select(payment => new ClientPaymentDto(payment.Id, payment.AmountMinor, payment.PaidOn, payment.Method.ToString(), payment.Reference,
                 payment.Note, payment.RecordedBy, payment.RecordedAtUtc, payment.IsVoided, payment.VoidedBy, payment.VoidedAtUtc, payment.VoidReason)).ToArray(),

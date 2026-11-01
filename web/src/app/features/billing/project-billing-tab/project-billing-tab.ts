@@ -67,7 +67,7 @@ export function termsNotes(terms: BillingTerms): string[] {
     );
   if (terms.advanceBps > 0)
     notes.push(
-      'The down payment is billed before the first progress bill. Each progress bill then recovers the same share of its work, until it is all recovered.',
+      'The down payment is billed before the first progress bill. Each progress bill then recovers it in proportion to the work billed, so it is all recovered when the work reaches the contract price.',
     );
   if (terms.isGovernmentClient)
     notes.push(

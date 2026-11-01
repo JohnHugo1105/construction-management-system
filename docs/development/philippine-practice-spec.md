@@ -78,17 +78,26 @@ clients withhold both income tax and VAT. A government client also brings rules 
 * The number comes from the existing `client-invoice` sequence **at issue**. It is issued before any progress bill: refuse otherwise
   ("Bill the down payment before the first progress bill."). It can be voided only while no payment is recorded against it and no
   progress bill has been issued after it; a draft is discarded with a reason, as for any bill.
-* The advance bill keeps its own snapshot of `AdvanceBps`; recovery always uses that rate, not the terms as they are later edited.
+* The advance bill keeps its own snapshot of `AdvanceBps` and its amount; recovery works from the issued amount, not the terms as they
+  are later edited.
+* An advance **draft** is stale when `round(current contract price x current terms' AdvanceBps / 10,000)` (the rate already within the
+  government cap) differs from its `GrossMinor`, or when the terms' `AdvanceBps` is 0. A stale advance draft is refused at issue with
+  the existing reload message and shown with the existing stale treatment. Once a progress bill is issued, the bill page offers only
+  Discard on a leftover advance draft (`canOnlyBeDiscarded`), with one plain line saying why.
 
-**Recovery on progress bills** (cumulative, so it is exact at 100%):
+**Recovery on progress bills** (proportional and cumulative, so it is exact at 100% of the current price):
 
-* `AdvanceRecoveryMinor` on a progress bill = `min(AdvanceMinor, round(CumulativeWorkMinor x advanceBps / 10,000)) - recovered on earlier
-  issued progress bills`, never below 0. With no issued advance bill, recovery is 0.
+* `AdvanceRecoveryMinor` on a progress bill = `min(AdvanceMinor, round(AdvanceMinor x CumulativeWorkMinor / P)) - recovered on earlier
+  issued progress bills`, never below 0, where `P` is the project's **current** contract price (multiply first, round half away from
+  zero once). At `CumulativeWorkMinor == P` it is exactly `AdvanceMinor`, so no last-bill catch-up is needed, and a price cut by a
+  change order can't leave a small final bill with more to recover than it is. While the price is unchanged it matches
+  `round(CumulativeWorkMinor x advanceBps / 10,000)` to within a centavo. The bill shows "Down payment recovered" with the amount and no
+  rate. With no issued advance bill, recovery is 0.
 * `NetReceivable = gross - retention - withholding - VAT withholding - advance recovery`. Retention and both withholdings are
   computed as today, on the amounts **before** recovery. If the deductions exceed the bill, refuse: "The deductions are more than this
   bill. Check the down payment, retention and withholding rates."
-* The draft shows recovery in the preview. At issue, recompute against the issued chain and refuse a stale draft with the existing
-  reload message (an advance issued, or a previous bill voided, since the draft was made).
+* The draft shows recovery in the preview. At issue, recompute against the issued chain and the current price and refuse a stale draft
+  with the existing reload message (an advance issued, a previous bill voided, or the contract price changed since the draft was made).
 * A bill's `VatWithholdingMinor = round(net x VatWithholdingBps / 10,000)`.
 * Voiding the latest issued progress bill restores the recovery it took (it is derived, nothing is stored on the advance).
 * Reads add `advanceBilledMinor`, `advanceRecoveredMinor`, `advanceToRecoverMinor` to the project billing summary, and each bill carries

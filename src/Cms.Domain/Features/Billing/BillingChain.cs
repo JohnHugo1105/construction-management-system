@@ -12,14 +12,15 @@ public static class BillingChain
 {
     /// <param name="head">The project's latest issued bill (it has no successor), or null when none is issued.</param>
     /// <param name="ledger">What the project's issued bills add up to now; the draft's figures must still follow from it.</param>
-    public static void Issue(ClientInvoice invoice, Project project, ClientInvoice? head, BillingLedger ledger, long sequenceNumber, Guid issuedByUserId,
-        DateTimeOffset now)
+    /// <param name="terms">The project's billing terms now; a down payment draft must still follow from them.</param>
+    public static void Issue(ClientInvoice invoice, Project project, ClientInvoice? head, BillingLedger ledger, BillingTermsSnapshot terms, long sequenceNumber,
+        Guid issuedByUserId, DateTimeOffset now)
     {
         if (head is not null &&
             (head.ProjectId != invoice.ProjectId || head.Status != ClientInvoiceStatus.Issued || head.NextInvoiceId is not null || head.ChainIndex is null))
             throw new InvalidOperationException("The bill to follow must be the project's latest issued bill.");
 
-        invoice.MarkIssued(project, ledger, sequenceNumber, (head?.ChainIndex ?? 0) + 1, head?.Id, issuedByUserId, now);
+        invoice.MarkIssued(project, ledger, terms, sequenceNumber, (head?.ChainIndex ?? 0) + 1, head?.Id, issuedByUserId, now);
         head?.LinkSuccessor(invoice.Id, now);
     }
 

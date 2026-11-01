@@ -5,8 +5,8 @@ namespace Cms.Domain.Features.Billing;
 
 /// <summary>
 /// What a project's issued bills add up to right now: the value of the work billed (VAT included), the retention the client held back
-/// on those bills, and what was released again; the down payment billed (with the rate its bill keeps) and what the progress bills
-/// recovered of it. Drafts and void bills never count.
+/// on those bills, and what was released again; the down payment billed (with the rate its bill keeps, for the record) and what the
+/// progress bills recovered of it. Drafts and void bills never count.
 /// </summary>
 public sealed record BillingLedger(long BilledToDateMinor, long RetentionWithheldMinor, long RetentionReleasedMinor, long AdvanceMinor = 0,
     int AdvanceBps = 0, long AdvanceRecoveredMinor = 0)
@@ -90,8 +90,8 @@ public sealed class ClientInvoice : AggregateRoot
     public long VatWithholdingMinor { get; private set; }
 
     /// <summary>
-    /// The down payment rate. On a down payment bill, the rate it was billed at (recovery always uses it, never the terms as later
-    /// changed); on a progress bill, the rate its recovery was worked out at (0 when no down payment was issued).
+    /// The down payment rate. On a down payment bill, the rate it was billed at; on a progress bill, the rate of the issued down payment
+    /// it recovers from (0 when none was issued). The recovery itself follows the down payment amount and the work, not this rate.
     /// </summary>
     public int AdvanceBps { get; private set; }
 
@@ -188,21 +188,34 @@ public sealed class ClientInvoice : AggregateRoot
     /// <summary>
     /// Whether a draft's figures still follow from what is billed now. A stale draft is refused at issue. A progress draft is stale when
     /// another bill was issued or voided since it was saved, or when the down payment it should recover changed (one was issued, or the
-    /// contract price made it the last bill). A down payment draft is never stale: once progress is billed it can only be discarded.
+    /// contract price changed). A down payment draft is stale when the down payment it would ask for now, from the project's contract
+    /// price and the terms' down payment rate as they are now, differs from what it holds, or when the terms no longer take a down payment.
     /// </summary>
-    public bool IsStale(BillingLedger ledger, long? contractPriceMinor) =>
+    /// <param name="terms">The project's billing terms now (their down payment rate is already within a government client's cap).</param>
+    public bool IsStale(BillingLedger ledger, long? contractPriceMinor, BillingTermsSnapshot terms) =>
         Status == ClientInvoiceStatus.Draft && Kind switch
         {
             ClientInvoiceKind.Progress => !FollowsFrom(ledger, contractPriceMinor),
-            ClientInvoiceKind.Advance => false,
+            ClientInvoiceKind.Advance => !AdvanceFollowsFrom(contractPriceMinor, terms),
             _ => GrossMinor > ledger.RetentionHeldMinor
         };
+
+    /// <summary>
+    /// A down payment draft once a progress bill is issued: it can never be issued (the down payment comes before the first progress
+    /// bill) and saving it again is refused, so the only thing left to do with it is discard it.
+    /// </summary>
+    public bool CanOnlyBeDiscarded(BillingLedger ledger) =>
+        Status == ClientInvoiceStatus.Draft && Kind == ClientInvoiceKind.Advance && ledger.BilledToDateMinor > 0;
 
     /// <summary>A progress bill's previous work and down payment recovery are what the issued chain gives now.</summary>
     private bool FollowsFrom(BillingLedger ledger, long? contractPriceMinor) =>
         PreviousCumulativeWorkMinor == ledger.BilledToDateMinor &&
         (contractPriceMinor is not { } price || CumulativeWorkMinor is not { } cumulative ||
             AdvanceRecoveryMinor == BillingCalculator.AdvanceRecovery(cumulative, price, ledger));
+
+    /// <summary>A down payment draft holds what the contract price and the terms' rate give now, and the terms still take one.</summary>
+    private bool AdvanceFollowsFrom(long? contractPriceMinor, BillingTermsSnapshot terms) =>
+        contractPriceMinor is { } price && terms.AdvanceBps > 0 && GrossMinor == BillingCalculator.Advance(price, terms.AdvanceBps).GrossMinor;
 
     /// <summary>Discards a draft with a reason. It stays on record as void, with no number.</summary>
     public void Discard(Project project, string? reason, Guid discardedByUserId, DateTimeOffset now)
@@ -224,9 +237,11 @@ public sealed class ClientInvoice : AggregateRoot
 
     /// <summary>
     /// Checks that the draft can be issued now, before a number is taken. The figures were worked out when the draft was saved;
-    /// another bill issued or voided since then makes them wrong, and the draft must be saved again first.
+    /// another bill issued or voided since then (or, for a down payment, a change to the contract price or the terms) makes them wrong,
+    /// and the draft must be saved again first.
     /// </summary>
-    public void EnsureCanIssue(Project project, BillingLedger ledger)
+    /// <param name="terms">The project's billing terms now.</param>
+    public void EnsureCanIssue(Project project, BillingLedger ledger, BillingTermsSnapshot terms)
     {
         EnsureProject(project);
         if (Status != ClientInvoiceStatus.Draft)
@@ -240,7 +255,7 @@ public sealed class ClientInvoice : AggregateRoot
             if (CumulativeWorkMinor > price)
                 throw new DomainRuleException(
                     "The contract price is now less than the work completed to date on this draft. Open the draft, check the figures and save it again.");
-            // A down payment issued since the draft was saved (or a price change that makes this the last bill) changes its recovery.
+            // A down payment issued since the draft was saved, or a change to the contract price, changes its recovery.
             if (!FollowsFrom(ledger, price))
                 throw new DomainRuleException(StaleDraftMessage);
         }
@@ -248,6 +263,10 @@ public sealed class ClientInvoice : AggregateRoot
         {
             if (ledger.BilledToDateMinor > 0) throw new DomainRuleException(AdvanceAfterProgressMessage);
             if (ledger.AdvanceMinor > 0) throw new DomainRuleException(AdvanceExistsMessage);
+            if (project.ContractPriceMinor is null) throw new DomainRuleException(NoContractPriceMessage);
+            // The contract price or the terms changed since the draft was saved (a change order, a government client's lower cap, no
+            // down payment any more): what it asks for is no longer what the terms give.
+            if (!AdvanceFollowsFrom(project.ContractPriceMinor, terms)) throw new DomainRuleException(StaleDraftMessage);
         }
         else
         {
@@ -258,10 +277,10 @@ public sealed class ClientInvoice : AggregateRoot
         }
     }
 
-    internal void MarkIssued(Project project, BillingLedger ledger, long sequenceNumber, int chainIndex, Guid? previousInvoiceId, Guid issuedByUserId,
-        DateTimeOffset now)
+    internal void MarkIssued(Project project, BillingLedger ledger, BillingTermsSnapshot terms, long sequenceNumber, int chainIndex, Guid? previousInvoiceId,
+        Guid issuedByUserId, DateTimeOffset now)
     {
-        EnsureCanIssue(project, ledger);
+        EnsureCanIssue(project, ledger, terms);
         if (sequenceNumber <= 0) throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
         SequenceNumber = sequenceNumber;
         Number = FormatNumber(sequenceNumber);
@@ -395,7 +414,7 @@ public sealed class ClientInvoice : AggregateRoot
             errors.Add("cumulativeWorkMinor", "Work completed to date can't be more than the contract price.");
         errors.ThrowIfAny();
 
-        // The recovery uses the rate kept on the issued down payment bill, never the terms as they may have changed since.
+        // The recovery follows the issued down payment and the price now, never the terms' down payment rate as it may have changed since.
         var recovery = BillingCalculator.AdvanceRecovery(cumulativeWorkMinor, price, ledger);
         var amounts = BillingCalculator.Progress(cumulativeWorkMinor - ledger.BilledToDateMinor, vatRateBps, terms.RetentionBps, terms.WithholdingBps,
             terms.VatWithholdingBps, recovery);

@@ -57,6 +57,22 @@ describe('billActions', () => {
     expect(Object.values(billActions(bill(), READER)).every((allowed) => !allowed)).toBe(true);
   });
 
+  it('offers only discarding a down payment draft left over once a progress bill is issued', () => {
+    const leftover = advanceBill({ status: 'Draft', canOnlyBeDiscarded: true });
+    expect(billActions(leftover, APPROVER)).toMatchObject({
+      issue: false,
+      edit: false,
+      discard: true,
+      approverNote: false,
+    });
+    expect(billActions(leftover, PREPARER)).toMatchObject({
+      issue: false,
+      edit: false,
+      discard: true,
+      approverNote: false,
+    });
+  });
+
   it('offers a payment while something is owed, and voiding only the latest bill with nothing paid on it', () => {
     expect(billActions(issuedBill(), PREPARER)).toMatchObject({
       recordPayment: true,
@@ -177,7 +193,7 @@ describe('presentation', () => {
     });
     expect(notes).toHaveLength(4);
     expect(notes[2]).toBe(
-      'The down payment is billed before the first progress bill. Each progress bill then recovers the same share of its work, until it is all recovered.',
+      'The down payment is billed before the first progress bill. Each progress bill then recovers it in proportion to the work billed, so it is all recovered when the work reaches the contract price.',
     );
   });
 });

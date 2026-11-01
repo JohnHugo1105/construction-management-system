@@ -71,29 +71,31 @@ public static class BillingCalculator
     }
 
     /// <summary>
-    /// What a progress bill recovers of the down payment, worked out on the work to date so the recovery is exact when the work reaches
-    /// the contract price: <c>min(down payment, round(work to date x rate / 10,000)) - recovered on earlier bills</c>, never below zero.
-    /// When the work to date reaches the contract price (the last bill), everything still to recover is recovered, so a contract price
-    /// changed since the down payment was billed still leaves nothing behind. No issued down payment: nothing.
+    /// What a progress bill recovers of the down payment, in proportion to the work against the project's contract price as it is now:
+    /// the recovery to date is <c>round(down payment x work to date / contract price)</c> (multiplied first, rounded once), never more
+    /// than the down payment, so it is exactly the down payment when the work reaches the price, whatever change orders did to the price
+    /// since the down payment was billed. The bill recovers that less what earlier issued progress bills recovered, never below zero.
+    /// No issued down payment: nothing.
     /// </summary>
     /// <param name="advanceMinor">The issued down payment (0 when none).</param>
-    /// <param name="advanceBps">The rate the down payment was billed at, kept on its bill.</param>
     /// <param name="recoveredBeforeMinor">Recovered on the issued progress bills before this one.</param>
-    public static long AdvanceRecovery(long cumulativeWorkMinor, long contractPriceMinor, long advanceMinor, int advanceBps, long recoveredBeforeMinor)
+    public static long AdvanceRecovery(long cumulativeWorkMinor, long contractPriceMinor, long advanceMinor, long recoveredBeforeMinor)
     {
         if (cumulativeWorkMinor < 0) throw new ArgumentOutOfRangeException(nameof(cumulativeWorkMinor));
-        if (advanceBps is < 0 or > Whole) throw new ArgumentOutOfRangeException(nameof(advanceBps));
+        if (contractPriceMinor < 0) throw new ArgumentOutOfRangeException(nameof(contractPriceMinor));
+        if (recoveredBeforeMinor < 0) throw new ArgumentOutOfRangeException(nameof(recoveredBeforeMinor));
         if (advanceMinor <= 0) return 0;
 
-        var target = cumulativeWorkMinor >= contractPriceMinor
+        // Work at or past the price is the whole down payment (this is the cap, and it keeps a price of zero from dividing).
+        var toDate = cumulativeWorkMinor >= contractPriceMinor
             ? advanceMinor
-            : Math.Min(advanceMinor, LineAmounts.RoundToMinor(cumulativeWorkMinor * (decimal)advanceBps / Whole));
-        return Math.Max(0, target - recoveredBeforeMinor);
+            : Math.Min(advanceMinor, LineAmounts.RoundToMinor(advanceMinor * (decimal)cumulativeWorkMinor / contractPriceMinor));
+        return Math.Max(0, toDate - recoveredBeforeMinor);
     }
 
-    /// <summary><see cref="AdvanceRecovery(long, long, long, int, long)"/> against what the project's issued bills add up to now.</summary>
+    /// <summary><see cref="AdvanceRecovery(long, long, long, long)"/> against what the project's issued bills add up to now.</summary>
     public static long AdvanceRecovery(long cumulativeWorkMinor, long contractPriceMinor, BillingLedger ledger) =>
-        AdvanceRecovery(cumulativeWorkMinor, contractPriceMinor, ledger.AdvanceMinor, ledger.AdvanceBps, ledger.AdvanceRecoveredMinor);
+        AdvanceRecovery(cumulativeWorkMinor, contractPriceMinor, ledger.AdvanceMinor, ledger.AdvanceRecoveredMinor);
 
     /// <summary><paramref name="part"/> as a share of <paramref name="whole"/> in basis points (rounded once); null when there is no whole.</summary>
     public static int? ShareBps(long part, long whole) =>

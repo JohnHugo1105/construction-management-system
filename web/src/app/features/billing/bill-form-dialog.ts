@@ -325,11 +325,14 @@ export class BillFormDialog implements OnInit {
         return 'Release retention';
     }
   });
-  /** The down payment: the draft's own figures when changing it, otherwise what the server says a new one would ask for. */
+  /**
+   * The down payment: the draft's own figures when changing it (none while they are out of date: saving works them out again),
+   * otherwise what the server says a new one would ask for.
+   */
   protected readonly advanceRows = computed(() => {
     if (!this.isAdvance()) return [];
     const draft = this.bill();
-    if (draft) return advanceRows(draft, this.currency());
+    if (draft) return draft.isStale ? [] : advanceRows(draft, this.currency());
     const context = this.context();
     return context.advanceToBillMinor === null
       ? []

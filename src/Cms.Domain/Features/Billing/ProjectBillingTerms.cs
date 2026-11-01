@@ -56,7 +56,12 @@ public sealed class ProjectBillingTerms : AggregateRoot
     /// <summary>The client is a government agency: the down payment is capped and added variation orders are watched.</summary>
     public bool IsGovernmentClient { get; private set; }
 
-    public BillingTermsSnapshot Snapshot => new(RetentionBps, CreditableWithholdingBps, PaymentTermsDays, AdvanceBps, VatWithholdingBps);
+    /// <summary>
+    /// The terms a bill is made with. A government client's down payment is held to its cap here as well as when the terms are saved, so
+    /// a draft is never made, or checked, against more.
+    /// </summary>
+    public BillingTermsSnapshot Snapshot => new(RetentionBps, CreditableWithholdingBps, PaymentTermsDays,
+        IsGovernmentClient ? Math.Min(AdvanceBps, GovernmentContract.MaximumAdvanceBps) : AdvanceBps, VatWithholdingBps);
 
     public static ProjectBillingTerms Create(Guid id, Guid tenantId, Project project, int retentionBps, int withholdingBps, int paymentTermsDays,
         DateTimeOffset now, int advanceBps = DefaultAdvanceBps, int vatWithholdingBps = DefaultVatWithholdingBps, bool isGovernmentClient = false)
@@ -79,7 +84,7 @@ public sealed class ProjectBillingTerms : AggregateRoot
 
     /// <summary>
     /// Changes the terms for bills made from now on. Bills already made keep the terms they were made with, and a down payment already
-    /// billed is recovered at the rate it was billed at.
+    /// billed is recovered as billed. A down payment draft that no longer matches the new terms must be saved again before it is issued.
     /// </summary>
     public void Change(Project project, int retentionBps, int withholdingBps, int paymentTermsDays, DateTimeOffset now, int? advanceBps = null,
         int? vatWithholdingBps = null, bool? isGovernmentClient = null)

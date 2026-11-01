@@ -107,7 +107,10 @@ export interface Bill {
   readonly withholdingMinor: number;
   readonly vatWithholdingBps: number;
   readonly vatWithholdingMinor: number;
-  /** The down payment bill's own rate, or the rate a progress bill recovered at. */
+  /**
+   * The down payment bill's own rate, or the issued down payment's rate on a progress bill. A progress bill recovers in proportion to
+   * its work against the contract price, so its recovery is shown as an amount, never as this rate.
+   */
   readonly advanceBps: number;
   readonly advanceRecoveryMinor: number;
   readonly netReceivableMinor: number;
@@ -117,8 +120,13 @@ export interface Bill {
   readonly isOverdue: boolean;
   /** The project's latest issued bill: the only one that can be voided. */
   readonly isLatestIssued: boolean;
-  /** A draft whose figures no longer follow from what is billed now; it must be saved again before it is issued. */
+  /**
+   * A draft whose figures no longer follow from what is billed now (a down payment: from the contract price and the terms now); it must
+   * be saved again before it is issued.
+   */
   readonly isStale: boolean;
+  /** A down payment draft once a progress bill is issued: it can't be issued or changed any more, only discarded. */
+  readonly canOnlyBeDiscarded: boolean;
   readonly createdByName: string | null;
   readonly createdAtUtc: string;
   readonly issuedByName: string | null;

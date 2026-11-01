@@ -27,7 +27,7 @@ public static class BillingDemo
         // BILL-0001: 20% of the contract, paid in full by bank transfer.
         var first = ClientInvoice.DraftProgress(Guid.NewGuid(), tenant, riverside, today.AddDays(-75), "Progress billing no. 1: foundations and ground floor slab",
             Share(2_000), BillingLedger.Empty, terms.Snapshot, organization.VatRateBps, managerUserId, null, today, now);
-        BillingChain.Issue(first, riverside, null, BillingLedger.Empty, 1, accountantUserId, now);
+        BillingChain.Issue(first, riverside, null, BillingLedger.Empty, terms.Snapshot, 1, accountantUserId, now);
         first.RecordPayment(Guid.NewGuid(), riverside, first.NetReceivableMinor, today.AddDays(-48), ClientPaymentMethod.BankTransfer, "Demo transfer RLC-0001",
             null, accountantUserId, null, today, now);
 
@@ -35,7 +35,7 @@ public static class BillingDemo
         var afterFirst = new BillingLedger(first.GrossMinor, first.RetentionMinor, 0);
         var second = ClientInvoice.DraftProgress(Guid.NewGuid(), tenant, riverside, today.AddDays(-40), "Progress billing no. 2: tower A structure to level 5",
             Share(4_000), afterFirst, terms.Snapshot, organization.VatRateBps, managerUserId, null, today, now);
-        BillingChain.Issue(second, riverside, first, afterFirst, 2, accountantUserId, now);
+        BillingChain.Issue(second, riverside, first, afterFirst, terms.Snapshot, 2, accountantUserId, now);
         second.RecordPayment(Guid.NewGuid(), riverside, 5_000_000_00, today.AddDays(-5), ClientPaymentMethod.Cheque, "Demo cheque 004512", "First instalment",
             accountantUserId, null, today, now);
 
@@ -47,13 +47,14 @@ public static class BillingDemo
         db.AddRange(first, second, draft);
 
         // Harbor Warehouse (a private client): a 20% down payment, BILL-0003, issued and paid, and a draft first progress bill that recovers
-        // its share of the down payment (20% of that bill) so the preview shows the recovery.
+        // its share of the down payment (in proportion to its work: 10% of the price recovers 10% of the down payment) so the preview shows
+        // the recovery.
         var harborPrice = harbor.ContractPriceMinor ?? throw new InvalidOperationException("The billing demo needs Harbor Warehouse to have a contract price.");
         var harborTerms = ProjectBillingTerms.Create(Guid.NewGuid(), tenant, harbor, 1_000, 200, 30, now, advanceBps: 2_000);
         db.Add(harborTerms);
         var downPayment = ClientInvoice.DraftAdvance(Guid.NewGuid(), tenant, harbor, today.AddDays(-6), "Down payment, 20% of the contract", BillingLedger.Empty,
             false, harborTerms.Snapshot, managerUserId, null, today, now);
-        BillingChain.Issue(downPayment, harbor, null, BillingLedger.Empty, 3, accountantUserId, now);
+        BillingChain.Issue(downPayment, harbor, null, BillingLedger.Empty, harborTerms.Snapshot, 3, accountantUserId, now);
         downPayment.RecordPayment(Guid.NewGuid(), harbor, downPayment.NetReceivableMinor, today.AddDays(-3), ClientPaymentMethod.BankTransfer, "Demo transfer HL-0001",
             null, accountantUserId, null, today, now);
         var afterDownPayment = new BillingLedger(0, 0, 0, downPayment.GrossMinor, harborTerms.AdvanceBps, 0);

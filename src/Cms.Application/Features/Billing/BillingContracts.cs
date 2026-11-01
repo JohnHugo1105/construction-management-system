@@ -89,14 +89,17 @@ public sealed record ClientPaymentDto(Guid Id, long AmountMinor, DateOnly PaidOn
 
 /// <summary>
 /// One bill with its breakdown and payments. <c>IsLatestIssued</c> says it can be voided (when nothing is paid on it);
-/// <c>IsStale</c> says a draft's figures no longer follow from what is billed now and it must be saved again before it is issued.
-/// <c>AdvanceBps</c> is the down payment rate (the down payment bill's own, or the one a progress bill recovered at);
+/// <c>IsStale</c> says a draft's figures no longer follow from what is billed now (for a down payment: from the contract price and the
+/// terms now) and it must be saved again before it is issued. <c>CanOnlyBeDiscarded</c> says a down payment draft can no longer be issued
+/// or changed because a progress bill was issued. <c>AdvanceBps</c> is the down payment rate (the down payment bill's own, or the issued
+/// down payment's on a progress bill, which recovers in proportion to the work rather than at that rate);
 /// <c>AdvanceRecoveryMinor</c> what a progress bill recovers of the down payment; <c>VatWithholding*</c> the VAT the client withholds.
 /// </summary>
 public sealed record ClientInvoiceDto(Guid Id, string? Number, Guid ProjectId, string ProjectName, string ProjectStatus, long? ContractPriceMinor, string Kind,
     string Status, DateOnly BillingDate, DateOnly DueDate, string Description, long? CumulativeWorkMinor, long PreviousCumulativeWorkMinor, long GrossMinor,
     long NetMinor, long VatMinor, int VatRateBps, int RetentionBps, long RetentionMinor, int WithholdingBps, long WithholdingMinor, int VatWithholdingBps,
-    long VatWithholdingMinor, int AdvanceBps, long AdvanceRecoveryMinor, long NetReceivableMinor, int PaymentTermsDays, long PaidMinor, long OutstandingMinor, bool IsOverdue, bool IsLatestIssued, bool IsStale, string? CreatedByName,
+    long VatWithholdingMinor, int AdvanceBps, long AdvanceRecoveryMinor, long NetReceivableMinor, int PaymentTermsDays, long PaidMinor, long OutstandingMinor,
+    bool IsOverdue, bool IsLatestIssued, bool IsStale, bool CanOnlyBeDiscarded, string? CreatedByName,
     DateTimeOffset CreatedAtUtc, string? IssuedByName, DateTimeOffset? IssuedAtUtc, string? VoidedByName, DateTimeOffset? VoidedAtUtc, string? VoidReason,
     IReadOnlyList<ClientPaymentDto> Payments, int Version);
 

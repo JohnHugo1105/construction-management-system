@@ -95,6 +95,7 @@ export function bill(overrides: Partial<Bill> = {}): Bill {
     isOverdue: false,
     isLatestIssued: false,
     isStale: false,
+    canOnlyBeDiscarded: false,
     createdByName: 'Paolo Project-Manager',
     createdAtUtc: '2026-10-31T02:00:00Z',
     issuedByName: null,
@@ -163,8 +164,9 @@ export function preview(overrides: Partial<BillPreview> = {}): BillPreview {
 }
 
 /**
- * The second bill above on a project that took a 15% down payment (₱1,680,000.00) and has 5% VAT withheld: it recovers 15% of
- * ₱5,600,000.00 less the ₱336,000.00 the first bill recovered, and 5% of the ₱3,000,000.00 before VAT is withheld.
+ * The second bill above on a project that took a 15% down payment (₱1,680,000.00) and has 5% VAT withheld: half the contract price
+ * billed to date recovers half the down payment, ₱840,000.00, less the ₱336,000.00 the first bill recovered, and 5% of the
+ * ₱3,000,000.00 before VAT is withheld.
  */
 export const WITH_ADVANCE: Partial<Bill> & Partial<BillPreview> = {
   vatWithholdingBps: 500,

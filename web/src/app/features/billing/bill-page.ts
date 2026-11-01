@@ -120,11 +120,18 @@ export class BillPage {
         `${bill.number ? 'Voided' : 'Discarded'}${bill.voidedByName ? ` by ${bill.voidedByName}` : ''} on ${formatDateTime(bill.voidedAtUtc, zone)}`,
       );
     const progress = bill.kind === 'Progress';
+    const draft = bill.status === 'Draft';
     return {
       status: billStatus(bill),
       kind: BILL_KIND[bill.kind],
       issued: bill.status === 'Issued',
-      draft: bill.status === 'Draft',
+      draft,
+      // A down payment draft follows the contract price and the terms; any other draft follows the bills issued before it.
+      staleReason:
+        bill.kind === 'Advance'
+          ? 'The contract price or the down payment in the billing terms changed after it was prepared.'
+          : 'Another bill was issued or voided after it was prepared.',
+      leftover: draft && bill.canOnlyBeDiscarded,
       archived: bill.projectStatus === 'Archived',
       description: bill.description,
       billingDate: formatDate(bill.billingDate),
