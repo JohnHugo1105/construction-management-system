@@ -147,6 +147,11 @@ public static class CmsApiExtensions
     {
         if (!app.Configuration.GetValue("Database:MigrateOnStartup", false)) return;
         using var scope = app.Services.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<CmsDbContext>().Database.MigrateAsync();
+        var db = scope.ServiceProvider.GetRequiredService<CmsDbContext>();
+
+        // Migrations are the only way a real database changes. Until the first migration has been generated, a development database is
+        // created straight from the model so the application can run; once any migration exists this always takes the migration path.
+        if (db.Database.GetMigrations().Any()) await db.Database.MigrateAsync();
+        else await db.Database.EnsureCreatedAsync();
     }
 }

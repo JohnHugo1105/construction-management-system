@@ -31,6 +31,9 @@ test-results/
 **/data-protection-keys/
 **/logs/
 
+# Claude Code agent worktrees (local, never committed)
+.claude/worktrees/
+
 # OS / editor noise
 **/desktop.ini
 .DS_Store
