@@ -38,6 +38,77 @@ public sealed class BillingCalculatorTests
     }
 
     [Fact]
+    public void VAT_withholding_is_a_share_of_the_amount_before_VAT_taken_beside_the_income_tax_withholding()
+    {
+        // ₱2,240,000.00 with 5% VAT withheld: 5% of the net 2,000,000.00 = 100,000.00. The client pays 2,240,000.00 - 224,000.00 - 40,000.00
+        // - 100,000.00 = 1,876,000.00.
+        Assert.Equal(new BillAmounts(224_000_000, 200_000_000, 24_000_000, 22_400_000, 4_000_000, 187_600_000, 10_000_000, 0),
+            BillingCalculator.Progress(224_000_000, 1_200, 1_000, 200, 500));
+
+        // ₱10.05: net 897; 5% of it is 44.85 -> 45, rounded once on its own line. 1,005 - 101 - 9 - 45 = 850.
+        Assert.Equal(new BillAmounts(1_005, 897, 108, 101, 9, 850, 45, 0), BillingCalculator.Progress(1_005, 1_200, 1_000, 100, 500));
+
+        // ₱9.52: net 850; 1% is 8.5 -> 9 (half away from zero).
+        Assert.Equal(9, BillingCalculator.Progress(952, 1_200, 0, 0, 100).VatWithholdingMinor);
+    }
+
+    [Fact]
+    public void The_down_payment_recovery_comes_off_last_and_a_bill_whose_deductions_are_more_than_it_is_refused()
+    {
+        // ₱1.00 at 30% retention, 10% withholding, 12% VAT withheld: net 89 (89.29), retention 30, withholding 9 (8.93), VAT withheld 11
+        // (10.68). With 50 recovered the deductions are exactly the bill: the client pays nothing, which is allowed.
+        Assert.Equal(new BillAmounts(100, 89, 11, 30, 9, 0, 11, 50), BillingCalculator.Progress(100, 1_200, 3_000, 1_000, 1_200, 50));
+
+        var refused = Assert.Throws<DomainRuleException>(() => BillingCalculator.Progress(100, 1_200, 3_000, 1_000, 1_200, 51));
+        Assert.Equal("The deductions are more than this bill. Check the down payment, retention and withholding rates.", refused.Message);
+    }
+
+    [Fact]
+    public void A_down_payment_is_a_receivable_only_rounded_once_from_the_contract_price()
+    {
+        // 15% of ₱11,200,000.00 = 1,680,000.00, with no VAT split, retention or withholding.
+        Assert.Equal(new BillAmounts(168_000_000, 168_000_000, 0, 0, 0, 168_000_000), BillingCalculator.Advance(1_120_000_000, 1_500));
+        // 15% of ₱3,333.33 = 499.9995 -> 500.00; 50% of 1 centavo = 0.5 -> 1; 50% of 3 centavos = 1.5 -> 2.
+        Assert.Equal(50_000, BillingCalculator.Advance(333_333, 1_500).GrossMinor);
+        Assert.Equal(1, BillingCalculator.Advance(1, 5_000).GrossMinor);
+        Assert.Equal(2, BillingCalculator.Advance(3, 5_000).GrossMinor);
+    }
+
+    [Fact]
+    public void The_recovery_is_worked_out_on_the_work_to_date_so_it_is_exact_at_100_percent_where_per_bill_rounding_would_drift()
+    {
+        // A 7-centavo contract with a 50% down payment of 4 centavos (3.5 -> 4), billed one centavo at a time. Rounding each bill's own
+        // share (0.5 -> 1) would recover 7; the cumulative rule recovers 1, 0, 1, 0, 1, 0, 1 and exactly 4.
+        var recovered = 0L;
+        var each = new List<long>();
+        for (var cumulative = 1L; cumulative <= 7; cumulative++)
+        {
+            var recovery = BillingCalculator.AdvanceRecovery(cumulative, 7, 4, 5_000, recovered);
+            each.Add(recovery);
+            recovered += recovery;
+        }
+
+        Assert.Equal([1L, 0, 1, 0, 1, 0, 1], each);
+        Assert.Equal(4, recovered);
+    }
+
+    [Fact]
+    public void The_recovery_never_passes_the_down_payment_never_goes_below_zero_and_the_last_bill_takes_what_is_left()
+    {
+        // ₱1,500.00 down payment (15% of ₱10,000.00).
+        Assert.Equal(0, BillingCalculator.AdvanceRecovery(500_000, 1_000_000, 0, 0, 0));
+        Assert.Equal(75_000, BillingCalculator.AdvanceRecovery(500_000, 1_000_000, 150_000, 1_500, 0));
+
+        // The price was raised to ₱20,000.00: at ₱15,000.00 of work, 15% would be 2,250.00, but no more than the down payment is recovered.
+        Assert.Equal(75_000, BillingCalculator.AdvanceRecovery(1_500_000, 2_000_000, 150_000, 1_500, 75_000));
+        Assert.Equal(0, BillingCalculator.AdvanceRecovery(1_600_000, 2_000_000, 150_000, 1_500, 150_000));
+
+        // The price was cut to ₱9,000.00: the bill that reaches it recovers everything left (75.00 more than 15% of 9,000.00 would).
+        Assert.Equal(75_000, BillingCalculator.AdvanceRecovery(900_000, 900_000, 150_000, 1_500, 75_000));
+        Assert.Equal(60_000, BillingCalculator.AdvanceRecovery(899_999, 900_000, 150_000, 1_500, 75_000));
+    }
+
+    [Fact]
     public void The_share_billed_is_in_basis_points_rounded_once_and_absent_without_a_price()
     {
         Assert.Equal(2_000, BillingCalculator.ShareBps(224_000_000, 1_120_000_000));
@@ -74,10 +145,13 @@ public sealed class ClientInvoiceTests
         return draft;
     }
 
-    private static BillingLedger After(params ClientInvoice[] issued) => new(
+    internal static BillingLedger After(params ClientInvoice[] issued) => new(
         issued.Where(bill => bill.Kind == ClientInvoiceKind.Progress).Sum(bill => bill.GrossMinor),
         issued.Where(bill => bill.Kind == ClientInvoiceKind.Progress).Sum(bill => bill.RetentionMinor),
-        issued.Where(bill => bill.Kind == ClientInvoiceKind.RetentionRelease).Sum(bill => bill.GrossMinor));
+        issued.Where(bill => bill.Kind == ClientInvoiceKind.RetentionRelease).Sum(bill => bill.GrossMinor),
+        issued.Where(bill => bill.Kind == ClientInvoiceKind.Advance).Sum(bill => bill.GrossMinor),
+        issued.Where(bill => bill.Kind == ClientInvoiceKind.Advance).Select(bill => bill.AdvanceBps).DefaultIfEmpty(0).Max(),
+        issued.Where(bill => bill.Kind == ClientInvoiceKind.Progress).Sum(bill => bill.AdvanceRecoveryMinor));
 
     [Fact]
     public void A_draft_bills_the_work_to_date_with_the_terms_and_VAT_rate_copied_in_and_has_no_number()
@@ -158,7 +232,7 @@ public sealed class ClientInvoiceTests
         var first = Issue(Progress(project, 224_000_000), project, null, BillingLedger.Empty, 1);
         var ledger = After(first);
 
-        Assert.True(early.IsStale(ledger));
+        Assert.True(early.IsStale(ledger, Price));
         var stale = Assert.Throws<DomainRuleException>(() => BillingChain.Issue(early, project, first, ledger, 2, TestData.UserId, TestData.Now));
         Assert.StartsWith("Another bill was issued or voided after this draft was prepared", stale.Message);
         Assert.Null(first.NextInvoiceId);
@@ -166,7 +240,7 @@ public sealed class ClientInvoiceTests
 
         // Saved again, it bills only the difference and can be issued.
         early.UpdateDraft(project, BillDate, "Progress billing no. 2", 300_000_000, ledger, Terms, 1_200, TestData.Today, TestData.Now);
-        Assert.False(early.IsStale(ledger));
+        Assert.False(early.IsStale(ledger, Price));
         Assert.Equal(76_000_000, early.GrossMinor);
         Issue(early, project, first, ledger, 2);
         Assert.Equal("BILL-0002", early.Number);
@@ -317,7 +391,7 @@ public sealed class ClientInvoiceTests
 
         // Another release issued meanwhile leaves less held: this one is out of date.
         var lessHeld = held with { RetentionReleasedMinor = 10_000_000 };
-        Assert.True(release.IsStale(lessHeld));
+        Assert.True(release.IsStale(lessHeld, Price));
         Assert.StartsWith("Less retention is held now than when this release was prepared",
             Assert.Throws<DomainRuleException>(() => release.EnsureCanIssue(project, lessHeld)).Message);
         release.EnsureCanIssue(project, held);
@@ -334,10 +408,41 @@ public sealed class ClientInvoiceTests
         Assert.Equal(new BillingTermsSnapshot(3_000, 1_000, 180), terms.Snapshot);
         terms.Change(project, 0, 0, 0, TestData.Now);
         Assert.Equal(new BillingTermsSnapshot(0, 0, 0), terms.Snapshot);
-        Assert.Equal(new BillingTermsSnapshot(1_000, 0, 30), BillingTermsSnapshot.Defaults);
+        Assert.Equal(new BillingTermsSnapshot(1_000, 0, 30, 0, 0), BillingTermsSnapshot.Defaults);
 
         project.Archive(ArchiveReason.Finished, null, TestData.Now);
         Assert.Throws<DomainRuleException>(() => terms.Change(project, 500, 0, 30, TestData.Now));
+    }
+
+    [Fact]
+    public void The_down_payment_and_VAT_withholding_are_bounded_and_a_government_client_caps_the_down_payment_at_15_percent()
+    {
+        var project = PricedProject();
+        var ex = Assert.Throws<ValidationFailedException>(() =>
+            ProjectBillingTerms.Create(Guid.NewGuid(), TestData.Tenant, project, 1_000, 0, 30, TestData.Now, advanceBps: 5_001, vatWithholdingBps: 1_201));
+        Assert.Equal(["advanceBps", "vatWithholdingBps"], ex.Errors.Keys);
+        Assert.Equal("Enter a down payment between 0% and 50% of the contract price.", ex.Errors["advanceBps"][0]);
+        Assert.Equal("Enter a VAT withholding between 0% and 12%.", ex.Errors["vatWithholdingBps"][0]);
+        Assert.Equal("advanceBps", Assert.Single(Assert.Throws<ValidationFailedException>(() =>
+            ProjectBillingTerms.Create(Guid.NewGuid(), TestData.Tenant, project, 1_000, 0, 30, TestData.Now, advanceBps: -1)).Errors.Keys));
+
+        // A private client may take up to 50%; a government client up to 15%.
+        var terms = ProjectBillingTerms.Create(Guid.NewGuid(), TestData.Tenant, project, 1_000, 200, 30, TestData.Now, 5_000, 1_200);
+        Assert.Equal(new BillingTermsSnapshot(1_000, 200, 30, 5_000, 1_200), terms.Snapshot);
+        Assert.False(terms.IsGovernmentClient);
+
+        var government = Assert.Throws<ValidationFailedException>(() => terms.Change(project, 1_000, 200, 30, TestData.Now, isGovernmentClient: true));
+        Assert.Equal(ProjectBillingTerms.GovernmentAdvanceMessage, government.Errors["advanceBps"][0]);
+        Assert.Equal("A government project allows a down payment of up to 15% of the contract price.", ProjectBillingTerms.GovernmentAdvanceMessage);
+        Assert.False(terms.IsGovernmentClient);
+
+        terms.Change(project, 1_000, 200, 30, TestData.Now, 1_500, null, true);
+        Assert.Equal((1_500, 1_200, true), (terms.AdvanceBps, terms.VatWithholdingBps, terms.IsGovernmentClient));
+
+        // Left out, the down payment, the VAT withholding and the government flag keep what is saved.
+        terms.Change(project, 500, 100, 15, TestData.Now);
+        Assert.Equal(new BillingTermsSnapshot(500, 100, 15, 1_500, 1_200), terms.Snapshot);
+        Assert.True(terms.IsGovernmentClient);
     }
 
     private static ClientPayment Payment(ClientInvoice bill, Project project, long amount) =>
@@ -347,4 +452,247 @@ public sealed class ClientInvoiceTests
     private static ClientInvoice Release(Project project, long amount, BillingLedger ledger) =>
         ClientInvoice.DraftRetentionRelease(Guid.NewGuid(), TestData.Tenant, project, BillDate, "Release of retention", amount, ledger, Terms, TestData.UserId,
             null, TestData.Today, TestData.Now);
+}
+
+public sealed class AdvanceBillTests
+{
+    // A ₱11,200,000.00 contract (VAT included). Terms: 10% retention, 2% withholding, 30 days, 15% down payment, 5% VAT withheld.
+    private const long Price = 1_120_000_000;
+    private static readonly BillingTermsSnapshot Terms = new(1_000, 200, 30, 1_500, 500);
+    private static readonly DateOnly BillDate = new(2026, 10, 31);
+
+    private static Project PricedProject(long? price = Price) => TestData.NewProject(contractPriceMinor: price);
+
+    private static ClientInvoice Advance(Project project, BillingLedger? ledger = null, bool anotherExists = false, BillingTermsSnapshot? terms = null,
+        DateOnly? date = null, string? description = "Down payment") =>
+        ClientInvoice.DraftAdvance(Guid.NewGuid(), TestData.Tenant, project, date ?? BillDate, description, ledger ?? BillingLedger.Empty, anotherExists,
+            terms ?? Terms, TestData.UserId, null, TestData.Today, TestData.Now);
+
+    private static ClientInvoice Progress(Project project, long cumulative, BillingLedger ledger, BillingTermsSnapshot? terms = null) =>
+        ClientInvoice.DraftProgress(Guid.NewGuid(), TestData.Tenant, project, BillDate, "Progress billing", cumulative, ledger, terms ?? Terms, 1_200,
+            TestData.UserId, null, TestData.Today, TestData.Now);
+
+    private static ClientInvoice Issue(ClientInvoice draft, Project project, ClientInvoice? head, BillingLedger ledger, long number)
+    {
+        BillingChain.Issue(draft, project, head, ledger, number, TestData.UserId, TestData.Now);
+        return draft;
+    }
+
+    private static BillingLedger After(params ClientInvoice[] issued) => ClientInvoiceTests.After(issued);
+
+    private static (long Gross, long Retention, long Withholding, long VatWithholding, long Recovery, long Receivable) Figures(ClientInvoice bill) =>
+        (bill.GrossMinor, bill.RetentionMinor, bill.WithholdingMinor, bill.VatWithholdingMinor, bill.AdvanceRecoveryMinor, bill.NetReceivableMinor);
+
+    [Fact]
+    public void A_down_payment_bill_asks_for_its_share_of_the_contract_price_with_nothing_withheld_and_keeps_its_rate()
+    {
+        var project = PricedProject();
+        var advance = Advance(project);
+
+        Assert.Equal((ClientInvoiceKind.Advance, ClientInvoiceStatus.Draft, (string?)null, (long?)null), (advance.Kind, advance.Status, advance.Number,
+            advance.CumulativeWorkMinor));
+        Assert.Equal((168_000_000L, 168_000_000L, 0L), (advance.GrossMinor, advance.NetMinor, advance.VatMinor));
+        Assert.Equal((0L, 0L, 0L, 0L, 168_000_000L), (advance.RetentionMinor, advance.WithholdingMinor, advance.VatWithholdingMinor,
+            advance.AdvanceRecoveryMinor, advance.NetReceivableMinor));
+        Assert.Equal((1_500, 0, 0, 0, 0), (advance.AdvanceBps, advance.VatRateBps, advance.RetentionBps, advance.WithholdingBps, advance.VatWithholdingBps));
+        Assert.Equal(new DateOnly(2026, 11, 30), advance.DueDate);
+        Assert.False(advance.IsStale(BillingLedger.Empty, Price));
+
+        Issue(advance, project, null, BillingLedger.Empty, 1);
+        Assert.Equal(("BILL-0001", 1), (advance.Number, advance.ChainIndex!.Value));
+        Assert.Equal(new BillingLedger(0, 0, 0, 168_000_000, 1_500, 0), After(advance));
+    }
+
+    [Fact]
+    public void Progress_bills_recover_the_down_payment_on_the_work_to_date_and_the_last_bill_leaves_nothing_to_recover()
+    {
+        var project = PricedProject();
+        var advance = Issue(Advance(project), project, null, BillingLedger.Empty, 1);
+
+        // 20% of the work: recover 15% of 2,240,000.00 = 336,000.00. Retention 224,000.00, withholding 40,000.00, VAT withheld 5% of the
+        // net 2,000,000.00 = 100,000.00. The client pays 2,240,000.00 - 224,000.00 - 40,000.00 - 100,000.00 - 336,000.00 = 1,540,000.00.
+        var first = Issue(Progress(project, 224_000_000, After(advance)), project, advance, After(advance), 2);
+        Assert.Equal((224_000_000L, 22_400_000L, 4_000_000L, 10_000_000L, 33_600_000L, 154_000_000L), Figures(first));
+        Assert.Equal((1_500, 500), (first.AdvanceBps, first.VatWithholdingBps));
+
+        // 50% to date: 15% of 5,600,000.00 = 840,000.00, less 336,000.00 already recovered = 504,000.00.
+        var second = Issue(Progress(project, 560_000_000, After(advance, first)), project, first, After(advance, first), 3);
+        Assert.Equal((336_000_000L, 33_600_000L, 6_000_000L, 15_000_000L, 50_400_000L, 231_000_000L), Figures(second));
+
+        // The last bill brings the work to the contract price and recovers exactly what is left: 1,680,000.00 - 840,000.00.
+        var last = Issue(Progress(project, Price, After(advance, first, second)), project, second, After(advance, first, second), 4);
+        Assert.Equal((560_000_000L, 56_000_000L, 10_000_000L, 25_000_000L, 84_000_000L, 385_000_000L), Figures(last));
+
+        var ledger = After(advance, first, second, last);
+        Assert.Equal((168_000_000L, 168_000_000L, 0L), (ledger.AdvanceMinor, ledger.AdvanceRecoveredMinor, ledger.AdvanceToRecoverMinor));
+        // Everything the client is asked for adds up to the price less retention and both withholdings: the down payment is never billed twice.
+        Assert.Equal(Price - 112_000_000 - 20_000_000 - 50_000_000,
+            new[] { advance, first, second, last }.Sum(bill => bill.NetReceivableMinor));
+    }
+
+    [Fact]
+    public void Recovery_uses_the_rate_kept_on_the_down_payment_bill_not_the_terms_as_later_changed()
+    {
+        var project = PricedProject();
+        var advance = Issue(Advance(project), project, null, BillingLedger.Empty, 1);
+
+        var laterTerms = Terms with { AdvanceBps = 3_000 };
+        var bill = Progress(project, 224_000_000, After(advance), laterTerms);
+
+        Assert.Equal((33_600_000L, 1_500), (bill.AdvanceRecoveryMinor, bill.AdvanceBps));
+    }
+
+    [Fact]
+    public void Without_an_issued_down_payment_nothing_is_recovered()
+    {
+        var project = PricedProject();
+        var draftAdvance = Advance(project);
+        var bill = Progress(project, 224_000_000, BillingLedger.Empty);
+
+        Assert.Equal(ClientInvoiceStatus.Draft, draftAdvance.Status);
+        Assert.Equal((0L, 0), (bill.AdvanceRecoveryMinor, bill.AdvanceBps));
+        Assert.Equal(224_000_000 - 22_400_000 - 4_000_000 - 10_000_000, bill.NetReceivableMinor);
+    }
+
+    [Fact]
+    public void Voiding_the_latest_progress_bill_gives_back_the_recovery_it_took()
+    {
+        var project = PricedProject();
+        var advance = Issue(Advance(project), project, null, BillingLedger.Empty, 1);
+        var first = Issue(Progress(project, 224_000_000, After(advance)), project, advance, After(advance), 2);
+        var second = Issue(Progress(project, 560_000_000, After(advance, first)), project, first, After(advance, first), 3);
+        Assert.Equal(84_000_000, After(advance, first, second).AdvanceRecoveredMinor);
+
+        BillingChain.Void(second, project, first, null, "Wrong period", TestData.UserId, TestData.Now);
+
+        var ledger = After(advance, first);
+        Assert.Equal((33_600_000L, 134_400_000L), (ledger.AdvanceRecoveredMinor, ledger.AdvanceToRecoverMinor));
+        // Billed again to 40%: 15% of 4,480,000.00 = 672,000.00, less the 336,000.00 the first bill recovered.
+        Assert.Equal(33_600_000, Progress(project, 448_000_000, ledger).AdvanceRecoveryMinor);
+        Assert.Equal(50_400_000, Issue(Progress(project, 560_000_000, ledger), project, first, ledger, 4).AdvanceRecoveryMinor);
+    }
+
+    [Fact]
+    public void A_progress_draft_made_before_the_down_payment_was_issued_is_stale_and_refused_until_saved_again()
+    {
+        var project = PricedProject();
+        var draft = Progress(project, 224_000_000, BillingLedger.Empty);
+        Assert.Equal(0, draft.AdvanceRecoveryMinor);
+
+        var advance = Issue(Advance(project), project, null, BillingLedger.Empty, 1);
+        var ledger = After(advance);
+        Assert.True(draft.IsStale(ledger, Price));
+        Assert.Equal(ClientInvoice.StaleDraftMessage,
+            Assert.Throws<DomainRuleException>(() => BillingChain.Issue(draft, project, advance, ledger, 2, TestData.UserId, TestData.Now)).Message);
+        Assert.Equal(ClientInvoiceStatus.Draft, draft.Status);
+        Assert.Null(advance.NextInvoiceId);
+
+        draft.UpdateDraft(project, BillDate, "Progress billing", 224_000_000, ledger, Terms, 1_200, TestData.Today, TestData.Now);
+        Assert.False(draft.IsStale(ledger, Price));
+        Assert.Equal((33_600_000L, 154_000_000L), (draft.AdvanceRecoveryMinor, draft.NetReceivableMinor));
+        Issue(draft, project, advance, ledger, 2);
+        Assert.Equal("BILL-0002", draft.Number);
+    }
+
+    [Fact]
+    public void The_down_payment_comes_before_the_first_progress_bill_needs_a_price_and_a_rate_and_exists_once()
+    {
+        var project = PricedProject();
+        Assert.Equal("Bill the down payment before the first progress bill.", ClientInvoice.AdvanceAfterProgressMessage);
+        Assert.Equal(ClientInvoice.AdvanceAfterProgressMessage,
+            Assert.Throws<DomainRuleException>(() => Advance(project, new BillingLedger(224_000_000, 22_400_000, 0))).Message);
+        Assert.Equal(ClientInvoice.AdvanceExistsMessage, Assert.Throws<DomainRuleException>(() => Advance(project, anotherExists: true)).Message);
+        Assert.Equal(ClientInvoice.NoAdvanceTermsMessage,
+            Assert.Throws<DomainRuleException>(() => Advance(project, terms: Terms with { AdvanceBps = 0 })).Message);
+        Assert.Equal(ClientInvoice.NoContractPriceMessage, Assert.Throws<DomainRuleException>(() => Advance(PricedProject(null))).Message);
+
+        var invalid = Assert.Throws<ValidationFailedException>(() => Advance(project, date: new DateOnly(2026, 11, 3), description: " "));
+        Assert.Equal(["billingDate", "description"], invalid.Errors.Keys);
+
+        // A draft made earlier can't be issued once a progress bill is issued.
+        var advance = Advance(project);
+        var progress = Issue(Progress(project, 224_000_000, BillingLedger.Empty), project, null, BillingLedger.Empty, 1);
+        Assert.Equal(ClientInvoice.AdvanceAfterProgressMessage,
+            Assert.Throws<DomainRuleException>(() => BillingChain.Issue(advance, project, progress, After(progress), 2, TestData.UserId, TestData.Now)).Message);
+        Assert.Equal(ClientInvoiceStatus.Draft, advance.Status);
+
+        var archived = PricedProject();
+        archived.Archive(ArchiveReason.Finished, null, TestData.Now);
+        Assert.Equal("This project is archived. Restore it before making changes.", Assert.Throws<DomainRuleException>(() => Advance(archived)).Message);
+    }
+
+    [Fact]
+    public void A_down_payment_bill_is_voided_only_while_it_is_the_latest_bill_and_nothing_is_paid_on_it()
+    {
+        var project = PricedProject();
+        var advance = Issue(Advance(project), project, null, BillingLedger.Empty, 1);
+        var payment = advance.RecordPayment(Guid.NewGuid(), project, 50_000_000, BillDate, ClientPaymentMethod.Cheque, null, null, TestData.UserId, null,
+            TestData.Today, TestData.Now);
+        Assert.Equal(118_000_000, advance.OutstandingMinor);
+        Assert.Equal("This bill has payments recorded against it. Void those payments first, then void the bill.",
+            Assert.Throws<DomainRuleException>(() => BillingChain.Void(advance, project, null, null, "Wrong", TestData.UserId, TestData.Now)).Message);
+        advance.VoidPayment(payment.Id, project, "Cheque bounced", TestData.UserId, TestData.Now);
+
+        var first = Issue(Progress(project, 224_000_000, After(advance)), project, advance, After(advance), 2);
+        Assert.Equal("Only the latest bill of a project can be voided. Void BILL-0002 first.",
+            Assert.Throws<DomainRuleException>(() => BillingChain.Void(advance, project, null, "BILL-0002", "Wrong", TestData.UserId, TestData.Now)).Message);
+
+        BillingChain.Void(first, project, advance, null, "Wrong", TestData.UserId, TestData.Now);
+        BillingChain.Void(advance, project, null, null, "Client paid no down payment", TestData.UserId, TestData.Now);
+        Assert.Equal(ClientInvoiceStatus.Void, advance.Status);
+        Assert.Equal(0, Progress(project, 224_000_000, After()).AdvanceRecoveryMinor);
+    }
+
+    [Fact]
+    public void A_bill_whose_deductions_are_more_than_it_is_refused()
+    {
+        // ₱10,000.00 with a 50% down payment, then the price is cut to ₱1,100.00: the bill that reaches it would recover 4,500.00 from a
+        // 100.00 bill.
+        var terms = new BillingTermsSnapshot(3_000, 1_000, 30, 5_000, 1_200);
+        var project = PricedProject(1_000_000);
+        var advance = Issue(Advance(project, terms: terms), project, null, BillingLedger.Empty, 1);
+        var first = Issue(Progress(project, 100_000, After(advance), terms), project, advance, After(advance), 2);
+        // 100,000 - 30,000 - 8,929 - 10,714 - 50,000 = 357 left for the client to pay.
+        Assert.Equal((100_000L, 30_000L, 8_929L, 10_714L, 50_000L, 357L), Figures(first));
+
+        project.UpdateDetails(project.Name, null, null, 110_000, project.StartDate, null, TestData.Now);
+        Assert.Equal(BillingCalculator.DeductionsExceedBillMessage,
+            Assert.Throws<DomainRuleException>(() => Progress(project, 110_000, After(advance, first), terms)).Message);
+    }
+
+    [Fact]
+    public void A_price_change_that_makes_a_draft_the_last_bill_makes_it_stale_and_the_last_bill_recovers_everything_left()
+    {
+        // ₱1,500.00 down payment (15% of ₱10,000.00); half the work recovers 750.00.
+        var project = PricedProject(1_000_000);
+        var advance = Issue(Advance(project), project, null, BillingLedger.Empty, 1);
+        var half = Issue(Progress(project, 500_000, After(advance)), project, advance, After(advance), 2);
+        var ledger = After(advance, half);
+        var draft = Progress(project, 900_000, ledger);
+        Assert.Equal(60_000, draft.AdvanceRecoveryMinor);
+
+        // The price is cut to ₱9,000.00: the draft is now the last bill and must recover all 750.00 left.
+        project.UpdateDetails(project.Name, null, null, 900_000, project.StartDate, null, TestData.Now);
+        Assert.True(draft.IsStale(ledger, 900_000));
+        Assert.Equal(ClientInvoice.StaleDraftMessage, Assert.Throws<DomainRuleException>(() => draft.EnsureCanIssue(project, ledger)).Message);
+
+        draft.UpdateDraft(project, BillDate, "Final billing", 900_000, ledger, Terms, 1_200, TestData.Today, TestData.Now);
+        Assert.Equal(75_000, draft.AdvanceRecoveryMinor);
+        Issue(draft, project, half, ledger, 3);
+        Assert.Equal(0, After(advance, half, draft).AdvanceToRecoverMinor);
+    }
+}
+
+public sealed class GovernmentContractTests
+{
+    [Fact]
+    public void Added_variations_are_flagged_only_once_they_pass_10_percent_of_the_original_price()
+    {
+        // 10% of ₱10,000.05 = 1,000.005 -> 1,000.01.
+        Assert.Equal(new VariationLimit(100_001, 100_001, false), GovernmentContract.Variations(1_000_005, 60_000, 40_001));
+        Assert.Equal(new VariationLimit(100_001, 100_002, true), GovernmentContract.Variations(1_000_005, 100_001, 1));
+        Assert.Equal(new VariationLimit(0, 0, false), GovernmentContract.Variations(0, 0, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => GovernmentContract.Variations(1_000_000, -1, 0));
+        Assert.Equal((1_500, 1_000), (GovernmentContract.MaximumAdvanceBps, GovernmentContract.VariationLimitBps));
+    }
 }

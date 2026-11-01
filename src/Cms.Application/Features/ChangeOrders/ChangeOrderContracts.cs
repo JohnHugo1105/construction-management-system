@@ -88,11 +88,22 @@ public sealed record ChangeOrderLineDto(Guid Id, int LineNumber, string Kind, Gu
     long EffectVatMinor, long EffectGrossMinor);
 
 /// <param name="VoidBlockedBy">For an approved order: the number of a change order approved after it that must be voided first.</param>
+/// <param name="GovernmentLimit">Where added work stands against a government client's limit (advisory). Read-only; filled by the service.</param>
 public sealed record ChangeOrderDto(Guid Id, Guid ProjectId, string? Number, string Title, string? Description, string Reason, string Status,
     string? VoidedFromStatus, long ContractPriceDeltaMinor, long BudgetEffectNetMinor, long BudgetEffectVatMinor, long BudgetEffectGrossMinor,
     string? CreatedBy, DateTimeOffset CreatedAtUtc, string? SubmittedBy, DateTimeOffset? SubmittedAtUtc, string? DecidedBy,
     DateTimeOffset? DecidedAtUtc, string? DecisionReason, string? VoidedBy, DateTimeOffset? VoidedAtUtc, string? VoidReason, string? VoidBlockedBy,
-    IReadOnlyList<ChangeOrderLineDto> Lines, int Version);
+    IReadOnlyList<ChangeOrderLineDto> Lines, int Version, GovernmentLimitDto? GovernmentLimit = null);
+
+/// <summary>
+/// Added variation orders on a government project against the agency's limit. <c>Applies</c> only for a government client with a locked
+/// baseline; then <c>LimitMinor</c> is 10% of the original (baseline) contract price and <c>UsedMinor</c> the approved price increases plus
+/// this order's own while it waits for approval. <c>Exceeds</c> is a warning: approving is still allowed (the agency decides).
+/// </summary>
+public sealed record GovernmentLimitDto(bool Applies, long LimitMinor, long UsedMinor, bool Exceeds)
+{
+    public static GovernmentLimitDto None { get; } = new(false, 0, 0, false);
+}
 
 /// <summary><c>Reason</c> is <c>ClientRequest</c>, <c>DesignChange</c>, <c>SiteCondition</c>, <c>ErrorOrOmission</c> or <c>Other</c>.</summary>
 public sealed record CreateChangeOrderRequest(string? Title, string? Description, string? Reason, long ContractPriceDeltaMinor, string? ClientRequestId);

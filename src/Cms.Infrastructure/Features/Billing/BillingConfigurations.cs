@@ -43,6 +43,9 @@ internal sealed class ClientInvoiceConfiguration : IEntityTypeConfiguration<Clie
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.ChainIndex }).IsUnique().HasFilter("[Status] = 'Issued'");
         builder.HasIndex(item => new { item.TenantId, item.Number }).IsUnique().HasFilter("[Number] IS NOT NULL");
         builder.HasIndex(item => new { item.TenantId, item.ClientRequestId }).IsUnique().HasFilter("[ClientRequestId] IS NOT NULL");
+        // One live (not void) down payment bill per project, even when two people prepare one at the same moment.
+        builder.HasIndex(item => new { item.TenantId, item.ProjectId }).IsUnique().HasFilter("[Kind] = 'Advance' AND [Status] <> 'Void'")
+            .HasDatabaseName("IX_ClientInvoices_OneLiveAdvancePerProject");
         // A project's bills (its tab, its ledger, its latest issued bill) and the company's bills by date and by due date.
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status });
         builder.HasIndex(item => new { item.TenantId, item.Status, item.DueDate });

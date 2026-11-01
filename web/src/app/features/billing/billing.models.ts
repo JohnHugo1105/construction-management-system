@@ -3,7 +3,7 @@
 
 import { PagedResult } from '../../core/api/paged-result';
 
-export type BillKind = 'Progress' | 'RetentionRelease';
+export type BillKind = 'Progress' | 'RetentionRelease' | 'Advance';
 export type BillStatus = 'Draft' | 'Issued' | 'Void';
 export type PaymentMethod = 'BankTransfer' | 'Cheque' | 'Cash' | 'Other';
 
@@ -11,6 +11,11 @@ export interface BillingTerms {
   readonly retentionBps: number;
   readonly creditableWithholdingBps: number;
   readonly paymentTermsDays: number;
+  /** The down payment as a share of the contract price; 0 for none. */
+  readonly advanceBps: number;
+  /** The share of the amount before VAT the client withholds as VAT. */
+  readonly vatWithholdingBps: number;
+  readonly isGovernmentClient: boolean;
   /** True while the project's terms were never saved and the defaults apply. */
   readonly isDefault: boolean;
   readonly version: number;
@@ -50,6 +55,14 @@ export interface ProjectBilling {
   readonly overdueMinor: number;
   readonly overdueCount: number;
   readonly canReleaseRetention: boolean;
+  /** The issued down payment, what issued progress bills recovered of it, and the rest. */
+  readonly advanceBilledMinor: number;
+  readonly advanceRecoveredMinor: number;
+  readonly advanceToRecoverMinor: number;
+  /** The project's down payment bill that is not void (draft or issued), if any. */
+  readonly advanceBillId: string | null;
+  /** What a down payment bill would ask for now; null while one can't be prepared. */
+  readonly advanceToBillMinor: number | null;
   readonly terms: BillingTerms;
   readonly vatRateBps: number;
   readonly bills: PagedResult<BillListItem>;
@@ -92,6 +105,11 @@ export interface Bill {
   readonly retentionMinor: number;
   readonly withholdingBps: number;
   readonly withholdingMinor: number;
+  readonly vatWithholdingBps: number;
+  readonly vatWithholdingMinor: number;
+  /** The down payment bill's own rate, or the rate a progress bill recovered at. */
+  readonly advanceBps: number;
+  readonly advanceRecoveryMinor: number;
   readonly netReceivableMinor: number;
   readonly paymentTermsDays: number;
   readonly paidMinor: number;
@@ -124,6 +142,9 @@ export interface BillPreview {
   readonly retentionMinor: number;
   readonly withholdingBps: number;
   readonly withholdingMinor: number;
+  readonly vatWithholdingBps: number;
+  readonly vatWithholdingMinor: number;
+  readonly advanceRecoveryMinor: number;
   readonly netReceivableMinor: number;
   readonly paymentTermsDays: number;
   readonly dueDate: string;
@@ -151,6 +172,9 @@ export interface SaveTermsRequest {
   readonly retentionBps: number;
   readonly creditableWithholdingBps: number;
   readonly paymentTermsDays: number;
+  readonly advanceBps: number;
+  readonly vatWithholdingBps: number;
+  readonly isGovernmentClient: boolean;
   readonly version: number;
 }
 

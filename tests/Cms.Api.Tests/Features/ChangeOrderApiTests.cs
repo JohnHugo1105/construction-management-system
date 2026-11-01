@@ -1,6 +1,7 @@
 using System.Net;
 using Cms.Api.Tests.Infrastructure;
 using Cms.Application.Common;
+using Cms.Application.Features.Billing;
 using Cms.Application.Features.ChangeOrders;
 using Cms.Application.Features.Costing;
 using Cms.Application.Features.Projects;
@@ -583,7 +584,49 @@ public sealed class ChangeOrderApiTests : IClassFixture<CmsApiFactory>
         Assert.True((await fixture.Client.GetAsync<BudgetBaselineDto>(fixture.Baseline)).Reconciles);
 
         Assert.Equal(small, large);
-        // List: the project, the count and the page. Detail: the order with names, and its lines. Baseline: the project, the active lines, the orders.
-        Assert.Equal((3, 2, 3), large);
+        // List: the project, the count and the page. Detail: the order with names, its lines, and the government limit (the terms, the
+        // baseline price and the approved increases in one statement). Baseline: the project, the active lines, the orders.
+        Assert.Equal((3, 3, 3), large);
+    }
+
+    // ---- Government limit -------------------------------------------------------------------------------------------------------
+
+    [SqlServerFact]
+    public async Task A_government_project_flags_added_work_past_10_percent_of_the_original_price_and_still_allows_approval()
+    {
+        var fixture = await ProjectWithBudgetAsync();
+        using var _c = fixture.Client;
+
+        // A private client: nothing applies.
+        var large = await DraftAsync(fixture, priceDelta: 6_000_000, title: "Extra basement");
+        Assert.Equal(new GovernmentLimitDto(false, 0, 0, false), large.GovernmentLimit);
+
+        await fixture.Client.PutAsync<BillingTermsDto>($"/api/projects/{fixture.Project.Id}/billing/terms",
+            new { retentionBps = 1_000, creditableWithholdingBps = 0, paymentTermsDays = 30, version = 0, isGovernmentClient = true });
+
+        // The limit is 10% of the ₱500,000.00 original price: 50,000.00. An order for exactly that reaches the limit without passing it;
+        // the 60,000.00 draft passes it.
+        var drainage = await DraftAsync(fixture, priceDelta: 5_000_000, title: "Drainage");
+        Assert.Equal(new GovernmentLimitDto(true, 5_000_000, 5_000_000, false), drainage.GovernmentLimit);
+        Assert.Equal(new GovernmentLimitDto(true, 5_000_000, 6_000_000, true),
+            (await fixture.Client.GetAsync<ChangeOrderDto>($"/api/change-orders/{large.Id}")).GovernmentLimit);
+
+        var approved = await ApproveAsync(fixture, await SubmitAsync(fixture, drainage));
+        Assert.Equal(new GovernmentLimitDto(true, 5_000_000, 5_000_000, false), approved.GovernmentLimit);
+
+        // A price cut does not reduce the added work.
+        var cut = await ApproveAsync(fixture, await SubmitAsync(fixture, await DraftAsync(fixture, priceDelta: -1_000_000, title: "Omit the fence")));
+        Assert.Equal(new GovernmentLimitDto(true, 5_000_000, 5_000_000, false), cut.GovernmentLimit);
+
+        // Now even 1.00 more passes the limit. It is a warning: approval still goes through.
+        var signage = await SubmitAsync(fixture, await DraftAsync(fixture, priceDelta: 100, title: "Signage"));
+        Assert.Equal(new GovernmentLimitDto(true, 5_000_000, 5_000_100, true), signage.GovernmentLimit);
+        var approvedOver = await ApproveAsync(fixture, signage);
+        Assert.Equal(("Approved", true), (approvedOver.Status, approvedOver.GovernmentLimit!.Exceeds));
+
+        // A discarded order no longer counts its own increase: only the approved ones do.
+        var discarded = await fixture.Client.PostAsync<ChangeOrderDto>($"/api/change-orders/{large.Id}/discard",
+            new { reason = "Client withdrew it", version = large.Version });
+        Assert.Equal(("Voided", new GovernmentLimitDto(true, 5_000_000, 5_000_100, true)), (discarded.Status, discarded.GovernmentLimit));
     }
 }

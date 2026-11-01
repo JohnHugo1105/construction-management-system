@@ -1,6 +1,7 @@
 using Cms.Application.Common;
 using Cms.Application.Features.Billing;
 using Cms.Domain.Features.Billing;
+using Cms.Domain.Features.ChangeOrders;
 using Cms.Domain.Features.Identity;
 using Cms.Domain.Features.Organizations;
 using Cms.Domain.Features.Projects;
@@ -46,7 +47,10 @@ internal sealed class ProjectFigures
 /// </remarks>
 internal static class BillingQueries
 {
-    /// <summary>What a project's issued bills add up to: work billed (progress gross), retention withheld and released.</summary>
+    /// <summary>
+    /// What a project's issued bills add up to: work billed (progress gross), retention withheld and released, the down payment (with
+    /// the rate its bill keeps; at most one is issued) and what progress bills recovered of it. One statement.
+    /// </summary>
     public static async Task<BillingLedger> LedgerAsync(CmsDbContext db, Guid projectId, CancellationToken cancellationToken) =>
         await db.Set<ClientInvoice>().AsNoTracking()
             .Where(bill => bill.ProjectId == projectId && bill.Status == ClientInvoiceStatus.Issued)
@@ -54,7 +58,10 @@ internal static class BillingQueries
             .Select(group => new BillingLedger(
                 group.Sum(bill => bill.Kind == ClientInvoiceKind.Progress ? bill.GrossMinor : 0L),
                 group.Sum(bill => bill.Kind == ClientInvoiceKind.Progress ? bill.RetentionMinor : 0L),
-                group.Sum(bill => bill.Kind == ClientInvoiceKind.RetentionRelease ? bill.GrossMinor : 0L)))
+                group.Sum(bill => bill.Kind == ClientInvoiceKind.RetentionRelease ? bill.GrossMinor : 0L),
+                group.Sum(bill => bill.Kind == ClientInvoiceKind.Advance ? bill.GrossMinor : 0L),
+                group.Max(bill => bill.Kind == ClientInvoiceKind.Advance ? bill.AdvanceBps : 0),
+                group.Sum(bill => bill.Kind == ClientInvoiceKind.Progress ? bill.AdvanceRecoveryMinor : 0L)))
             .SingleOrDefaultAsync(cancellationToken) ?? BillingLedger.Empty;
 
     /// <summary>Each project's figures. Filter the projects first; every figure is a subquery on that project's bills.</summary>
@@ -103,6 +110,10 @@ internal sealed class ClientInvoiceRepository(CmsDbContext db) : IClientInvoiceR
 
     public Task<BillingLedger> GetLedgerAsync(Guid projectId, CancellationToken cancellationToken) => BillingQueries.LedgerAsync(db, projectId, cancellationToken);
 
+    public Task<bool> AnyLiveAdvanceAsync(Guid projectId, CancellationToken cancellationToken) =>
+        db.Set<ClientInvoice>().AnyAsync(bill => bill.ProjectId == projectId && bill.Kind == ClientInvoiceKind.Advance &&
+            bill.Status != ClientInvoiceStatus.Void, cancellationToken);
+
     public Task<Guid?> FindIdByClientRequestAsync(string clientRequestId, CancellationToken cancellationToken) =>
         db.Set<ClientInvoice>().Where(bill => bill.ClientRequestId == clientRequestId).Select(bill => (Guid?)bill.Id).SingleOrDefaultAsync(cancellationToken);
 
@@ -127,13 +138,27 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
             {
                 Figures = figures,
                 Terms = db.Set<ProjectBillingTerms>().Where(terms => terms.ProjectId == figures.ProjectId)
-                    .Select(terms => new { terms.RetentionBps, terms.CreditableWithholdingBps, terms.PaymentTermsDays, terms.Version })
+                    .Select(terms => new
+                    {
+                        terms.RetentionBps, terms.CreditableWithholdingBps, terms.PaymentTermsDays, terms.AdvanceBps, terms.VatWithholdingBps,
+                        terms.IsGovernmentClient, terms.Version
+                    })
                     .FirstOrDefault(),
                 VatRateBps = db.Set<Organization>().Select(organization => organization.VatRateBps).FirstOrDefault(),
                 OverdueCount = db.Set<ClientInvoice>().Count(bill => bill.ProjectId == figures.ProjectId && bill.Status == ClientInvoiceStatus.Issued &&
                     bill.DueDate < today &&
                     bill.NetReceivableMinor > db.Set<ClientPayment>().Where(payment => payment.ClientInvoiceId == bill.Id && !payment.IsVoided)
-                        .Sum(payment => payment.AmountMinor))
+                        .Sum(payment => payment.AmountMinor)),
+                // The down payment: the live (draft or issued) bill, what was issued and what issued progress bills recovered of it.
+                AdvanceBillId = db.Set<ClientInvoice>()
+                    .Where(bill => bill.ProjectId == figures.ProjectId && bill.Kind == ClientInvoiceKind.Advance && bill.Status != ClientInvoiceStatus.Void)
+                    .Select(bill => (Guid?)bill.Id).FirstOrDefault(),
+                AdvanceBilled = db.Set<ClientInvoice>()
+                    .Where(bill => bill.ProjectId == figures.ProjectId && bill.Kind == ClientInvoiceKind.Advance && bill.Status == ClientInvoiceStatus.Issued)
+                    .Sum(bill => bill.GrossMinor),
+                AdvanceRecovered = db.Set<ClientInvoice>()
+                    .Where(bill => bill.ProjectId == figures.ProjectId && bill.Kind == ClientInvoiceKind.Progress && bill.Status == ClientInvoiceStatus.Issued)
+                    .Sum(bill => bill.AdvanceRecoveryMinor)
             })
             .SingleOrDefaultAsync(cancellationToken);
         if (project is null) return null;
@@ -141,17 +166,25 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
         var figures = project.Figures;
         var held = figures.WithheldMinor - figures.ReleasedMinor;
         var bills = await ListAsync(new ClientInvoiceListQuery(projectId, null, false, null), today, page, cancellationToken);
+        var defaults = BillingTermsSnapshot.Defaults;
         var terms = project.Terms is { } saved
-            ? new BillingTermsDto(saved.RetentionBps, saved.CreditableWithholdingBps, saved.PaymentTermsDays, false, saved.Version)
-            : new BillingTermsDto(BillingTermsSnapshot.Defaults.RetentionBps, BillingTermsSnapshot.Defaults.WithholdingBps,
-                BillingTermsSnapshot.Defaults.PaymentTermsDays, true, 0);
+            ? new BillingTermsDto(saved.RetentionBps, saved.CreditableWithholdingBps, saved.PaymentTermsDays, saved.AdvanceBps, saved.VatWithholdingBps,
+                saved.IsGovernmentClient, false, saved.Version)
+            : new BillingTermsDto(defaults.RetentionBps, defaults.WithholdingBps, defaults.PaymentTermsDays, defaults.AdvanceBps, defaults.VatWithholdingBps,
+                false, true, 0);
+
+        // A down payment bill can be prepared while the terms take one, none is live, nothing is billed for progress and there is a price.
+        long? advanceToBill = terms.AdvanceBps > 0 && project.AdvanceBillId is null && figures.BilledMinor == 0 && figures.ContractPriceMinor is > 0
+            ? BillingCalculator.Advance(figures.ContractPriceMinor.Value, terms.AdvanceBps).GrossMinor
+            : null;
 
         return new ProjectBillingDto(projectId, figures.Name, figures.Status.ToString(), figures.ContractPriceMinor, figures.BilledMinor,
             figures.ContractPriceMinor is { } price ? BillingCalculator.ShareBps(figures.BilledMinor, price) : null,
             figures.ContractPriceMinor is { } contract ? Math.Max(0, contract - figures.BilledMinor) : null,
             figures.WithheldMinor, figures.ReleasedMinor, held, figures.CollectedMinor, figures.ReceivableMinor - figures.CollectedMinor,
-            figures.ReceivableDueMinor - figures.CollectedDueMinor, project.OverdueCount, figures.Status == ProjectStatus.Completed && held > 0, terms,
-            project.VatRateBps, bills);
+            figures.ReceivableDueMinor - figures.CollectedDueMinor, project.OverdueCount, figures.Status == ProjectStatus.Completed && held > 0,
+            project.AdvanceBilled, project.AdvanceRecovered, project.AdvanceBilled - project.AdvanceRecovered, project.AdvanceBillId,
+            advanceToBill is > 0 ? advanceToBill : null, terms, project.VatRateBps, bills);
     }
 
     public async Task<PagedResult<ClientInvoiceListItemDto>> ListAsync(ClientInvoiceListQuery query, DateOnly today, PageRequest page,
@@ -247,7 +280,8 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
 
         var invoice = bill.Bill;
         // A draft's figures were worked out from what was billed when it was saved; say when that is no longer true.
-        var stale = invoice.Status == ClientInvoiceStatus.Draft && invoice.IsStale(await BillingQueries.LedgerAsync(db, invoice.ProjectId, cancellationToken));
+        var stale = invoice.Status == ClientInvoiceStatus.Draft &&
+            invoice.IsStale(await BillingQueries.LedgerAsync(db, invoice.ProjectId, cancellationToken), bill.ContractPriceMinor);
         var paid = payments.Where(payment => !payment.IsVoided).Sum(payment => payment.AmountMinor);
         var issued = invoice.Status == ClientInvoiceStatus.Issued;
         var outstanding = issued ? invoice.NetReceivableMinor - paid : 0;
@@ -255,7 +289,8 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
         return new ClientInvoiceDto(invoice.Id, invoice.Number, invoice.ProjectId, bill.ProjectName, bill.ProjectStatus.ToString(), bill.ContractPriceMinor,
             invoice.Kind.ToString(), invoice.Status.ToString(), invoice.BillingDate, invoice.DueDate, invoice.Description, invoice.CumulativeWorkMinor,
             invoice.PreviousCumulativeWorkMinor, invoice.GrossMinor, invoice.NetMinor, invoice.VatMinor, invoice.VatRateBps, invoice.RetentionBps,
-            invoice.RetentionMinor, invoice.WithholdingBps, invoice.WithholdingMinor, invoice.NetReceivableMinor, invoice.PaymentTermsDays, paid, outstanding,
+            invoice.RetentionMinor, invoice.WithholdingBps, invoice.WithholdingMinor, invoice.VatWithholdingBps, invoice.VatWithholdingMinor,
+            invoice.AdvanceBps, invoice.AdvanceRecoveryMinor, invoice.NetReceivableMinor, invoice.PaymentTermsDays, paid, outstanding,
             issued && outstanding > 0 && today > invoice.DueDate, issued && invoice.NextInvoiceId is null, stale, bill.CreatedBy, invoice.CreatedAtUtc,
             bill.IssuedBy, invoice.IssuedAtUtc, bill.VoidedBy, invoice.VoidedAtUtc, invoice.VoidReason,
             payments.Select(payment => new ClientPaymentDto(payment.Id, payment.AmountMinor, payment.PaidOn, payment.Method.ToString(), payment.Reference,
@@ -298,4 +333,19 @@ internal sealed class BillingReader(CmsDbContext db) : IBillingReader
         return new ReceivablesDto(totals is null ? 0 : totals.Receivable - totals.Collected, totals is null ? 0 : totals.ReceivableDue - totals.CollectedDue,
             totals is null ? 0 : totals.Withheld - totals.Released, PagedResult<ReceivableRowDto>.Of(items, total, page));
     }
+}
+
+/// <summary>A government client's limit on added variation orders: the terms' flag, the baseline price and the approved increases, in one statement.</summary>
+internal sealed class GovernmentLimitReader(CmsDbContext db) : IGovernmentLimitReader
+{
+    public Task<GovernmentLimitFigures?> GetAsync(Guid projectId, CancellationToken cancellationToken) =>
+        db.Set<Project>().AsNoTracking()
+            .Where(project => project.Id == projectId)
+            .Select(project => new GovernmentLimitFigures(
+                db.Set<ProjectBillingTerms>().Where(terms => terms.ProjectId == project.Id).Select(terms => terms.IsGovernmentClient).FirstOrDefault(),
+                project.BaselineContractPriceMinor,
+                db.Set<ChangeOrder>()
+                    .Where(order => order.ProjectId == project.Id && order.Status == ChangeOrderStatus.Approved && order.ContractPriceDeltaMinor > 0)
+                    .Sum(order => order.ContractPriceDeltaMinor)))
+            .SingleOrDefaultAsync(cancellationToken);
 }

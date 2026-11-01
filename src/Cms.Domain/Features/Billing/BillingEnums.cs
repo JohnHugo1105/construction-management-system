@@ -7,7 +7,13 @@ public enum ClientInvoiceKind
     Progress = 0,
 
     /// <summary>Gives back retention held on earlier progress bills, once the project is completed.</summary>
-    RetentionRelease = 1
+    RetentionRelease = 1,
+
+    /// <summary>
+    /// The down payment: a share of the contract price billed before any progress bill, then recovered by a deduction on each progress
+    /// bill. At most one live (not void) per project.
+    /// </summary>
+    Advance = 2
 }
 
 public enum ClientInvoiceStatus

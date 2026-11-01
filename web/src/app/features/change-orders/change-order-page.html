@@ -39,6 +39,10 @@
         }
       </dl>
 
+      @if (page.governmentNotice; as notice) {
+        <app-alert tone="warning">{{ notice }}</app-alert>
+      }
+
       @if (page.order.description) {
         <p class="co-text">{{ page.order.description }}</p>
       }

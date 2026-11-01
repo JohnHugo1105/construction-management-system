@@ -54,12 +54,16 @@ public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBil
         var ledger = await invoices.GetLedgerAsync(projectId, cancellationToken);
         var terms = await TermsAsync(projectId, cancellationToken);
 
-        var invoice = kind == ClientInvoiceKind.Progress
-            ? ClientInvoice.DraftProgress(Guid.NewGuid(), currentUser.TenantId, project, request.BillingDate, request.Description,
+        var invoice = kind switch
+        {
+            ClientInvoiceKind.Progress => ClientInvoice.DraftProgress(Guid.NewGuid(), currentUser.TenantId, project, request.BillingDate, request.Description,
                 Required(request.CumulativeWorkMinor, "cumulativeWorkMinor", "Enter the value of the work completed to date."), ledger, terms,
-                organization.VatRateBps, currentUser.UserId, requestId, today, now)
-            : ClientInvoice.DraftRetentionRelease(Guid.NewGuid(), currentUser.TenantId, project, request.BillingDate, request.Description,
-                Required(request.AmountMinor, "amountMinor", "Enter the amount of retention to release."), ledger, terms, currentUser.UserId, requestId, today, now);
+                organization.VatRateBps, currentUser.UserId, requestId, today, now),
+            ClientInvoiceKind.Advance => ClientInvoice.DraftAdvance(Guid.NewGuid(), currentUser.TenantId, project, request.BillingDate, request.Description,
+                ledger, await invoices.AnyLiveAdvanceAsync(projectId, cancellationToken), terms, currentUser.UserId, requestId, today, now),
+            _ => ClientInvoice.DraftRetentionRelease(Guid.NewGuid(), currentUser.TenantId, project, request.BillingDate, request.Description,
+                Required(request.AmountMinor, "amountMinor", "Enter the amount of retention to release."), ledger, terms, currentUser.UserId, requestId, today, now)
+        };
 
         invoices.Add(invoice);
         audit.Record("Billing.Drafted", nameof(ClientInvoice), invoice.Id, $"Prepared a draft {KindWords(invoice.Kind)} for {project.Name}.");
@@ -87,9 +91,13 @@ public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBil
         var ledger = await invoices.GetLedgerAsync(invoice.ProjectId, cancellationToken);
         var terms = await TermsAsync(invoice.ProjectId, cancellationToken);
 
-        var amount = invoice.Kind == ClientInvoiceKind.Progress
-            ? Required(request.CumulativeWorkMinor, "cumulativeWorkMinor", "Enter the value of the work completed to date.")
-            : Required(request.AmountMinor, "amountMinor", "Enter the amount of retention to release.");
+        // A down payment is worked out from the contract price and the terms; it takes no amount.
+        var amount = invoice.Kind switch
+        {
+            ClientInvoiceKind.Progress => Required(request.CumulativeWorkMinor, "cumulativeWorkMinor", "Enter the value of the work completed to date."),
+            ClientInvoiceKind.Advance => 0,
+            _ => Required(request.AmountMinor, "amountMinor", "Enter the amount of retention to release.")
+        };
         invoice.UpdateDraft(project, request.BillingDate, request.Description, amount, ledger, terms, organization.VatRateBps, today, clock.UtcNow);
 
         audit.Record("Billing.DraftChanged", nameof(ClientInvoice), invoice.Id, $"Changed a draft {KindWords(invoice.Kind)} for {project.Name}.");
@@ -246,10 +254,15 @@ public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBil
         if (string.IsNullOrWhiteSpace(kind)) return ClientInvoiceKind.Progress;
         return Enum.TryParse<ClientInvoiceKind>(kind.Trim(), ignoreCase: true, out var parsed) && Enum.IsDefined(parsed)
             ? parsed
-            : throw new ValidationFailedException("kind", "Choose a progress bill or a retention release.");
+            : throw new ValidationFailedException("kind", "Choose a progress bill, a down payment or a retention release.");
     }
 
     private static long Required(long? value, string field, string message) => value ?? throw new ValidationFailedException(field, message);
 
-    private static string KindWords(ClientInvoiceKind kind) => kind == ClientInvoiceKind.Progress ? "progress bill" : "retention release";
+    private static string KindWords(ClientInvoiceKind kind) => kind switch
+    {
+        ClientInvoiceKind.Progress => "progress bill",
+        ClientInvoiceKind.Advance => "down payment bill",
+        _ => "retention release"
+    };
 }

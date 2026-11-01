@@ -22,7 +22,7 @@ import { Button } from '../../shared/ui/button/button';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Skeleton } from '../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../shared/ui/status-chip/status-chip';
-import { BillFormDialog, BillFormContext, breakdownRows } from './bill-form-dialog';
+import { BillFormDialog, BillFormContext, advanceRows, breakdownRows } from './bill-form-dialog';
 import { BillState } from './bill-state';
 import { BillingApi } from './billing-api';
 import { BILL_KIND, billActions, billName, billStatus, paymentMethodLabel } from './billing-rules';
@@ -140,10 +140,12 @@ export class BillPage {
         : [],
       rows: progress
         ? breakdownRows(bill, currency)
-        : [
-            { label: 'Retention released', amount: money(bill.grossMinor) },
-            { label: 'The client pays', amount: money(bill.netReceivableMinor), total: true },
-          ],
+        : bill.kind === 'Advance'
+          ? advanceRows(bill, currency)
+          : [
+              { label: 'Retention released', amount: money(bill.grossMinor) },
+              { label: 'The client pays', amount: money(bill.netReceivableMinor), total: true },
+            ],
       history,
       voidReason: bill.voidReason,
       payments: bill.payments.map((payment) => ({
@@ -219,6 +221,8 @@ export class BillPage {
         contractPriceMinor: billing.contractPriceMinor,
         billedToDateMinor: billing.billedToDateMinor,
         retentionHeldMinor: billing.retentionHeldMinor,
+        advanceBps: billing.terms.advanceBps,
+        advanceToBillMinor: billing.advanceToBillMinor,
       });
       this.editing.set(true);
     } catch (failure) {

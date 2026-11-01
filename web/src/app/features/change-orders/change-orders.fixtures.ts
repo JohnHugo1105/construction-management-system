@@ -143,6 +143,7 @@ export function changeOrderFixture(overrides: Partial<ChangeOrder> = {}): Change
     voidBlockedBy: null,
     lines: [lineFixture()],
     version: 2,
+    governmentLimit: { applies: false, limitMinor: 0, usedMinor: 0, exceeds: false },
     ...overrides,
   };
 }

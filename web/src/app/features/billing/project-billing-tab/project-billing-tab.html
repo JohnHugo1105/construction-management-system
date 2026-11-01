@@ -43,6 +43,13 @@
           <dt>Collected</dt>
           <dd class="money">{{ info.collected }}</dd>
         </div>
+        @if (info.showAdvance) {
+          <div class="money-line__item">
+            <dt>Down payment still to recover</dt>
+            <dd class="money">{{ info.advanceToRecover }}</dd>
+            <dd class="money-line__note">{{ info.advanceBilled }}</dd>
+          </div>
+        }
         @if (info.hasPrice) {
           <div class="money-line__item">
             <dt>Contract price</dt>
@@ -70,9 +77,19 @@
             </button>
           }
           @if (info.canBill && info.hasBills) {
-            <button appButton variant="primary" type="button" (click)="newBill.set('Progress')">
+            <button
+              appButton
+              [variant]="info.canBillAdvance ? 'secondary' : 'primary'"
+              type="button"
+              (click)="newBill.set('Progress')"
+            >
               <app-icon name="plus" [size]="18" />
               New bill
+            </button>
+          }
+          @if (info.canBillAdvance && info.hasBills) {
+            <button appButton variant="primary" type="button" (click)="newBill.set('Advance')">
+              Bill the down payment
             </button>
           }
         </div>
@@ -85,10 +102,9 @@
           <span>Billing terms: {{ info.terms }}{{ info.termsDefault ? ' (standard)' : '' }}</span>
         </summary>
         <div class="terms__body">
-          <p class="text-small text-muted">
-            Each progress bill holds back the retention until the project is completed. Withholding
-            tax is taken from the amount before VAT, and the client gives a certificate for it.
-          </p>
+          @for (note of info.termsNotes; track note) {
+            <p class="text-small text-muted">{{ note }}</p>
+          }
           @if (info.canEditTerms) {
             <button appButton type="button" (click)="editingTerms.set(true)">
               Change billing terms
@@ -179,6 +195,21 @@
             (pageChange)="goTo($event)"
           />
         </section>
+      } @else if (info.canBillAdvance) {
+        <app-empty-state
+          title="Start with the down payment"
+          [message]="info.advanceMessage"
+          icon="receipt"
+        >
+          <button appButton variant="primary" type="button" (click)="newBill.set('Advance')">
+            Bill the down payment
+          </button>
+          @if (info.canBill) {
+            <button appButton variant="ghost" type="button" (click)="newBill.set('Progress')">
+              New progress bill
+            </button>
+          }
+        </app-empty-state>
       } @else {
         <app-empty-state
           title="No bills yet"

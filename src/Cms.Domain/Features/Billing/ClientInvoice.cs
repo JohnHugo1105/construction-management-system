@@ -5,19 +5,25 @@ namespace Cms.Domain.Features.Billing;
 
 /// <summary>
 /// What a project's issued bills add up to right now: the value of the work billed (VAT included), the retention the client held back
-/// on those bills, and what was released again. Drafts and void bills never count.
+/// on those bills, and what was released again; the down payment billed (with the rate its bill keeps) and what the progress bills
+/// recovered of it. Drafts and void bills never count.
 /// </summary>
-public sealed record BillingLedger(long BilledToDateMinor, long RetentionWithheldMinor, long RetentionReleasedMinor)
+public sealed record BillingLedger(long BilledToDateMinor, long RetentionWithheldMinor, long RetentionReleasedMinor, long AdvanceMinor = 0,
+    int AdvanceBps = 0, long AdvanceRecoveredMinor = 0)
 {
     public static BillingLedger Empty { get; } = new(0, 0, 0);
 
     /// <summary>Retention the client still holds: withheld on progress bills minus what release bills gave back.</summary>
     public long RetentionHeldMinor => RetentionWithheldMinor - RetentionReleasedMinor;
+
+    /// <summary>The down payment still to be recovered from progress bills.</summary>
+    public long AdvanceToRecoverMinor => AdvanceMinor - AdvanceRecoveredMinor;
 }
 
 /// <summary>
 /// One bill to the client. A <see cref="ClientInvoiceKind.Progress"/> bill states the value of all work billed to date including itself
-/// (VAT included, like the contract price) and bills the difference from the previous issued bill; a
+/// (VAT included, like the contract price) and bills the difference from the previous issued bill, less its share of the down payment;
+/// a <see cref="ClientInvoiceKind.Advance"/> bill asks for the down payment before any progress bill; a
 /// <see cref="ClientInvoiceKind.RetentionRelease"/> bill gives back retention once the project is completed. A bill is prepared as a
 /// draft, issued (numbered and locked) by an approver, and voided with a reason; it is never deleted. Its VAT rate, retention,
 /// withholding and payment terms are copied in when it is prepared, so later changes to the company or the project never alter it.
@@ -78,7 +84,21 @@ public sealed class ClientInvoice : AggregateRoot
     public int WithholdingBps { get; private set; }
     public long WithholdingMinor { get; private set; }
 
-    /// <summary>What the client is asked to pay for this bill: gross less retention and withholding.</summary>
+    /// <summary>Progress bills: the share of the amount before VAT the client withholds as VAT, and that amount.</summary>
+    public int VatWithholdingBps { get; private set; }
+
+    public long VatWithholdingMinor { get; private set; }
+
+    /// <summary>
+    /// The down payment rate. On a down payment bill, the rate it was billed at (recovery always uses it, never the terms as later
+    /// changed); on a progress bill, the rate its recovery was worked out at (0 when no down payment was issued).
+    /// </summary>
+    public int AdvanceBps { get; private set; }
+
+    /// <summary>Progress bills: the part of the down payment this bill recovers. Derived from the chain, never kept on the down payment.</summary>
+    public long AdvanceRecoveryMinor { get; private set; }
+
+    /// <summary>What the client is asked to pay for this bill: gross less retention, both withholdings and the down payment recovered.</summary>
     public long NetReceivableMinor { get; private set; }
 
     public int PaymentTermsDays { get; private set; }
@@ -122,10 +142,26 @@ public sealed class ClientInvoice : AggregateRoot
     }
 
     /// <summary>
+    /// Prepares the down payment bill: the terms' share of the contract price. It must come before the first progress bill, and a
+    /// project has one live (not void) down payment bill at most.
+    /// </summary>
+    /// <param name="anotherAdvanceExists">Whether the project already has a down payment bill that is not void (a draft or issued).</param>
+    public static ClientInvoice DraftAdvance(Guid id, Guid tenantId, Project project, DateOnly billingDate, string? description, BillingLedger ledger,
+        bool anotherAdvanceExists, BillingTermsSnapshot terms, Guid createdByUserId, string? clientRequestId, DateOnly today, DateTimeOffset now)
+    {
+        if (anotherAdvanceExists) throw new DomainRuleException(AdvanceExistsMessage);
+        var invoice = NewDraft(ClientInvoiceKind.Advance, project, createdByUserId, clientRequestId);
+        invoice.ApplyAdvance(project, billingDate, description, ledger, terms, today);
+        invoice.Initialize(id, tenantId, now);
+        return invoice;
+    }
+
+    /// <summary>
     /// Saves a draft again with new figures, worked out from what is billed now and the terms and VAT rate in force now. This is also
     /// how a draft made stale by another bill is brought up to date.
     /// </summary>
-    /// <param name="amountMinor">Work completed to date for a progress bill; the retention to release for a release.</param>
+    /// <param name="amountMinor">Work completed to date for a progress bill; the retention to release for a release; unused for a down
+    /// payment, which is worked out from the contract price and the terms.</param>
     public void UpdateDraft(Project project, DateOnly billingDate, string? description, long amountMinor, BillingLedger ledger, BillingTermsSnapshot terms,
         int vatRateBps, DateOnly today, DateTimeOffset now)
     {
@@ -134,16 +170,39 @@ public sealed class ClientInvoice : AggregateRoot
             throw new DomainRuleException(Status == ClientInvoiceStatus.Issued
                 ? "An issued bill can't be changed. Void it and prepare a new one if it is wrong."
                 : "This bill was voided and can't be changed.");
-        if (Kind == ClientInvoiceKind.Progress) ApplyProgress(project, billingDate, description, amountMinor, ledger, terms, vatRateBps, today);
-        else ApplyRelease(project, billingDate, description, amountMinor, ledger, terms, today);
+        switch (Kind)
+        {
+            case ClientInvoiceKind.Progress:
+                ApplyProgress(project, billingDate, description, amountMinor, ledger, terms, vatRateBps, today);
+                break;
+            case ClientInvoiceKind.Advance:
+                ApplyAdvance(project, billingDate, description, ledger, terms, today);
+                break;
+            default:
+                ApplyRelease(project, billingDate, description, amountMinor, ledger, terms, today);
+                break;
+        }
         Touch(now);
     }
 
-    /// <summary>Whether a draft's figures still follow from what is billed now. A stale draft is refused at issue.</summary>
-    public bool IsStale(BillingLedger ledger) =>
-        Status == ClientInvoiceStatus.Draft && (Kind == ClientInvoiceKind.Progress
-            ? PreviousCumulativeWorkMinor != ledger.BilledToDateMinor
-            : GrossMinor > ledger.RetentionHeldMinor);
+    /// <summary>
+    /// Whether a draft's figures still follow from what is billed now. A stale draft is refused at issue. A progress draft is stale when
+    /// another bill was issued or voided since it was saved, or when the down payment it should recover changed (one was issued, or the
+    /// contract price made it the last bill). A down payment draft is never stale: once progress is billed it can only be discarded.
+    /// </summary>
+    public bool IsStale(BillingLedger ledger, long? contractPriceMinor) =>
+        Status == ClientInvoiceStatus.Draft && Kind switch
+        {
+            ClientInvoiceKind.Progress => !FollowsFrom(ledger, contractPriceMinor),
+            ClientInvoiceKind.Advance => false,
+            _ => GrossMinor > ledger.RetentionHeldMinor
+        };
+
+    /// <summary>A progress bill's previous work and down payment recovery are what the issued chain gives now.</summary>
+    private bool FollowsFrom(BillingLedger ledger, long? contractPriceMinor) =>
+        PreviousCumulativeWorkMinor == ledger.BilledToDateMinor &&
+        (contractPriceMinor is not { } price || CumulativeWorkMinor is not { } cumulative ||
+            AdvanceRecoveryMinor == BillingCalculator.AdvanceRecovery(cumulative, price, ledger));
 
     /// <summary>Discards a draft with a reason. It stays on record as void, with no number.</summary>
     public void Discard(Project project, string? reason, Guid discardedByUserId, DateTimeOffset now)
@@ -177,11 +236,18 @@ public sealed class ClientInvoice : AggregateRoot
         {
             var price = project.ContractPriceMinor ?? throw new DomainRuleException(NoContractPriceMessage);
             if (PreviousCumulativeWorkMinor != ledger.BilledToDateMinor)
-                throw new DomainRuleException(
-                    "Another bill was issued or voided after this draft was prepared, so its figures are out of date. Open the draft, check the work completed to date and save it again.");
+                throw new DomainRuleException(StaleDraftMessage);
             if (CumulativeWorkMinor > price)
                 throw new DomainRuleException(
                     "The contract price is now less than the work completed to date on this draft. Open the draft, check the figures and save it again.");
+            // A down payment issued since the draft was saved (or a price change that makes this the last bill) changes its recovery.
+            if (!FollowsFrom(ledger, price))
+                throw new DomainRuleException(StaleDraftMessage);
+        }
+        else if (Kind == ClientInvoiceKind.Advance)
+        {
+            if (ledger.BilledToDateMinor > 0) throw new DomainRuleException(AdvanceAfterProgressMessage);
+            if (ledger.AdvanceMinor > 0) throw new DomainRuleException(AdvanceExistsMessage);
         }
         else
         {
@@ -297,6 +363,12 @@ public sealed class ClientInvoice : AggregateRoot
     // ---- Rules shared by the drafts ------------------------------------------------------------------------------------------
 
     public const string NoContractPriceMessage = "This project has no contract price yet. Add it to the project before billing the client.";
+    public const string AdvanceAfterProgressMessage = "Bill the down payment before the first progress bill.";
+    public const string AdvanceExistsMessage = "This project already has a down payment bill. Open it instead of preparing another.";
+    public const string NoAdvanceTermsMessage = "This project's billing terms have no down payment. Set the down payment in the billing terms first.";
+
+    public const string StaleDraftMessage =
+        "Another bill was issued or voided after this draft was prepared, so its figures are out of date. Open the draft, check the work completed to date and save it again.";
 
     private static ClientInvoice NewDraft(ClientInvoiceKind kind, Project project, Guid createdByUserId, string? clientRequestId) => new()
     {
@@ -323,11 +395,37 @@ public sealed class ClientInvoice : AggregateRoot
             errors.Add("cumulativeWorkMinor", "Work completed to date can't be more than the contract price.");
         errors.ThrowIfAny();
 
+        // The recovery uses the rate kept on the issued down payment bill, never the terms as they may have changed since.
+        var recovery = BillingCalculator.AdvanceRecovery(cumulativeWorkMinor, price, ledger);
+        var amounts = BillingCalculator.Progress(cumulativeWorkMinor - ledger.BilledToDateMinor, vatRateBps, terms.RetentionBps, terms.WithholdingBps,
+            terms.VatWithholdingBps, recovery);
+
         CumulativeWorkMinor = cumulativeWorkMinor;
         PreviousCumulativeWorkMinor = ledger.BilledToDateMinor;
-        SetFigures(billingDate, cleanDescription!,
-            BillingCalculator.Progress(cumulativeWorkMinor - ledger.BilledToDateMinor, vatRateBps, terms.RetentionBps, terms.WithholdingBps),
-            vatRateBps, terms.RetentionBps, terms.WithholdingBps, terms.PaymentTermsDays);
+        SetFigures(billingDate, cleanDescription!, amounts, vatRateBps, terms.RetentionBps, terms.WithholdingBps, terms.VatWithholdingBps,
+            ledger.AdvanceMinor > 0 ? ledger.AdvanceBps : 0, terms.PaymentTermsDays);
+    }
+
+    private void ApplyAdvance(Project project, DateOnly billingDate, string? description, BillingLedger ledger, BillingTermsSnapshot terms, DateOnly today)
+    {
+        project.EnsureCanReceiveRecordsFor(null);
+        var price = project.ContractPriceMinor ?? throw new DomainRuleException(NoContractPriceMessage);
+        if (terms.AdvanceBps <= 0) throw new DomainRuleException(NoAdvanceTermsMessage);
+        if (ledger.BilledToDateMinor > 0) throw new DomainRuleException(AdvanceAfterProgressMessage);
+        if (ledger.AdvanceMinor > 0) throw new DomainRuleException(AdvanceExistsMessage);
+
+        var errors = new ValidationErrors();
+        CheckBillingDate(errors, billingDate, today);
+        var cleanDescription = RequiredText(errors, description, "description", "a description of the bill", "The description", DescriptionMaxLength);
+        errors.ThrowIfAny();
+
+        var amounts = BillingCalculator.Advance(price, terms.AdvanceBps);
+        if (amounts.GrossMinor <= 0)
+            throw new DomainRuleException("The down payment comes to nothing at this rate. Check the contract price and the down payment rate.");
+
+        CumulativeWorkMinor = null;
+        PreviousCumulativeWorkMinor = 0;
+        SetFigures(billingDate, cleanDescription!, amounts, 0, 0, 0, 0, terms.AdvanceBps, terms.PaymentTermsDays);
     }
 
     private void ApplyRelease(Project project, DateOnly billingDate, string? description, long amountMinor, BillingLedger ledger, BillingTermsSnapshot terms,
@@ -346,11 +444,11 @@ public sealed class ClientInvoice : AggregateRoot
 
         CumulativeWorkMinor = null;
         PreviousCumulativeWorkMinor = 0;
-        SetFigures(billingDate, cleanDescription!, BillingCalculator.RetentionRelease(amountMinor), 0, 0, 0, terms.PaymentTermsDays);
+        SetFigures(billingDate, cleanDescription!, BillingCalculator.RetentionRelease(amountMinor), 0, 0, 0, 0, 0, terms.PaymentTermsDays);
     }
 
     private void SetFigures(DateOnly billingDate, string description, BillAmounts amounts, int vatRateBps, int retentionBps, int withholdingBps,
-        int paymentTermsDays)
+        int vatWithholdingBps, int advanceBps, int paymentTermsDays)
     {
         if (paymentTermsDays is < 0 or > ProjectBillingTerms.MaximumPaymentTermsDays) throw new ArgumentOutOfRangeException(nameof(paymentTermsDays));
         BillingDate = billingDate;
@@ -363,6 +461,10 @@ public sealed class ClientInvoice : AggregateRoot
         RetentionMinor = amounts.RetentionMinor;
         WithholdingBps = withholdingBps;
         WithholdingMinor = amounts.WithholdingMinor;
+        VatWithholdingBps = vatWithholdingBps;
+        VatWithholdingMinor = amounts.VatWithholdingMinor;
+        AdvanceBps = advanceBps;
+        AdvanceRecoveryMinor = amounts.AdvanceRecoveryMinor;
         NetReceivableMinor = amounts.NetReceivableMinor;
         PaymentTermsDays = paymentTermsDays;
         DueDate = billingDate.AddDays(paymentTermsDays);

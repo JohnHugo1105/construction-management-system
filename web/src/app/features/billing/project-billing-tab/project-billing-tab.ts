@@ -32,7 +32,10 @@ import { BILL_KIND, billName, billStatus } from '../billing-rules';
 import { Bill, BillKind, BillingTerms, ProjectBilling } from '../billing.models';
 import { TermsDialog } from '../terms-dialog';
 
-/** "10% retention, 2% withholding, payment due in 30 days": the terms in one line. */
+/**
+ * "10% retention, 2% withholding, payment due in 30 days": the terms in one line. A down payment, VAT withheld and a government
+ * client are named only when they apply.
+ */
 export function termsSummary(terms: BillingTerms): string {
   const retention =
     terms.retentionBps === 0 ? 'no retention' : `${formatBps(terms.retentionBps)} retention`;
@@ -44,12 +47,38 @@ export function termsSummary(terms: BillingTerms): string {
     terms.paymentTermsDays === 0
       ? 'payment due on billing'
       : `payment due in ${terms.paymentTermsDays} day${terms.paymentTermsDays === 1 ? '' : 's'}`;
-  return `${retention}, ${withholding}, ${due}`;
+  const parts = [retention, withholding];
+  if (terms.vatWithholdingBps > 0) parts.push(`${formatBps(terms.vatWithholdingBps)} VAT withheld`);
+  if (terms.advanceBps > 0) parts.push(`${formatBps(terms.advanceBps)} down payment`);
+  parts.push(due);
+  if (terms.isGovernmentClient) parts.push('government client');
+  return parts.join(', ');
+}
+
+/** What the folded terms explain, one line per term that applies. */
+export function termsNotes(terms: BillingTerms): string[] {
+  const notes = [
+    'Each progress bill holds back the retention until the project is completed. Withholding tax is taken from the amount before VAT, and the client gives a certificate for it.',
+  ];
+  if (terms.vatWithholdingBps > 0)
+    notes.push(
+      'The VAT the client withholds is also taken from the amount before VAT, with its own certificate.',
+    );
+  if (terms.advanceBps > 0)
+    notes.push(
+      'The down payment is billed before the first progress bill. Each progress bill then recovers the same share of its work, until it is all recovered.',
+    );
+  if (terms.isGovernmentClient)
+    notes.push(
+      'A government client allows a down payment of up to 15%, and added work over 10% of the original contract price is flagged on the change order.',
+    );
+  return notes;
 }
 
 /**
- * A project's billing: the money line (contract price, billed to date, collected, still to collect, retention held), the bills
- * with their state, and the one next step ("New bill" for people who prepare bills). Terms are folded away until needed. An
+ * A project's billing: the money line (contract price, billed to date, collected, still to collect, retention held, and the down
+ * payment still to recover once one is billed), the bills with their state, and the one next step ("Bill the down payment" while
+ * the terms take one and none exists, otherwise "New bill" for people who prepare bills). Terms are folded away until needed. An
  * archived project is read-only and says so in one line. Every figure is the server's.
  */
 @Component({
@@ -114,7 +143,17 @@ export class ProjectBillingTab {
           : '',
       retentionHeld: money(billing.retentionHeldMinor),
       showRetention: billing.retentionWithheldMinor > 0,
+      showAdvance: billing.advanceBilledMinor > 0,
+      advanceToRecover: money(billing.advanceToRecoverMinor),
+      advanceBilled: `of the ${money(billing.advanceBilledMinor)} down payment`,
+      // The down payment leads only while one can be billed: the terms take one and none exists yet.
+      canBillAdvance: this.canManage() && billing.advanceToBillMinor !== null,
+      advanceMessage:
+        billing.advanceToBillMinor === null
+          ? ''
+          : `The billing terms take a down payment of ${money(billing.advanceToBillMinor)}, ${formatBps(billing.terms.advanceBps)} of the contract price. Bill it before the first progress bill; each progress bill then recovers its share.`,
       terms: termsSummary(billing.terms),
+      termsNotes: termsNotes(billing.terms),
       termsDefault: billing.terms.isDefault,
       canBill: this.canManage() && hasPrice && (billing.remainingToBillMinor ?? 0) > 0,
       canRelease: this.canManage() && billing.canReleaseRetention,
@@ -144,6 +183,8 @@ export class ProjectBillingTab {
       contractPriceMinor: billing.contractPriceMinor,
       billedToDateMinor: billing.billedToDateMinor,
       retentionHeldMinor: billing.retentionHeldMinor,
+      advanceBps: billing.terms.advanceBps,
+      advanceToBillMinor: billing.advanceToBillMinor,
     };
   });
 

@@ -81,7 +81,10 @@ Statuses: `Draft`, `Submitted`, `Approved`, `Rejected`, `Voided` (with `voidedFr
 `ChangeOrderDto`: `id`, `projectId`, `number`, `title`, `description`, `reason`, `status`, `voidedFromStatus`,
 `contractPriceDeltaMinor`, `budgetEffectNetMinor`, `budgetEffectVatMinor`, `budgetEffectGrossMinor` (signed; an estimate until
 approved), who and when for each step (`createdBy`, `submittedBy`, `decidedBy`, `voidedBy` and their `...AtUtc`), `decisionReason`,
-`voidReason`, `voidBlockedBy` (the number to void first, for an approved order), `lines`, `version`.
+`voidReason`, `voidBlockedBy` (the number to void first, for an approved order), `lines`, `version`, and `governmentLimit`
+(read-only, advisory: `applies` for a government client, set in the project's billing terms, with a locked baseline; `limitMinor` is 10%
+of the original contract price, `usedMinor` the approved price increases plus this order's own while it is a draft or submitted, and
+`exceeds` when used passes the limit; approval is still allowed).
 
 Each line: `id`, `lineNumber`, `kind`, `budgetLineId`, the budget line fields as they will be (Add, Revise) or as removed (Omit),
 `netMinor`, `vatMinor`, `grossMinor`, `previousQuantity`, `previousUnitCostMinor`, `previousNetMinor`, `previousGrossMinor` (Revise, Omit)
@@ -95,6 +98,6 @@ record of another company, `403` for a missing permission.
 
 ## Statement counts
 
-Fixed whatever the number of orders and lines: list 3 (the project, the count, the page), detail 2 (the order with names and the
-"void first" check, its lines), baseline 3 (the project, the active line sums, the order sums by status). Asserted in
+Fixed whatever the number of orders and lines: list 3 (the project, the count, the page), detail 3 (the order with names and the
+"void first" check, its lines, the government limit), baseline 3 (the project, the active line sums, the order sums by status). Asserted in
 `ChangeOrderApiTests`.

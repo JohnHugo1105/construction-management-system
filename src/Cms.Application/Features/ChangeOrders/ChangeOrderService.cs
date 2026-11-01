@@ -1,8 +1,10 @@
 using Cms.Application.Common;
+using Cms.Application.Features.Billing;
 using Cms.Application.Features.Costing;
 using Cms.Application.Features.Organizations;
 using Cms.Application.Features.Projects;
 using Cms.Domain.Common;
+using Cms.Domain.Features.Billing;
 using Cms.Domain.Features.ChangeOrders;
 using Cms.Domain.Features.Costing;
 using Cms.Domain.Features.Projects;
@@ -15,7 +17,7 @@ namespace Cms.Application.Features.ChangeOrders;
 /// </summary>
 public sealed class ChangeOrderService(IChangeOrderRepository orders, IChangeOrderReader reader, IChangeOrderBudgetLineRepository targets,
     IBudgetLineRepository budgetLines, IProjectRepository projects, IOrganizationRepository organizations, INumberSequence numbers,
-    ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
+    ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit, IGovernmentLimitReader governmentLimits)
 {
     public async Task<PagedResult<ChangeOrderListItemDto>> ListAsync(Guid projectId, string? status, PageRequest page, CancellationToken cancellationToken)
     {
@@ -190,8 +192,25 @@ public sealed class ChangeOrderService(IChangeOrderRepository orders, IChangeOrd
         return (order, await LoadProject(order.ProjectId, cancellationToken));
     }
 
-    private async Task<ChangeOrderDto> ReadAsync(Guid id, CancellationToken cancellationToken) =>
-        await reader.GetAsync(id, cancellationToken) ?? throw new NotFoundException("that change order");
+    private async Task<ChangeOrderDto> ReadAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var order = await reader.GetAsync(id, cancellationToken) ?? throw new NotFoundException("that change order");
+        return order with { GovernmentLimit = GovernmentLimitOf(order, await governmentLimits.GetAsync(order.ProjectId, cancellationToken)) };
+    }
+
+    /// <summary>
+    /// A government client's limit on added work (advisory). The order's own price increase counts while it waits for approval, so the
+    /// approver sees the effect before deciding; once approved it is among the approved ones, and a rejected or voided one never counts.
+    /// </summary>
+    internal static GovernmentLimitDto GovernmentLimitOf(ChangeOrderDto order, GovernmentLimitFigures? figures)
+    {
+        if (figures is not { IsGovernmentClient: true, BaselineContractPriceMinor: { } baseline }) return GovernmentLimitDto.None;
+        var pending = order.Status is nameof(ChangeOrderStatus.Draft) or nameof(ChangeOrderStatus.Submitted)
+            ? Math.Max(0, order.ContractPriceDeltaMinor)
+            : 0;
+        var limit = GovernmentContract.Variations(baseline, figures.ApprovedAdditiveMinor, pending);
+        return new GovernmentLimitDto(true, limit.LimitMinor, limit.UsedMinor, limit.Exceeds);
+    }
 
     private async Task<Project> LoadProject(Guid id, CancellationToken cancellationToken) =>
         await projects.GetAsync(id, cancellationToken) ?? throw new NotFoundException("that project");

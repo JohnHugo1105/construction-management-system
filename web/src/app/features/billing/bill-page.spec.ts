@@ -13,7 +13,7 @@ import { signInForTest } from '../../testing/session-fixture';
 import { ruleViolation } from '../workforce/workforce.fixtures';
 import { BillPage } from './bill-page';
 import { BillingApi } from './billing-api';
-import { bill, issuedBill } from './billing.fixtures';
+import { WITH_ADVANCE, advanceBill, bill, issuedBill } from './billing.fixtures';
 import { Bill } from './billing.models';
 
 type Call = (...args: unknown[]) => Observable<unknown>;
@@ -53,6 +53,26 @@ async function open(
 const actions = (root: HTMLElement) => texts(root, '.head__actions .btn');
 
 describe('BillPage', () => {
+  it('shows a down payment bill as its share of the contract price, nothing withheld', async () => {
+    const { root } = await open(advanceBill(), READER);
+
+    expect(text(root, '.head__kind')).toBe('Down payment · 31 Oct 2026');
+    expect(texts(root, '.rows__row')).toEqual([
+      'Down payment, 15% of the contract price₱1,680,000.00',
+      'The client pays₱1,680,000.00',
+    ]);
+  });
+
+  it('adds the VAT withheld and the down payment recovered to a progress bill’s breakdown', async () => {
+    const { root } = await open(bill({ ...WITH_ADVANCE }), READER);
+
+    expect(texts(root, '.rows__row').slice(-3)).toEqual([
+      'VAT withheld, 5% of the amount before VAT-₱150,000.00',
+      'Down payment recovered-₱504,000.00',
+      'The client pays₱2,310,000.00',
+    ]);
+  });
+
   it('shows a draft’s breakdown from the server and lets an approver issue it', async () => {
     const issue = stub(() => of(issuedBill()));
     const { root, fixture } = await open(bill(), APPROVER, { issue });

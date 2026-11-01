@@ -32,6 +32,7 @@ export function billStatus(
 export const BILL_KIND: Record<BillKind, string> = {
   Progress: 'Progress bill',
   RetentionRelease: 'Retention release',
+  Advance: 'Down payment',
 };
 
 export const PAYMENT_METHODS: readonly { readonly value: PaymentMethod; readonly label: string }[] =

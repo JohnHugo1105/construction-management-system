@@ -40,10 +40,18 @@ export function projectBilling(overrides: Partial<ProjectBilling> = {}): Project
     overdueMinor: 97_600_000,
     overdueCount: 1,
     canReleaseRetention: false,
+    advanceBilledMinor: 0,
+    advanceRecoveredMinor: 0,
+    advanceToRecoverMinor: 0,
+    advanceBillId: null,
+    advanceToBillMinor: null,
     terms: {
       retentionBps: 1_000,
       creditableWithholdingBps: 200,
       paymentTermsDays: 30,
+      advanceBps: 0,
+      vatWithholdingBps: 0,
+      isGovernmentClient: false,
       isDefault: false,
       version: 1,
     },
@@ -76,6 +84,10 @@ export function bill(overrides: Partial<Bill> = {}): Bill {
     retentionMinor: 33_600_000,
     withholdingBps: 200,
     withholdingMinor: 6_000_000,
+    vatWithholdingBps: 0,
+    vatWithholdingMinor: 0,
+    advanceBps: 0,
+    advanceRecoveryMinor: 0,
     netReceivableMinor: 296_400_000,
     paymentTermsDays: 30,
     paidMinor: 0,
@@ -140,11 +152,48 @@ export function preview(overrides: Partial<BillPreview> = {}): BillPreview {
     retentionMinor: 33_600_000,
     withholdingBps: 200,
     withholdingMinor: 6_000_000,
+    vatWithholdingBps: 0,
+    vatWithholdingMinor: 0,
+    advanceRecoveryMinor: 0,
     netReceivableMinor: 296_400_000,
     paymentTermsDays: 30,
     dueDate: '2026-11-30',
     ...overrides,
   };
+}
+
+/**
+ * The second bill above on a project that took a 15% down payment (₱1,680,000.00) and has 5% VAT withheld: it recovers 15% of
+ * ₱5,600,000.00 less the ₱336,000.00 the first bill recovered, and 5% of the ₱3,000,000.00 before VAT is withheld.
+ */
+export const WITH_ADVANCE: Partial<Bill> & Partial<BillPreview> = {
+  vatWithholdingBps: 500,
+  vatWithholdingMinor: 15_000_000,
+  advanceBps: 1_500,
+  advanceRecoveryMinor: 50_400_000,
+  netReceivableMinor: 231_000_000,
+};
+
+/** A 15% down payment bill on the ₱11,200,000.00 contract: a receivable only, nothing withheld. */
+export function advanceBill(overrides: Partial<Bill> = {}): Bill {
+  return bill({
+    id: 'b0',
+    kind: 'Advance',
+    description: 'Down payment',
+    cumulativeWorkMinor: null,
+    previousCumulativeWorkMinor: 0,
+    grossMinor: 168_000_000,
+    netMinor: 168_000_000,
+    vatMinor: 0,
+    vatRateBps: 0,
+    retentionBps: 0,
+    retentionMinor: 0,
+    withholdingBps: 0,
+    withholdingMinor: 0,
+    advanceBps: 1_500,
+    netReceivableMinor: 168_000_000,
+    ...overrides,
+  });
 }
 
 export function receivables(overrides: Partial<Receivables> = {}): Receivables {

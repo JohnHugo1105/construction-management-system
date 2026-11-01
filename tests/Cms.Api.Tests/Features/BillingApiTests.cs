@@ -30,9 +30,21 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
 
     private static Task<ProjectDto> PricedProjectAsync(ApiClient client, long? price = Price) => CreateProjectAsync(client, contractPriceMinor: price);
 
-    private static Task<BillingTermsDto> TermsAsync(ApiClient client, Guid projectId, int retention = 1_000, int withholding = 200, int days = 30, int version = 0) =>
-        client.PutAsync<BillingTermsDto>($"/api/projects/{projectId}/billing/terms",
-            new { retentionBps = retention, creditableWithholdingBps = withholding, paymentTermsDays = days, version });
+    private static Task<BillingTermsDto> TermsAsync(ApiClient client, Guid projectId, int retention = 1_000, int withholding = 200, int days = 30, int version = 0,
+        int? advance = null, int? vatWithholding = null, bool? government = null) =>
+        client.PutAsync<BillingTermsDto>($"/api/projects/{projectId}/billing/terms", TermsBody(retention, withholding, days, version, advance, vatWithholding, government));
+
+    private static object TermsBody(int retention = 1_000, int withholding = 200, int days = 30, int version = 0, int? advance = null, int? vatWithholding = null,
+        bool? government = null) =>
+        new
+        {
+            retentionBps = retention, creditableWithholdingBps = withholding, paymentTermsDays = days, version, advanceBps = advance,
+            vatWithholdingBps = vatWithholding, isGovernmentClient = government
+        };
+
+    private static Task<ClientInvoiceDto> AdvanceDraftAsync(ApiClient client, Guid projectId, string? requestId = null) =>
+        client.PostAsync<ClientInvoiceDto>($"/api/projects/{projectId}/billing/invoices",
+            new { kind = "Advance", billingDate = BillDate, description = "Down payment", clientRequestId = requestId });
 
     private static object ProgressBody(long cumulative, string? requestId = null, string date = BillDate, string? description = "Progress billing") =>
         new { kind = "Progress", billingDate = date, description, cumulativeWorkMinor = cumulative, clientRequestId = requestId };
@@ -83,14 +95,16 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
         var project = await PricedProjectAsync(client);
 
         var defaults = await BillingAsync(client, project.Id);
-        Assert.Equal(new BillingTermsDto(1_000, 0, 30, true, 0), defaults.Terms);
+        Assert.Equal(new BillingTermsDto(1_000, 0, 30, 0, 0, false, true, 0), defaults.Terms);
+        Assert.Equal((0L, 0L, 0L, (Guid?)null, (long?)null), (defaults.AdvanceBilledMinor, defaults.AdvanceRecoveredMinor, defaults.AdvanceToRecoverMinor,
+            defaults.AdvanceBillId, defaults.AdvanceToBillMinor));
         Assert.Empty(defaults.Bills.Items);
         var terms = await TermsAsync(client, project.Id);
         Assert.Equal((1_000, 200, 30, false), (terms.RetentionBps, terms.CreditableWithholdingBps, terms.PaymentTermsDays, terms.IsDefault));
 
         // ₱2,240,000.00 to date: net 2,000,000.00, VAT 240,000.00, retention 224,000.00, withholding 2% of net 40,000.00.
         var preview = await client.GetAsync<BillPreviewDto>($"/api/projects/{project.Id}/billing/preview?cumulativeWorkMinor=224000000&billingDate={BillDate}");
-        Assert.Equal(new BillPreviewDto(Price, 0, 224_000_000, 224_000_000, 200_000_000, 24_000_000, 1_200, 1_000, 22_400_000, 200, 4_000_000, 197_600_000, 30,
+        Assert.Equal(new BillPreviewDto(Price, 0, 224_000_000, 224_000_000, 200_000_000, 24_000_000, 1_200, 1_000, 22_400_000, 200, 4_000_000, 0, 0, 0, 197_600_000, 30,
             new DateOnly(2026, 10, 30)), preview);
 
         var draft = await DraftAsync(client, project.Id, 224_000_000);
@@ -136,6 +150,108 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
         var overdue = await client.GetAsync<PagedResult<ClientInvoiceListItemDto>>($"/api/client-invoices?overdue=true&projectId={project.Id}");
         Assert.Equal(2, overdue.Total);
         Assert.Equal([first.Id], (await client.GetAsync<PagedResult<ClientInvoiceListItemDto>>("/api/client-invoices?search=BILL-0001")).Items.Select(bill => bill.Id));
+    }
+
+    [SqlServerFact]
+    public async Task A_down_payment_is_billed_first_recovered_by_each_progress_bill_with_VAT_withheld_and_given_back_when_a_bill_is_voided()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var project = await PricedProjectAsync(client);
+
+        // A government client allows at most 15% down.
+        var tooMuch = await client.PutAsync($"/api/projects/{project.Id}/billing/terms", TermsBody(advance: 2_000, vatWithholding: 500, government: true));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, tooMuch.StatusCode);
+        Assert.Equal(new HashSet<string> { "advanceBps" }, await ErrorFieldsAsync(tooMuch));
+        var terms = await TermsAsync(client, project.Id, advance: 1_500, vatWithholding: 500, government: true);
+        Assert.Equal(new BillingTermsDto(1_000, 200, 30, 1_500, 500, true, false, terms.Version), terms);
+        Assert.Equal(terms, (await BillingAsync(client, project.Id)).Terms);
+
+        // A progress draft prepared before the down payment is billed recovers nothing yet.
+        var early = await DraftAsync(client, project.Id, 224_000_000);
+        Assert.Equal(0, early.AdvanceRecoveryMinor);
+
+        // 15% of ₱11,200,000.00: the down payment the tab offers to bill, and what the bill asks for (no VAT split, nothing withheld).
+        Assert.Equal(168_000_000, (await BillingAsync(client, project.Id)).AdvanceToBillMinor);
+        var advance = await AdvanceDraftAsync(client, project.Id);
+        Assert.Equal(("Advance", "Draft", 168_000_000L, 0L, 0L, 0L), (advance.Kind, advance.Status, advance.GrossMinor, advance.VatMinor, advance.RetentionMinor,
+            advance.WithholdingMinor));
+        Assert.Equal((168_000_000L, 1_500, (long?)null), (advance.NetReceivableMinor, advance.AdvanceBps, advance.CumulativeWorkMinor));
+        var withDraft = await BillingAsync(client, project.Id);
+        Assert.Equal(((Guid?)advance.Id, (long?)null, 0L), (withDraft.AdvanceBillId, withDraft.AdvanceToBillMinor, withDraft.AdvanceBilledMinor));
+        await ExpectRuleAsync(await client.PostAsync($"/api/projects/{project.Id}/billing/invoices",
+            new { kind = "Advance", billingDate = BillDate, description = "Again" }), ClientInvoiceAdvanceExists);
+
+        advance = await IssueAsync(client, advance);
+        Assert.Equal("BILL-0001", advance.Number);
+
+        // The early draft no longer follows from the issued bills: issuing it is refused until it is saved again.
+        early = await client.GetAsync<ClientInvoiceDto>($"/api/client-invoices/{early.Id}");
+        Assert.True(early.IsStale);
+        await ExpectRuleAsync(await client.PostAsync($"/api/client-invoices/{early.Id}/issue", new { version = early.Version }),
+            "Another bill was issued or voided after this draft was prepared");
+
+        // 20% of the work recovers 336,000.00; 5% VAT withheld on the net 2,000,000.00 is 100,000.00. The preview and the bill agree.
+        var preview = await client.GetAsync<BillPreviewDto>($"/api/projects/{project.Id}/billing/preview?cumulativeWorkMinor=224000000&billingDate={BillDate}");
+        Assert.Equal((500, 10_000_000L, 33_600_000L, 154_000_000L), (preview.VatWithholdingBps, preview.VatWithholdingMinor, preview.AdvanceRecoveryMinor,
+            preview.NetReceivableMinor));
+        early = await client.PutAsync<ClientInvoiceDto>($"/api/client-invoices/{early.Id}",
+            new { billingDate = BillDate, description = "Progress billing no. 1", cumulativeWorkMinor = 224_000_000L, version = early.Version });
+        Assert.False(early.IsStale);
+        var first = await IssueAsync(client, early);
+        Assert.Equal(("BILL-0002", 33_600_000L, 500, 10_000_000L, 154_000_000L), (first.Number, first.AdvanceRecoveryMinor, first.VatWithholdingBps,
+            first.VatWithholdingMinor, first.NetReceivableMinor));
+
+        var second = await IssuedAsync(client, project.Id, 560_000_000);
+        Assert.Equal((50_400_000L, 15_000_000L, 231_000_000L), (second.AdvanceRecoveryMinor, second.VatWithholdingMinor, second.NetReceivableMinor));
+
+        var summary = await BillingAsync(client, project.Id);
+        Assert.Equal((168_000_000L, 84_000_000L, 84_000_000L, (long?)null), (summary.AdvanceBilledMinor, summary.AdvanceRecoveredMinor,
+            summary.AdvanceToRecoverMinor, summary.AdvanceToBillMinor));
+        // Billed to date is work; the down payment is a bill like any other, owed until it is paid.
+        Assert.Equal((560_000_000L, 168_000_000L + 154_000_000L + 231_000_000L), (summary.BilledToDateMinor, summary.OutstandingMinor));
+        var row = Assert.Single((await client.GetAsync<ReceivablesDto>("/api/billing/receivables")).Rows.Items, item => item.ProjectId == project.Id);
+        Assert.Equal(summary.OutstandingMinor, row.OutstandingMinor);
+
+        advance = await PayAsync(client, await client.GetAsync<ClientInvoiceDto>($"/api/client-invoices/{advance.Id}"), 168_000_000);
+        Assert.Equal(0, advance.OutstandingMinor);
+        await ExpectRuleAsync(await client.PostAsync($"/api/client-invoices/{advance.Id}/void", new { reason = "Wrong", version = advance.Version }),
+            "Only the latest bill of a project can be voided. Void BILL-0003 first.");
+
+        // Voiding the latest progress bill gives back the recovery it took; billing it again recovers the same.
+        await client.PostAsync<ClientInvoiceDto>($"/api/client-invoices/{second.Id}/void", new { reason = "Wrong period", version = second.Version });
+        summary = await BillingAsync(client, project.Id);
+        Assert.Equal((33_600_000L, 134_400_000L, 154_000_000L), (summary.AdvanceRecoveredMinor, summary.AdvanceToRecoverMinor, summary.OutstandingMinor));
+        Assert.Equal(50_400_000, (await IssuedAsync(client, project.Id, 560_000_000)).AdvanceRecoveryMinor);
+    }
+
+    private const string ClientInvoiceAdvanceExists = "This project already has a down payment bill. Open it instead of preparing another.";
+
+    [SqlServerFact]
+    public async Task A_down_payment_is_refused_after_the_first_progress_bill_or_without_a_down_payment_in_the_terms()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var project = await PricedProjectAsync(client);
+
+        await ExpectRuleAsync(await client.PostAsync($"/api/projects/{project.Id}/billing/invoices",
+            new { kind = "Advance", billingDate = BillDate, description = "Down payment" }), "This project's billing terms have no down payment.");
+
+        // A private client may take more than 15%.
+        var terms = await TermsAsync(client, project.Id, advance: 3_000);
+        Assert.Equal((3_000, 0, false), (terms.AdvanceBps, terms.VatWithholdingBps, terms.IsGovernmentClient));
+        // A draft prepared now can't be issued once a progress bill is issued first.
+        var advance = await AdvanceDraftAsync(client, project.Id);
+        await IssuedAsync(client, project.Id, 112_000_000);
+        await ExpectRuleAsync(await client.PostAsync($"/api/client-invoices/{advance.Id}/issue", new { version = advance.Version }),
+            "Bill the down payment before the first progress bill.");
+
+        // Discarded, the tab no longer offers a down payment: progress was billed first.
+        await client.PostAsync<ClientInvoiceDto>($"/api/client-invoices/{advance.Id}/discard", new { reason = "Progress billed first", version = advance.Version });
+        var summary = await BillingAsync(client, project.Id);
+        Assert.Equal(((Guid?)null, (long?)null, 0L), (summary.AdvanceBillId, summary.AdvanceToBillMinor, summary.AdvanceBilledMinor));
+        await ExpectRuleAsync(await client.PostAsync($"/api/projects/{project.Id}/billing/invoices",
+            new { kind = "Advance", billingDate = BillDate, description = "Down payment" }), "Bill the down payment before the first progress bill.");
     }
 
     [SqlServerFact]
@@ -299,11 +415,12 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
         var overPreview = await client.GetAsync($"/api/projects/{project.Id}/billing/preview?cumulativeWorkMinor={Price + 1}");
         Assert.Equal("Work completed to date can't be more than the contract price.", await ErrorMessageAsync(overPreview, "cumulativeWorkMinor"));
         Assert.Contains("kind", await ErrorFieldsAsync(await client.PostAsync($"/api/projects/{project.Id}/billing/invoices",
-            new { kind = "Advance", billingDate = BillDate, description = "x", cumulativeWorkMinor = 1L })));
+            new { kind = "Deposit", billingDate = BillDate, description = "x", cumulativeWorkMinor = 1L })));
 
         var badTerms = await client.PutAsync($"/api/projects/{project.Id}/billing/terms",
-            new { retentionBps = 3_001, creditableWithholdingBps = 1_001, paymentTermsDays = 181, version = 0 });
-        Assert.Equal(new HashSet<string> { "retentionBps", "creditableWithholdingBps", "paymentTermsDays" }, await ErrorFieldsAsync(badTerms));
+            new { retentionBps = 3_001, creditableWithholdingBps = 1_001, paymentTermsDays = 181, version = 0, advanceBps = 5_001, vatWithholdingBps = 1_201 });
+        Assert.Equal(new HashSet<string> { "retentionBps", "creditableWithholdingBps", "paymentTermsDays", "advanceBps", "vatWithholdingBps" },
+            await ErrorFieldsAsync(badTerms));
 
         var unpriced = await PricedProjectAsync(client, price: null);
         await ExpectRuleAsync(await PostDraftAsync(client, unpriced.Id, 100), "This project has no contract price yet.");
@@ -511,6 +628,9 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
         using var _c = client;
         var project = await PricedProjectAsync(client);
         var other = await PricedProjectAsync(client);
+        // A down payment first, so its figures are part of what is measured.
+        await TermsAsync(client, project.Id, advance: 1_000);
+        await IssueAsync(client, await AdvanceDraftAsync(client, project.Id));
         var bill = await IssuedAsync(client, project.Id, 10_000_000);
         await PayAsync(client, bill, 1_000_00);
 
@@ -533,7 +653,8 @@ public sealed class BillingApiTests : IClassFixture<CmsApiFactory>
 
         Assert.Equal(small, big);
         // Each request reads the company's time zone for "today", then: list, count + page; project billing, one statement for the
-        // project, its terms and every figure, then the bills' count + page; receivables, count + page + totals; a bill, itself + its payments.
+        // project, its terms, the down payment and every figure, then the bills' count + page; receivables, count + page + totals; a bill,
+        // itself + its payments.
         Assert.Equal([3, 4, 4, 3], big);
     }
 
