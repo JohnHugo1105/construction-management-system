@@ -121,6 +121,8 @@ export class WorkerDetailPage {
   ): readonly { readonly label: string; readonly value: string }[] {
     const rows: { label: string; value: string | null }[] = [
       { label: 'Hired', value: formatDate(worker.dateHired) },
+      // Shown only when one is set: "no fixed rest day" is the default and needs no line.
+      { label: 'Rest day', value: worker.restDay ?? null },
       { label: 'Contact number', value: worker.contactNumber },
       { label: 'Date of birth', value: worker.dateOfBirth ? formatDate(worker.dateOfBirth) : null },
       { label: 'Marital status', value: worker.maritalStatus },

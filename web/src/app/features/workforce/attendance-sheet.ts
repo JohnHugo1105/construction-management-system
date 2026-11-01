@@ -1,4 +1,11 @@
-import { AttendanceBatchLine, AttendanceBatchRequest, WorkerLookup } from './workforce.models';
+import { IconName } from '../../shared/ui/icon/icon';
+import { ChipTone } from '../../shared/ui/status-chip/status-chip';
+import {
+  AttendanceBatchLine,
+  AttendanceBatchRequest,
+  AttendanceSheet,
+  WorkerLookup,
+} from './workforce.models';
 
 /** The company day the sheet assumes when the company settings cannot be read. */
 export const FALLBACK_HOURS_PER_DAY = 8;
@@ -16,8 +23,10 @@ export interface DraftRow {
   /** Regular hours, or null while the box is blank. */
   readonly regular: number | null;
   readonly overtime: number | null;
+  /** Hours of the day that fell in the night; blank is none. */
+  readonly night: number | null;
   readonly remarks: string;
-  /** The remarks box is open (it stays closed until someone wants to write a remark). */
+  /** The night hours and remarks boxes are open (they stay closed until someone needs them). */
   readonly remarksOpen: boolean;
 }
 
@@ -26,6 +35,7 @@ export interface RowProblems {
   readonly worker?: string;
   readonly regular?: string;
   readonly overtime?: string;
+  readonly night?: string;
   readonly remarks?: string;
 }
 
@@ -41,6 +51,7 @@ export function draftRowsFor(crew: readonly WorkerLookup[], hoursPerDay: number)
     worked: true,
     regular: hoursPerDay,
     overtime: 0,
+    night: 0,
     remarks: '',
     remarksOpen: false,
   }));
@@ -93,6 +104,7 @@ export function planBatch(
     workerId: row.workerId,
     regularHours: row.regular ?? 0,
     overtimeHours: row.overtime ?? 0,
+    nightHours: row.night ?? 0,
     remarks: row.remarks.trim() || null,
   }));
   return {
@@ -120,7 +132,7 @@ export function mapBatchErrors(
 ): MappedErrors {
   const rows = new Map<
     string,
-    { worker?: string; regular?: string; overtime?: string; remarks?: string }
+    { worker?: string; regular?: string; overtime?: string; night?: string; remarks?: string }
   >();
   const general: string[] = [];
 
@@ -140,6 +152,9 @@ export function mapBatchErrors(
       case 'overtimeHours':
         row.overtime = text;
         break;
+      case 'nightHours':
+        row.night = text;
+        break;
       case 'remarks':
         row.remarks = text;
         break;
@@ -152,9 +167,47 @@ export function mapBatchErrors(
   return { rows, general };
 }
 
-/** "8 h" or "8 h + 2 h overtime". Hours as recorded, never pay. */
-export function hoursWords(regular: number, overtime: number): string {
-  return overtime > 0 ? `${regular} h + ${overtime} h overtime` : `${regular} h`;
+/** "8 h", "8 h + 2 h overtime", "8 h + 2 h overtime, 3 h at night". Hours as recorded, never pay. */
+export function hoursWords(regular: number, overtime: number, night = 0): string {
+  const worked = overtime > 0 ? `${regular} h + ${overtime} h overtime` : `${regular} h`;
+  return night > 0 ? `${worked}, ${night} h at night` : worked;
+}
+
+/** What a day is for a worker, as the API decides it from the holiday calendar and the worker's rest day. */
+export type DayType =
+  | 'Ordinary'
+  | 'RestDay'
+  | 'Special'
+  | 'SpecialRestDay'
+  | 'RegularHoliday'
+  | 'RegularHolidayRestDay';
+
+export interface DayChip {
+  readonly label: string;
+  readonly tone: ChipTone;
+  readonly icon: IconName;
+}
+
+/** The chip next to a recorded day. An ordinary day has none: there is nothing to say about it. */
+export const DAY_TYPE_CHIP: Record<Exclude<DayType, 'Ordinary'>, DayChip> = {
+  RestDay: { label: 'Rest day', tone: 'info', icon: 'calendar' },
+  Special: { label: 'Special day', tone: 'info', icon: 'calendar' },
+  SpecialRestDay: { label: 'Special day, rest day', tone: 'info', icon: 'calendar' },
+  RegularHoliday: { label: 'Regular holiday', tone: 'warning', icon: 'calendar' },
+  RegularHolidayRestDay: { label: 'Regular holiday, rest day', tone: 'warning', icon: 'calendar' },
+};
+
+export function dayTypeChip(dayType: string | null | undefined): DayChip | null {
+  if (!dayType || dayType === 'Ordinary') return null;
+  return DAY_TYPE_CHIP[dayType as Exclude<DayType, 'Ordinary'>] ?? null;
+}
+
+/** The one line about the company holiday on a sheet's day: "Regular holiday: Founders day". Null on any other day. */
+export function holidayLine(
+  sheet: Pick<AttendanceSheet, 'holidayName' | 'holidayType'>,
+): string | null {
+  if (!sheet.holidayName || !sheet.holidayType) return null;
+  return `${sheet.holidayType === 'Regular' ? 'Regular holiday' : 'Special day'}: ${sheet.holidayName}`;
 }
 
 /** A date is in the future when it sorts after today (business dates are written year-month-day). */

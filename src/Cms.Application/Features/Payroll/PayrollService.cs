@@ -25,8 +25,11 @@ namespace Cms.Application.Features.Payroll;
 /// </summary>
 public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reader, IAttendanceRepository attendance, IWorkerRepository workers,
     IProjectRepository projects, ICostEntryRepository costs, IOrganizationRepository organizations, IStatutoryScheduleRepository statutory,
-    IStatutoryReader statutoryReader, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
+    IStatutoryReader statutoryReader, IPayRulesRepository payRules, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
 {
+    /// <summary>The source name on the project cost a 13th-month payroll posts.</summary>
+    public const string ThirteenthMonthSourceName = "13th-month pay";
+
     private const int MaximumDeductionsPerWorker = 25;
 
     // The domain refuses periods longer than 31 days (counting both ends). Attendance is only loaded for a period that could be accepted,
@@ -62,7 +65,7 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
 
     /// <summary>A repeated request id answers with the original payroll only when it was for the same pay period.</summary>
     private static PayrollRunDto EnsureSameRequest(PayrollRunDto original, CreatePayrollRunRequest request) =>
-        original.PeriodStart == request.PeriodStart && original.PeriodEnd == request.PeriodEnd
+        original.Kind == nameof(PayrollRunKind.Regular) && original.PeriodStart == request.PeriodStart && original.PeriodEnd == request.PeriodEnd
             ? original
             : throw new DomainRuleException("That request id was already used for a different pay period. Reload the page and try again.");
 
@@ -76,16 +79,14 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         var unpaid = periodCanBeAccepted
             ? await attendance.ListUnpaidAsync(request.PeriodStart, request.PeriodEnd, cancellationToken)
             : [];
-        var workerIds = unpaid.Select(entry => entry.WorkerId).Distinct().ToArray();
-        var found = workerIds.Length == 0
-            ? new Dictionary<Guid, Worker>()
-            : (await workers.GetManyAsync(workerIds, includeHistory: true, cancellationToken)).ToDictionary(worker => worker.Id);
 
         // A worker with no pay rate on a work date stops the calculation, and the domain's message names the worker and the date.
-        var lines = PayrollCalculator.Calculate(
-            unpaid.Select(entry => new AttendanceFact(entry.Id, entry.WorkerId, entry.ProjectId, entry.SubProjectId, entry.WorkDate, entry.RegularHours,
-                entry.OvertimeHours)),
-            found, organization.HoursPerDay, organization.OvertimeMultiplierBps);
+        var calculation = periodCanBeAccepted
+            ? await CalculateAsync(unpaid, request.PeriodStart, request.PeriodEnd, organization.HoursPerDay, organization.OvertimeMultiplierBps, null,
+                cancellationToken)
+            : new PayCalculation([], new Dictionary<Guid, Worker>());
+        var lines = calculation.Lines;
+        var found = calculation.Workers;
         var run = PayrollRun.Draft(Guid.NewGuid(), currentUser.TenantId, request.PeriodStart, request.PeriodEnd, lines, organization.HoursPerDay,
             organization.OvertimeMultiplierBps, currentUser.UserId, requestId, today, now);
 
@@ -104,8 +105,9 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     }
 
     /// <summary>
-    /// Works the contributions and tax out again for every worker of a draft, from the tables and worker details as they are now and the
-    /// company's runs per month. Adjustments are reset; manual deductions are kept.
+    /// Works a draft out again from what is current: the pay (the pay rules, holidays, rest days, postings and the company's paid hours
+    /// and overtime multiple), then the contributions and tax (the tables, worker details and runs per month). Adjustments are reset;
+    /// manual deductions are kept. A 13th-month draft is worked out again from the approved payrolls of its year.
     /// </summary>
     public async Task<PayrollRunDto> RecalculateStatutoryAsync(Guid runId, VersionRequest request, CancellationToken cancellationToken)
     {
@@ -114,16 +116,103 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         if (run.Status != PayrollRunStatus.Draft)
             throw new DomainRuleException("Contributions and tax can only be recalculated while the payroll is a draft.");
         var organization = await organizations.GetCurrentAsync(cancellationToken);
-        var tables = await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken);
-        var participation = await statutory.ParticipationAsync(run.Lines.Select(line => line.WorkerId).ToArray(), cancellationToken);
-        run.ApplyStatutory(StatutoryFor(run, tables, participation, organization.PayrollRunsPerMonth), organization.PayrollRunsPerMonth, clock.UtcNow,
-            StatutoryBasisOf(tables));
+        var now = clock.UtcNow;
 
-        audit.Record("Payroll.StatutoryRecalculated", nameof(PayrollRun), run.Id,
-            $"Recalculated the contributions and tax in the payroll for {Period(run)}.");
+        if (run.IsThirteenthMonth)
+        {
+            run.Recalculate(await ThirteenthMonthLinesAsync(run.Year!.Value, run.Id, cancellationToken), organization.HoursPerDay,
+                organization.OvertimeMultiplierBps, now);
+            audit.Record("Payroll.Recalculated", nameof(PayrollRun), run.Id, $"Recalculated the 13th-month pay for {run.Year}.");
+        }
+        else
+        {
+            var calculation = await CalculateAsync(await attendance.ListByPayrollRunAsync(run.Id, cancellationToken), run.PeriodStart, run.PeriodEnd,
+                organization.HoursPerDay, organization.OvertimeMultiplierBps, run.Id, cancellationToken);
+            run.Recalculate(calculation.Lines, organization.HoursPerDay, organization.OvertimeMultiplierBps, now);
+            var tables = await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken);
+            run.ApplyStatutory(StatutoryFor(run, tables, calculation.Workers.ToDictionary(pair => pair.Key, pair => pair.Value.Statutory),
+                organization.PayrollRunsPerMonth), organization.PayrollRunsPerMonth, now, StatutoryBasisOf(tables));
+            audit.Record("Payroll.StatutoryRecalculated", nameof(PayrollRun), run.Id,
+                $"Recalculated the pay, contributions and tax in the payroll for {Period(run)}.");
+        }
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(run.Id, cancellationToken);
     }
+
+    /// <summary>
+    /// Prepares the 13th-month pay for a calendar year: a twelfth of each worker's basic pay from the year's approved payrolls, for every
+    /// worker not already in a standing 13th-month payroll for that year. No contributions or tax are taken. A repeated request id returns
+    /// the original.
+    /// </summary>
+    public async Task<PayrollRunDto> CreateThirteenthMonthAsync(CreateThirteenthMonthRunRequest request, CancellationToken cancellationToken)
+    {
+        var requestId = string.IsNullOrWhiteSpace(request.ClientRequestId) ? null : request.ClientRequestId.Trim();
+        if (requestId is not null && await runs.FindIdByClientRequestAsync(requestId, cancellationToken) is { } already)
+            return EnsureSameRequest(await ReadAsync(already, cancellationToken), request);
+
+        try
+        {
+            var organization = await organizations.GetCurrentAsync(cancellationToken);
+            var today = organization.TodayLocal(clock.UtcNow);
+            var lines = request.Year > today.Year || request.Year < PayrollRun.EarliestThirteenthMonthYear
+                ? []
+                : await ThirteenthMonthLinesAsync(request.Year, null, cancellationToken);
+            var run = PayrollRun.DraftThirteenthMonth(Guid.NewGuid(), currentUser.TenantId, request.Year, lines, organization.HoursPerDay,
+                organization.OvertimeMultiplierBps, currentUser.UserId, requestId, today, clock.UtcNow);
+            runs.Add(run);
+            audit.Record("Payroll.Drafted", nameof(PayrollRun), run.Id,
+                $"Prepared the 13th-month pay for {run.Year} for {run.Lines.Count} worker{(run.Lines.Count == 1 ? "" : "s")}.");
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            return await ReadAsync(run.Id, cancellationToken);
+        }
+        catch (DomainRuleException) when (requestId is not null)
+        {
+            // The same form submitted twice at once: the database lets only the first claim the workers' year. Answer with that payroll.
+            if (await runs.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original)
+                return EnsureSameRequest(await ReadAsync(original, cancellationToken), request);
+            throw;
+        }
+    }
+
+    private static PayrollRunDto EnsureSameRequest(PayrollRunDto original, CreateThirteenthMonthRunRequest request) =>
+        original.Kind == nameof(PayrollRunKind.ThirteenthMonth) && original.Year == request.Year
+            ? original
+            : throw new DomainRuleException("That request id was already used for a different payroll. Reload the page and try again.");
+
+    private sealed record PayCalculation(IReadOnlyList<CalculatedPayLine> Lines, IReadOnlyDictionary<Guid, Worker> Workers);
+
+    /// <summary>
+    /// Works out a pay period's pay from its attendance, the pay rules and holidays, and the unworked regular holidays of the workers posted
+    /// on them. A fixed number of statements however many workers and days: the rules, the holidays, (when a regular holiday falls in the
+    /// period) the postings, attendance and payrolls of those days, and the workers with their history.
+    /// </summary>
+    private async Task<PayCalculation> CalculateAsync(IReadOnlyList<AttendanceEntry> entries, DateOnly periodStart, DateOnly periodEnd, decimal hoursPerDay,
+        int overtimeMultiplierBps, Guid? runId, CancellationToken cancellationToken)
+    {
+        var factors = (await payRules.GetRulesAsync(cancellationToken))?.Factors ?? PayFactors.Defaults;
+        var holidays = await payRules.HolidaysBetweenAsync(periodStart, periodEnd, cancellationToken);
+        var settings = new PaySettings(hoursPerDay, overtimeMultiplierBps, factors, holidays);
+        var regularHolidays = holidays.Where(pair => pair.Value == HolidayType.Regular).Select(pair => pair.Key).ToArray();
+        var candidates = regularHolidays.Length == 0
+            ? []
+            : await runs.ListUnworkedHolidayCandidatesAsync(regularHolidays, runId, cancellationToken);
+
+        var workerIds = entries.Select(entry => entry.WorkerId).Concat(candidates.Select(candidate => candidate.WorkerId)).Distinct().ToArray();
+        var found = workerIds.Length == 0
+            ? new Dictionary<Guid, Worker>()
+            : (await workers.GetManyAsync(workerIds, includeHistory: true, cancellationToken)).ToDictionary(worker => worker.Id);
+        var known = candidates.Where(candidate => found.ContainsKey(candidate.WorkerId)).ToArray();
+        var lines = PayrollCalculator.Calculate(
+            entries.Select(entry => new AttendanceFact(entry.Id, entry.WorkerId, entry.ProjectId, entry.SubProjectId, entry.WorkDate, entry.RegularHours,
+                entry.OvertimeHours, entry.NightHours)),
+            known, found, settings);
+        return new PayCalculation(lines, found);
+    }
+
+    /// <summary>The 13th-month lines for a year, from the approved payrolls; three statements however many workers and payrolls.</summary>
+    private async Task<IReadOnlyList<CalculatedPayLine>> ThirteenthMonthLinesAsync(int year, Guid? runId, CancellationToken cancellationToken) =>
+        ThirteenthMonthCalculator.Calculate(await runs.ThirteenthMonthBasisAsync(year, runId, cancellationToken));
 
     /// <summary>Changes one worker's calculated contribution or tax on a draft, with a reason (kept on the payroll, not in the activity log).</summary>
     public async Task<PayrollRunDto> AdjustStatutoryAsync(Guid runId, Guid workerId, string agencyText, AdjustStatutoryRequest request,
@@ -181,12 +270,13 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     {
         var run = await LoadAsync(runId, cancellationToken);
         ConcurrencyGuard.Ensure(run.Version, request.Version);
-        // The deductions must still match the tables they were worked out from: a table added, corrected or retired after the draft would make
-        // the approved payroll impossible to explain from its table.
-        if (StatutoryBasisOf(await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken)) != (run.StatutoryBasis ?? ""))
-            throw new DomainRuleException("A contribution or tax table was added or changed after this payroll was worked out. Recalculate the contributions and tax, then approve.");
+        if (run.Status == PayrollRunStatus.Draft) await EnsureStillCalculatedAsync(run, cancellationToken);
         var now = clock.UtcNow;
         run.Approve(currentUser.UserId, now);
+        // A 13th-month payroll's cost is dated the year's last day, or today when it is paid early in the year itself.
+        var costDate = run.IsThirteenthMonth
+            ? DateOnlyMin((await organizations.GetCurrentAsync(cancellationToken)).TodayLocal(now), run.PeriodEnd)
+            : run.PeriodEnd;
 
         var shares = run.Lines.SelectMany(line => line.Allocations)
             .GroupBy(allocation => (allocation.ProjectId, allocation.SubProjectId))
@@ -195,7 +285,8 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
             .OrderBy(share => share.ProjectId).ThenBy(share => share.SubProjectId)
             .ToArray();
 
-        var description = $"Payroll {Period(run)}";
+        var description = run.IsThirteenthMonth ? $"13th-month pay {run.Year}" : $"Payroll {Period(run)}";
+        var sourceName = run.IsThirteenthMonth ? ThirteenthMonthSourceName : null;
         var posted = new List<CostEntry>(shares.Length);
         var loadedProjects = new Dictionary<Guid, Project>();
         foreach (var share in shares)
@@ -209,7 +300,7 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
             try
             {
                 posted.Add(CostEntry.RecordSystem(Guid.NewGuid(), currentUser.TenantId, project, share.SubProjectId, CostOrigin.Payroll, run.Id, description,
-                    ItemType.Labor, 1m, "l.s", share.GrossMinor, VatTreatment.Exempt, 0, run.PeriodEnd, currentUser.UserId, now));
+                    ItemType.Labor, 1m, "l.s", share.GrossMinor, VatTreatment.Exempt, 0, costDate, currentUser.UserId, now, sourceName));
             }
             catch (DomainRuleException ex)
             {
@@ -225,10 +316,36 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
 
         foreach (var entry in posted) costs.Add(entry);
         audit.Record("Payroll.Approved", nameof(PayrollRun), run.Id,
-            $"Approved the payroll for {Period(run)} and posted its labor cost to {loadedProjects.Count} project{(loadedProjects.Count == 1 ? "" : "s")}.");
+            $"Approved the {Title(run)} and posted its labor cost to {loadedProjects.Count} project{(loadedProjects.Count == 1 ? "" : "s")}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(run.Id, cancellationToken);
     }
+
+    /// <summary>
+    /// A draft is approved only as it would be worked out now, so an approved payroll can always be explained from its tables, pay rules,
+    /// holidays and the workers' rest days and postings. A regular payroll is worked out again with the paid hours and overtime multiple it
+    /// was made with (a change of company settings alone is not a reason to refuse).
+    /// </summary>
+    private async Task EnsureStillCalculatedAsync(PayrollRun run, CancellationToken cancellationToken)
+    {
+        if (run.IsThirteenthMonth)
+        {
+            if (!run.MatchesCalculation(await ThirteenthMonthLinesAsync(run.Year!.Value, run.Id, cancellationToken)))
+                throw new DomainRuleException($"The approved payrolls of {run.Year} changed after this 13th-month pay was worked out. Recalculate it, then approve.");
+            return;
+        }
+
+        // The deductions must still match the tables they were worked out from: a table added, corrected or retired after the draft would make
+        // the approved payroll impossible to explain from its table.
+        if (StatutoryBasisOf(await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken)) != (run.StatutoryBasis ?? ""))
+            throw new DomainRuleException("A contribution or tax table was added or changed after this payroll was worked out. Recalculate the contributions and tax, then approve.");
+        var calculation = await CalculateAsync(await attendance.ListByPayrollRunAsync(run.Id, cancellationToken), run.PeriodStart, run.PeriodEnd,
+            run.HoursPerDay, run.OvertimeMultiplierBps, run.Id, cancellationToken);
+        if (!run.MatchesCalculation(calculation.Lines))
+            throw new DomainRuleException("The pay rules, holidays, or a worker's rest day or posting changed after this payroll was worked out. Recalculate the payroll, then approve.");
+    }
+
+    private static DateOnly DateOnlyMin(DateOnly first, DateOnly second) => first < second ? first : second;
 
     /// <summary>
     /// Voids the payroll: releases its attendance for a new run and, if it was approved, voids the labor cost it posted, with the
@@ -268,7 +385,8 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
 
         // The reason is free text a person typed and may mention an amount, so it stays on the payroll and the voided costs, not in the audit line.
         audit.Record("Payroll.Voided", nameof(PayrollRun), run.Id,
-            $"Voided the {(wasApproved ? "approved" : "draft")} payroll for {Period(run)}; its attendance can be paid again" +
+            $"Voided the {(wasApproved ? "approved" : "draft")} {Title(run)}; " +
+            (run.IsThirteenthMonth ? "its workers can be included in another 13th-month payroll" : "its attendance can be paid again") +
             (voidedCosts == 0 ? "." : $" and {voidedCosts} labor cost entr{(voidedCosts == 1 ? "y was" : "ies were")} voided."));
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(run.Id, cancellationToken);
@@ -286,6 +404,9 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     /// <summary>The tables the deductions came from (agency, table and its version), as one short text; empty when none is in force.</summary>
     internal static string StatutoryBasisOf(IReadOnlyList<StatutorySchedule> tables) =>
         string.Join(';', tables.OrderBy(table => table.Agency).Select(table => $"{(int)table.Agency}:{table.Id:N}:{table.Version}"));
+
+    /// <summary>"payroll for 1 Nov - 15 Nov 2026", or "13th-month pay for 2026".</summary>
+    internal static string Title(PayrollRun run) => run.IsThirteenthMonth ? $"13th-month pay for {run.Year}" : $"payroll for {Period(run)}";
 
     /// <summary>"1 Nov - 15 Nov 2026"; both years are written when the period crosses a year end.</summary>
     internal static string Period(PayrollRun run) => Period(run.PeriodStart, run.PeriodEnd);

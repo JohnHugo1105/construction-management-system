@@ -357,6 +357,51 @@ describe('ProjectTeamTab recorded entries', () => {
     expect(text(root, '.all-done')).toContain('Everyone posted here has been recorded');
   });
 
+  it('names the holiday of the day and marks a rest day or holiday per worker, with the night hours', async () => {
+    const holiday = sheet({
+      ...recorded,
+      holidayName: 'Founders day',
+      holidayType: 'Regular',
+      entries: [
+        entry({
+          id: 'e1',
+          workerId: 'w1',
+          workerName: 'Ana Bautista',
+          dayType: 'RegularHoliday',
+          nightHours: 3,
+          version: 3,
+        }),
+        entry({ id: 'e2', workerId: 'w2', workerName: 'Juan Dela Cruz', dayType: 'Ordinary' }),
+      ],
+    });
+    const { root } = await open({ sheet: holiday });
+
+    expect(text(root, '.holiday-line')).toBe('Regular holiday: Founders day');
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('li.line--saved'));
+    expect(text(rows[0]!, 'app-status-chip')).toBe('Regular holiday');
+    expect(text(rows[0]!, '.line__hours')).toBe('8 h, 3 h at night');
+    expect(rows[1]!.querySelector('app-status-chip')).toBeNull();
+  });
+
+  it('sends the night hours typed when a saved entry is changed', async () => {
+    const reviseAttendance = stub(() => of(entry()));
+    const { root, fixture, api } = await open({ sheet: recorded, api: { reviseAttendance } });
+    const row = root.querySelector<HTMLElement>('li.line--saved')!;
+
+    buttonNamed(row, 'Change hours').click();
+    await settle(fixture);
+    const night = row.querySelector<HTMLInputElement>('input[aria-label^="Night hours"]')!;
+    night.value = '2';
+    night.dispatchEvent(new Event('input', { bubbles: true }));
+    buttonNamed(row, 'Save hours').click();
+    await settle(fixture);
+
+    expect(api['reviseAttendance']).toHaveBeenCalledWith(
+      'e1',
+      expect.objectContaining({ nightHours: 2, version: 3 }),
+    );
+  });
+
   it('changes the hours of a saved entry with its own version, and shows the API’s message under the box', async () => {
     const reviseAttendance = stub(() =>
       throwError(() =>
@@ -378,6 +423,7 @@ describe('ProjectTeamTab recorded entries', () => {
       subProjectId: null,
       regularHours: 8,
       overtimeHours: 23,
+      nightHours: 0,
       remarks: null,
       version: 3,
     });

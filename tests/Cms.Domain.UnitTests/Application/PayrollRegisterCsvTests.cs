@@ -44,8 +44,9 @@ public sealed class PayrollRegisterCsvTests
             var lines = Lines(PayrollRegisterCsv.Build(Run(Line("Juan Dela Cruz", deductions: [("Cash advance", 20_050)]))));
 
             // 800.00 + 250.00 = 1,050.00 less 200.50. No thousands separator and always a dot.
-            Assert.Equal("W-001,Juan Dela Cruz,Mason,8,2,800.00,250.00,1050.00,200.50,849.50,Cash advance 200.50,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00", lines[1]);
-            Assert.Equal("Total,,,8,2,800.00,250.00,1050.00,200.50,849.50,,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00", lines[2]);
+            Assert.Equal("W-001,Juan Dela Cruz,Mason,8,2,0,800.00,0.00,250.00,0.00,0.00,0.00,1050.00,200.50,849.50,Cash advance 200.50," +
+                "0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00", lines[1]);
+            Assert.Equal("Total,,,8,2,0,800.00,0.00,250.00,0.00,0.00,0.00,1050.00,200.50,849.50,,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00", lines[2]);
         }
         finally
         {
@@ -71,6 +72,20 @@ public sealed class PayrollRegisterCsvTests
         // Employer: 222.22 + 33.33 + 10.00 = 265.55 a worker; two workers in the total.
         Assert.EndsWith(",111.11,222.22,33.33,33.33,10.00,10.00,44.44,265.55", lines[1], StringComparison.Ordinal);
         Assert.EndsWith(",222.22,444.44,66.66,66.66,20.00,20.00,88.88,531.10", lines[3], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_pay_columns_before_the_gross_add_up_to_it()
+    {
+        // 800.00 basic + 240.00 rest-day premium + 338.00 overtime + 31.20 night (3 h) + 800.00 holiday pay = 2,209.20.
+        var line = new PayrollLineDto(Guid.NewGuid(), "Juan Dela Cruz", "W-001", "Mason", 8m, 2m, 80_000, 33_800, 220_920, 0, 220_920, [], [],
+            NightHours: 3m, PremiumPayMinor: 24_000, NightPayMinor: 3_120, HolidayPayMinor: 80_000);
+        var lines = Lines(PayrollRegisterCsv.Build(Run(line)));
+
+        Assert.StartsWith("Employee number,Worker,Designation,Regular hours,Overtime hours,Night hours,Regular pay,Premium pay,Overtime pay," +
+            "Night differential,Holiday pay,13th-month pay,Gross pay,", lines[0], StringComparison.Ordinal);
+        Assert.StartsWith("W-001,Juan Dela Cruz,Mason,8,2,3,800.00,240.00,338.00,31.20,800.00,0.00,2209.20,", lines[1], StringComparison.Ordinal);
+        Assert.StartsWith("Total,,,8,2,3,800.00,240.00,338.00,31.20,800.00,0.00,2209.20,", lines[2], StringComparison.Ordinal);
     }
 
     [Theory]

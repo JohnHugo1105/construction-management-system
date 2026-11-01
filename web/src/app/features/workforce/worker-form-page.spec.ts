@@ -81,6 +81,7 @@ describe('WorkerFormPage', () => {
       'Middle name (optional)',
       'Hire date',
       'Designation',
+      'Rest day',
       'Pay rate',
       'Paid',
     ]);
@@ -112,6 +113,8 @@ describe('WorkerFormPage', () => {
       philHealthMember: true,
       pagIbigMember: true,
       taxExempt: false,
+      // No rest day is assumed: a rest day earns a premium, so HR sets it.
+      restDay: 'None',
     });
     expect(String(sent['clientRequestId']).length).toBeGreaterThanOrEqual(30);
     await flushMicrotasks(6);

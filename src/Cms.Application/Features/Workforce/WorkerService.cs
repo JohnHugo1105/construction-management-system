@@ -61,7 +61,7 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
     {
         var worker = Worker.Hire(Guid.NewGuid(), currentUser.TenantId, request.EmployeeNumber, request.FirstName, request.MiddleName, request.LastName,
             request.DateHired, request.Designation, request.RateMinor, EnumText.Parse<RateUnit>(request.RateUnit), currentUser.UserId, today,
-            clock.UtcNow, requestId, HireStatutory(request));
+            clock.UtcNow, requestId, HireStatutory(request), request.RestDay is null ? null : RestDayText.Parse(request.RestDay));
         if (await workers.EmployeeNumberExistsAsync(worker.NormalizedEmployeeNumber, null, cancellationToken))
             throw new ValidationFailedException("employeeNumber", $"Another worker already has the employee number {worker.EmployeeNumber}. Use a different number.");
 
@@ -105,8 +105,14 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
         worker.UpdateProfile(request.FirstName, request.MiddleName, request.LastName, request.DateOfBirth, request.MaritalStatus, request.SpouseName,
             request.Religion, request.EducationalAttainment, request.PresentAddress, request.ProvincialAddress, request.ContactNumber, request.Reference,
             today, clock.UtcNow);
+        // Left out, the rest day stays as it is, so a client that doesn't know about it never clears it.
+        var restDayBefore = worker.RestDay;
+        if (request.RestDay is not null) worker.SetRestDay(RestDayText.Parse(request.RestDay), clock.UtcNow);
 
         audit.Record("Worker.ProfileUpdated", nameof(Worker), worker.Id, $"Updated the profile of {worker.FullName}.");
+        if (worker.RestDay != restDayBefore)
+            audit.Record("Worker.RestDayChanged", nameof(Worker), worker.Id,
+                worker.RestDay is { } day ? $"Set the rest day of {worker.FullName} to {day}." : $"Cleared the rest day of {worker.FullName} (no fixed rest day).");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(worker.Id, today, cancellationToken);
     }

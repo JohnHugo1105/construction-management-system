@@ -507,9 +507,10 @@ public sealed class StatutoryApiTests : IClassFixture<CmsApiFactory>
         Assert.Single(list.Items, item => item.InForce && item.Agency == "Sss");
         Assert.Equal(status, statusAfter);
         // Fixed numbers, so a regression shows up here: the contributions read is the run and one grouped read of its deductions; the
-        // list a count and a page; preparing a payroll 11 reads (organization, attendance, workers and their histories, the tables in
-        // force, then the run read back); the status one read of the tables in force plus the organization.
-        Assert.Equal((2, 3, 11, 2), (largeRemit, listReads, largeCreate, status));
+        // list a count and a page; preparing a payroll 13 reads (organization, attendance, the pay rules, the holidays in the period,
+        // workers and their histories, the tables in force, then the run read back); the status one read of the tables in force plus the
+        // organization.
+        Assert.Equal((2, 3, 13, 2), (largeRemit, listReads, largeCreate, status));
     }
 
     /// <summary>Counts the reads (SELECT statements) a request makes; batched writes grow with the rows saved and are left out.</summary>

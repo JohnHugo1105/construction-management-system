@@ -11,9 +11,10 @@ public static class PayrollRegisterCsv
 {
     private static readonly string[] Headers =
     [
-        "Employee number", "Worker", "Designation", "Regular hours", "Overtime hours", "Regular pay", "Overtime pay", "Gross pay", "Deductions",
-        "Net pay", "Deduction details", "SSS employee", "SSS employer", "PhilHealth employee", "PhilHealth employer", "Pag-IBIG employee",
-        "Pag-IBIG employer", "Withholding tax", "Employer contributions"
+        "Employee number", "Worker", "Designation", "Regular hours", "Overtime hours", "Night hours", "Regular pay", "Premium pay", "Overtime pay",
+        "Night differential", "Holiday pay", "13th-month pay", "Gross pay", "Deductions", "Net pay", "Deduction details", "SSS employee",
+        "SSS employer", "PhilHealth employee", "PhilHealth employer", "Pag-IBIG employee", "Pag-IBIG employer", "Withholding tax",
+        "Employer contributions"
     ];
 
     /// <summary>The statutory columns, in order: each agency's employee share, then its employer share (tax has no employer share).</summary>
@@ -31,7 +32,8 @@ public static class PayrollRegisterCsv
             AppendRow(text,
             [
                 Text(line.EmployeeNumber), Text(line.WorkerName), Text(line.Designation), Hours(line.RegularHours), Hours(line.OvertimeHours),
-                Money(line.RegularPayMinor), Money(line.OvertimePayMinor), Money(line.GrossPayMinor), Money(line.DeductionsMinor), Money(line.NetPayMinor),
+                Hours(line.NightHours), Money(line.RegularPayMinor), Money(line.PremiumPayMinor), Money(line.OvertimePayMinor), Money(line.NightPayMinor),
+                Money(line.HolidayPayMinor), Money(line.ThirteenthMonthPayMinor), Money(line.GrossPayMinor), Money(line.DeductionsMinor), Money(line.NetPayMinor),
                 Text(string.Join("; ", line.Deductions.Select(deduction => $"{deduction.Description} {Money(deduction.AmountMinor)}"))),
                 .. StatutoryColumns.Select(column => Money(Statutory([line], column.Agency, column.Employer))),
                 Money(line.Deductions.Sum(deduction => deduction.EmployerShareMinor))
@@ -40,8 +42,9 @@ public static class PayrollRegisterCsv
         AppendRow(text,
         [
             Text("Total"), "", "", Hours(run.Lines.Sum(line => line.RegularHours)), Hours(run.Lines.Sum(line => line.OvertimeHours)),
-            Money(run.Lines.Sum(line => line.RegularPayMinor)), Money(run.Lines.Sum(line => line.OvertimePayMinor)), Money(run.TotalGrossMinor),
-            Money(run.TotalDeductionsMinor), Money(run.TotalNetMinor), "",
+            Hours(run.Lines.Sum(line => line.NightHours)), Money(run.Lines.Sum(line => line.RegularPayMinor)), Money(run.Lines.Sum(line => line.PremiumPayMinor)),
+            Money(run.Lines.Sum(line => line.OvertimePayMinor)), Money(run.Lines.Sum(line => line.NightPayMinor)), Money(run.Lines.Sum(line => line.HolidayPayMinor)),
+            Money(run.Lines.Sum(line => line.ThirteenthMonthPayMinor)), Money(run.TotalGrossMinor), Money(run.TotalDeductionsMinor), Money(run.TotalNetMinor), "",
             .. StatutoryColumns.Select(column => Money(Statutory(run.Lines, column.Agency, column.Employer))),
             Money(run.Lines.SelectMany(line => line.Deductions).Sum(deduction => deduction.EmployerShareMinor))
         ]);

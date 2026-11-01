@@ -130,7 +130,7 @@ public sealed class CostEntry : AggregateRoot
         // A subcontract cost names the subcontractor it was certified for; payroll and stock name what they are.
         entry.SetSource(origin switch
         {
-            CostOrigin.Payroll => "Payroll",
+            CostOrigin.Payroll => string.IsNullOrWhiteSpace(sourceName) ? "Payroll" : sourceName.Trim(),
             CostOrigin.Subcontract => string.IsNullOrWhiteSpace(sourceName) ? "Subcontractor" : sourceName.Trim(),
             _ => "Warehouse"
         }, null);

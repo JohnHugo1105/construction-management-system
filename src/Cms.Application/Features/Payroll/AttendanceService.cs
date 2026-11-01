@@ -68,7 +68,8 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
         var worker = await workers.GetAsync(request.WorkerId, includeHistory: false, cancellationToken) ?? throw new NotFoundException("that worker");
 
         var entry = AttendanceEntry.Record(Guid.NewGuid(), currentUser.TenantId, worker, project, request.SubProjectId, request.WorkDate,
-            request.RegularHours, request.OvertimeHours, request.Remarks, organization.HoursPerDay, currentUser.UserId, requestId, today, clock.UtcNow);
+            request.RegularHours, request.OvertimeHours, request.Remarks, organization.HoursPerDay, currentUser.UserId, requestId, today, clock.UtcNow,
+            request.NightHours);
         var day = await LoadDayAsync(project.Id, request.WorkDate, [worker.Id], excludeEntryId: null, cancellationToken);
         if (CheckDay(worker, project, entry, day, excludeEntryId: null) is { } problem) throw new ValidationFailedException(problem.Field, problem.Message);
 
@@ -120,7 +121,7 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
             {
                 var entry = AttendanceEntry.Record(Guid.NewGuid(), currentUser.TenantId, worker, project, request.SubProjectId, request.WorkDate,
                     line.RegularHours, line.OvertimeHours, line.Remarks, organization.HoursPerDay, currentUser.UserId,
-                    requestId is null ? null : $"{requestId}#{worker.Id:N}", today, now);
+                    requestId is null ? null : $"{requestId}#{worker.Id:N}", today, now, line.NightHours);
                 if (CheckDay(worker, project, entry, day, excludeEntryId: null) is { } problem) errors.Add($"entries[{index}].{problem.Field}", problem.Message);
                 else entries.Add((entry, worker));
             }
@@ -151,7 +152,7 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
         var project = await LoadProjectAsync(entry.ProjectId, cancellationToken);
 
         entry.Revise(worker, project, request.SubProjectId, request.RegularHours, request.OvertimeHours, request.Remarks, organization.HoursPerDay,
-            organization.TodayLocal(clock.UtcNow), clock.UtcNow);
+            organization.TodayLocal(clock.UtcNow), clock.UtcNow, request.NightHours);
         var day = await LoadDayAsync(project.Id, entry.WorkDate, [worker.Id], entry.Id, cancellationToken);
         if (CheckDay(worker, project, entry, day, excludeEntryId: entry.Id) is { } problem) throw new ValidationFailedException(problem.Field, problem.Message);
 
@@ -175,18 +176,24 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
         return await ReadAsync(entry.Id, cancellationToken);
     }
 
-    private sealed record DayFacts(IReadOnlyList<ExistingAttendance> Existing, IReadOnlyDictionary<Guid, decimal> OtherHours);
+    private sealed record DayFacts(IReadOnlyList<ExistingAttendance> Existing, IReadOnlyDictionary<Guid, decimal> OtherHours,
+        IReadOnlySet<Guid> PaidAsUnworkedHoliday);
 
     private async Task<DayFacts> LoadDayAsync(Guid projectId, DateOnly workDate, IReadOnlyCollection<Guid> workerIds, Guid? excludeEntryId,
         CancellationToken cancellationToken) =>
         new(await attendance.ListActiveAsync(projectId, workDate, workerIds, cancellationToken),
-            await attendance.TotalHoursAsync(workDate, workerIds, excludeEntryId, cancellationToken));
+            await attendance.TotalHoursAsync(workDate, workerIds, excludeEntryId, cancellationToken),
+            excludeEntryId is null ? await attendance.WorkersPaidForUnworkedHolidayAsync(workDate, workerIds, cancellationToken) : new HashSet<Guid>());
 
-    /// <summary>The two rules the domain can't see because they depend on other entries. Returns the first problem as a field and a message.</summary>
+    /// <summary>The rules the domain can't see because they depend on other records. Returns the first problem as a field and a message.</summary>
     private static (string Field, string Message)? CheckDay(Worker worker, Project project, AttendanceEntry entry, DayFacts day, Guid? excludeEntryId)
     {
         if (day.Existing.Any(item => item.WorkerId == worker.Id && item.SubProjectId == entry.SubProjectId && item.EntryId != excludeEntryId))
             return ("workerId", $"{worker.FullName} already has attendance on {project.Name} for {Format(entry.WorkDate)}. Open that entry to change the hours.");
+
+        // A regular holiday a payroll already paid as not worked: recording work on it would pay the day twice.
+        if (day.PaidAsUnworkedHoliday.Contains(worker.Id))
+            return ("workDate", $"{worker.FullName} was paid for {Format(entry.WorkDate)} as a regular holiday not worked. Void that payroll before recording work on this day.");
 
         var others = day.OtherHours.GetValueOrDefault(worker.Id);
         var total = others + entry.RegularHours + entry.OvertimeHours;

@@ -17,24 +17,29 @@ import { PayrollRun } from './payroll.models';
 import { StatutoryApi } from './statutory-api';
 
 /**
- * Works a draft's contributions and tax out again from the tables, the workers' details and the pay runs a month as they are
- * now. Says plainly that adjusted amounts go back to the table's, and that deductions typed by hand stay.
+ * Works a draft out again as things are now: the pay from the pay rules, holidays and rest days, then the contributions and tax
+ * from the tables, the workers' details and the pay runs a month (a 13th-month draft from the year's approved payrolls). Says
+ * plainly that adjusted amounts go back to the table's, and that deductions typed by hand stay.
  */
 @Component({
   selector: 'app-recalculate-statutory-dialog',
   imports: [Dialog, Button, ApiErrorAlert],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-dialog
-      title="Recalculate contributions and tax?"
-      [locked]="saving()"
-      (closed)="dismissed.emit()"
-    >
+    <app-dialog title="Recalculate this payroll?" [locked]="saving()" (closed)="dismissed.emit()">
       <div class="stack">
-        <p>
-          SSS, PhilHealth, Pag-IBIG and withholding tax are worked out again from the tables and
-          worker details as they are now. Deductions typed by hand stay.
-        </p>
+        @if (run().kind === 'ThirteenthMonth') {
+          <p>
+            The 13th-month pay is worked out again from the approved payrolls of
+            {{ run().year }}. Deductions typed by hand stay.
+          </p>
+        } @else {
+          <p>
+            Pay is worked out again from the pay rules, holidays and rest days, then SSS,
+            PhilHealth, Pag-IBIG and withholding tax from the tables and worker details as they are
+            now. Deductions typed by hand stay.
+          </p>
+        }
         @if (adjustedCount() > 0) {
           <p>
             <strong>{{

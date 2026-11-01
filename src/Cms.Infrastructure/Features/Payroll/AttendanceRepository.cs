@@ -55,6 +55,16 @@ internal sealed class AttendanceRepository(CmsDbContext db) : IAttendanceReposit
     public async Task<IReadOnlyList<AttendanceEntry>> ListByPayrollRunAsync(Guid payrollRunId, CancellationToken cancellationToken) =>
         await db.Set<AttendanceEntry>().Where(entry => entry.PayrollRunId == payrollRunId).ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlySet<Guid>> WorkersPaidForUnworkedHolidayAsync(DateOnly workDate, IReadOnlyCollection<Guid> workerIds,
+        CancellationToken cancellationToken)
+    {
+        var wanted = workerIds.ToArray();
+        return (await db.Set<PayrollHolidayPay>().AsNoTracking()
+                .Where(holiday => holiday.ClaimDate == workDate && wanted.Contains(holiday.WorkerId))
+                .Select(holiday => holiday.WorkerId).ToListAsync(cancellationToken))
+            .ToHashSet();
+    }
+
     public void Add(AttendanceEntry entry) => db.Set<AttendanceEntry>().Add(entry);
 }
 
@@ -74,9 +84,17 @@ internal sealed class AttendanceReader(CmsDbContext db) : IAttendanceReader
 
     public async Task<AttendanceSheetDto?> SheetAsync(Guid projectId, DateOnly workDate, CancellationToken cancellationToken)
     {
-        var projectName = await db.Set<Project>().AsNoTracking().Where(project => project.Id == projectId).Select(project => project.Name)
+        // The project's name and the company holiday on the day (if any), in one statement.
+        var heading = await db.Set<Project>().AsNoTracking().Where(project => project.Id == projectId)
+            .Select(project => new
+            {
+                project.Name,
+                Holiday = db.Set<CompanyHoliday>().Where(holiday => holiday.Date == workDate)
+                    .Select(holiday => new { holiday.Name, holiday.Type }).FirstOrDefault()
+            })
             .FirstOrDefaultAsync(cancellationToken);
-        if (projectName is null) return null;
+        if (heading is null) return null;
+        var projectName = heading.Name;
 
         var rows = await Rows(db.Set<AttendanceEntry>().AsNoTracking()
                 .Where(entry => entry.ProjectId == projectId && entry.WorkDate == workDate && entry.Status == AttendanceStatus.Recorded))
@@ -97,7 +115,7 @@ internal sealed class AttendanceReader(CmsDbContext db) : IAttendanceReader
         var entries = rows.Select(ToDto).ToArray();
         return new AttendanceSheetDto(projectId, projectName, workDate, entries, entries.Sum(entry => entry.RegularHours), entries.Sum(entry => entry.OvertimeHours),
             crew.Select(item => new WorkerLookupDto(item.Id, WorkerNames.Full(item.FirstName, item.MiddleName, item.LastName), item.EmployeeNumber,
-                item.Status.ToString())).ToArray());
+                item.Status.ToString())).ToArray(), heading.Holiday?.Name, heading.Holiday?.Type.ToString());
     }
 
     public async Task<PagedResult<AttendanceEntryDto>> ListAsync(AttendanceListQuery query, PageRequest page, CancellationToken cancellationToken)
@@ -134,11 +152,14 @@ internal sealed class AttendanceReader(CmsDbContext db) : IAttendanceReader
         public DateOnly WorkDate { get; init; }
         public decimal RegularHours { get; init; }
         public decimal OvertimeHours { get; init; }
+        public decimal NightHours { get; init; }
         public string? Remarks { get; init; }
         public AttendanceStatus Status { get; init; }
         public Guid? PayrollRunId { get; init; }
         public string? VoidReason { get; init; }
         public int Version { get; init; }
+        public DayOfWeek? RestDay { get; init; }
+        public HolidayType? Holiday { get; init; }
     }
 
     private IQueryable<AttendanceRow> Rows(IQueryable<AttendanceEntry> entries) =>
@@ -162,14 +183,19 @@ internal sealed class AttendanceReader(CmsDbContext db) : IAttendanceReader
             WorkDate = entry.WorkDate,
             RegularHours = entry.RegularHours,
             OvertimeHours = entry.OvertimeHours,
+            NightHours = entry.NightHours,
             Remarks = entry.Remarks,
             Status = entry.Status,
             PayrollRunId = entry.PayrollRunId,
             VoidReason = entry.VoidReason,
-            Version = entry.Version
+            Version = entry.Version,
+            RestDay = worker.RestDay,
+            // At most one holiday per date: read in the same statement, never once per entry.
+            Holiday = db.Set<CompanyHoliday>().Where(holiday => holiday.Date == entry.WorkDate).Select(holiday => (HolidayType?)holiday.Type).FirstOrDefault()
         };
 
     private static AttendanceEntryDto ToDto(AttendanceRow row) => new(row.Id, row.WorkerId, WorkerNames.Full(row.FirstName, row.MiddleName, row.LastName),
         row.EmployeeNumber, row.ProjectId, row.ProjectName, row.SubProjectId, row.SubProjectName, row.WorkDate, row.RegularHours, row.OvertimeHours, row.Remarks,
-        row.Status.ToString(), row.PayrollRunId is not null, row.PayrollRunId, row.VoidReason, row.Version);
+        row.Status.ToString(), row.PayrollRunId is not null, row.PayrollRunId, row.VoidReason, row.Version, row.NightHours,
+        DayTypes.Of(row.WorkDate, row.Holiday, row.RestDay).ToString());
 }

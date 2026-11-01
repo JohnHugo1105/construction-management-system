@@ -25,6 +25,7 @@ import { FormField } from '../../shared/ui/form-field/form-field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Skeleton } from '../../shared/ui/skeleton/skeleton';
 import { WorkforceApi } from './workforce-api';
+import { NO_REST_DAY, REST_DAY_CHOICES, REST_DAY_HINT, RestDayChoice } from './worker-rest-day';
 import { WorkerDetail } from './workforce.models';
 
 /**
@@ -102,6 +103,17 @@ import { WorkerDetail } from './workforce.models';
               [control]="form.controls.middleName"
             >
               <input appControl formControlName="middleName" autocomplete="off" />
+            </app-form-field>
+          </div>
+
+          <div class="form__section">
+            <h2 class="card__title">Work week</h2>
+            <app-form-field label="Rest day" [hint]="restDayHint" [control]="form.controls.restDay">
+              <select appControl formControlName="restDay">
+                @for (choice of restDayChoices; track choice.value) {
+                  <option [value]="choice.value">{{ choice.label }}</option>
+                }
+              </select>
             </app-form-field>
           </div>
 
@@ -245,7 +257,11 @@ export class WorkerProfilePage {
       validators: [Validators.maxLength(40)],
     }),
     reference: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
+    restDay: new FormControl<RestDayChoice>(NO_REST_DAY, { nonNullable: true }),
   });
+
+  protected readonly restDayChoices = REST_DAY_CHOICES;
+  protected readonly restDayHint = REST_DAY_HINT;
 
   protected readonly loaded = signal<WorkerDetail | null>(null);
   protected readonly loading = signal(false);
@@ -284,6 +300,7 @@ export class WorkerProfilePage {
         provincialAddress: worker.provincialAddress ?? '',
         contactNumber: worker.contactNumber ?? '',
         reference: worker.reference ?? '',
+        restDay: worker.restDay ?? NO_REST_DAY,
       });
     } catch (failure) {
       this.error.set(asApiError(failure));
@@ -326,6 +343,7 @@ export class WorkerProfilePage {
           provincialAddress: text(value.provincialAddress),
           contactNumber: text(value.contactNumber),
           reference: text(value.reference),
+          restDay: value.restDay,
           version: this.loaded()?.version ?? 0,
         }),
       );

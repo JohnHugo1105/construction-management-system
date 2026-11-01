@@ -28,6 +28,9 @@ public interface IAttendanceRepository
     /// <summary>The attendance a payroll run locked, tracked for change so voiding the run can release it.</summary>
     Task<IReadOnlyList<AttendanceEntry>> ListByPayrollRunAsync(Guid payrollRunId, CancellationToken cancellationToken);
 
+    /// <summary>Which of these workers a standing payroll already paid for the day as a regular holiday not worked (one statement).</summary>
+    Task<IReadOnlySet<Guid>> WorkersPaidForUnworkedHolidayAsync(DateOnly workDate, IReadOnlyCollection<Guid> workerIds, CancellationToken cancellationToken);
+
     void Add(AttendanceEntry entry);
 }
 
@@ -48,27 +51,33 @@ public interface IAttendanceReader
 
 public sealed record AttendanceListQuery(Guid? WorkerId, Guid? ProjectId, DateOnly? From, DateOnly? To, bool IncludeVoided);
 
-/// <summary>Hours only: attendance never carries pay. <c>IsLocked</c> means a payroll run has taken the entry.</summary>
+/// <summary>
+/// Hours only: attendance never carries pay. <c>IsLocked</c> means a payroll run has taken the entry. <c>DayType</c> is what the day is
+/// for this worker (Ordinary, RestDay, Special, SpecialRestDay, RegularHoliday, RegularHolidayRestDay), decided by the server from the
+/// holiday calendar and the worker's rest day as they are now; <c>NightHours</c> are the hours that fell in the night.
+/// </summary>
 public sealed record AttendanceEntryDto(Guid Id, Guid WorkerId, string WorkerName, string EmployeeNumber, Guid ProjectId, string ProjectName,
     Guid? SubProjectId, string? SubProjectName, DateOnly WorkDate, decimal RegularHours, decimal OvertimeHours, string? Remarks, string Status,
-    bool IsLocked, Guid? PayrollRunId, string? VoidReason, int Version);
+    bool IsLocked, Guid? PayrollRunId, string? VoidReason, int Version, decimal NightHours = 0m, string DayType = "Ordinary");
 
 /// <summary>
 /// A project's day: the hours recorded, and the crew posted to the project that day who have no entry yet, so a foreman can fill in
-/// the rest in one step.
+/// the rest in one step. <c>HolidayName</c> and <c>HolidayType</c> (Regular or Special) name the company holiday on the day, if any.
 /// </summary>
 public sealed record AttendanceSheetDto(Guid ProjectId, string ProjectName, DateOnly WorkDate, IReadOnlyList<AttendanceEntryDto> Entries,
-    decimal TotalRegularHours, decimal TotalOvertimeHours, IReadOnlyList<WorkerLookupDto> CrewWithoutEntry);
+    decimal TotalRegularHours, decimal TotalOvertimeHours, IReadOnlyList<WorkerLookupDto> CrewWithoutEntry, string? HolidayName = null,
+    string? HolidayType = null);
 
 public sealed record RecordAttendanceRequest(Guid WorkerId, Guid ProjectId, Guid? SubProjectId, DateOnly WorkDate, decimal RegularHours,
-    decimal OvertimeHours, string? Remarks, string? ClientRequestId);
+    decimal OvertimeHours, string? Remarks, string? ClientRequestId, decimal NightHours = 0m);
 
-public sealed record AttendanceBatchLine(Guid WorkerId, decimal RegularHours, decimal OvertimeHours, string? Remarks);
+public sealed record AttendanceBatchLine(Guid WorkerId, decimal RegularHours, decimal OvertimeHours, string? Remarks, decimal NightHours = 0m);
 
 /// <summary>A crew's day on one project. All lines are recorded or none are; <c>ClientRequestId</c> covers the whole submission.</summary>
 public sealed record RecordAttendanceBatchRequest(Guid ProjectId, Guid? SubProjectId, DateOnly WorkDate, IReadOnlyList<AttendanceBatchLine>? Entries,
     string? ClientRequestId);
 
-public sealed record ReviseAttendanceRequest(Guid? SubProjectId, decimal RegularHours, decimal OvertimeHours, string? Remarks, int Version);
+public sealed record ReviseAttendanceRequest(Guid? SubProjectId, decimal RegularHours, decimal OvertimeHours, string? Remarks, int Version,
+    decimal NightHours = 0m);
 
 public sealed record VoidAttendanceRequest(string? Reason, int Version);

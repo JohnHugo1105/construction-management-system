@@ -64,21 +64,23 @@ public sealed record WorkerDetailDto(Guid Id, string EmployeeNumber, string Firs
     string? PresentAddress, string? ProvincialAddress, string? ContactNumber, string? Reference, string Status, DateOnly? StatusChangedOn,
     string? StatusReason, string? Designation, long? CurrentRateMinor, string? CurrentRateUnit, WorkerAssignmentDto? CurrentAssignment,
     IReadOnlyList<WorkerAssignmentDto> Assignments, IReadOnlyList<WorkerRateDto> Rates, IReadOnlyList<WorkerCaseDto> Cases, int Version,
-    WorkerStatutoryDto? Statutory = null);
+    WorkerStatutoryDto? Statutory = null, string? RestDay = null);
 
 /// <summary>Which contributions the worker pays and whether tax is withheld. Only returned to people who may see pay.</summary>
 public sealed record WorkerStatutoryDto(bool SssMember, bool PhilHealthMember, bool PagIbigMember, bool TaxExempt);
 
 /// <param name="SssMember">Optional; a new worker pays SSS, PhilHealth and Pag-IBIG and is taxed unless told otherwise.</param>
+/// <param name="RestDay">Optional: a day of the week ("Sunday"), or "None" (the default) for no fixed rest day.</param>
 public sealed record HireWorkerRequest(string? EmployeeNumber, string? FirstName, string? MiddleName, string? LastName, DateOnly DateHired,
     string? Designation, long RateMinor, string? RateUnit, string? ClientRequestId, bool? SssMember = null, bool? PhilHealthMember = null,
-    bool? PagIbigMember = null, bool? TaxExempt = null);
+    bool? PagIbigMember = null, bool? TaxExempt = null, string? RestDay = null);
 
 public sealed record SetWorkerStatutoryRequest(bool SssMember, bool PhilHealthMember, bool PagIbigMember, bool TaxExempt, int Version);
 
+/// <param name="RestDay">A day of the week ("Sunday"), or "None" for no fixed rest day. Left out (null), the rest day stays as it is.</param>
 public sealed record UpdateWorkerRequest(string? FirstName, string? MiddleName, string? LastName, DateOnly? DateOfBirth, string? MaritalStatus,
     string? SpouseName, string? Religion, string? EducationalAttainment, string? PresentAddress, string? ProvincialAddress, string? ContactNumber,
-    string? Reference, int Version);
+    string? Reference, int Version, string? RestDay = null);
 
 /// <summary><c>Category</c> is Promotion, Demotion or RateAdjustment; <c>RateUnit</c> is Daily or Hourly.</summary>
 public sealed record ChangeWorkerRateRequest(string? Category, string? Designation, long RateMinor, string? RateUnit, DateOnly EffectiveFrom,
@@ -110,6 +112,27 @@ internal static class EnumText
         foreach (var candidate in Enum.GetValues<T>())
             if (string.Equals(candidate.ToString(), name, StringComparison.OrdinalIgnoreCase)) return candidate;
         return (T)Enum.ToObject(typeof(T), -1);
+    }
+}
+
+/// <summary>The worker's rest day as request and response text: a day of the week ("Sunday"), or "None" for no fixed rest day.</summary>
+public static class RestDayText
+{
+    public const string None = "None";
+
+    public static string? Format(DayOfWeek? restDay) => restDay?.ToString();
+
+    /// <summary>
+    /// "None" (or empty) is no rest day; a day name is that day. Anything else is refused with a field message, so a typing mistake
+    /// never clears a rest day by accident.
+    /// </summary>
+    public static DayOfWeek? Parse(string text)
+    {
+        var name = text.Trim();
+        if (name.Length == 0 || string.Equals(name, None, StringComparison.OrdinalIgnoreCase)) return null;
+        foreach (var day in Enum.GetValues<DayOfWeek>())
+            if (string.Equals(day.ToString(), name, StringComparison.OrdinalIgnoreCase)) return day;
+        throw new Cms.Domain.Common.ValidationFailedException("restDay", "Choose a day of the week, or no fixed rest day.");
     }
 }
 

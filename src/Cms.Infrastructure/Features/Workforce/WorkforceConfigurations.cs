@@ -27,6 +27,8 @@ internal sealed class WorkerConfiguration : IEntityTypeConfiguration<Worker>
         builder.Property(item => item.ClientRequestId).HasMaxLength(80);
         builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.StatusReason).HasMaxLength(300);
+        // The weekly rest day as its name ("Sunday"); null means no fixed rest day.
+        builder.Property(item => item.RestDay).HasConversion<string>().HasMaxLength(10);
         builder.Ignore(item => item.FullName);
         builder.Ignore(item => item.CurrentRate);
         builder.Ignore(item => item.CurrentAssignment);

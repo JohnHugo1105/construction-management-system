@@ -51,6 +51,12 @@ public sealed class Worker : AggregateRoot
 
     public StatutoryParticipation Statutory => new(IsSssMember, IsPhilHealthMember, IsPagIbigMember, IsTaxExempt);
 
+    /// <summary>
+    /// The worker's weekly rest day, or null when the worker has no fixed rest day (every day is then an ordinary day for pay). Not set
+    /// by default: a rest day earns a premium, so HR sets it for crews that have one; it is never assumed.
+    /// </summary>
+    public DayOfWeek? RestDay { get; private set; }
+
     public WorkerStatus Status { get; private set; } = WorkerStatus.Active;
     public DateOnly? StatusChangedOn { get; private set; }
     public string? StatusReason { get; private set; }
@@ -70,7 +76,7 @@ public sealed class Worker : AggregateRoot
 
     public static Worker Hire(Guid id, Guid tenantId, string? employeeNumber, string? firstName, string? middleName, string? lastName,
         DateOnly dateHired, string? designation, long rateMinor, RateUnit rateUnit, Guid recordedByUserId, DateOnly today,
-        DateTimeOffset now, string? clientRequestId = null, StatutoryParticipation? statutory = null)
+        DateTimeOffset now, string? clientRequestId = null, StatutoryParticipation? statutory = null, DayOfWeek? restDay = null)
     {
         statutory ??= StatutoryParticipation.Default;
         var errors = new ValidationErrors();
@@ -86,6 +92,7 @@ public sealed class Worker : AggregateRoot
         if (dateHired == default) errors.Add("dateHired", "Choose the date the worker was hired.");
         else if (dateHired > today) errors.Add("dateHired", "The hire date can't be in the future.");
         ValidateRate(errors, rateMinor, rateUnit);
+        ValidateRestDay(errors, restDay);
         errors.ThrowIfAny();
 
         var worker = new Worker
@@ -100,7 +107,8 @@ public sealed class Worker : AggregateRoot
             IsSssMember = statutory.Sss,
             IsPhilHealthMember = statutory.PhilHealth,
             IsPagIbigMember = statutory.PagIbig,
-            IsTaxExempt = statutory.TaxExempt
+            IsTaxExempt = statutory.TaxExempt,
+            RestDay = restDay
         };
         worker.Initialize(id, tenantId, now);
         worker._rates.Add(new WorkerRate(Guid.NewGuid(), tenantId, id, title, rateMinor, rateUnit, RateChangeCategory.Initial, dateHired,
@@ -146,6 +154,25 @@ public sealed class Worker : AggregateRoot
         IsPagIbigMember = participation.PagIbig;
         IsTaxExempt = participation.TaxExempt;
         Touch(now);
+    }
+
+    /// <summary>
+    /// Sets the worker's weekly rest day, or clears it (no fixed rest day). It decides the day type of the worker's attendance in payrolls
+    /// worked out (or recalculated) from now on; an approved payroll keeps its amounts.
+    /// </summary>
+    public void SetRestDay(DayOfWeek? restDay, DateTimeOffset now)
+    {
+        var errors = new ValidationErrors();
+        ValidateRestDay(errors, restDay);
+        errors.ThrowIfAny();
+        if (RestDay == restDay) return;
+        RestDay = restDay;
+        Touch(now);
+    }
+
+    private static void ValidateRestDay(ValidationErrors errors, DayOfWeek? restDay)
+    {
+        if (restDay is { } day && !Enum.IsDefined(day)) errors.Add("restDay", "Choose a day of the week, or no fixed rest day.");
     }
 
     /// <summary>The pay rate in force on a date, or null when the date is before the worker was hired.</summary>

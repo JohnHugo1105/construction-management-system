@@ -26,6 +26,7 @@ export interface EntryEdit {
   readonly entry: AttendanceEntry;
   readonly regular: number | null;
   readonly overtime: number | null;
+  readonly night: number | null;
   readonly remarks: string;
   readonly problems: RowProblems;
   readonly saving: boolean;
@@ -199,6 +200,7 @@ export class AttendanceSheetState {
       entry,
       regular: entry.regularHours,
       overtime: entry.overtimeHours,
+      night: entry.nightHours ?? 0,
       remarks: entry.remarks ?? '',
       problems: {},
       saving: false,
@@ -206,7 +208,7 @@ export class AttendanceSheetState {
     });
   }
 
-  updateEdit(patch: Partial<Pick<EntryEdit, 'regular' | 'overtime' | 'remarks'>>): void {
+  updateEdit(patch: Partial<Pick<EntryEdit, 'regular' | 'overtime' | 'night' | 'remarks'>>): void {
     this.editing.update((edit) => (edit ? { ...edit, ...patch, problems: {}, error: null } : edit));
   }
 
@@ -237,6 +239,7 @@ export class AttendanceSheetState {
           subProjectId: edit.entry.subProjectId,
           regularHours: edit.regular ?? 0,
           overtimeHours: edit.overtime ?? 0,
+          nightHours: edit.night ?? 0,
           remarks: edit.remarks.trim() || null,
           version: edit.entry.version,
         }),
@@ -249,6 +252,7 @@ export class AttendanceSheetState {
       const fields = {
         regular: problem.firstError('regularHours') ?? undefined,
         overtime: problem.firstError('overtimeHours') ?? undefined,
+        night: problem.firstError('nightHours') ?? undefined,
         remarks: problem.firstError('remarks') ?? undefined,
       };
       const aboutAField = Object.values(fields).some(Boolean);

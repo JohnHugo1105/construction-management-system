@@ -27,6 +27,13 @@ public sealed class AttendanceEntry : AggregateRoot
     public DateOnly WorkDate { get; private set; }
     public decimal RegularHours { get; private set; }
     public decimal OvertimeHours { get; private set; }
+
+    /// <summary>
+    /// How many of the day's hours (regular or overtime) fell in the night, typed by the person who knows the shift; they earn the night
+    /// differential. The system does not work shifts out.
+    /// </summary>
+    public decimal NightHours { get; private set; }
+
     public string? Remarks { get; private set; }
     public AttendanceStatus Status { get; private set; } = AttendanceStatus.Recorded;
 
@@ -43,10 +50,10 @@ public sealed class AttendanceEntry : AggregateRoot
 
     public static AttendanceEntry Record(Guid id, Guid tenantId, Worker worker, Project project, Guid? subProjectId, DateOnly workDate,
         decimal regularHours, decimal overtimeHours, string? remarks, decimal hoursPerDay, Guid recordedByUserId, string? clientRequestId,
-        DateOnly today, DateTimeOffset now)
+        DateOnly today, DateTimeOffset now, decimal nightHours = 0m)
     {
         project.EnsureCanReceiveRecordsFor(subProjectId);
-        Validate(worker, workDate, regularHours, overtimeHours, hoursPerDay, today);
+        Validate(worker, workDate, regularHours, overtimeHours, nightHours, hoursPerDay, today);
 
         var entry = new AttendanceEntry
         {
@@ -56,6 +63,7 @@ public sealed class AttendanceEntry : AggregateRoot
             WorkDate = workDate,
             RegularHours = regularHours,
             OvertimeHours = overtimeHours,
+            NightHours = nightHours,
             Remarks = Guard.OptionalText(remarks, "remarks", "the remarks", 300),
             RecordedByUserId = recordedByUserId,
             ClientRequestId = Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80)
@@ -65,15 +73,16 @@ public sealed class AttendanceEntry : AggregateRoot
     }
 
     public void Revise(Worker worker, Project project, Guid? subProjectId, decimal regularHours, decimal overtimeHours, string? remarks,
-        decimal hoursPerDay, DateOnly today, DateTimeOffset now)
+        decimal hoursPerDay, DateOnly today, DateTimeOffset now, decimal nightHours = 0m)
     {
         EnsureEditable();
         if (worker.Id != WorkerId || project.Id != ProjectId) throw new ArgumentException("The worker or project doesn't match this entry.");
         project.EnsureCanReceiveRecordsFor(subProjectId);
-        Validate(worker, WorkDate, regularHours, overtimeHours, hoursPerDay, today);
+        Validate(worker, WorkDate, regularHours, overtimeHours, nightHours, hoursPerDay, today);
         SubProjectId = subProjectId;
         RegularHours = regularHours;
         OvertimeHours = overtimeHours;
+        NightHours = nightHours;
         Remarks = Guard.OptionalText(remarks, "remarks", "the remarks", 300);
         Touch(now);
     }
@@ -107,8 +116,8 @@ public sealed class AttendanceEntry : AggregateRoot
         if (IsLocked) throw new DomainRuleException("This attendance is part of a payroll run. Void the payroll run first to change it.");
     }
 
-    private static void Validate(Worker worker, DateOnly workDate, decimal regularHours, decimal overtimeHours, decimal hoursPerDay,
-        DateOnly today)
+    private static void Validate(Worker worker, DateOnly workDate, decimal regularHours, decimal overtimeHours, decimal nightHours,
+        decimal hoursPerDay, DateOnly today)
     {
         var errors = new ValidationErrors();
         if (workDate == default) errors.Add("workDate", "Choose the work date.");
@@ -119,6 +128,8 @@ public sealed class AttendanceEntry : AggregateRoot
         if (overtimeHours < 0m || decimal.Round(overtimeHours, 2) != overtimeHours) errors.Add("overtimeHours", "Enter overtime hours of zero or more, up to 2 decimals.");
         if (regularHours + overtimeHours <= 0m) errors.Add("regularHours", "Enter the hours worked.");
         if (regularHours + overtimeHours > MaximumHoursPerDay) errors.Add("overtimeHours", $"A day has {MaximumHoursPerDay:0} hours. Check the hours entered.");
+        if (nightHours < 0m || decimal.Round(nightHours, 2) != nightHours) errors.Add("nightHours", "Enter night hours of zero or more, up to 2 decimals.");
+        else if (nightHours > regularHours + overtimeHours) errors.Add("nightHours", "Night hours can't be more than the hours worked that day.");
         errors.ThrowIfAny();
     }
 }

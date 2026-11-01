@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Button } from '../../shared/ui/button/button';
 import { PayrollDeduction, PayrollLine } from './payroll.models';
+import { BreakdownRow } from './premium-rules';
 
 /** One worker's line of a payroll with every figure and phrase already worked out for display. */
 export interface LineView {
@@ -12,8 +13,8 @@ export interface LineView {
   readonly gross: string;
   readonly deductions: string;
   readonly net: string;
-  readonly regularPay: string;
-  readonly overtimePay: string;
+  /** How the gross is made up (regular, overtime and premium, night, holiday pay), parts that are zero left out. */
+  readonly breakdown: readonly BreakdownRow[];
   readonly deductionRows: readonly {
     readonly id: string;
     readonly description: string;
@@ -45,14 +46,17 @@ export interface LineView {
       <section [attr.aria-label]="'How the pay of ' + item().name + ' is made up'">
         <h3 class="detail__title">Pay</h3>
         <dl class="detail__pairs">
-          <div>
-            <dt>Regular pay</dt>
-            <dd class="money">{{ item().regularPay }}</dd>
-          </div>
-          <div>
-            <dt>Overtime pay</dt>
-            <dd class="money">{{ item().overtimePay }}</dd>
-          </div>
+          @for (part of item().breakdown; track part.label) {
+            <div>
+              <dt>
+                {{ part.label }}
+                @if (part.note) {
+                  <span class="detail__sub text-small">{{ part.note }}</span>
+                }
+              </dt>
+              <dd class="money">{{ part.amount }}</dd>
+            </div>
+          }
         </dl>
       </section>
 
@@ -155,7 +159,12 @@ export interface LineView {
     }
 
     .detail__pairs dt {
+      display: grid;
       color: var(--color-text-muted);
+    }
+
+    .detail__sub {
+      overflow-wrap: anywhere;
     }
 
     .detail__pairs dd {

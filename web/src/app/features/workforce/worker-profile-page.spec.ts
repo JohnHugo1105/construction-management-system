@@ -65,6 +65,19 @@ describe('WorkerProfilePage', () => {
     expect(root.textContent).not.toMatch(/₱|pay rate|per day/i);
   });
 
+  it('shows the worker’s rest day and sends the one chosen', async () => {
+    const { root, harness, updateProfile } = await open();
+    const restDay = root.querySelector<HTMLSelectElement>('[formControlName="restDay"]')!;
+    expect(restDay.value).toBe('None');
+
+    restDay.value = 'Sunday';
+    restDay.dispatchEvent(new Event('change', { bubbles: true }));
+    buttonNamed(root, 'Save profile').click();
+    await settle(harness.fixture);
+
+    expect(updateProfile.mock.calls[0]![1]).toMatchObject({ restDay: 'Sunday', version: 7 });
+  });
+
   it('sends the version it opened, with blank optional boxes as nothing', async () => {
     const { root, harness, updateProfile, router } = await open();
 

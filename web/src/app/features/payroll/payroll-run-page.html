@@ -53,7 +53,12 @@
 
         @if (info.voidReason) {
           <app-alert tone="warning" title="This payroll was voided">
-            Reason: {{ info.voidReason }}. Its attendance is free to be paid in a new payroll.
+            Reason: {{ info.voidReason }}.
+            {{
+              thirteenthMonth()
+                ? 'Its workers can be included in a new 13th-month payroll.'
+                : 'Its attendance is free to be paid in a new payroll.'
+            }}
           </app-alert>
         }
 
@@ -83,6 +88,9 @@
           </div>
         </dl>
 
+        @if (holidayNote(); as note) {
+          <p class="text-muted text-small setup-line">{{ note }}</p>
+        }
         @for (setup of setupLines(); track setup) {
           <p class="text-muted text-small setup-line">{{ setup }}</p>
         }
@@ -139,7 +147,7 @@
         } @else if (canRecalculate()) {
           <p>
             <button appButton type="button" (click)="recalculating.set(true)">
-              Calculate contributions and tax
+              Recalculate payroll
             </button>
           </p>
         }

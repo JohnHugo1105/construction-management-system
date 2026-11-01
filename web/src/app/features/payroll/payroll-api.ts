@@ -36,6 +36,14 @@ export class PayrollApi {
     return this.http.post<PayrollRun>('/api/payroll-runs', request);
   }
 
+  /** Prepares the 13th-month pay for a calendar year. The request id makes a second press return the same payroll. */
+  createThirteenthMonth(year: number, clientRequestId: string): Observable<PayrollRun> {
+    return this.http.post<PayrollRun>('/api/payroll-runs/thirteenth-month', {
+      year,
+      clientRequestId,
+    });
+  }
+
   setDeductions(
     runId: string,
     workerId: string,
