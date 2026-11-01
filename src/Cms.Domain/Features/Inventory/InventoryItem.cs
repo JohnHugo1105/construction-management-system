@@ -96,7 +96,11 @@ public sealed class InventoryItem : AggregateRoot
         {
             if (to.IsWarehouse) throw new ValidationFailedException("chargeToProject", "Moving stock back to the warehouse isn't charged to a project.");
             if (UnitCostMinor <= 0) throw new ValidationFailedException("chargeToProject", "This item has no cost on record, so there is nothing to charge.");
-            charge = LineAmounts.Calculate(qty, UnitCostMinor, VatTreatment.Exempt, 0).GrossMinor;
+            try { charge = LineAmounts.Calculate(qty, UnitCostMinor, VatTreatment.Exempt, 0).GrossMinor; }
+            catch (OverflowException)
+            {
+                throw new ValidationFailedException("chargeToProject", "That amount is too large to charge. Check the quantity and the item's unit cost.");
+            }
         }
 
         return Apply(MovementType.Transfer, from, to, qty, date, charge, note, null, recordedByUserId, clientRequestId, now);
@@ -144,23 +148,26 @@ public sealed class InventoryItem : AggregateRoot
     /// stock must still be where the original put it.
     /// </summary>
     public StockMovement Reverse(StockMovement original, string? reason, DateOnly date, Guid recordedByUserId, DateOnly today,
-        DateTimeOffset now)
+        DateTimeOffset now, string? clientRequestId = null)
     {
         if (original.ItemId != Id) throw new ArgumentException("That movement belongs to another item.", nameof(original));
         if (original.Type == MovementType.Reversal) throw new DomainRuleException("A reversal can't be reversed. Record the move again instead.");
         if (original.IsReversed) throw new DomainRuleException("This movement was already reversed.");
+        // A retired item holds no stock. Only the write-off that retired it may come back, and it reactivates the item below.
+        if (Status == InventoryItemStatus.Retired && original.Type != MovementType.WriteOff)
+            throw new DomainRuleException("This item is retired, so only its write-off can be reversed.");
         ValidateDate(date, today);
         var cleanReason = Guard.RequiredText(reason, "reason", "the reason for reversing", 300);
         if (original.To is { } arrived) EnsureAvailable(arrived, original.Quantity);
 
-        if (Status == InventoryItemStatus.Retired && original.Type == MovementType.WriteOff)
+        var reversal = Apply(MovementType.Reversal, original.To, original.From, original.Quantity, date, 0, cleanReason, original.Id,
+            recordedByUserId, clientRequestId, now);
+        if (Status == InventoryItemStatus.Retired)
         {
             Status = InventoryItemStatus.Active;
             RetiredReason = null;
         }
 
-        var reversal = Apply(MovementType.Reversal, original.To, original.From, original.Quantity, date, 0, cleanReason, original.Id,
-            recordedByUserId, null, now);
         original.MarkReversed(reversal.Id);
         return reversal;
     }
@@ -178,12 +185,17 @@ public sealed class InventoryItem : AggregateRoot
     private StockMovement Apply(MovementType type, StockLocation? from, StockLocation? to, decimal quantity, DateOnly date,
         long chargedMinor, string? note, Guid? reversalOf, Guid userId, string? clientRequestId, DateTimeOffset now)
     {
+        // Everything that can refuse the movement is checked before any balance changes, so a refused request changes nothing.
+        var cleanNote = Guard.OptionalText(note, "note", "the note", 300);
+        var cleanRequestId = Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80);
+        if (IsUnitTracked && from is null && to is not null && TotalQuantity + quantity > 1m)
+            throw new DomainRuleException("This single piece is already recorded in another place. Set the count there to 0 first.");
+
         if (from is { } source) Take(source, quantity);
         if (to is { } target) Put(target, quantity);
 
         var movement = new StockMovement(Guid.NewGuid(), TenantId, Id, type, from, to, quantity,
-            date, chargedMinor, Guard.OptionalText(note, "note", "the note", 300), reversalOf, userId,
-            Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80), now);
+            date, chargedMinor, cleanNote, reversalOf, userId, cleanRequestId, now);
         _movements.Add(movement);
         Touch(now);
         return movement;
