@@ -15,6 +15,7 @@ export class AuditApi {
     if (params.entityType) query = query.set('entityType', params.entityType);
     if (params.from) query = query.set('from', params.from);
     if (params.to) query = query.set('to', params.to);
+    if (params.includeSignIns) query = query.set('includeSignIns', 'true');
     return this.http.get<PagedResult<AuditEntry>>('/api/audit', { params: query });
   }
 }

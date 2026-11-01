@@ -94,11 +94,15 @@ changing the company rate later never alters recorded lines.
 ### 4.5 Duplicates and dates
 * A supplier invoice can be recorded **once per project**: the same supplier and invoice number (ignoring case and punctuation)
   is refused while the first entry is posted. It can be entered again after the first is voided.
+* Supplier names are matched after trimming spaces and ignoring case only (punctuation in a *supplier* name still counts); only the
+  *invoice number* ignores punctuation and spacing. Enter the same supplier the same way each time.
 * A cost can't be dated in the future (judged in the company time zone).
 * A repeated create with the same request id returns the original.
 
 ### 4.6 Changing and removing
-Manual cost entries and budget lines can be edited (the audit trail records it). A budget line is **removed** with a reason, a cost
+Manual cost entries and budget lines can be edited (the audit trail records it). **Editing keeps the line's own VAT rate**; only new
+lines use the company's current rate, so a change of company rate never alters history. Removing or voiding on an archived project is
+refused, like every other change. A budget line is **removed** with a reason, a cost
 entry **voided** with a reason; neither is deleted and neither counts afterwards. System-made cost entries are corrected where they
 came from (payroll or stock), not edited by hand.
 
@@ -126,7 +130,8 @@ For any slice (a project, sub-project, division, code, item type):
   rate on 3 November?" always has one answer. The retired app let the rate be typed over in a grid with no record.
 * **Postings** (assignments) never overlap: assigning a worker ends the previous posting on the new start date. Only an active worker
   on a project that can receive records can be posted. A bulk assignment is all or nothing and names every worker that blocked it.
-* **Cases** (incidents or disciplinary notes) are added and never edited or deleted.
+* **Cases** (incidents or disciplinary notes) are added and never edited or deleted. A person's profile details and cases are visible
+  to everyone who can see workers; restrict that further if your policy needs it.
 * **Pay is confidential.** Rates and pay amounts reach only people who can run payroll; project managers and viewers see who works
   where but not what they earn. Pay amounts never appear in the activity log or in logs.
 
@@ -137,7 +142,9 @@ The retired app had no attendance and no payroll; wages never reached a project'
 ### 6.1 Attendance
 Attendance is the hours one worker put in on one project on one day: regular hours (up to the company's paid hours per day, 8 by
 default) and overtime hours. A worker's hours across all projects on a date may not exceed 24. One entry per worker, project,
-sub-project and date. A worker can be recorded from the hire date; one who left only up to the day they left; one on leave or
+sub-project and date (enforced by the database). The 24-hour check is made when an entry is saved: two entries for the same worker
+and date saved at the very same instant on different projects could both pass it, and payroll review would show the excess hours.
+A worker can be recorded from the hire date; one who left only up to the day they left; one on leave or
 suspended not from the day that began. Attendance can't be in the future.
 
 ### 6.2 Pay calculation
@@ -179,9 +186,14 @@ advances are entered by a person as **deductions**.
 * Writing off a single piece retires it; a reversal restores it. An item can be retired only when it holds no stock. A retired item
   accepts no movements.
 * Moves can't be dated before the purchase or in the future.
+* **Archived projects:** stock can't be moved *onto* an archived project. Moving stock *off* one, counting it and writing it off stay
+  allowed, so a finished site can be emptied by a warehouse keeper who can't restore the project.
+* A single serial-numbered piece can't be counted into a second place while it is recorded in another; set the other place to 0 first.
 
 ## 8. Reports and exports
 
+* **Activity log:** routine successful sign-ins are left out unless "Show sign-ins" is on, because they are the most frequent entries.
+  Failed sign-ins are always shown.
 * **Dashboard:** every project's budget, actual, remaining, percentage used, health and margin, with company totals, from one grouped
   query per measure (the number of database statements does not grow with the number of projects).
 * **Project cost summary:** the project's position broken down by division (with its codes), sub-project and item type; unbudgeted

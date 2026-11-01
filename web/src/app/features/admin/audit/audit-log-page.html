@@ -50,6 +50,19 @@
       <app-form-field label="To" [error]="rangeError()">
         <input appControl type="date" [value]="state.query.values().to" (change)="setTo($event)" />
       </app-form-field>
+      <div class="filters__toggle">
+        <label class="choice">
+          <input
+            type="checkbox"
+            [checked]="state.query.values().signIns"
+            (change)="setSignIns($event)"
+          />
+          <span class="choice__text">
+            <span class="choice__label">Show sign-ins</span>
+            <span class="choice__hint">Routine sign-ins are hidden. Failed sign-ins are always shown.</span>
+          </span>
+        </label>
+      </div>
       @if (filterSummary()) {
         <div class="filters__clear">
           <button appButton variant="ghost" type="button" (click)="clearFilters()">

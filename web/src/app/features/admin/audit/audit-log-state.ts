@@ -28,6 +28,7 @@ export class AuditLogState {
     ),
     from: listField.date(),
     to: listField.date(),
+    signIns: listField.flag(),
   });
 
   private readonly resource = rxResource({
@@ -40,6 +41,7 @@ export class AuditLogState {
         to: params.values.to
           ? (startOfDayUtc(addDays(params.values.to, 1) ?? params.values.to, params.zone) ?? '')
           : '',
+        includeSignIns: params.values.signIns,
         page: params.values.page,
         pageSize: DEFAULT_PAGE_SIZE,
       }),

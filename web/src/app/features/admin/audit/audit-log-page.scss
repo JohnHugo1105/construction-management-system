@@ -25,7 +25,8 @@
   align-items: start;
 }
 
-.filters__area {
+.filters__area,
+.filters__toggle {
   grid-column: 1 / -1;
 }
 

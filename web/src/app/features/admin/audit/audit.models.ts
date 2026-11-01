@@ -18,6 +18,8 @@ export interface AuditListParams {
   readonly from: string;
   /** The instant (ISO, UTC) the range ends, exclusive; empty for no end. */
   readonly to: string;
+  /** Routine successful sign-ins are hidden unless asked for; failed sign-ins are always listed. */
+  readonly includeSignIns: boolean;
   readonly page: number;
   readonly pageSize: number;
 }
@@ -31,6 +33,12 @@ export const AUDIT_ENTITY_TYPES: readonly { readonly value: string; readonly lab
   { value: 'SubProject', label: 'Sub-projects' },
   { value: 'User', label: 'Users' },
   { value: 'Organization', label: 'Company settings' },
+  { value: 'BudgetLine', label: 'Budget lines' },
+  { value: 'CostEntry', label: 'Costs' },
+  { value: 'Worker', label: 'Workers' },
+  { value: 'AttendanceEntry', label: 'Attendance' },
+  { value: 'PayrollRun', label: 'Payroll' },
+  { value: 'InventoryItem', label: 'Stock' },
 ];
 
 /** The words for an entity name: known ones as people say them, unknown ones spaced out ("BudgetLine" becomes "Budget line"). */

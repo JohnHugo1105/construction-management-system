@@ -76,17 +76,22 @@ export class AuditLogPage {
     this.state.query.set({ to: (event.target as HTMLInputElement).value });
   }
 
+  protected setSignIns(event: Event): void {
+    this.state.query.set({ signIns: (event.target as HTMLInputElement).checked });
+  }
+
   protected clearFilters(): void {
-    this.state.query.set({ area: ALL_AREAS, from: '', to: '' });
+    this.state.query.set({ area: ALL_AREAS, from: '', to: '', signIns: false });
   }
 
   /** The filters in use, as short phrases: "Users", "from 1 Nov 2026", "to 3 Nov 2026". */
   private activeFilters(): string[] {
-    const { area, from, to } = this.state.query.values();
+    const { area, from, to, signIns } = this.state.query.values();
     const phrases: string[] = [];
     if (area !== ALL_AREAS) phrases.push(entityTypeLabel(area));
     if (from) phrases.push(`from ${formatDate(from)}`);
     if (to) phrases.push(`to ${formatDate(to)}`);
+    if (signIns) phrases.push('including sign-ins');
     return phrases;
   }
 }

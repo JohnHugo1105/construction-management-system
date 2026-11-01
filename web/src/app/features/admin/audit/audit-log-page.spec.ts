@@ -10,7 +10,7 @@ import { buttonNamed, settle, text, texts, type } from '../../../testing/dom';
 import { pageOf, signInForTest } from '../../../testing/session-fixture';
 import { AuditApi } from './audit-api';
 import { AuditLogPage } from './audit-log-page';
-import { AuditEntry, AuditListParams } from './audit.models';
+import { AuditEntry, AuditListParams, AUDIT_ENTITY_TYPES } from './audit.models';
 
 const entries: AuditEntry[] = [
   {
@@ -27,7 +27,7 @@ const entries: AuditEntry[] = [
     occurredAtUtc: '2026-12-02T23:05:00Z',
     userName: 'maria',
     action: 'BudgetLine.Created',
-    entityType: 'BudgetLine',
+    entityType: 'SiteDiary',
     entityId: 'b1',
     summary: 'Added a budget line.',
   },
@@ -78,7 +78,7 @@ describe('AuditLogPage', () => {
       '3 Dec 2026, 7:05 am',
       'maria',
       'Added a budget line.',
-      'Budget line',
+      'Site diary',
     ]);
     expect(root.textContent).not.toContain('Project.Archived');
   });
@@ -91,6 +91,7 @@ describe('AuditLogPage', () => {
       entityType: '',
       from: '',
       to: '',
+      includeSignIns: false,
       page: 1,
       pageSize: 25,
     });
@@ -145,6 +146,27 @@ describe('AuditLogPage', () => {
 
     expect(lastRequest(list)).toMatchObject({ entityType: 'User', page: 1 });
     expect(router.url).toBe('/admin/audit?area=User');
+  });
+
+  it('hides routine sign-ins until the person asks for them', async () => {
+    const { harness, list, root, router } = await open('/admin/audit?page=2');
+    buttonNamed(root, 'Filters').click();
+    await settle(harness.fixture);
+
+    const toggle = root.querySelector<HTMLInputElement>('#audit-filters input[type="checkbox"]')!;
+    expect(toggle.checked).toBe(false);
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle(harness.fixture);
+
+    expect(lastRequest(list)).toMatchObject({ includeSignIns: true, page: 1 });
+    expect(router.url).toContain('signIns');
+  });
+
+  it('knows the areas the cost, payroll and stock features write to', () => {
+    expect(AUDIT_ENTITY_TYPES.map((area) => area.value)).toEqual(
+      expect.arrayContaining(['BudgetLine', 'CostEntry', 'Worker', 'AttendanceEntry', 'PayrollRun', 'InventoryItem']),
+    );
   });
 
   it('tells the person when the end date is before the start date', async () => {
