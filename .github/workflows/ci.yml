@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: .NET build, tests, architecture rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore (locked)
+        run: dotnet restore ConstructionManagementSystem.sln --locked-mode
+      - name: Build
+        run: dotnet build ConstructionManagementSystem.sln --configuration Release --no-restore
+      - name: Test
+        run: dotnet test ConstructionManagementSystem.sln --configuration Release --no-build --logger "trx;LogFileName=results.trx"
+      - name: Verify EF Core model has no pending changes
+        run: |
+          dotnet tool restore
+          dotnet ef migrations has-pending-model-changes --project src/Cms.Infrastructure --startup-project src/Cms.Api --no-build --configuration Release
+
+  web:
+    name: Angular build, unit tests, guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --prefix web
+      - run: node scripts/check-no-gradients.mjs
+      - run: node scripts/check-server-backed-interactions.mjs
+      - run: npm test --prefix web -- --watch=false
+      - run: npm run build --prefix web

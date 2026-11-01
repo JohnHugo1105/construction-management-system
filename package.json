@@ -1,0 +1,16 @@
+{
+  "name": "construction-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "dotnet build ConstructionManagementSystem.sln --configuration Release && npm run build --prefix web",
+    "test": "dotnet test ConstructionManagementSystem.sln --configuration Release && npm test --prefix web -- --watch=false",
+    "check:no-gradients": "node scripts/check-no-gradients.mjs",
+    "check:server-backed-interactions": "node scripts/check-server-backed-interactions.mjs",
+    "check:architecture": "dotnet test tests/Cms.ArchitectureTests/Cms.ArchitectureTests.csproj --configuration Release",
+    "validate": "npm run check:no-gradients && npm run check:server-backed-interactions && npm run build && npm run test"
+  }
+}
