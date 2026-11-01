@@ -59,6 +59,8 @@ internal sealed class CostEntryConfiguration : IEntityTypeConfiguration<CostEntr
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status });
         builder.HasIndex(item => new { item.ProjectId, item.Division, item.WbsCode });
         builder.HasIndex(item => new { item.TenantId, item.Origin, item.OriginReferenceId });
+        // The cost list reads one project newest first and filters by date range.
+        builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.EntryDate });
         builder.HasIndex(item => new { item.TenantId, item.ClientRequestId }).IsUnique().HasFilter("[ClientRequestId] IS NOT NULL");
         // A supplier invoice is recorded once per project. The retired desktop app let the same invoice in again and again.
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.NormalizedSourceDealer, item.NormalizedInvoiceNumber })
