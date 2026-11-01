@@ -1,0 +1,92 @@
+<a class="skip-link" href="#main" (click)="skipToContent($event)">Skip to main content</a>
+
+<div class="shell" [class.shell--minimal]="minimal()">
+  @if (viewport.isDesktop() && !minimal()) {
+    <aside class="rail">
+      <p class="rail__brand">
+        <app-icon name="construction" [size]="26" />
+        <span class="rail__company">{{
+          session.organizationName() || 'Construction Management'
+        }}</span>
+      </p>
+      <nav aria-label="Main">
+        <ul class="rail__list">
+          @for (item of items(); track item.link) {
+            <li>
+              <a
+                class="rail__link"
+                [routerLink]="item.link"
+                routerLinkActive="rail__link--active"
+                ariaCurrentWhenActive="page"
+              >
+                <app-icon [name]="item.icon" />
+                {{ item.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    </aside>
+  }
+
+  <div class="shell__column">
+    <header class="header">
+      <h1 class="header__title">{{ pageTitle.title() || session.organizationName() }}</h1>
+      <app-user-menu [minimal]="minimal()" />
+    </header>
+
+    <main id="main" class="main" tabindex="-1" #main>
+      <router-outlet />
+    </main>
+  </div>
+
+  @if (!viewport.isDesktop() && !minimal()) {
+    <nav class="bottom-nav" aria-label="Main">
+      <ul class="bottom-nav__list">
+        @for (item of bottomBar().primary; track item.link) {
+          <li>
+            <a
+              class="bottom-nav__item"
+              [routerLink]="item.link"
+              routerLinkActive="bottom-nav__item--active"
+              ariaCurrentWhenActive="page"
+            >
+              <app-icon [name]="item.icon" />
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        }
+        @if (bottomBar().overflow.length > 0) {
+          <li>
+            <button
+              type="button"
+              class="bottom-nav__item"
+              aria-haspopup="dialog"
+              (click)="moreOpen.set(true)"
+            >
+              <app-icon name="more" />
+              <span>More</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+</div>
+
+@if (moreOpen()) {
+  <app-dialog title="More" variant="sheet" (closed)="moreOpen.set(false)">
+    <ul class="more-list">
+      @for (item of bottomBar().overflow; track item.link) {
+        <li>
+          <a class="more-list__link" [routerLink]="item.link" (click)="moreOpen.set(false)">
+            <app-icon [name]="item.icon" />
+            {{ item.label }}
+          </a>
+        </li>
+      }
+    </ul>
+  </app-dialog>
+}
+
+<app-toast-host />

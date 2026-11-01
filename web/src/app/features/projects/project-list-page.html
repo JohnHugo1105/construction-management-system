@@ -1,0 +1,159 @@
+<app-page-header title="Projects" />
+
+<div class="stack">
+  <div class="toolbar">
+    <app-search-box
+      class="toolbar__search"
+      label="Search projects"
+      placeholder="Search projects"
+      [value]="state.query.values().search"
+      (searched)="state.query.set({ search: $event }, { replace: true })"
+    />
+    @if (canManage()) {
+      <a appButton variant="primary" routerLink="/projects/new">
+        <app-icon name="plus" [size]="18" />
+        New project
+      </a>
+    }
+  </div>
+
+  <div class="filter-chips" role="group" aria-label="Filter by status">
+    @for (filter of filters; track filter) {
+      <button
+        type="button"
+        class="filter-chip"
+        [attr.aria-pressed]="state.query.values().status === filter"
+        (click)="state.query.set({ status: filter })"
+      >
+        {{ filterLabel(filter) }}
+      </button>
+    }
+  </div>
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading projects" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Projects" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Project</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="num">Contract price</th>
+                <th scope="col">Dates</th>
+                <th scope="col" class="num">Sub-projects</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/projects', row.id]">{{ row.name }}</a>
+                    @if (row.subtitle) {
+                      <span class="cell-sub">{{ row.subtitle }}</span>
+                    }
+                  </th>
+                  <td>
+                    <app-status-chip
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [icon]="row.status.icon"
+                    />
+                  </td>
+                  <td class="num">{{ row.price }}</td>
+                  <td>{{ row.dates }}</td>
+                  <td class="num">{{ row.subProjectCount > 0 ? row.subProjectCount : '' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a
+                  class="row-card__title row-link row-link--stretch"
+                  [routerLink]="['/projects', row.id]"
+                  >{{ row.name }}</a
+                >
+                <app-status-chip
+                  [label]="row.status.label"
+                  [tone]="row.status.tone"
+                  [icon]="row.status.icon"
+                />
+              </div>
+              @if (row.subtitle) {
+                <p class="text-muted text-small">{{ row.subtitle }}</p>
+              }
+              <div class="row-card__meta">
+                <span class="money">{{ row.price }}</span>
+                <span>{{ row.dates }}</span>
+                @if (row.subProjectCount > 0) {
+                  <span>{{ row.subProjectLabel }}</span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="projects"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state
+        icon="search"
+        title="No projects match"
+        message="Try a different search, or look at another status."
+      >
+        <button appButton type="button" (click)="state.query.reset()">Show all projects</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="building"
+        title="No projects yet"
+        [message]="
+          canManage()
+            ? 'Add your first project to start tracking budgets, costs and people.'
+            : 'A project manager can add the first project.'
+        "
+      >
+        @if (canManage()) {
+          <a appButton variant="primary" routerLink="/projects/new">
+            <app-icon name="plus" [size]="18" />
+            New project
+          </a>
+        }
+      </app-empty-state>
+    }
+  }
+
+  @if (!state.loadingFirst() && state.query.values().status === 'All') {
+    <p class="text-muted text-small">
+      Archived projects are not listed here. Choose Archived to see them.
+    </p>
+  }
+</div>

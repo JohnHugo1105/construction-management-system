@@ -1,0 +1,90 @@
+<section class="card" aria-labelledby="sub-projects-heading">
+  <div class="panel-head">
+    <h2 id="sub-projects-heading" class="card__title">Sub-projects</h2>
+    @if (context.canManage()) {
+      <button appButton type="button" (click)="dialog.set({ kind: 'add' })">
+        <app-icon name="plus" [size]="18" />
+        Add sub-project
+      </button>
+    }
+  </div>
+
+  @if (error(); as problem) {
+    <app-api-error-alert [error]="problem" reloadLabel="Reload project" (reload)="reload()" />
+  }
+
+  @if (rows().length === 0) {
+    <p class="text-muted">
+      No sub-projects yet. Add one when you split the work into buildings or phases.
+    </p>
+  } @else {
+    <ul class="sub-list">
+      @for (row of rows(); track row.sub.id) {
+        <li class="sub-row" [class.sub-row--archived]="row.isArchived">
+          <div class="sub-row__info">
+            <p class="sub-row__name">{{ row.sub.name }}</p>
+            <p class="text-muted text-small">{{ row.started }}</p>
+          </div>
+          @if (row.isArchived) {
+            <app-status-chip label="Archived" tone="neutral" icon="archive" />
+          }
+          @if (context.canManage()) {
+            <div class="sub-row__actions">
+              <button
+                appButton
+                variant="ghost"
+                type="button"
+                [attr.aria-label]="'Edit ' + row.sub.name"
+                (click)="dialog.set({ kind: 'edit', subProject: row.sub })"
+              >
+                Edit
+              </button>
+              @if (row.isArchived) {
+                <button
+                  appButton
+                  variant="ghost"
+                  type="button"
+                  [attr.aria-label]="'Restore ' + row.sub.name"
+                  (click)="restore(row.sub)"
+                >
+                  Restore
+                </button>
+              } @else {
+                <button
+                  appButton
+                  variant="ghost"
+                  type="button"
+                  [attr.aria-label]="'Archive ' + row.sub.name"
+                  (click)="archiveTarget.set(row.sub)"
+                >
+                  Archive
+                </button>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+@if (dialog(); as state) {
+  <app-sub-project-dialog
+    [subProject]="editing()"
+    (saved)="saved()"
+    (dismissed)="dialog.set(null)"
+  />
+}
+
+@if (archiveTarget(); as target) {
+  <app-confirm-dialog
+    title="Archive this sub-project?"
+    [message]="
+      target.name + ' stays on record, but cannot receive new records until you restore it.'
+    "
+    confirmLabel="Archive sub-project"
+    [busy]="working()"
+    (confirmed)="archive()"
+    (cancelled)="archiveTarget.set(null)"
+  />
+}

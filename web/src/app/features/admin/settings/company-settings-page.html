@@ -1,0 +1,142 @@
+<app-page-header title="Company settings" />
+
+@if (loading() && !loaded()) {
+  <app-skeleton [lines]="6" label="Loading settings" />
+} @else if (!loaded()) {
+  <app-api-error-alert
+    [error]="error()"
+    [allowRetry]="true"
+    reloadLabel="Try again"
+    (reload)="reload()"
+  />
+} @else {
+  <div class="card stack stack--loose form-card">
+    @if (error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [extra]="extraMessages()"
+        reloadLabel="Reload settings"
+        (reload)="reload()"
+      />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention"
+        >Check the highlighted fields and try again.</app-alert
+      >
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      <section class="form__section" aria-labelledby="company-heading">
+        <h2 id="company-heading">Company</h2>
+
+        <app-form-field
+          label="Company name"
+          [control]="form.controls.name"
+          requiredMessage="Enter the company name."
+        >
+          <input appControl formControlName="name" autocomplete="organization" />
+        </app-form-field>
+
+        <div class="form__row">
+          <app-form-field
+            label="Currency code"
+            hint="Three letters, such as PHP."
+            [control]="form.controls.currencyCode"
+            requiredMessage="Enter a three-letter currency code such as PHP."
+          >
+            <input
+              appControl
+              formControlName="currencyCode"
+              autocomplete="off"
+              autocapitalize="characters"
+              maxlength="3"
+              spellcheck="false"
+            />
+          </app-form-field>
+
+          <app-form-field
+            label="Time zone"
+            hint="Dates and times are shown in this time zone."
+            [control]="form.controls.timeZoneId"
+            requiredMessage="Choose a time zone."
+          >
+            <input
+              appControl
+              formControlName="timeZoneId"
+              list="time-zones"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <datalist id="time-zones">
+              @for (zone of timeZones; track zone) {
+                <option [value]="zone"></option>
+              }
+            </datalist>
+          </app-form-field>
+        </div>
+      </section>
+
+      <section class="form__section" aria-labelledby="pay-heading">
+        <h2 id="pay-heading">Tax and pay</h2>
+
+        <app-form-field
+          label="VAT rate"
+          hint="New cost lines use this rate. Lines you already entered keep the rate they had."
+          [control]="form.controls.vatRate"
+          requiredMessage="Enter the VAT rate. Use 0 if you charge none."
+        >
+          <app-percent-input formControlName="vatRate" />
+        </app-form-field>
+
+        <div class="form__row">
+          <app-form-field
+            label="Paid hours per day"
+            hint="A daily rate is divided by this to get the hourly rate."
+            [control]="form.controls.hoursPerDay"
+            requiredMessage="Enter the paid hours in a working day."
+          >
+            <app-number-input formControlName="hoursPerDay" [decimals]="2" unit="hours" />
+          </app-form-field>
+
+          <app-form-field
+            label="Overtime rate"
+            hint="Overtime is paid at this share of the hourly rate. 125% is one and a quarter times."
+            [control]="form.controls.overtimeRate"
+            requiredMessage="Enter the overtime rate."
+          >
+            <app-percent-input formControlName="overtimeRate" />
+          </app-form-field>
+        </div>
+      </section>
+
+      <app-field-group
+        label="Compare budgets and costs"
+        [control]="form.controls.varianceBasis"
+        requiredMessage="Choose whether to compare amounts with or without VAT."
+      >
+        <div class="choice-list">
+          <label class="choice">
+            <input type="radio" formControlName="varianceBasis" value="IncludingVat" />
+            <span class="choice__text">
+              <span class="choice__label">Include VAT</span>
+              <span class="choice__hint">Compare budget and actual cost with VAT added.</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" formControlName="varianceBasis" value="ExcludingVat" />
+            <span class="choice__text">
+              <span class="choice__label">Exclude VAT</span>
+              <span class="choice__hint"
+                >Compare amounts before VAT. Choose this if your company gets back the VAT it
+                pays.</span
+              >
+            </span>
+          </label>
+        </div>
+      </app-field-group>
+
+      <div class="form__actions form__actions--sticky">
+        <button appButton variant="primary" type="submit" [busy]="saving()">Save settings</button>
+      </div>
+    </form>
+  </div>
+}

@@ -1,0 +1,185 @@
+<app-page-header title="Users">
+  <a appButton variant="primary" routerLink="/admin/users/new">
+    <app-icon name="plus" [size]="18" />
+    New user
+  </a>
+</app-page-header>
+
+<div class="stack">
+  @if (actionError(); as problem) {
+    <app-api-error-alert [error]="problem" />
+  }
+  @if (loadError(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="reload()"
+    />
+  }
+
+  @if (loading()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading users" />
+  } @else if (rows().length > 0) {
+    @if (viewport.isTablet()) {
+      <div class="table-wrap" role="region" aria-label="Users" tabindex="0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Roles</th>
+              <th scope="col">Status</th>
+              <th scope="col">Last signed in</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.user.id) {
+              <tr>
+                <th scope="row">
+                  {{ row.user.displayName }}
+                  <span class="cell-sub">{{ row.user.username }}</span>
+                </th>
+                <td>
+                  <span class="chips">
+                    @for (role of row.roles; track role) {
+                      <span class="chip">{{ role }}</span>
+                    }
+                  </span>
+                </td>
+                <td>
+                  <app-status-chip
+                    [label]="row.status.label"
+                    [tone]="row.status.tone"
+                    [icon]="row.status.icon"
+                  />
+                  @if (row.user.mustChangePassword) {
+                    <span class="cell-sub">Has a temporary password</span>
+                  }
+                </td>
+                <td>{{ row.lastSignIn }}</td>
+                <td class="actions">
+                  <span class="row-actions">
+                    <a
+                      appButton
+                      variant="ghost"
+                      [attr.aria-label]="'Edit ' + row.user.displayName"
+                      [routerLink]="['/admin/users', row.user.id, 'edit']"
+                      >Edit</a
+                    >
+                    <app-menu
+                      [iconOnly]="true"
+                      [ariaLabel]="'More actions for ' + row.user.displayName"
+                      variant="ghost"
+                    >
+                      <app-icon menuTrigger name="more" />
+                      <button type="button" class="menu__item" (click)="resetFor.set(row.user)">
+                        Reset password
+                      </button>
+                      @if (row.user.isActive && !row.isSelf) {
+                        <button
+                          type="button"
+                          class="menu__item menu__item--danger"
+                          (click)="confirmOff.set(row.user)"
+                        >
+                          Turn off account
+                        </button>
+                      } @else if (!row.user.isActive) {
+                        <button type="button" class="menu__item" (click)="turnOn(row.user)">
+                          Turn on account
+                        </button>
+                      }
+                    </app-menu>
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <ul class="card-list">
+        @for (row of rows(); track row.user.id) {
+          <li class="row-card">
+            <div class="row-card__head">
+              <div>
+                <p class="row-card__title">{{ row.user.displayName }}</p>
+                <p class="text-muted text-small">{{ row.user.username }}</p>
+              </div>
+              <app-status-chip
+                [label]="row.status.label"
+                [tone]="row.status.tone"
+                [icon]="row.status.icon"
+              />
+            </div>
+            <span class="chips">
+              @for (role of row.roles; track role) {
+                <span class="chip">{{ role }}</span>
+              }
+            </span>
+            <p class="text-muted text-small">
+              Last signed in: {{ row.lastSignIn }}
+              @if (row.user.mustChangePassword) {
+                <br />
+                Has a temporary password
+              }
+            </p>
+            <div class="row-actions">
+              <a appButton [routerLink]="['/admin/users', row.user.id, 'edit']">Edit</a>
+              <app-menu
+                label="More"
+                [ariaLabel]="'More actions for ' + row.user.displayName"
+                variant="secondary"
+              >
+                <button type="button" class="menu__item" (click)="resetFor.set(row.user)">
+                  Reset password
+                </button>
+                @if (row.user.isActive && !row.isSelf) {
+                  <button
+                    type="button"
+                    class="menu__item menu__item--danger"
+                    (click)="confirmOff.set(row.user)"
+                  >
+                    Turn off account
+                  </button>
+                } @else if (!row.user.isActive) {
+                  <button type="button" class="menu__item" (click)="turnOn(row.user)">
+                    Turn on account
+                  </button>
+                }
+              </app-menu>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  } @else if (!loadError()) {
+    <app-empty-state
+      icon="users"
+      title="No users yet"
+      message="Add the people who need to sign in."
+    >
+      <a appButton variant="primary" routerLink="/admin/users/new">New user</a>
+    </app-empty-state>
+  }
+</div>
+
+@if (confirmOff(); as user) {
+  <app-confirm-dialog
+    [title]="'Turn off ' + user.displayName + '?'"
+    message="They won't be able to sign in until you turn the account back on. Their records stay as they are."
+    confirmLabel="Turn off account"
+    tone="danger"
+    [busy]="working()"
+    (confirmed)="turnOff()"
+    (cancelled)="confirmOff.set(null)"
+  />
+}
+
+@if (resetFor(); as user) {
+  <app-reset-password-dialog
+    [user]="user"
+    (done)="passwordWasReset()"
+    (dismissed)="resetFor.set(null)"
+  />
+}

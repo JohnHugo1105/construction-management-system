@@ -1,0 +1,87 @@
+<app-page-header
+  [title]="isEdit() ? 'Edit project' : 'New project'"
+  [backLabel]="backLabel()"
+  [backLink]="backLink()"
+/>
+
+@if (loadingProject() && !loaded()) {
+  <app-skeleton [lines]="5" label="Loading project" />
+} @else if (loaded()?.status === 'Archived') {
+  <app-alert tone="warning" title="This project is archived">
+    An archived project can't be edited. Restore it first, then come back to make changes.
+    <div alertActions>
+      <a appButton [routerLink]="['/projects', loaded()?.id]">Go to project</a>
+    </div>
+  </app-alert>
+} @else if (isEdit() && !loaded()) {
+  <app-api-error-alert
+    [error]="error()"
+    [allowRetry]="true"
+    reloadLabel="Try again"
+    (reload)="reload()"
+  />
+} @else {
+  <div class="card stack stack--loose form-card">
+    @if (error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [extra]="extraMessages()"
+        reloadLabel="Reload project"
+        (reload)="reload()"
+      />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention"
+        >Check the highlighted fields and try again.</app-alert
+      >
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      <app-form-field
+        label="Project name"
+        [control]="form.controls.name"
+        requiredMessage="Enter the project name."
+      >
+        <input appControl formControlName="name" autocomplete="off" />
+      </app-form-field>
+
+      <app-form-field label="Client" [optional]="true" [control]="form.controls.client">
+        <input appControl formControlName="client" autocomplete="organization" />
+      </app-form-field>
+
+      <app-form-field label="Location" [optional]="true" [control]="form.controls.location">
+        <input appControl formControlName="location" autocomplete="off" />
+      </app-form-field>
+
+      <app-form-field
+        label="Contract price"
+        [optional]="true"
+        hint="The agreed price including VAT. You can add it later."
+        [control]="form.controls.contractPrice"
+      >
+        <app-money-input formControlName="contractPrice" placeholder="0.00" />
+      </app-form-field>
+
+      <div class="form__row">
+        <app-form-field
+          label="Start date"
+          [control]="form.controls.startDate"
+          requiredMessage="Choose the date the project starts."
+        >
+          <input appControl type="date" formControlName="startDate" />
+        </app-form-field>
+        <app-form-field
+          label="Target end date"
+          [optional]="true"
+          [control]="form.controls.targetEndDate"
+        >
+          <input appControl type="date" formControlName="targetEndDate" />
+        </app-form-field>
+      </div>
+
+      <div class="form__actions form__actions--sticky">
+        <a appButton [routerLink]="backLink()">Cancel</a>
+        <button appButton variant="primary" type="submit" [busy]="saving()">Save project</button>
+      </div>
+    </form>
+  </div>
+}

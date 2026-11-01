@@ -1,0 +1,57 @@
+<app-auth-frame
+  title="Set up your company"
+  intro="This creates your company and the first administrator account. You will sign in with these details."
+>
+  <app-api-error-alert [error]="error()" [extra]="extraMessages()" />
+  @if (error()?.isRuleViolation) {
+    <p><a routerLink="/sign-in">Go to sign in</a></p>
+  }
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+    <app-form-field
+      label="Company name"
+      [control]="form.controls.companyName"
+      requiredMessage="Enter your company name."
+    >
+      <input appControl formControlName="companyName" autocomplete="organization" />
+    </app-form-field>
+
+    <app-form-field
+      label="Your name"
+      [control]="form.controls.displayName"
+      requiredMessage="Enter your name."
+    >
+      <input appControl formControlName="displayName" autocomplete="name" />
+    </app-form-field>
+
+    <app-form-field
+      label="Username"
+      hint="Letters, numbers, dots, dashes or underscores. You will use this to sign in."
+      [control]="form.controls.username"
+      requiredMessage="Choose a username."
+    >
+      <input
+        appControl
+        formControlName="username"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+      />
+    </app-form-field>
+
+    <div class="stack stack--tight">
+      <app-form-field
+        label="Password"
+        [control]="form.controls.password"
+        requiredMessage="Choose a password."
+      >
+        <input appControl type="password" formControlName="password" autocomplete="new-password" />
+      </app-form-field>
+      <app-password-hints [password]="typed().password ?? ''" [username]="typed().username ?? ''" />
+    </div>
+
+    <button appButton variant="primary" type="submit" [busy]="saving()" [block]="true">
+      Create company
+    </button>
+  </form>
+</app-auth-frame>

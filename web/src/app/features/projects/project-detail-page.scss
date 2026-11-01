@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+
+.summary__about {
+  color: var(--color-text-muted);
+}
+
+.summary__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+@media (max-width: 47.99rem) {
+  .summary__actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+
+  .summary__actions .btn:first-child {
+    flex: 1 1 auto;
+  }
+}

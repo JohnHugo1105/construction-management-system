@@ -1,0 +1,126 @@
+<app-page-header
+  [title]="isEdit() ? 'Edit user' : 'New user'"
+  backLabel="All users"
+  [backLink]="['/admin/users']"
+/>
+
+@if (loadingUser() && !loaded()) {
+  <app-skeleton [lines]="5" label="Loading user" />
+} @else if (isEdit() && !loaded()) {
+  <app-api-error-alert
+    [error]="error()"
+    [allowRetry]="true"
+    reloadLabel="Try again"
+    (reload)="reload()"
+  />
+} @else {
+  <div class="card stack stack--loose form-card">
+    @if (error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [extra]="extraMessages()"
+        reloadLabel="Reload user"
+        (reload)="reload()"
+      />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention"
+        >Check the highlighted fields and try again.</app-alert
+      >
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      <app-form-field
+        label="Name"
+        [control]="form.controls.displayName"
+        requiredMessage="Enter the person's name."
+      >
+        <input appControl formControlName="displayName" autocomplete="off" />
+      </app-form-field>
+
+      @if (isEdit()) {
+        <div class="field">
+          <p class="field__label">Username</p>
+          <p>{{ form.controls.username.value }}</p>
+          <p class="field__hint">The username can't be changed.</p>
+        </div>
+      } @else {
+        <app-form-field
+          label="Username"
+          hint="Letters, numbers, dots, dashes or underscores. They use this to sign in."
+          [control]="form.controls.username"
+          requiredMessage="Choose a username."
+        >
+          <input
+            appControl
+            formControlName="username"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+        </app-form-field>
+      }
+
+      <app-form-field label="Email" [optional]="true" [control]="form.controls.email">
+        <input
+          appControl
+          type="email"
+          formControlName="email"
+          autocomplete="off"
+          inputmode="email"
+        />
+      </app-form-field>
+
+      @if (!isEdit()) {
+        <div class="stack stack--tight">
+          <app-form-field
+            label="Temporary password"
+            hint="Share it with them. They will choose their own password when they first sign in."
+            [control]="form.controls.password"
+            requiredMessage="Enter a temporary password."
+          >
+            <input
+              appControl
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+            />
+          </app-form-field>
+          <app-password-hints
+            [password]="typed().password ?? ''"
+            [username]="typed().username ?? ''"
+          />
+        </div>
+      }
+
+      <app-field-group
+        label="Roles"
+        hint="A person can hold more than one role."
+        [control]="form.controls.roles"
+        requiredMessage="Choose at least one role."
+      >
+        <div class="choice-list">
+          @for (role of roles; track role.name) {
+            <label class="choice">
+              <input
+                type="checkbox"
+                [checked]="selected(role.name)"
+                (change)="toggleRole(role.name, $event)"
+              />
+              <span class="choice__text">
+                <span class="choice__label">{{ role.label }}</span>
+                <span class="choice__hint">{{ role.description }}</span>
+              </span>
+            </label>
+          }
+        </div>
+      </app-field-group>
+
+      <div class="form__actions form__actions--sticky">
+        <a appButton routerLink="/admin/users">Cancel</a>
+        <button appButton variant="primary" type="submit" [busy]="saving()">
+          {{ isEdit() ? 'Save user' : 'Create user' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

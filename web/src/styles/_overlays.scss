@@ -1,0 +1,88 @@
+// Menus and dialog contents. These are global because the rows are projected in from the page that uses them.
+
+.menu {
+  position: relative;
+  display: inline-block;
+}
+
+// Positioned against the screen by the Menu component, so no scrolling ancestor can clip it.
+.menu__panel {
+  position: fixed;
+  z-index: 40;
+  min-width: 13rem;
+  max-width: calc(100vw - 2 * var(--space-2));
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-2);
+}
+
+.menu__header {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-1);
+}
+
+.menu__title {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.menu__meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-2);
+  }
+}
+
+.menu__item--danger {
+  color: var(--color-danger);
+}
+
+// Dialogs ---------------------------------------------------------------------------------------------------------
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+
+  .btn {
+    flex: 1 1 auto;
+  }
+}
+
+@media (min-width: 40rem) {
+  .dialog-actions .btn {
+    flex: 0 0 auto;
+  }
+}
+
+.confirm-message {
+  margin-bottom: var(--space-3);
+}

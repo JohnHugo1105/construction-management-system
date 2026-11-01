@@ -1,0 +1,52 @@
+<app-auth-frame title="Sign in" intro="Use the username and password you were given.">
+  @if (needsSetup()) {
+    <app-alert tone="info" title="Nobody has set this up yet">
+      Create your company and the first administrator account to get started.
+      <div alertActions>
+        <a appButton variant="primary" routerLink="/setup">Set up your company</a>
+      </div>
+    </app-alert>
+  }
+
+  @if (sessionEnded) {
+    <app-alert tone="info"
+      >You were signed out because your session ended. Sign in to continue.</app-alert
+    >
+  }
+
+  <app-api-error-alert [error]="error()" />
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+    <app-form-field
+      label="Username"
+      [control]="form.controls.username"
+      requiredMessage="Enter your username."
+    >
+      <input
+        appControl
+        formControlName="username"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+      />
+    </app-form-field>
+
+    <app-form-field
+      label="Password"
+      [control]="form.controls.password"
+      requiredMessage="Enter your password."
+    >
+      <input
+        appControl
+        #passwordInput
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+      />
+    </app-form-field>
+
+    <button appButton variant="primary" type="submit" [busy]="signingIn()" [block]="true">
+      Sign in
+    </button>
+  </form>
+</app-auth-frame>
