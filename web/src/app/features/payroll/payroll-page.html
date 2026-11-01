@@ -1,0 +1,125 @@
+<app-page-header title="Payroll" />
+
+<div class="stack">
+  @if (canRun() && !empty()) {
+    <div class="toolbar">
+      <a appButton variant="primary" routerLink="/payroll/new">
+        <app-icon name="plus" [size]="18" />
+        New payroll run
+      </a>
+    </div>
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading payroll runs" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Payroll runs" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Pay period</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="num">Workers</th>
+                <th scope="col" class="num">Gross pay</th>
+                <th scope="col" class="num">Deductions</th>
+                <th scope="col" class="num">Net pay</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/payroll', row.id]">{{ row.period }}</a>
+                  </th>
+                  <td>
+                    <app-status-chip
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [icon]="row.status.icon"
+                    />
+                  </td>
+                  <td class="num">{{ row.workers }}</td>
+                  <td class="num">{{ row.gross }}</td>
+                  <td class="num">{{ row.deductions }}</td>
+                  <td class="num">{{ row.net }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card">
+              <div class="row-card__head">
+                <a
+                  class="row-card__title row-link row-link--stretch"
+                  [routerLink]="['/payroll', row.id]"
+                  >{{ row.period }}</a
+                >
+                <app-status-chip
+                  [label]="row.status.label"
+                  [tone]="row.status.tone"
+                  [icon]="row.status.icon"
+                />
+              </div>
+              <p class="run__net">
+                <span class="text-muted text-small">Net pay</span>
+                <span class="money">{{ row.net }}</span>
+              </p>
+              <div class="row-card__meta">
+                <span>{{ row.workers }}</span>
+                <span
+                  >Gross <span class="money">{{ row.gross }}</span></span
+                >
+                <span
+                  >Deductions <span class="money">{{ row.deductions }}</span></span
+                >
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="payroll runs"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    <app-empty-state
+      icon="payroll"
+      title="No payroll runs yet"
+      [message]="
+        canRun()
+          ? 'A payroll run pays the attendance that has not been paid yet. Record attendance on a project, then create your first run.'
+          : 'An HR officer or an accountant can create the first payroll run.'
+      "
+    >
+      @if (canRun()) {
+        <a appButton variant="primary" routerLink="/payroll/new">
+          <app-icon name="plus" [size]="18" />
+          New payroll run
+        </a>
+      }
+    </app-empty-state>
+  }
+</div>

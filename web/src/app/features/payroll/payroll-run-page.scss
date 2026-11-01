@@ -1,0 +1,144 @@
+:host {
+  display: block;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.head__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.head__workers {
+  color: var(--color-text-muted);
+}
+
+.head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.head__history {
+  display: grid;
+  gap: 2px;
+}
+
+// The totals: net pay first, because it is the figure people ask about.
+.totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.totals__item {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+
+  dt {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: 650;
+  }
+}
+
+.totals__item--net {
+  grid-column: 1 / -1;
+
+  dd {
+    font-size: var(--text-2xl);
+  }
+}
+
+@media (min-width: 48rem) {
+  .totals {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .totals__item--net {
+    grid-column: auto;
+    order: 3;
+  }
+}
+
+.lines {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.lines__title {
+  font-size: var(--text-lg);
+}
+
+.cell-action {
+  display: block;
+  margin-left: auto;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.detail-row > td {
+  background: var(--color-surface-2);
+}
+
+.line__figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+
+  dt {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+.line__net dd {
+  font-weight: 700;
+}
+
+.line__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  .btn {
+    padding-inline: var(--space-3);
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .head__actions {
+    flex: 1 1 100%;
+  }
+
+  .head__actions .btn--primary {
+    flex: 1 1 auto;
+  }
+}

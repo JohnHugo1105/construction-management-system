@@ -1,0 +1,218 @@
+<app-page-header title="Workers" />
+
+<div class="stack">
+  @if (!nothingYet()) {
+    <div class="toolbar">
+      <app-search-box
+        class="toolbar__search"
+        label="Search workers"
+        placeholder="Search"
+        [value]="state.query.values().search"
+        (searched)="state.query.set({ search: $event }, { replace: true })"
+      />
+      @if (canManage()) {
+        <a appButton variant="primary" routerLink="/workers/new">
+          <app-icon name="plus" [size]="18" />
+          Hire a worker
+        </a>
+      }
+    </div>
+
+    <div class="filter-chips" role="group" aria-label="Filter workers">
+      @if (showProjectFilter()) {
+        <label class="project-filter">
+          <span class="visually-hidden">Filter by project</span>
+          <select
+            class="input project-filter__select"
+            [class.project-filter__select--on]="state.query.values().project !== ''"
+            [value]="state.query.values().project"
+            (change)="projectFilter($event)"
+          >
+            <option value="">All projects</option>
+            @for (project of choices.projects(); track project.id) {
+              <option [value]="project.id" [selected]="state.query.values().project === project.id">
+                {{ project.name }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+      @for (filter of filters; track filter) {
+        <button
+          type="button"
+          class="filter-chip"
+          [attr.aria-pressed]="state.query.values().status === filter"
+          (click)="state.query.set({ status: filter })"
+        >
+          {{ filterLabel(filter) }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading workers" />
+  } @else if (rows().length > 0) {
+    <div
+      class="results"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @if (viewport.isTablet()) {
+        <div class="table-wrap" role="region" aria-label="Workers" tabindex="0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                @if (canManage()) {
+                  <th scope="col" class="pick">
+                    <label class="pick__label">
+                      <input
+                        type="checkbox"
+                        [checked]="allOnPageSelected()"
+                        (change)="toggleAll(isChecked($event))"
+                      />
+                      <span class="visually-hidden">Select every worker on this page</span>
+                    </label>
+                  </th>
+                }
+                <th scope="col">Worker</th>
+                <th scope="col">Designation</th>
+                <th scope="col">Status</th>
+                <th scope="col">Project</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr [class.row--selected]="isSelected(row.id)">
+                  @if (canManage()) {
+                    <td class="pick">
+                      <label class="pick__label">
+                        <input
+                          type="checkbox"
+                          [checked]="isSelected(row.id)"
+                          (change)="toggle(row, isChecked($event))"
+                        />
+                        <span class="visually-hidden">Select {{ row.name }}</span>
+                      </label>
+                    </td>
+                  }
+                  <th scope="row">
+                    <a class="row-link" [routerLink]="['/workers', row.id]">{{ row.name }}</a>
+                    <span class="cell-sub">{{ row.number }}</span>
+                  </th>
+                  <td>{{ row.designation }}</td>
+                  <td>
+                    <app-status-chip
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [icon]="row.status.icon"
+                    />
+                  </td>
+                  <td [class.text-muted]="!row.posted">{{ row.project }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <ul class="card-list">
+          @for (row of rows(); track row.id) {
+            <li class="row-card" [class.row--selected]="isSelected(row.id)">
+              <div class="row-card__head">
+                @if (canManage()) {
+                  <label class="pick__label pick__label--card">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(row.id)"
+                      (change)="toggle(row, isChecked($event))"
+                    />
+                    <span class="visually-hidden">Select {{ row.name }}</span>
+                  </label>
+                }
+                <a
+                  class="row-card__title row-link row-link--stretch"
+                  [routerLink]="['/workers', row.id]"
+                  >{{ row.name }}</a
+                >
+                <app-status-chip
+                  [label]="row.status.label"
+                  [tone]="row.status.tone"
+                  [icon]="row.status.icon"
+                />
+              </div>
+              <p class="text-muted text-small">{{ row.number }} · {{ row.designation }}</p>
+              <p class="text-small" [class.text-muted]="!row.posted">{{ row.project }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.total()"
+      noun="workers"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state
+        icon="search"
+        title="No workers match"
+        message="Try a different name or number, or look at another status or project."
+      >
+        <button appButton type="button" (click)="state.query.reset()">Show all workers</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="users"
+        title="No workers yet"
+        [message]="
+          canManage()
+            ? 'Hire your first worker, then post them to a project to record their attendance.'
+            : 'An HR officer can hire the first worker.'
+        "
+      >
+        @if (canManage()) {
+          <a appButton variant="primary" routerLink="/workers/new">
+            <app-icon name="plus" [size]="18" />
+            Hire a worker
+          </a>
+        }
+      </app-empty-state>
+    }
+  }
+
+  @if (selectedCount() > 0) {
+    <div class="selection-bar" role="region" aria-label="Selected workers">
+      <p class="selection-bar__count">{{ selectedLabel() }}</p>
+      <div class="selection-bar__actions">
+        <button appButton type="button" variant="ghost" (click)="clearSelection()">Clear</button>
+        <button appButton type="button" variant="primary" (click)="assigning.set(true)">
+          Assign selected to a project
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+@if (assigning()) {
+  <app-assign-dialog
+    [workers]="targets()"
+    [summary]="targetSummary()"
+    [crew]="true"
+    (assigned)="assigned()"
+    (dismissed)="assigning.set(false)"
+    (reloaded)="assigning.set(false); state.reload()"
+  />
+}

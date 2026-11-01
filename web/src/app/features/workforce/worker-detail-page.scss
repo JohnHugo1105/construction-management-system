@@ -1,0 +1,35 @@
+:host {
+  display: block;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+
+.summary__about {
+  color: var(--color-text-muted);
+}
+
+.summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+// The page is a reading column: wider screens add margin, not stretched cards.
+.detail-stack {
+  max-width: 56rem;
+}

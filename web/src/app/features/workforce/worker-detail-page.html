@@ -1,0 +1,108 @@
+<app-page-header
+  [title]="state.status() === 'ready' ? state.worker().fullName : 'Worker'"
+  backLabel="All workers"
+  [backLink]="['/workers']"
+/>
+
+@switch (state.status()) {
+  @case ('loading') {
+    <app-skeleton [lines]="4" label="Loading worker" />
+  }
+  @case ('error') {
+    <div class="stack">
+      <app-api-error-alert
+        [error]="state.error()"
+        [allowRetry]="!state.error()?.isNotFound"
+        reloadLabel="Try again"
+        (reload)="reload()"
+      />
+      <p><a appButton routerLink="/workers">Back to workers</a></p>
+    </div>
+  }
+  @case ('ready') {
+    @if (summary(); as info) {
+      <div class="stack detail-stack">
+        <div class="summary">
+          <div class="summary__info">
+            <app-status-chip
+              [label]="info.status.label"
+              [tone]="info.status.tone"
+              [icon]="info.status.icon"
+            />
+            @if (info.about) {
+              <p class="summary__about">{{ info.about }}</p>
+            }
+          </div>
+
+          @if (canManage()) {
+            <div class="summary__actions">
+              @if (info.left) {
+                <button appButton variant="primary" type="button" (click)="reinstating.set(true)">
+                  Reinstate worker
+                </button>
+              }
+              @if (!info.left) {
+                <button appButton type="button" (click)="changingStatus.set(true)">
+                  Change status
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (info.since || info.reason) {
+          <app-alert [tone]="info.left ? 'warning' : 'info'" [title]="info.status.label">
+            @if (info.since) {
+              <span>{{ info.since }}.</span>
+            }
+            @if (info.reason) {
+              <span> Reason: {{ info.reason }}</span>
+            }
+            @if (info.left && canManage()) {
+              <span> They can only come back by being reinstated.</span>
+            }
+          </app-alert>
+        }
+
+        <app-worker-posting-panel />
+        <app-worker-pay-panel />
+        <app-worker-attendance-panel />
+        <app-worker-cases-panel />
+
+        <section class="card" aria-labelledby="profile-heading">
+          <div class="panel-head">
+            <h2 id="profile-heading" class="card__title">Personal details</h2>
+            @if (canManage()) {
+              <a appButton [routerLink]="['/workers', state.worker().id, 'edit']">Edit profile</a>
+            }
+          </div>
+          <dl class="def-list">
+            @for (item of info.details; track item.label) {
+              <div>
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      </div>
+    }
+  }
+}
+
+@if (changingStatus() && state.status() === 'ready') {
+  <app-change-status-dialog
+    [worker]="state.worker()"
+    (changed)="statusChanged($event)"
+    (dismissed)="changingStatus.set(false)"
+    (reloaded)="reload()"
+  />
+}
+@if (reinstating() && state.status() === 'ready') {
+  <app-reinstate-dialog
+    [worker]="state.worker()"
+    (reinstated)="reinstated($event)"
+    (dismissed)="reinstating.set(false)"
+    (reloaded)="reload()"
+  />
+}

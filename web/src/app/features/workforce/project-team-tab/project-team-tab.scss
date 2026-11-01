@@ -1,0 +1,277 @@
+:host {
+  display: block;
+}
+
+.day-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.day-bar__date,
+.day-bar__sub {
+  display: grid;
+  gap: 6px;
+}
+
+.day-bar__date {
+  flex: 1 1 10rem;
+  max-width: 14rem;
+}
+
+.day-bar__sub {
+  flex: 1 1 10rem;
+  max-width: 20rem;
+}
+
+.general {
+  display: block;
+}
+
+.sheet {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sheet__title {
+  font-size: var(--text-lg);
+}
+
+.sheet__list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet__list--busy {
+  opacity: 0.7;
+}
+
+// A line of the sheet is a card on a phone: one worker, regular and overtime hours side by side.
+.line {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.line > * {
+  grid-column: 1 / -1;
+}
+
+.line > .line__field {
+  grid-column: auto;
+}
+
+// Hours that are not saved yet stand out by a bar down the side and by the words "Not saved yet".
+.line--draft {
+  border-left: 5px solid var(--color-brand);
+}
+
+.line--away {
+  background: var(--color-surface-2);
+}
+
+.line--saved {
+  border-left: 5px solid var(--color-success-border);
+}
+
+.line__who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.line__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-brand-text);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.worked {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: var(--touch-target);
+  cursor: pointer;
+
+  input {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin: 10px 0 0;
+    accent-color: var(--color-brand);
+  }
+}
+
+.worked__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.worked__name {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.worked__sub {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.line__field {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+
+.line__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.line__remarks {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  min-width: 0;
+
+  .input {
+    width: 100%;
+  }
+}
+
+.line__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.line__hours {
+  font-weight: 600;
+  min-width: 0;
+}
+
+.line__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.line__error {
+  margin: 0;
+}
+
+.all-done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+// The day's save action stays on screen, above the bottom navigation, and sits after the last line so it never covers it.
+.save-bar {
+  position: sticky;
+  bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.save-bar__summary {
+  flex: 1 1 14rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.save-bar .btn {
+  flex: 1 1 10rem;
+}
+
+@media (min-width: 48rem) {
+  // Wider screens lay each line out as a row: who, regular, overtime, remark.
+  .line--draft:not(.line--away),
+  .line--editing {
+    grid-template-columns: minmax(12rem, 1.3fr) minmax(0, 11rem) minmax(0, 11rem) minmax(10rem, 1fr);
+    align-items: start;
+  }
+
+  .line--draft:not(.line--away) > *,
+  .line--editing > * {
+    grid-column: auto;
+  }
+
+  .line--editing > .line__actions,
+  .line--editing > app-api-error-alert {
+    grid-column: 1 / -1;
+  }
+
+  .line--saved:not(.line--editing) {
+    grid-template-columns: minmax(15rem, 1fr) minmax(0, 1.6fr);
+    align-items: center;
+  }
+
+  .line--saved:not(.line--editing) .line__actions {
+    flex-wrap: nowrap;
+  }
+
+  .line--saved:not(.line--editing) .line__actions .btn {
+    white-space: nowrap;
+  }
+
+  .line__error {
+    grid-column: 1 / -1;
+  }
+
+  .line--saved:not(.line--editing) > * {
+    grid-column: auto;
+  }
+
+  .line--draft.line--away {
+    grid-template-columns: minmax(12rem, 1fr);
+  }
+
+  .line--draft .line__who,
+  .line--editing .line__who {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 64rem) {
+  .save-bar {
+    bottom: 0;
+    margin: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2);
+  }
+
+  .save-bar .btn {
+    flex: 0 0 auto;
+  }
+}
