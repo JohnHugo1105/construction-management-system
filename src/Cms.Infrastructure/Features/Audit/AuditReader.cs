@@ -12,6 +12,7 @@ internal sealed class AuditReader(CmsDbContext db) : IAuditReader
     public async Task<PagedResult<AuditEntryDto>> ListAsync(AuditQuery query, PageRequest page, CancellationToken cancellationToken)
     {
         var entries = db.Set<AuditEntry>().AsNoTracking();
+        if (!query.IncludeSignIns) entries = entries.Where(entry => entry.Action != AuditQuery.SignedInAction);
         if (!string.IsNullOrWhiteSpace(query.EntityType)) entries = entries.Where(entry => entry.EntityType == query.EntityType);
         if (query.EntityId is { } entityId) entries = entries.Where(entry => entry.EntityId == entityId);
         if (query.FromUtc is { } from) entries = entries.Where(entry => entry.OccurredAtUtc >= from);

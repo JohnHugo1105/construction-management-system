@@ -71,8 +71,9 @@ public sealed class AuditEndpoints : IEndpointModule
     public void Map(RouteGroupBuilder api)
     {
         api.MapFeature("/audit", "Audit").MapGet("", async ([FromQuery] string? search, [FromQuery] string? entityType, [FromQuery] Guid? entityId,
-                [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [AsParameters] PageQuery page, AuditQueryService audit, CancellationToken ct) =>
-            Results.Ok(await audit.ListAsync(new AuditQuery(search, entityType, entityId, from, to), page.ToRequest(), ct)))
+                [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [FromQuery] bool? includeSignIns, [AsParameters] PageQuery page,
+                AuditQueryService audit, CancellationToken ct) =>
+            Results.Ok(await audit.ListAsync(new AuditQuery(search, entityType, entityId, from, to, includeSignIns ?? false), page.ToRequest(), ct)))
             .RequirePermission(Permissions.AuditRead);
     }
 }

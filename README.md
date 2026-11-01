@@ -38,7 +38,7 @@ npm ci --prefix web
 npm start --prefix web                                # http://localhost:4200, proxies /api to the API
 ```
 
-With demo data, sign in as `admin`, `pm`, `cost`, `accounts`, `hr`, `store` or `viewer`; every demo account's password is
+With demo data, sign in as `admin`, `manager`, `cost`, `accounts`, `hrofficer`, `store` or `viewer`; every demo account's password is
 `Demo-passw0rd-2026` (development only: the seeder refuses to run outside Development). Without demo data, the first visit offers
 first-time setup, which creates your company and administrator (turn `Bootstrap:Enabled` off afterwards in production).
 

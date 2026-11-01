@@ -26,10 +26,10 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
     private static readonly (string Username, string Name, AccessRole Roles)[] Accounts =
     [
         ("admin", "Ana Administrator", AccessRole.Administrator),
-        ("pm", "Paolo Project-Manager", AccessRole.ProjectManager),
+        ("manager", "Paolo Project-Manager", AccessRole.ProjectManager),
         ("cost", "Carla Cost-Engineer", AccessRole.CostEngineer),
         ("accounts", "Alma Accountant", AccessRole.Accountant),
-        ("hr", "Hannah HR-Officer", AccessRole.HrOfficer),
+        ("hrofficer", "Hannah HR-Officer", AccessRole.HrOfficer),
         ("store", "Wilson Warehouse-Keeper", AccessRole.WarehouseKeeper),
         ("viewer", "Vince Viewer", AccessRole.Viewer)
     ];
@@ -105,10 +105,10 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
             ("W-005", "Ana", "Bautista", "Helper", 610_00L),
             ("W-006", "Rico", "Mendoza", "Equipment operator", 950_00L)
         }.Select(person => Worker.Hire(Guid.NewGuid(), tenant, person.Item1, person.Item2, null, person.Item3, today.AddMonths(-5), person.Item4,
-            person.Item5, RateUnit.Daily, users["hr"].Id, today, now)).ToList();
+            person.Item5, RateUnit.Daily, users["hrofficer"].Id, today, now)).ToList();
         var foreman = crew[0];
-        foreman.ChangeRate(RateChangeCategory.RateAdjustment, "Foreman", 1_150_00, RateUnit.Daily, today.AddDays(-7), "Annual review", users["hr"].Id, now);
-        foreach (var worker in crew) worker.AssignTo(riverside, worker == foreman ? towerA.Id : null, today.AddMonths(-4), users["hr"].Id, now);
+        foreman.ChangeRate(RateChangeCategory.RateAdjustment, "Foreman", 1_150_00, RateUnit.Daily, today.AddDays(-7), "Annual review", users["hrofficer"].Id, now);
+        foreach (var worker in crew) worker.AssignTo(riverside, worker == foreman ? towerA.Id : null, today.AddMonths(-4), users["hrofficer"].Id, now);
         db.AddRange(crew);
 
         for (var daysAgo = 13; daysAgo >= 1; daysAgo--)
@@ -118,7 +118,7 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
             foreach (var worker in crew)
                 db.Add(AttendanceEntry.Record(Guid.NewGuid(), tenant, worker, riverside, worker == foreman ? towerA.Id : null, date, 8m,
                     date.DayOfWeek == DayOfWeek.Saturday || worker.EmployeeNumber == "W-002" && daysAgo % 3 == 0 ? 2m : 0m, null,
-                    organization.HoursPerDay, users["pm"].Id, null, today, now));
+                    organization.HoursPerDay, users["manager"].Id, null, today, now));
         }
 
         // ---- Inventory: tools in the warehouse, a generator and an excavator, one charged transfer to the project
@@ -137,6 +137,6 @@ public sealed class DevelopmentSeeder(CmsDbContext db, IPasswordHasher hasher, I
         db.Add(Domain.Features.Audit.AuditEntry.Record(tenant, by, "admin", "System.Seeded", nameof(Organization), tenant,
             "Demo data was created for development.", null, now));
         await db.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Demo data created for {Company}. Sign in as admin, pm, cost, accounts, hr, store or viewer with the demo password.", organization.Name);
+        logger.LogInformation("Demo data created for {Company}. Sign in as admin, manager, cost, accounts, hrofficer, store or viewer with the demo password.", organization.Name);
     }
 }

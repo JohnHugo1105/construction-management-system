@@ -278,3 +278,49 @@ public sealed class UserAdministrationApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/organization")).StatusCode);
     }
 }
+
+public sealed class ApiFailureShapeTests : IClassFixture<CmsApiFactory>
+{
+    private readonly CmsApiFactory _factory;
+
+    public ApiFailureShapeTests(CmsApiFactory factory) => _factory = factory;
+
+    [SqlServerFact]
+    public async Task Refusals_without_a_body_are_still_problem_details_the_web_app_can_read()
+    {
+        var admin = await TenantSeeder.CreateTenantAsync(_factory);
+        var viewer = await TenantSeeder.AddUserAsync(_factory, admin.TenantId, AccessRole.Viewer);
+        using var signedOut = new ApiClient(_factory);
+        using var signedIn = new ApiClient(_factory);
+        await signedIn.SignInAsync(viewer.Username, viewer.Password);
+
+        var unauthenticated = await signedOut.GetAsync("/api/projects");
+        var forbidden = await signedIn.GetAsync("/api/users");
+        var unknownRoute = await signedIn.GetAsync("/api/does-not-exist");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthenticated.StatusCode);
+        Assert.Equal("application/problem+json", unauthenticated.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("unauthenticated", (await ApiClient.ProblemAsync(unauthenticated)).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Assert.Equal("forbidden", (await ApiClient.ProblemAsync(forbidden)).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.NotFound, unknownRoute.StatusCode);
+        Assert.False(string.IsNullOrWhiteSpace((await ApiClient.ProblemAsync(unknownRoute)).GetProperty("traceId").GetString()));
+    }
+
+    [SqlServerFact]
+    public async Task The_activity_log_hides_routine_sign_ins_unless_asked_but_always_shows_failed_ones()
+    {
+        var admin = await TenantSeeder.CreateTenantAsync(_factory);
+        using var client = new ApiClient(_factory);
+        using var stranger = new ApiClient(_factory);
+        await stranger.PostAsync("/api/identity/sign-in", new { username = admin.Username, password = "wrong password 123" });
+        await client.SignInAsync(admin.Username, admin.Password);
+
+        var quiet = await client.GetAsync<Cms.Application.Common.PagedResult<Cms.Application.Features.Audit.AuditEntryDto>>("/api/audit");
+        var withSignIns = await client.GetAsync<Cms.Application.Common.PagedResult<Cms.Application.Features.Audit.AuditEntryDto>>("/api/audit?includeSignIns=true");
+
+        Assert.DoesNotContain(quiet.Items, entry => entry.Action == "User.SignedIn");
+        Assert.Contains(quiet.Items, entry => entry.Action == "User.SignInFailed");
+        Assert.Contains(withSignIns.Items, entry => entry.Action == "User.SignedIn");
+    }
+}

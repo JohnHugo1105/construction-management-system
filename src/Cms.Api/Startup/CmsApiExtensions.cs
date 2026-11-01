@@ -106,7 +106,23 @@ public static class CmsApiExtensions
     public static WebApplication UseCmsPipeline(this WebApplication app)
     {
         app.UseExceptionHandler();
-        app.UseStatusCodePages();
+        // Empty 401/403/404 answers on API routes (an authorization refusal has no body of its own) become problem details too, so
+        // the web app can read every API failure the same way.
+        app.UseStatusCodePages(async context =>
+        {
+            var http = context.HttpContext;
+            if (!http.Request.Path.StartsWithSegments("/api")) return;
+            var status = http.Response.StatusCode;
+            var (title, detail, code) = status switch
+            {
+                StatusCodes.Status401Unauthorized => ("Sign in required", "Sign in to continue.", "unauthenticated"),
+                StatusCodes.Status403Forbidden => ("Not allowed", "You don't have access to do that.", "forbidden"),
+                StatusCodes.Status404NotFound => ("Not found", "We couldn't find that.", "not_found"),
+                StatusCodes.Status405MethodNotAllowed => ("Not allowed", "That action isn't available here.", "method_not_allowed"),
+                _ => ("That didn't work", "The request couldn't be completed.", "request_failed")
+            };
+            await ApiProblems.WriteAsync(http, status, title, detail, code);
+        });
         app.UseForwardedHeaders();
         if (!app.Environment.IsDevelopment()) app.UseHsts();
 
