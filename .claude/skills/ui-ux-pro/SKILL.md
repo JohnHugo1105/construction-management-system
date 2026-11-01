@@ -37,7 +37,7 @@ controls, WCAG 2.2 AA, and responsive behavior). Report each finding against the
 specific standard it violates so `senior_engineer` receives actionable guidance.
 
 Every `ui-ux-pro` run must apply
-`.agents/skills/ui-presentation-audit/SKILL.md` **before** DOM, accessibility,
+`.claude/skills/ui-presentation-audit/SKILL.md` **before** DOM, accessibility,
 or viewport work. Put that skill's five questions first in the report. Then
 continue with sections 3–6 below. If the user asked only for presentation
 (complexity, information amount, wording, visual grouping/fit, redundancy),
@@ -63,7 +63,7 @@ a focused UI correction into a redesign.
 
 ## 2. End-user presentation audit (required first)
 
-Read and follow `.agents/skills/ui-presentation-audit/SKILL.md` in full,
+Read and follow `.claude/skills/ui-presentation-audit/SKILL.md` in full,
 including its live-app evidence rule. If the user did not attach images or
 videos of the target screens, start or reuse local CMS (SQL Server from
 `deploy/docker-compose.yml`, `dotnet run --project src/Cms.Api`, `npm start --prefix web`), seed demo
@@ -115,7 +115,7 @@ A professional UI is dynamic. You must systematically test interactive states:
 
 Contrast must be **measured, not eyeballed**, in every audited state
 (editable, locked/disabled, empty, hover). Run the mandatory measured-contrast
-scan from `.agents/skills/ui-presentation-audit/SKILL.md` (resolve each text
+scan from `.claude/skills/ui-presentation-audit/SKILL.md` (resolve each text
 element's effective background by walking ancestors, compute the WCAG ratio in
 page context). Treat ratio < 2:1 on core content, labels, or entered values as
 an "invisible text" rendering defect — usually a dark-theme token leaking onto
@@ -159,7 +159,7 @@ After the measured checks, review each page and state by eye at every width:
 
 For a full UI audit (release lock, role/page coverage, width and engine matrix,
 enforced read-only, measured thresholds, proof, fix-and-release, and re-check
-loop), follow `.agents/skills/ui-presentation-audit/SKILL.md` section 5. This
+loop), follow `.claude/skills/ui-presentation-audit/SKILL.md` section 5. This
 review is its by-eye step.
 
 ## Standing product calls

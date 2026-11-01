@@ -504,9 +504,10 @@ repeated.
 
 Use this procedure when asked for a **full UI audit** or a **baseline
 responsive audit** of the side-menu pages. The bar is never lowered between
-rounds. The harness, release stamping, read-only guard, and display-only test
-screens are documented in `docs/development/full-ui-audit.md` and live under
-`web/scripts/full-ui-audit/`; use them instead of building a parallel path.
+rounds. This repository has no audit harness yet: drive the pages with Playwright
+(pre-installed Chromium) against the local app, keep the run read-only, and
+keep the script outside the repository unless the person asks for it to be
+added. If a harness is added later, document it and point here.
 The five questions (section 3) and the probes in section 2 still apply; this
 section fixes the build, coverage, matrix, thresholds, proof, and the
 fix-and-re-check loop. The by-eye design review and the standing product calls
