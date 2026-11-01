@@ -116,6 +116,7 @@ public sealed class PayrollLine
             if (string.IsNullOrWhiteSpace(description)) errors.Add("deductions", "Describe each deduction (for example SSS contribution).");
             else if (description.Trim().Length > 120) errors.Add("deductions", "A deduction description can be at most 120 characters.");
             if (amount <= 0) errors.Add("deductions", "Each deduction must be greater than zero.");
+            else if (amount > MoneyLimits.MaximumAmountMinor) errors.Add("deductions", "A deduction can be at most ₱100,000,000,000.00.");
             else total = checked(total + amount);
         }
         if (total > GrossPayMinor) errors.Add("deductions", $"Deductions for {WorkerName} are more than the pay. Check the amounts.");
@@ -158,13 +159,16 @@ public sealed class PayrollRun : AggregateRoot
     public long TotalDeductionsMinor => _lines.Sum(line => line.DeductionsMinor);
     public long TotalNetMinor => _lines.Sum(line => line.NetPayMinor);
 
+    /// <summary>A pay period of at most 31 days counting both ends, so the last day is at most 30 days after the first (1 to 31 January is fine).</summary>
+    public const int MaximumPeriodDaysApart = 30;
+
     public static PayrollRun Draft(Guid id, Guid tenantId, DateOnly periodStart, DateOnly periodEnd, IReadOnlyList<CalculatedPayLine> lines,
         decimal hoursPerDay, int overtimeMultiplierBps, Guid createdByUserId, string? clientRequestId, DateOnly today, DateTimeOffset now)
     {
         var errors = new ValidationErrors();
         if (periodStart == default || periodEnd == default) errors.Add("periodStart", "Choose the first and last day of the pay period.");
         else if (periodEnd < periodStart) errors.Add("periodEnd", "The last day can't be before the first day.");
-        else if (periodEnd.DayNumber - periodStart.DayNumber > 31) errors.Add("periodEnd", "A pay period is at most 31 days.");
+        else if (periodEnd.DayNumber - periodStart.DayNumber > MaximumPeriodDaysApart) errors.Add("periodEnd", "A pay period is at most 31 days.");
         else if (periodEnd > today) errors.Add("periodEnd", "The pay period can't end in the future.");
         errors.ThrowIfAny();
         if (lines.Count == 0) throw new DomainRuleException("There is no unpaid attendance in that period.");

@@ -8,6 +8,10 @@
 | `GET /health/ready` | The database answers **and** no migration is pending (200), otherwise 503 with `database` and `migrations`. | Load balancer routing, deploy gates |
 | `GET /health/version` | `service`, `version`, `commit` (`CMS_RELEASE_SHA`), `environment`, `runtime`. | Proving which build is running |
 
+Through the web server (nginx) only `/health/live` answers from outside; `/health/ready` and `/health/version` answer only to callers on a
+private network (10/8, 172.16/12, 192.168/16, loopback), because they reveal the database state and the release. Probe the API
+container directly, or from a private address.
+
 A deploy is healthy only when `/health/ready` is 200 and `/health/version` shows the commit that was deployed. A healthy check proves
 only what it names: it does not prove sign-in or calculations work; do the smoke test.
 

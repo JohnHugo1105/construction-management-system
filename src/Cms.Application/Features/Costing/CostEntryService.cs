@@ -55,7 +55,19 @@ public sealed class CostEntryService(ICostEntryRepository entries, ICostEntryRea
         audit.Record("CostEntry.Recorded", nameof(CostEntry), entry.Id,
             $"Recorded cost \"{entry.Description}\" ({CostingInput.MoneyText(entry.GrossMinor, organization.CurrencyCode)} with VAT) from " +
             $"{entry.SourceDealer}, invoice {entry.InvoiceNumber}, for {project.Name}.");
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DomainRuleException) when (requestId is not null)
+        {
+            // The same form submitted twice at once: the first was saved between this one's look-up and its save, and the database refused
+            // the second. Answer it with the entry the first made. A genuine duplicate invoice has no earlier entry with this request id,
+            // so it is reported as the refusal it is.
+            if (await entries.FindByClientRequestIdAsync(requestId, cancellationToken) is { } first && first.ProjectId == project.Id)
+                return CostingMapper.ToDto(first, project);
+            throw;
+        }
         return CostingMapper.ToDto(entry, project);
     }
 
@@ -84,29 +96,28 @@ public sealed class CostEntryService(ICostEntryRepository entries, ICostEntryRea
     }
 
     /// <summary>
-    /// Voids an entry with a reason. A cost made by payroll or by a stock transfer is normally voided by the feature that owns it; voiding
-    /// one here is allowed, but the audit line says it was voided at the entry, so the source and the project no longer agree.
+    /// Voids a hand-entered cost with a reason. A cost made by payroll or by a stock transfer is never voided here: it is reversed by the
+    /// feature that owns it (void the payroll run, reverse the transfer), which keeps the source and the project agreeing. Allowing it
+    /// here would let someone with cost access quietly remove labor cost that payroll still says was paid.
     /// </summary>
     public async Task<CostEntryDto> VoidAsync(Guid id, VoidCostEntryRequest request, CancellationToken cancellationToken)
     {
         var entry = await Load(id, cancellationToken);
         var project = await LoadProject(entry.ProjectId, cancellationToken);
         ConcurrencyGuard.Ensure(entry.Version, request.Version);
+        if (entry.Origin != CostOrigin.Manual)
+            throw new DomainRuleException(entry.Origin == CostOrigin.Payroll
+                ? "This cost was made by payroll. Void the payroll run instead, so the pay and the cost stay in step."
+                : "This cost was made by a stock transfer. Reverse the transfer instead, so the stock and the cost stay in step.");
         // An archived project is read-only: restore it first, so a finished project's figures don't change unnoticed.
         project.EnsureNotArchived();
 
         var organization = await organizations.GetCurrentAsync(cancellationToken);
-        var origin = entry.Origin;
         entry.Void(currentUser.UserId, request.Reason, clock.UtcNow);
 
         var amount = CostingInput.MoneyText(entry.GrossMinor, organization.CurrencyCode);
-        if (origin == CostOrigin.Manual)
-            audit.Record("CostEntry.Voided", nameof(CostEntry), entry.Id,
-                $"Voided cost \"{entry.Description}\" ({amount} with VAT) from {entry.SourceDealer}, invoice {entry.InvoiceNumber}, of {project.Name}. Reason: {entry.VoidReason}");
-        else
-            audit.Record("CostEntry.VoidedAtEntry", nameof(CostEntry), entry.Id,
-                $"Voided at the entry itself, not at its source ({CostingLabels.OriginLabel(origin)}): cost \"{entry.Description}\" ({amount} with VAT) " +
-                $"of {project.Name}. Reason: {entry.VoidReason}");
+        audit.Record("CostEntry.Voided", nameof(CostEntry), entry.Id,
+            $"Voided cost \"{entry.Description}\" ({amount} with VAT) from {entry.SourceDealer}, invoice {entry.InvoiceNumber}, of {project.Name}. Reason: {entry.VoidReason}");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return CostingMapper.ToDto(entry, project);
     }

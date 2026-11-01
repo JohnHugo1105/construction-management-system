@@ -33,7 +33,7 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
         var today = await TodayAsync(cancellationToken);
         var requestId = string.IsNullOrWhiteSpace(request.ClientRequestId) ? null : request.ClientRequestId.Trim();
         if (requestId is not null && await workers.FindIdByClientRequestAsync(requestId, cancellationToken) is { } already)
-            return await ReadAsync(already, today, cancellationToken);
+            return EnsureSameRequest(await ReadAsync(already, today, cancellationToken), request);
 
         try
         {
@@ -44,10 +44,17 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
             // The same form submitted twice at once: the first submission can be saved after this one looked for it and before this one
             // finished (so the employee number, or the unique request id at the database, now refuses it). Answer it with the worker the
             // first one hired. Without such a worker the refusal is a real one and is reported as it is.
-            if (await workers.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original) return await ReadAsync(original, today, cancellationToken);
+            if (await workers.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original)
+                return EnsureSameRequest(await ReadAsync(original, today, cancellationToken), request);
             throw;
         }
     }
+
+    /// <summary>A repeated request id answers with the original worker only when it was for the same employee number.</summary>
+    private static WorkerDetailDto EnsureSameRequest(WorkerDetailDto original, HireWorkerRequest request) =>
+        Worker.NormalizeEmployeeNumber(original.EmployeeNumber) == Worker.NormalizeEmployeeNumber(request.EmployeeNumber)
+            ? original
+            : throw new DomainRuleException("That request id was already used for a different worker. Reload the page and try again.");
 
     private async Task<WorkerDetailDto> HireNewAsync(HireWorkerRequest request, string? requestId, DateOnly today, CancellationToken cancellationToken)
     {
@@ -84,6 +91,12 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
         ConcurrencyGuard.Ensure(worker.Version, request.Version);
         var category = EnumText.Parse<RateChangeCategory>(request.Category);
         var previousDesignation = worker.CurrentRate.Designation;
+
+        // Pay already worked out in a payroll run was calculated at the old rate. A rate that starts on or before such a day would make the
+        // pay history disagree with the pay that was approved, so the change has to start after it (or the run be voided first).
+        if (await workers.LatestWorkDateInPayrollAsync(worker.Id, cancellationToken) is { } paidThrough && request.EffectiveFrom <= paidThrough)
+            throw new ValidationFailedException("effectiveFrom",
+                $"Pay up to {Format(paidThrough)} is already in a payroll run at the old rate. Choose a later date, or void that payroll run first.");
         worker.ChangeRate(category, request.Designation, request.RateMinor, EnumText.Parse<RateUnit>(request.RateUnit), request.EffectiveFrom, request.Reason,
             currentUser.UserId, clock.UtcNow);
 
@@ -138,6 +151,12 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
             if (!found.TryGetValue(id, out var worker))
             {
                 problems.Add("One of the chosen workers couldn't be found. Reload the list and try again.");
+                continue;
+            }
+
+            if (request.Versions is not null && request.Versions.TryGetValue(id, out var seenVersion) && seenVersion != worker.Version)
+            {
+                problems.Add($"{worker.FullName} was changed by someone else since you opened the list. Reload and try again.");
                 continue;
             }
 

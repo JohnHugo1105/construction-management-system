@@ -37,6 +37,12 @@ public sealed record SessionDto(Guid UserId, Guid TenantId, string Username, str
     IReadOnlyList<string> Permissions, bool MustChangePassword, string OrganizationName, string CurrencyCode, string TimeZoneId,
     int VatRateBps);
 
+/// <summary>
+/// What a successful sign-in hands to the delivery layer: the session the web app sees, and the stamp the cookie must carry so that
+/// the session can be ended from the server. The stamp is never sent to the browser as data.
+/// </summary>
+public sealed record SignedInSession(SessionDto Session, Guid SecurityStamp);
+
 public static class IdentityMapper
 {
     public static UserDto ToDto(User user) => new(user.Id, user.Username, user.DisplayName, user.Email,

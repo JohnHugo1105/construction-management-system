@@ -1,4 +1,5 @@
 using Cms.Domain.Features.Costing;
+using Cms.Domain.Features.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,6 +24,10 @@ internal sealed class BudgetLineConfiguration : IEntityTypeConfiguration<BudgetL
         builder.Property(item => item.ClientRequestId).HasMaxLength(80);
         builder.Property(item => item.RemovedReason).HasMaxLength(300);
         builder.Ignore(item => item.IsRemoved);
+
+        // Money never points at a project that isn't there: the database refuses it, whatever the application does.
+        builder.HasOne<Project>().WithMany().HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<SubProject>().WithMany().HasForeignKey(item => item.SubProjectId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status });
         builder.HasIndex(item => new { item.ProjectId, item.Division, item.WbsCode });
@@ -55,6 +60,9 @@ internal sealed class CostEntryConfiguration : IEntityTypeConfiguration<CostEntr
         builder.Property(item => item.ClientRequestId).HasMaxLength(80);
         builder.Property(item => item.VoidReason).HasMaxLength(300);
         builder.Ignore(item => item.IsVoided);
+
+        builder.HasOne<Project>().WithMany().HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<SubProject>().WithMany().HasForeignKey(item => item.SubProjectId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status });
         builder.HasIndex(item => new { item.ProjectId, item.Division, item.WbsCode });

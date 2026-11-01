@@ -20,8 +20,8 @@ public sealed record CalculatedPayLine(Guid WorkerId, string WorkerName, string 
 /// Turns attendance into pay. The rules, in full:
 /// <list type="bullet">
 /// <item>Each attendance entry is paid at the rate in force on its work date, so a raise part-way through a period applies from its date.</item>
-/// <item>A daily rate is divided by the company's paid hours per day to give an hourly rate; an hourly rate is used as is.</item>
-/// <item>Regular pay = hourly rate x regular hours. Overtime pay = hourly rate x overtime hours x overtime multiplier.</item>
+/// <item>A daily rate is spread over the company's paid hours per day to give the pay for the hours worked; an hourly rate is used as is.</item>
+/// <item>Regular pay = rate x regular hours (divided by paid hours per day for a daily rate). Overtime pay = the same hourly pay x overtime hours x overtime multiplier. The division happens once, last, so no rounded hourly figure is ever multiplied.</item>
 /// <item>Each figure is rounded once, per entry, half away from zero. A worker's pay and every project's share are sums of those same rounded figures, so the parts always add up to the whole.</item>
 /// </list>
 /// Holiday and rest-day premiums and statutory contributions (SSS, PhilHealth, Pag-IBIG, withholding tax) are deliberately not
@@ -47,9 +47,15 @@ public static class PayrollCalculator
             {
                 var rate = worker.RateOn(fact.WorkDate) ??
                     throw new DomainRuleException($"{worker.FullName} has no pay rate on {fact.WorkDate:d MMM yyyy}. Check the hire date and rate history.");
-                var hourly = rate.Unit == RateUnit.Daily ? (decimal)rate.RateMinor / hoursPerDay : rate.RateMinor;
-                var regularPay = RoundToMinor(hourly * fact.RegularHours);
-                var overtimePay = RoundToMinor(hourly * fact.OvertimeHours * overtimeMultiplierBps / 10_000m);
+                // Multiply first and divide last, once: an hourly rate worked out from a daily one (1,000.00 over 7 hours) is a repeating
+                // fraction, and rounding or truncating it before multiplying by the hours would shift pay by centavos.
+                var perDay = rate.Unit == RateUnit.Daily;
+                var regularPay = RoundToMinor(perDay
+                    ? rate.RateMinor * fact.RegularHours / hoursPerDay
+                    : rate.RateMinor * fact.RegularHours);
+                var overtimePay = RoundToMinor(perDay
+                    ? rate.RateMinor * fact.OvertimeHours * overtimeMultiplierBps / (hoursPerDay * 10_000m)
+                    : rate.RateMinor * fact.OvertimeHours * overtimeMultiplierBps / 10_000m);
 
                 regularTotal = checked(regularTotal + regularPay);
                 overtimeTotal = checked(overtimeTotal + overtimePay);

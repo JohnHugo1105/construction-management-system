@@ -32,90 +32,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BudgetLines",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SubProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Division = table.Column<int>(type: "int", nullable: true),
-                    MainScope = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
-                    SubScope = table.Column<string>(type: "nvarchar(160)", maxLength: 160, nullable: true),
-                    WbsCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ItemType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    UnitCostMinor = table.Column<long>(type: "bigint", nullable: false),
-                    VatTreatment = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    VatRateBps = table.Column<int>(type: "int", nullable: false),
-                    NetMinor = table.Column<long>(type: "bigint", nullable: false),
-                    VatMinor = table.Column<long>(type: "bigint", nullable: false),
-                    GrossMinor = table.Column<long>(type: "bigint", nullable: false),
-                    EntryDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Remarks = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
-                    RemovedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    RemovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RemovedReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Version = table.Column<int>(type: "int", nullable: false),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BudgetLines", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CostEntries",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SubProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Division = table.Column<int>(type: "int", nullable: true),
-                    MainScope = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
-                    SubScope = table.Column<string>(type: "nvarchar(160)", maxLength: 160, nullable: true),
-                    WbsCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ItemType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    UnitCostMinor = table.Column<long>(type: "bigint", nullable: false),
-                    VatTreatment = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    VatRateBps = table.Column<int>(type: "int", nullable: false),
-                    NetMinor = table.Column<long>(type: "bigint", nullable: false),
-                    VatMinor = table.Column<long>(type: "bigint", nullable: false),
-                    GrossMinor = table.Column<long>(type: "bigint", nullable: false),
-                    EntryDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Remarks = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Origin = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    OriginReferenceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    SourceDealer = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    NormalizedSourceDealer = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    InvoiceNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
-                    NormalizedInvoiceNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
-                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Version = table.Column<int>(type: "int", nullable: false),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CostEntries", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "InventoryItems",
                 columns: table => new
                 {
@@ -234,6 +150,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     FailedSignInCount = table.Column<int>(type: "int", nullable: false),
                     LockedUntilUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LastSignInUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    SecurityStamp = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Version = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -298,6 +215,12 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         principalTable: "InventoryItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StockBalances_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -331,6 +254,18 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         principalTable: "InventoryItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StockMovements_Projects_FromProjectId",
+                        column: x => x.FromProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StockMovements_Projects_ToProjectId",
+                        column: x => x.ToProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -343,7 +278,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
                     NormalizedName = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ArchivedWithProject = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -448,6 +384,29 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WorkerStatusChanges",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    EffectiveOn = table.Column<DateOnly>(type: "date", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    RecordedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkerStatusChanges", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkerStatusChanges_Workers_WorkerId",
+                        column: x => x.WorkerId,
+                        principalTable: "Workers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AttendanceEntries",
                 columns: table => new
                 {
@@ -495,6 +454,114 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         name: "FK_AttendanceEntries_Workers_WorkerId",
                         column: x => x.WorkerId,
                         principalTable: "Workers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BudgetLines",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Division = table.Column<int>(type: "int", nullable: true),
+                    MainScope = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    SubScope = table.Column<string>(type: "nvarchar(160)", maxLength: 160, nullable: true),
+                    WbsCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ItemType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    UnitCostMinor = table.Column<long>(type: "bigint", nullable: false),
+                    VatTreatment = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    VatRateBps = table.Column<int>(type: "int", nullable: false),
+                    NetMinor = table.Column<long>(type: "bigint", nullable: false),
+                    VatMinor = table.Column<long>(type: "bigint", nullable: false),
+                    GrossMinor = table.Column<long>(type: "bigint", nullable: false),
+                    EntryDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Remarks = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    RemovedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    RemovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RemovedReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BudgetLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BudgetLines_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BudgetLines_SubProjects_SubProjectId",
+                        column: x => x.SubProjectId,
+                        principalTable: "SubProjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CostEntries",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Division = table.Column<int>(type: "int", nullable: true),
+                    MainScope = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    SubScope = table.Column<string>(type: "nvarchar(160)", maxLength: 160, nullable: true),
+                    WbsCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ItemType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    UnitCostMinor = table.Column<long>(type: "bigint", nullable: false),
+                    VatTreatment = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    VatRateBps = table.Column<int>(type: "int", nullable: false),
+                    NetMinor = table.Column<long>(type: "bigint", nullable: false),
+                    VatMinor = table.Column<long>(type: "bigint", nullable: false),
+                    GrossMinor = table.Column<long>(type: "bigint", nullable: false),
+                    EntryDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Remarks = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Origin = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    OriginReferenceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SourceDealer = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    NormalizedSourceDealer = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    InvoiceNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
+                    NormalizedInvoiceNumber = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CostEntries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CostEntries_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CostEntries_SubProjects_SubProjectId",
+                        column: x => x.SubProjectId,
+                        principalTable: "SubProjects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -663,6 +730,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 columns: new[] { "ProjectId", "Division", "WbsCode" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_BudgetLines_SubProjectId",
+                table: "BudgetLines",
+                column: "SubProjectId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_BudgetLines_TenantId_ClientRequestId",
                 table: "BudgetLines",
                 columns: new[] { "TenantId", "ClientRequestId" },
@@ -678,6 +750,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 name: "IX_CostEntries_ProjectId_Division_WbsCode",
                 table: "CostEntries",
                 columns: new[] { "ProjectId", "Division", "WbsCode" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CostEntries_SubProjectId",
+                table: "CostEntries",
+                column: "SubProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CostEntries_TenantId_ClientRequestId",
@@ -806,10 +883,20 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_StockBalances_ProjectId",
+                table: "StockBalances",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockBalances_TenantId_ProjectId",
                 table: "StockBalances",
                 columns: new[] { "TenantId", "ProjectId" },
                 filter: "[ProjectId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockMovements_FromProjectId",
+                table: "StockMovements",
+                column: "FromProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockMovements_ItemId_RecordedAtUtc",
@@ -822,6 +909,11 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "ClientRequestId" },
                 unique: true,
                 filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockMovements_ToProjectId",
+                table: "StockMovements",
+                column: "ToProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubProjects_ProjectId_NormalizedName",
@@ -920,6 +1012,16 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 name: "IX_Workers_TenantId_Status",
                 table: "Workers",
                 columns: new[] { "TenantId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkerStatusChanges_TenantId",
+                table: "WorkerStatusChanges",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkerStatusChanges_WorkerId_EffectiveOn",
+                table: "WorkerStatusChanges",
+                columns: new[] { "WorkerId", "EffectiveOn" });
         }
 
         /// <inheritdoc />
@@ -963,6 +1065,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "WorkerRates");
+
+            migrationBuilder.DropTable(
+                name: "WorkerStatusChanges");
 
             migrationBuilder.DropTable(
                 name: "PayrollLines");

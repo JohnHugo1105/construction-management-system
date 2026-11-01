@@ -25,9 +25,9 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
 {
     private const int MaximumDeductionsPerWorker = 25;
 
-    // The domain refuses periods longer than 31 days. Attendance is only loaded for a period that could be accepted, so a mistyped year
-    // can't make the server read every entry the company ever recorded before the domain says no.
-    private const int LongestLoadedPeriodDays = 31;
+    // The domain refuses periods longer than 31 days (counting both ends). Attendance is only loaded for a period that could be accepted,
+    // so a mistyped year can't make the server read every entry the company ever recorded before the domain says no.
+    private const int LongestLoadedPeriodDays = PayrollRun.MaximumPeriodDaysApart;
 
     public Task<PagedResult<PayrollRunListItemDto>> ListAsync(PayrollRunListQuery query, PageRequest page, CancellationToken cancellationToken) =>
         reader.ListAsync(query, page, cancellationToken);
@@ -39,7 +39,7 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     {
         var requestId = string.IsNullOrWhiteSpace(request.ClientRequestId) ? null : request.ClientRequestId.Trim();
         if (requestId is not null && await runs.FindIdByClientRequestAsync(requestId, cancellationToken) is { } already)
-            return await ReadAsync(already, cancellationToken);
+            return EnsureSameRequest(await ReadAsync(already, cancellationToken), request);
 
         try
         {
@@ -50,10 +50,17 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
             // The same form submitted twice at once: the first submission can be saved after this one looked for it and before this one
             // finished, so this one finds nothing left to pay, or the database lets only the first lock the attendance. Answer it with the
             // payroll the first prepared. Without such a payroll the refusal is a real one and is reported as it is.
-            if (await runs.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original) return await ReadAsync(original, cancellationToken);
+            if (await runs.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original)
+                return EnsureSameRequest(await ReadAsync(original, cancellationToken), request);
             throw;
         }
     }
+
+    /// <summary>A repeated request id answers with the original payroll only when it was for the same pay period.</summary>
+    private static PayrollRunDto EnsureSameRequest(PayrollRunDto original, CreatePayrollRunRequest request) =>
+        original.PeriodStart == request.PeriodStart && original.PeriodEnd == request.PeriodEnd
+            ? original
+            : throw new DomainRuleException("That request id was already used for a different pay period. Reload the page and try again.");
 
     private async Task<PayrollRunDto> PrepareAsync(CreatePayrollRunRequest request, string? requestId, CancellationToken cancellationToken)
     {
@@ -168,19 +175,29 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         if (wasApproved && !Permissions.IsAllowed(currentUser.Roles, Permissions.PayrollApprove))
             throw new UnauthorizedAccessException("Only someone who can approve payroll may void an approved payroll.");
 
+        // Voiding changes the cost of every project the payroll charged. An archived project is read-only (restore it first), so a
+        // finished project's figures can't change unnoticed because of a payroll void made weeks later. Checked before anything changes.
+        var costsToVoid = wasApproved
+            ? (await costs.ListByOriginAsync(CostOrigin.Payroll, run.Id, cancellationToken)).Where(cost => !cost.IsVoided).ToList()
+            : [];
+        foreach (var projectId in costsToVoid.Select(cost => cost.ProjectId).Distinct())
+        {
+            var project = await projects.GetAsync(projectId, cancellationToken) ?? throw new NotFoundException("one of the projects in this payroll");
+            if (project.IsArchived)
+                throw new DomainRuleException($"{project.Name} is archived. Restore it before voiding this payroll, so the finished project's figures don't change unnoticed.");
+        }
+
         var now = clock.UtcNow;
         run.Void(currentUser.UserId, request.Reason, now);
 
         foreach (var entry in await attendance.ListByPayrollRunAsync(run.Id, cancellationToken)) entry.Unlock(now);
 
         var voidedCosts = 0;
-        if (wasApproved)
-            foreach (var cost in await costs.ListByOriginAsync(CostOrigin.Payroll, run.Id, cancellationToken))
-            {
-                if (cost.IsVoided) continue;
-                cost.Void(currentUser.UserId, run.VoidReason, now);
-                voidedCosts++;
-            }
+        foreach (var cost in costsToVoid)
+        {
+            cost.Void(currentUser.UserId, run.VoidReason, now);
+            voidedCosts++;
+        }
 
         // The reason is free text a person typed and may mention an amount, so it stays on the payroll and the voided costs, not in the audit line.
         audit.Record("Payroll.Voided", nameof(PayrollRun), run.Id,

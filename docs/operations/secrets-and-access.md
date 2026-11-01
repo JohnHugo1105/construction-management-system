@@ -31,10 +31,19 @@ rotate any credential that was ever real, and do not reuse that signing key.
 ## People and sessions
 
 * Roles are the access model (`docs/business-rules.md`, section 2). Give people the smallest set they need; review the user list monthly.
-* Turning off an account ends its session within seconds. Administrators can reset a password (the person must change it at next
-  sign-in) but never see a password; nobody can, because only salted hashes are stored.
-* Sign-in is rate limited per address and locks an account for 15 minutes after five wrong passwords. The rate limit is per server
-  process and resets on restart.
+* Turning off an account, resetting or changing its password, and signing out all end the person's sessions on every device within
+  seconds: each session cookie carries a security stamp that changes at those moments, and a copied cookie with the old stamp is refused.
+  Administrators can reset a password (the person must change it at next sign-in) but never see a password; nobody can, because only
+  salted hashes are stored.
+* Sign-in and change-password are rate limited per address (10 a minute by default, `RateLimiting__SignInPerMinute`) and an account is
+  locked for 15 minutes after five wrong passwords. The rate limit is per server process and resets on restart. The address is the
+  person's real address because the web server (nginx) takes it from the proxy in front of it, and only from private networks; see
+  `deploy/web/nginx.conf` and add the proxy's address there if it is public. The API must be reachable only through nginx.
+* The session keys (`DataProtection__KeysPath`) are secrets too: they decrypt every session cookie. Keep that folder private, persistent
+  and backed up with the database; losing it only signs everyone out, but leaking it lets someone forge a session cookie.
+* The API connects as the `cms_app` login (read and write the CMS tables, nothing else), created by `deploy/sql/create-app-login.sql`.
+  The administrator login is used only for migrations, backups and that script. Rotate the application password by running the script
+  again with a new `CMS_APP_DB_PASSWORD` and restarting the API.
 
 ## Monthly review
 

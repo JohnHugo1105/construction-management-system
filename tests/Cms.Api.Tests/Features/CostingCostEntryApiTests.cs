@@ -425,21 +425,23 @@ public sealed class CostingCostEntryApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(HttpStatusCode.Conflict, edit.StatusCode);
         Assert.Equal("rule_violation", await RuleCodeAsync(edit));
 
-        // Voiding it directly needs a reason, and the audit line says it was done at the entry.
-        Assert.Contains("reason", await ErrorFieldsAsync(await client.PostAsync($"/api/cost-entries/{payrollId}/void", new { reason = " ", version = payroll.Version })));
-        var voided = await client.PostAsync<CostEntryDto>($"/api/cost-entries/{payrollId}/void", new { reason = "Payroll was posted to the wrong project", version = payroll.Version });
-        Assert.Equal("Voided", voided.Status);
+        // A cost made by payroll or by a stock transfer is voided where it came from, never at the entry: refused, and nothing changes.
+        var voidPayroll = await client.PostAsync($"/api/cost-entries/{payrollId}/void", new { reason = "Payroll was posted to the wrong project", version = payroll.Version });
+        Assert.Equal(HttpStatusCode.Conflict, voidPayroll.StatusCode);
+        Assert.Equal("rule_violation", await RuleCodeAsync(voidPayroll));
+        Assert.Contains("Void the payroll run", await DetailAsync(voidPayroll));
+        var inventory = Assert.Single(all.Items, item => item.Origin == "Inventory");
+        var voidTransfer = await client.PostAsync($"/api/cost-entries/{inventory.Id}/void", new { reason = "Wrong project", version = inventory.Version });
+        Assert.Equal(HttpStatusCode.Conflict, voidTransfer.StatusCode);
+        Assert.Contains("Reverse the transfer", await DetailAsync(voidTransfer));
 
         var trail = await client.GetAsync<PagedResult<AuditEntryDto>>($"/api/audit?entityType=CostEntry&entityId={payrollId}");
-        var line = Assert.Single(trail.Items);
-        Assert.Equal("CostEntry.VoidedAtEntry", line.Action);
-        Assert.Contains("at the entry itself", line.Summary);
-        Assert.Contains("Payroll was posted to the wrong project", line.Summary);
+        Assert.Empty(trail.Items);
 
-        // The voided cost leaves the default list and the totals.
+        // Both are still in the list and the totals.
         var after = await client.GetAsync<TotaledPage<CostEntryDto>>(url);
-        Assert.Equal(2, after.Total);
-        Assert.Equal(70_000, after.Totals.GrossMinor);
+        Assert.Equal(3, after.Total);
+        Assert.Equal(175_000, after.Totals.GrossMinor);
     }
 
     [SqlServerFact]

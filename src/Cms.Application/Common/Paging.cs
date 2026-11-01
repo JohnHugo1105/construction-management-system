@@ -5,7 +5,10 @@ public sealed record PageRequest(int Page = 1, int PageSize = PageRequest.Defaul
     public const int DefaultPageSize = 25;
     public const int MaximumPageSize = 100;
 
-    public int SafePage => Page < 1 ? 1 : Page;
+    /// <summary>The last page number accepted; far beyond any real list, and it keeps <see cref="Skip"/> inside an <c>int</c>.</summary>
+    public const int MaximumPage = 1_000_000;
+
+    public int SafePage => Math.Clamp(Page, 1, MaximumPage);
     public int SafePageSize => PageSize < 1 ? DefaultPageSize : Math.Min(PageSize, MaximumPageSize);
     public int Skip => (SafePage - 1) * SafePageSize;
 }

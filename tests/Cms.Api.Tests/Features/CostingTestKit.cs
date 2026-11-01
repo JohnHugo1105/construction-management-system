@@ -109,6 +109,9 @@ internal static class CostingTestKit
     public static async Task<string> RuleCodeAsync(HttpResponseMessage response) =>
         (await ApiClient.ProblemAsync(response)).GetProperty("code").GetString()!;
 
+    public static async Task<string> DetailAsync(HttpResponseMessage response) =>
+        (await ApiClient.ProblemAsync(response)).GetProperty("detail").GetString()!;
+
     /// <summary>Saves a cost made by the system (payroll or a stock transfer) straight in the database, the way those features post them.</summary>
     public static async Task<Guid> SeedSystemCostAsync(CmsApiFactory factory, SeededUser user, Guid projectId, CostOrigin origin, long grossMinor,
         string description = "Payroll 1-15 Nov")

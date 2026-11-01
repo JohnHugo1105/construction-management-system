@@ -24,22 +24,30 @@ public sealed class IdentityEndpoints : IEndpointModule
 
         group.MapPost("/sign-in", async (SignInRequest request, HttpContext context, AuthService auth, CancellationToken ct) =>
         {
-            var session = await auth.SignInAsync(request, ct);
-            await SessionCookies.SignInAsync(context, session);
-            return Results.Ok(session);
+            var signedIn = await auth.SignInAsync(request, ct);
+            await SessionCookies.SignInAsync(context, signedIn);
+            return Results.Ok(signedIn.Session);
         }).AllowAnonymous().RequireRateLimiting("sign-in");
 
         // First-time setup: allowed once, while the system has no users, and only when switched on in configuration.
         group.MapPost("/bootstrap", async (BootstrapRequest request, HttpContext context, AuthService auth, IConfiguration configuration, CancellationToken ct) =>
         {
             if (!configuration.GetValue("Bootstrap:Enabled", false)) return Results.NotFound();
-            var session = await auth.BootstrapAsync(request, ct);
-            await SessionCookies.SignInAsync(context, session);
-            return Results.Created("/api/identity/session", session);
+            var signedIn = await auth.BootstrapAsync(request, ct);
+            await SessionCookies.SignInAsync(context, signedIn);
+            return Results.Created("/api/identity/session", signedIn.Session);
         }).AllowAnonymous().RequireRateLimiting("sign-in");
 
-        group.MapPost("/sign-out", async (HttpContext context) =>
+        // Signing out ends the person's sessions everywhere, so it needs the person's own valid session. A request with a dead or missing
+        // cookie only has its cookie cleared.
+        group.MapPost("/sign-out", async (HttpContext context, AuthService auth, IMemoryCache cache, CancellationToken ct) =>
         {
+            if (context.User.Identity?.IsAuthenticated == true)
+            {
+                var username = context.User.Identity.Name ?? "";
+                await auth.SignOutAsync(ct);
+                SessionValidator.Forget(cache, username);
+            }
             await SessionCookies.SignOutAsync(context);
             return Results.NoContent();
         }).AllowAnonymous();
@@ -49,12 +57,11 @@ public sealed class IdentityEndpoints : IEndpointModule
         group.MapPost("/change-password", async (ChangePasswordRequest request, HttpContext context, AuthService auth, IMemoryCache cache, CancellationToken ct) =>
         {
             var username = context.User.Identity?.Name ?? "";
-            await auth.ChangePasswordAsync(request, ct);
+            var signedIn = await auth.ChangePasswordAsync(request, ct);
             SessionValidator.Forget(cache, username);
-            var session = await auth.GetSessionAsync(ct);
-            await SessionCookies.SignInAsync(context, session);
-            return Results.Ok(session);
-        });
+            await SessionCookies.SignInAsync(context, signedIn);
+            return Results.Ok(signedIn.Session);
+        }).RequireRateLimiting("sign-in");
     }
 
     public sealed record SetupStatusDto(bool NeedsSetup);

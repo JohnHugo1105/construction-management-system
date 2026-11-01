@@ -15,11 +15,25 @@ public sealed class ApiClient : IDisposable
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new JsonStringEnumConverter() } };
 
     private readonly HttpClient _http;
+    private readonly WebApplicationFactory<Program> _factory;
     private string? _csrf;
 
     public ApiClient(WebApplicationFactory<Program> factory)
     {
+        _factory = factory;
         _http = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true, AllowAutoRedirect = false });
+    }
+
+    /// <summary>The session cookie as last issued (<c>cms.session=...</c>): what someone who copied it would hold.</summary>
+    public string? SessionCookie { get; private set; }
+
+    /// <summary>Sends a GET carrying only the given cookie, the way a replayed, copied session cookie would arrive.</summary>
+    public async Task<HttpStatusCode> ReplayAsync(string url, string cookie)
+    {
+        using var replayer = _factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("Cookie", cookie);
+        return (await replayer.SendAsync(request)).StatusCode;
     }
 
     public async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? body = null, bool withCsrf = true)
@@ -62,6 +76,12 @@ public sealed class ApiClient : IDisposable
         if (!response.Headers.TryGetValues("Set-Cookie", out var cookies)) return;
         foreach (var cookie in cookies)
         {
+            const string sessionPrefix = "cms.session=";
+            if (cookie.StartsWith(sessionPrefix, StringComparison.Ordinal))
+            {
+                var value = cookie.Split(';')[0];
+                if (value.Length > sessionPrefix.Length) SessionCookie = value;
+            }
             const string prefix = "XSRF-TOKEN=";
             if (!cookie.StartsWith(prefix, StringComparison.Ordinal)) continue;
             _csrf = Uri.UnescapeDataString(cookie[prefix.Length..].Split(';')[0]);

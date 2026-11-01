@@ -20,6 +20,10 @@ With the compose files the backup folder is `./backups` on the host (mounted int
 `CMS_BACKUP_DIR=/var/opt/mssql/backup` (as SQL Server sees it) and `CMS_BACKUP_LOCAL_DIR=./backups` (as the script sees it).
 The script needs `sqlcmd` (the `mssql-tools18` package, or run it inside the SQL container).
 
+The session keys (the `api-keys` volume, or wherever `DataProtection__KeysPath` points) are not in the database. Losing them only signs
+everyone out, so they need no special care beyond being kept private; back them up with the rest if you want sessions to survive a
+rebuilt server.
+
 **Schedule:** nightly. Copy each file and its `.sha256` to storage on **another machine** (object storage or a second server) with a
 credential that can write backups but cannot read or delete the live data. Keep 14 days at least, longer for month ends.
 

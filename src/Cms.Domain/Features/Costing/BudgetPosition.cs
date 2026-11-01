@@ -31,10 +31,13 @@ public readonly record struct BudgetPosition(long BudgetMinor, long ActualMinor)
 
     public long RemainingMinor => BudgetMinor - ActualMinor;
 
-    /// <summary>Actual as a share of budget in basis points (10,000 is 100%); null when there is no budget to compare with.</summary>
+    /// <summary>
+    /// Actual as a share of budget in basis points (10,000 is 100%); null when there is no budget to compare with. A share too large for
+    /// an <c>int</c> (a tiny budget against a large cost) is shown as the largest value rather than failing the whole report.
+    /// </summary>
     public int? UsedBps => BudgetMinor <= 0
         ? null
-        : checked((int)decimal.Round((decimal)ActualMinor * 10_000m / BudgetMinor, 0, MidpointRounding.AwayFromZero));
+        : (int)Math.Min(decimal.Round((decimal)ActualMinor * 10_000m / BudgetMinor, 0, MidpointRounding.AwayFromZero), int.MaxValue);
 
     public BudgetHealth Health
     {

@@ -37,6 +37,8 @@ internal sealed class WorkerConfiguration : IEntityTypeConfiguration<Worker>
         builder.Navigation(item => item.Rates).UsePropertyAccessMode(PropertyAccessMode.Field);
         builder.Navigation(item => item.Assignments).UsePropertyAccessMode(PropertyAccessMode.Field);
         builder.Navigation(item => item.Cases).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.HasMany(item => item.StatusChanges).WithOne().HasForeignKey(change => change.WorkerId).OnDelete(DeleteBehavior.Restrict);
+        builder.Navigation(item => item.StatusChanges).UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // An employee number is unique per company. The service checks first to give a friendly message; the index is the backstop.
         builder.HasIndex(item => new { item.TenantId, item.NormalizedEmployeeNumber }).IsUnique();
@@ -44,6 +46,21 @@ internal sealed class WorkerConfiguration : IEntityTypeConfiguration<Worker>
         builder.HasIndex(item => new { item.TenantId, item.Status });
         // Hiring twice from one form submission is refused by the database as well as by the service.
         builder.HasIndex(item => new { item.TenantId, item.ClientRequestId }).IsUnique().HasFilter("[ClientRequestId] IS NOT NULL");
+    }
+}
+
+internal sealed class WorkerStatusChangeConfiguration : IEntityTypeConfiguration<WorkerStatusChange>
+{
+    public void Configure(EntityTypeBuilder<WorkerStatusChange> builder)
+    {
+        builder.ToTable("WorkerStatusChanges");
+        builder.HasKey(item => item.Id);
+        builder.Property(item => item.Id).ValueGeneratedNever();
+        builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(20);
+        builder.Property(item => item.Reason).HasMaxLength(300);
+
+        builder.HasIndex(item => new { item.WorkerId, item.EffectiveOn });
+        builder.HasIndex(item => item.TenantId);
     }
 }
 

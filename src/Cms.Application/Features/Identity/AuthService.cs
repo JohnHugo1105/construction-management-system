@@ -13,9 +13,14 @@ namespace Cms.Application.Features.Identity;
 public sealed class AuthService(IUserRepository users, IOrganizationRepository organizations, IPasswordHasher hasher, IClock clock,
     IUnitOfWork unitOfWork, IAuditTrail audit, ICurrentUser currentUser)
 {
-    private const string GenericFailure = "The username or password is incorrect.";
+    // One message for an unknown name, a wrong password and a locked account, so the sign-in page can't be used to find out which
+    // usernames exist or which accounts someone has been guessing at.
+    private static readonly SemaphoreSlim BootstrapLock = new(1, 1);
 
-    public async Task<SessionDto> SignInAsync(SignInRequest request, CancellationToken cancellationToken)
+    private const string GenericFailure =
+        "The username or password is incorrect, or the account is locked for 15 minutes after too many wrong tries. Check them and try again, or ask an administrator.";
+
+    public async Task<SignedInSession> SignInAsync(SignInRequest request, CancellationToken cancellationToken)
     {
         var username = User.NormalizeUsername(request.Username);
         var password = request.Password ?? "";
@@ -30,15 +35,23 @@ public sealed class AuthService(IUserRepository users, IOrganizationRepository o
 
         if (user.IsLockedOut(now))
         {
-            var minutes = Math.Max(1, (int)Math.Ceiling((user.LockedUntilUtc!.Value - now).TotalMinutes));
-            throw new AuthenticationFailedException($"This account is locked for now after too many wrong passwords. Try again in {minutes} minute{(minutes == 1 ? "" : "s")}.");
+            // Spend the same time as a real check, and don't count guesses made while the account is already locked.
+            hasher.Verify(user.PasswordHash, password);
+            throw new AuthenticationFailedException(GenericFailure);
         }
 
         if (!hasher.Verify(user.PasswordHash, password))
         {
             user.RecordSignInFailure(now);
             audit.RecordAs(user.TenantId, user.Id, user.Username, "User.SignInFailed", nameof(User), user.Id, "A wrong password was entered.");
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+            catch (ConcurrencyConflictException)
+            {
+                // A parallel attempt saved first. The person still gets the same answer; the sign-in rate limiter bounds parallel guessing.
+            }
             throw new AuthenticationFailedException(GenericFailure);
         }
 
@@ -47,11 +60,26 @@ public sealed class AuthService(IUserRepository users, IOrganizationRepository o
         user.RecordSignInSuccess(now);
         audit.RecordAs(user.TenantId, user.Id, user.Username, "User.SignedIn", nameof(User), user.Id, "Signed in.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return await BuildSessionAsync(user, cancellationToken);
+        return await BuildSignedInAsync(user, cancellationToken);
     }
 
     /// <summary>Creates the organization and its first administrator. Allowed exactly once, while the system has no users.</summary>
-    public async Task<SessionDto> BootstrapAsync(BootstrapRequest request, CancellationToken cancellationToken)
+    public async Task<SignedInSession> BootstrapAsync(BootstrapRequest request, CancellationToken cancellationToken)
+    {
+        // One at a time per process, so two simultaneous setup requests can't both see an empty system and each create a company and an
+        // administrator. (Across several servers the first-time-setup switch, which is on only for the first start, is the guard.)
+        await BootstrapLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await BootstrapCoreAsync(request, cancellationToken);
+        }
+        finally
+        {
+            BootstrapLock.Release();
+        }
+    }
+
+    private async Task<SignedInSession> BootstrapCoreAsync(BootstrapRequest request, CancellationToken cancellationToken)
     {
         if (await users.AnyUserAsync(cancellationToken))
             throw new DomainRuleException("This system is already set up. Sign in with your account instead.");
@@ -70,7 +98,7 @@ public sealed class AuthService(IUserRepository users, IOrganizationRepository o
         audit.RecordAs(organization.Id, admin.Id, admin.Username, "System.SetUp", nameof(Organization), organization.Id,
             $"{organization.Name} was set up with {admin.Username} as the first administrator.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return await BuildSessionAsync(admin, cancellationToken);
+        return await BuildSignedInAsync(admin, cancellationToken);
     }
 
     /// <summary>True while the system has no users, so the web app offers first-time setup instead of sign-in.</summary>
@@ -82,7 +110,17 @@ public sealed class AuthService(IUserRepository users, IOrganizationRepository o
         return await BuildSessionAsync(user, cancellationToken);
     }
 
-    public async Task ChangePasswordAsync(ChangePasswordRequest request, CancellationToken cancellationToken)
+    /// <summary>Signing out ends the person's sessions on every device, so a copied cookie is worthless from then on.</summary>
+    public async Task SignOutAsync(CancellationToken cancellationToken)
+    {
+        var user = await users.GetAsync(currentUser.UserId, cancellationToken);
+        if (user is null) return;
+        user.EndAllSessions(clock.UtcNow);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>Changes the person's own password, ends their other sessions, and returns the new session for the current device.</summary>
+    public async Task<SignedInSession> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken cancellationToken)
     {
         var user = await users.GetAsync(currentUser.UserId, cancellationToken) ?? throw new NotFoundException("your account");
         var errors = new ValidationErrors();
@@ -95,7 +133,11 @@ public sealed class AuthService(IUserRepository users, IOrganizationRepository o
         user.ChangePassword(hasher.Hash(request.NewPassword!), mustChangeAtNextSignIn: false, clock.UtcNow);
         audit.Record("User.PasswordChanged", nameof(User), user.Id, "Changed their own password.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        return await BuildSignedInAsync(user, cancellationToken);
     }
+
+    private async Task<SignedInSession> BuildSignedInAsync(User user, CancellationToken cancellationToken) =>
+        new(await BuildSessionAsync(user, cancellationToken), user.SecurityStamp);
 
     private async Task<SessionDto> BuildSessionAsync(User user, CancellationToken cancellationToken)
     {

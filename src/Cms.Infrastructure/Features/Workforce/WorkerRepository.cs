@@ -1,5 +1,6 @@
 using Cms.Application.Common;
 using Cms.Application.Features.Workforce;
+using Cms.Domain.Features.Payroll;
 using Cms.Domain.Features.Projects;
 using Cms.Domain.Features.Workforce;
 using Cms.Infrastructure.Common;
@@ -19,6 +20,12 @@ internal sealed class WorkerRepository(CmsDbContext db) : IWorkerRepository
         return await Workers(includeHistory).Where(worker => wanted.Contains(worker.Id)).ToListAsync(cancellationToken);
     }
 
+    public async Task<DateOnly?> LatestWorkDateInPayrollAsync(Guid workerId, CancellationToken cancellationToken) =>
+        await db.Set<AttendanceEntry>().AsNoTracking()
+            .Where(entry => entry.WorkerId == workerId && entry.PayrollRunId != null)
+            .Select(entry => (DateOnly?)entry.WorkDate)
+            .MaxAsync(cancellationToken);
+
     public Task<bool> EmployeeNumberExistsAsync(string normalizedEmployeeNumber, Guid? excludeWorkerId, CancellationToken cancellationToken) =>
         db.Set<Worker>().AnyAsync(worker => worker.NormalizedEmployeeNumber == normalizedEmployeeNumber && worker.Id != excludeWorkerId, cancellationToken);
 
@@ -29,9 +36,12 @@ internal sealed class WorkerRepository(CmsDbContext db) : IWorkerRepository
 
     private IQueryable<Worker> Workers(bool includeHistory)
     {
-        IQueryable<Worker> workers = db.Set<Worker>();
-        // Split, so two collections don't multiply each other's rows.
-        return includeHistory ? workers.Include(worker => worker.Rates).Include(worker => worker.Assignments).AsSplitQuery() : workers;
+        // The status history is always loaded: whether a day can be recorded as worked depends on it. It is a handful of rows per worker.
+        IQueryable<Worker> workers = db.Set<Worker>().Include(worker => worker.StatusChanges);
+        // Split, so collections don't multiply each other's rows.
+        return includeHistory
+            ? workers.Include(worker => worker.Rates).Include(worker => worker.Assignments).AsSplitQuery()
+            : workers.AsSplitQuery();
     }
 }
 

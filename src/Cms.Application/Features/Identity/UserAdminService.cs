@@ -7,6 +7,10 @@ namespace Cms.Application.Features.Identity;
 public sealed class UserAdminService(IUserRepository users, IPasswordHasher hasher, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork,
     IAuditTrail audit)
 {
+    // Changes that could remove the last administrator run one at a time per server process, so two administrators removing each other
+    // at the same instant can't both pass the "at least one administrator" check. (Across several servers the check can still race.)
+    private static readonly SemaphoreSlim AdministratorChanges = new(1, 1);
+
     public async Task<IReadOnlyList<UserDto>> ListAsync(CancellationToken cancellationToken) =>
         (await users.ListAsync(cancellationToken)).Select(IdentityMapper.ToDto).ToArray();
 
@@ -35,6 +39,13 @@ public sealed class UserAdminService(IUserRepository users, IPasswordHasher hash
 
     public async Task<UserDto> UpdateAsync(Guid id, UpdateUserRequest request, CancellationToken cancellationToken)
     {
+        await AdministratorChanges.WaitAsync(cancellationToken);
+        try { return await UpdateCoreAsync(id, request, cancellationToken); }
+        finally { AdministratorChanges.Release(); }
+    }
+
+    private async Task<UserDto> UpdateCoreAsync(Guid id, UpdateUserRequest request, CancellationToken cancellationToken)
+    {
         var user = await users.GetAsync(id, cancellationToken) ?? throw new NotFoundException("that user");
         ConcurrencyGuard.Ensure(user.Version, request.Version);
         var roles = AccessRoleParser.Parse(request.Roles);
@@ -56,6 +67,13 @@ public sealed class UserAdminService(IUserRepository users, IPasswordHasher hash
     }
 
     public async Task<UserDto> DeactivateAsync(Guid id, CancellationToken cancellationToken)
+    {
+        await AdministratorChanges.WaitAsync(cancellationToken);
+        try { return await DeactivateCoreAsync(id, cancellationToken); }
+        finally { AdministratorChanges.Release(); }
+    }
+
+    private async Task<UserDto> DeactivateCoreAsync(Guid id, CancellationToken cancellationToken)
     {
         var user = await users.GetAsync(id, cancellationToken) ?? throw new NotFoundException("that user");
         if (user.Id == currentUser.UserId) throw new DomainRuleException("You can't turn off your own account.");

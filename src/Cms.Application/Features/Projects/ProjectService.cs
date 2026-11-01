@@ -11,14 +11,29 @@ namespace Cms.Application.Features.Projects;
 public sealed class ProjectService(IProjectRepository projects, IProjectReader reader, ICurrentUser currentUser, IClock clock,
     IUnitOfWork unitOfWork, IAuditTrail audit)
 {
-    public Task<PagedResult<ProjectListItemDto>> ListAsync(ProjectListQuery query, PageRequest page, CancellationToken cancellationToken) =>
-        reader.ListAsync(query, page, cancellationToken);
+    // The contract price is what the company will be paid, so it is shown only to the people who see money: a warehouse keeper or an
+    // HR officer can open a project to post stock or attendance without learning the price.
+    private bool CanSeeContractPrice => Permissions.IsAllowed(currentUser.Roles, Permissions.CostsRead);
+
+    public async Task<PagedResult<ProjectListItemDto>> ListAsync(ProjectListQuery query, PageRequest page, CancellationToken cancellationToken)
+    {
+        var result = await reader.ListAsync(query, page, cancellationToken);
+        return CanSeeContractPrice
+            ? result
+            : result with { Items = result.Items.Select(item => item with { ContractPriceMinor = null }).ToArray() };
+    }
 
     public Task<IReadOnlyList<ProjectLookupDto>> LookupAsync(bool includeArchived, CancellationToken cancellationToken) =>
         reader.LookupAsync(includeArchived, cancellationToken);
 
     public async Task<ProjectDto> GetAsync(Guid id, CancellationToken cancellationToken) =>
-        ProjectMapper.ToDto(await Load(id, cancellationToken));
+        ToDto(await Load(id, cancellationToken));
+
+    private ProjectDto ToDto(Project project)
+    {
+        var dto = ProjectMapper.ToDto(project);
+        return CanSeeContractPrice ? dto : dto with { ContractPriceMinor = null };
+    }
 
     public async Task<ProjectDto> CreateAsync(CreateProjectRequest request, CancellationToken cancellationToken)
     {
@@ -29,7 +44,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         projects.Add(project);
         audit.Record("Project.Created", nameof(Project), project.Id, $"Created project {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     public async Task<ProjectDto> UpdateAsync(Guid id, UpdateProjectRequest request, CancellationToken cancellationToken)
@@ -44,7 +59,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         audit.Record("Project.Updated", nameof(Project), project.Id,
             previousName == project.Name ? $"Updated project {project.Name}." : $"Updated project {previousName}, now named {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     public Task<ProjectDto> StartAsync(Guid id, VersionRequest request, CancellationToken cancellationToken) =>
@@ -76,7 +91,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         audit.Record("Project.Archived", nameof(Project), project.Id,
             $"Archived project {project.Name} ({(reason == ArchiveReason.Finished ? "finished" : request.Note!.Trim())}).");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     public async Task<ProjectDto> AddSubProjectAsync(Guid projectId, SaveSubProjectRequest request, CancellationToken cancellationToken)
@@ -86,7 +101,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         var sub = project.AddSubProject(Guid.NewGuid(), request.Name ?? "", request.StartDate, clock.UtcNow);
         audit.Record("SubProject.Created", nameof(SubProject), sub.Id, $"Added sub-project {sub.Name} to {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     public async Task<ProjectDto> UpdateSubProjectAsync(Guid projectId, Guid subProjectId, SaveSubProjectRequest request, CancellationToken cancellationToken)
@@ -96,7 +111,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         project.UpdateSubProject(subProjectId, request.Name ?? "", request.StartDate, clock.UtcNow);
         audit.Record("SubProject.Updated", nameof(SubProject), subProjectId, $"Updated a sub-project of {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     public async Task<ProjectDto> ArchiveSubProjectAsync(Guid projectId, Guid subProjectId, VersionRequest request, CancellationToken cancellationToken)
@@ -106,7 +121,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         project.ArchiveSubProject(subProjectId, clock.UtcNow);
         audit.Record("SubProject.Archived", nameof(SubProject), subProjectId, $"Archived a sub-project of {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     public async Task<ProjectDto> RestoreSubProjectAsync(Guid projectId, Guid subProjectId, VersionRequest request, CancellationToken cancellationToken)
@@ -116,7 +131,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         project.RestoreSubProject(subProjectId, clock.UtcNow);
         audit.Record("SubProject.Restored", nameof(SubProject), subProjectId, $"Restored a sub-project of {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     private async Task<ProjectDto> Transition(Guid id, VersionRequest request, string action, string verb, Action<Project, DateTimeOffset> change,
@@ -127,7 +142,7 @@ public sealed class ProjectService(IProjectRepository projects, IProjectReader r
         change(project, clock.UtcNow);
         audit.Record(action, nameof(Project), project.Id, $"{verb}: {project.Name}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ProjectMapper.ToDto(project);
+        return ToDto(project);
     }
 
     private async Task<Project> Load(Guid id, CancellationToken cancellationToken) =>

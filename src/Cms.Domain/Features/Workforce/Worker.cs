@@ -13,6 +13,7 @@ public sealed class Worker : AggregateRoot
     private readonly List<WorkerRate> _rates = [];
     private readonly List<WorkerAssignment> _assignments = [];
     private readonly List<WorkerCase> _cases = [];
+    private readonly List<WorkerStatusChange> _statusChanges = [];
 
     private Worker() { }
 
@@ -42,6 +43,7 @@ public sealed class Worker : AggregateRoot
     public IReadOnlyList<WorkerRate> Rates => _rates;
     public IReadOnlyList<WorkerAssignment> Assignments => _assignments;
     public IReadOnlyList<WorkerCase> Cases => _cases;
+    public IReadOnlyList<WorkerStatusChange> StatusChanges => _statusChanges;
 
     public string FullName => string.Join(' ', new[] { FirstName, MiddleName, LastName }.Where(part => !string.IsNullOrWhiteSpace(part)));
 
@@ -174,6 +176,13 @@ public sealed class Worker : AggregateRoot
                 throw new ValidationFailedException("startDate", $"Choose a date after {current.StartDate:d MMM yyyy}, when the current posting started.");
             current.End(startDate);
         }
+        else if (_assignments.Where(assignment => assignment.EndDate is not null).Select(assignment => assignment.EndDate!.Value).DefaultIfEmpty()
+                     .Max() is { } lastEnd && lastEnd != default && startDate < lastEnd)
+        {
+            // The worker was released (or left) and is being posted again: the new posting can't reach back into the old one, or the
+            // same days would belong to two projects and their labor would be charged twice.
+            throw new ValidationFailedException("startDate", $"Choose {lastEnd:d MMM yyyy} or later, when the previous posting ended.");
+        }
 
         _assignments.Add(new WorkerAssignment(Guid.NewGuid(), TenantId, Id, project.Id, subProjectId, startDate, assignedByUserId, now));
         Touch(now);
@@ -204,6 +213,7 @@ public sealed class Worker : AggregateRoot
         Status = target;
         StatusChangedOn = effectiveDate;
         StatusReason = cleanReason;
+        _statusChanges.Add(new WorkerStatusChange(Guid.NewGuid(), TenantId, Id, target, effectiveDate, cleanReason, now));
         if (WorkerStatusRules.IsTerminal(target) && CurrentAssignment is { } current)
             current.End(effectiveDate > current.StartDate ? effectiveDate : current.StartDate);
         Touch(now);
@@ -219,6 +229,7 @@ public sealed class Worker : AggregateRoot
         Status = WorkerStatus.Active;
         StatusChangedOn = effectiveDate;
         StatusReason = cleanReason;
+        _statusChanges.Add(new WorkerStatusChange(Guid.NewGuid(), TenantId, Id, WorkerStatus.Active, effectiveDate, cleanReason, now));
         Touch(now);
     }
 
@@ -239,24 +250,22 @@ public sealed class Worker : AggregateRoot
         return workerCase;
     }
 
+    /// <summary>The worker's status on a day, from the status history; before any change it is active (from the hire date).</summary>
+    public WorkerStatus StatusOn(DateOnly date) =>
+        _statusChanges.Where(change => change.AppliesFrom <= date).OrderBy(change => change.AppliesFrom).ThenBy(change => change.RecordedAtUtc)
+            .Select(change => change.Status).DefaultIfEmpty(WorkerStatus.Active).Last();
+
     /// <summary>
-    /// Whether attendance may be recorded for this worker on a date. A worker who has left can still be paid up to the day they left;
-    /// one on leave or suspended can't be recorded from the day that began.
+    /// Whether attendance may be recorded for this worker on a date: only on a day the worker was hired and active. A day of leave or
+    /// suspension stays closed even after the worker is back (it is not paid time), and a worker who left can still be paid up to the
+    /// last day they worked.
     /// </summary>
-    public bool CanBeRecordedOn(DateOnly date)
-    {
-        if (date < DateHired) return false;
-        return Status switch
-        {
-            WorkerStatus.Active => true,
-            WorkerStatus.OnLeave or WorkerStatus.Suspended => StatusChangedOn is { } since && date < since,
-            _ => StatusChangedOn is { } left && date <= left
-        };
-    }
+    public bool CanBeRecordedOn(DateOnly date) => date >= DateHired && StatusOn(date) == WorkerStatus.Active;
 
     private static void ValidateRate(ValidationErrors errors, long rateMinor, RateUnit unit)
     {
         if (rateMinor <= 0) errors.Add("rateMinor", "Enter a pay rate greater than zero.");
+        else if (rateMinor > MoneyLimits.MaximumRateMinor) errors.Add("rateMinor", "The pay rate can be at most ₱10,000,000.00.");
         if (!Enum.IsDefined(unit)) errors.Add("rateUnit", "Choose whether the rate is per day or per hour.");
     }
 

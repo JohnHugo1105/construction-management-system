@@ -52,7 +52,18 @@ public sealed class BudgetLineService(IBudgetLineRepository lines, IBudgetLineRe
         lines.Add(line);
         audit.Record("BudgetLine.Created", nameof(BudgetLine), line.Id,
             $"Added budget line \"{line.Description}\" ({CostingInput.MoneyText(line.GrossMinor, organization.CurrencyCode)} with VAT) to {project.Name}.");
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DomainRuleException) when (requestId is not null)
+        {
+            // The same form submitted twice at once: the first was saved between this one's look-up and its save, and the database refused
+            // the second. Answer it with the line the first made, as a repeat that arrived a moment later would be.
+            if (await lines.FindByClientRequestIdAsync(requestId, cancellationToken) is { } first && first.ProjectId == project.Id)
+                return CostingMapper.ToDto(first, project);
+            throw;
+        }
         return CostingMapper.ToDto(line, project);
     }
 

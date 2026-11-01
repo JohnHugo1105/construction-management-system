@@ -112,7 +112,13 @@ public sealed class IdentityApiTests : IClassFixture<CmsApiFactory>
         var locked = await client.PostAsync("/api/identity/sign-in", new { username = seeded.Username, password = seeded.Password });
 
         Assert.Equal(HttpStatusCode.Unauthorized, locked.StatusCode);
-        Assert.Contains("locked", (await ApiClient.ProblemAsync(locked)).GetProperty("detail").GetString());
+        var lockedDetail = (await ApiClient.ProblemAsync(locked)).GetProperty("detail").GetString();
+        Assert.Contains("locked", lockedDetail);
+
+        // The same words as a wrong password or an unknown name, so the sign-in page can't be used to find out which accounts exist or
+        // which are being guessed at.
+        var unknown = await client.PostAsync("/api/identity/sign-in", new { username = "nobody-" + Guid.NewGuid().ToString("N"), password = "wrong password 1" });
+        Assert.Equal(lockedDetail, (await ApiClient.ProblemAsync(unknown)).GetProperty("detail").GetString());
     }
 
     [SqlServerFact]
@@ -167,6 +173,75 @@ public sealed class IdentityApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(HttpStatusCode.OK, ready.StatusCode);
         var version = await client.GetAsync<JsonElement>("/health/version");
         Assert.Equal("cms-api", version.GetProperty("service").GetString());
+    }
+}
+
+/// <summary>A copied session cookie must stop working the moment the session is ended on the server, not when the cookie expires.</summary>
+public sealed class SessionRevocationApiTests : IClassFixture<CmsApiFactory>
+{
+    private readonly CmsApiFactory _factory;
+
+    public SessionRevocationApiTests(CmsApiFactory factory) => _factory = factory;
+
+    [SqlServerFact]
+    public async Task A_copied_cookie_stops_working_after_the_person_signs_out()
+    {
+        var seeded = await TenantSeeder.CreateTenantAsync(_factory);
+        using var laptop = new ApiClient(_factory);
+        using var phone = new ApiClient(_factory);
+        await laptop.SignInAsync(seeded.Username, seeded.Password);
+        await phone.SignInAsync(seeded.Username, seeded.Password);
+        var copied = laptop.SessionCookie!;
+        Assert.Equal(HttpStatusCode.OK, await laptop.ReplayAsync("/api/projects", copied));
+
+        Assert.Equal(HttpStatusCode.NoContent, (await laptop.PostAsync("/api/identity/sign-out")).StatusCode);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, await laptop.ReplayAsync("/api/projects", copied));
+        // Signing out ends the person's sessions everywhere, so the phone is signed out too.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await phone.GetAsync("/api/projects")).StatusCode);
+        // They can sign in again as usual.
+        await laptop.SignInAsync(seeded.Username, seeded.Password);
+        Assert.Equal(HttpStatusCode.OK, (await laptop.GetAsync("/api/projects")).StatusCode);
+    }
+
+    [SqlServerFact]
+    public async Task Changing_your_password_ends_every_other_session_but_keeps_this_one()
+    {
+        var seeded = await TenantSeeder.CreateTenantAsync(_factory);
+        using var laptop = new ApiClient(_factory);
+        using var other = new ApiClient(_factory);
+        await laptop.SignInAsync(seeded.Username, seeded.Password);
+        await other.SignInAsync(seeded.Username, seeded.Password);
+        var thief = other.SessionCookie!;
+
+        await laptop.PostAsync<SessionDto>("/api/identity/change-password", new { currentPassword = seeded.Password, newPassword = "A brand-new passphrase 42" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, await laptop.ReplayAsync("/api/projects", thief));
+        Assert.Equal(HttpStatusCode.Unauthorized, (await other.GetAsync("/api/projects")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await laptop.GetAsync("/api/projects")).StatusCode);
+    }
+
+    [SqlServerFact]
+    public async Task An_administrator_resetting_a_password_or_turning_an_account_off_ends_its_sessions()
+    {
+        var admin = await TenantSeeder.CreateTenantAsync(_factory);
+        var target = await TenantSeeder.AddUserAsync(_factory, admin.TenantId, AccessRole.Viewer);
+        var other = await TenantSeeder.AddUserAsync(_factory, admin.TenantId, AccessRole.Viewer);
+        using var administrator = new ApiClient(_factory);
+        await administrator.SignInAsync(admin.Username, admin.Password);
+        using var targetClient = new ApiClient(_factory);
+        await targetClient.SignInAsync(target.Username, target.Password);
+        using var otherClient = new ApiClient(_factory);
+        await otherClient.SignInAsync(other.Username, other.Password);
+        Assert.Equal(HttpStatusCode.OK, (await targetClient.GetAsync("/api/projects")).StatusCode);
+
+        var reset = await administrator.PostAsync($"/api/users/{target.UserId}/reset-password", new { newPassword = "Temporary-pass-456" });
+        Assert.True(reset.IsSuccessStatusCode, await reset.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.Unauthorized, (await targetClient.GetAsync("/api/projects")).StatusCode);
+
+        var turnedOff = await administrator.PostAsync($"/api/users/{other.UserId}/deactivate");
+        Assert.True(turnedOff.IsSuccessStatusCode, await turnedOff.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.Unauthorized, (await otherClient.GetAsync("/api/projects")).StatusCode);
     }
 }
 

@@ -1,4 +1,5 @@
 using Cms.Domain.Features.Inventory;
+using Cms.Domain.Features.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -48,6 +49,8 @@ internal sealed class StockBalanceConfiguration : IEntityTypeConfiguration<Stock
         builder.Property(item => item.Quantity).HasPrecision(18, 4);
         builder.Ignore(item => item.Location);
 
+        builder.HasOne<Project>().WithMany().HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Restrict);
+
         // An item has one row per place it is in.
         builder.HasIndex(item => new { item.ItemId, item.LocationKey }).IsUnique();
         // "What is on this project now".
@@ -71,6 +74,9 @@ internal sealed class StockMovementConfiguration : IEntityTypeConfiguration<Stoc
         builder.Ignore(item => item.From);
         builder.Ignore(item => item.To);
         builder.Ignore(item => item.IsReversed);
+
+        builder.HasOne<Project>().WithMany().HasForeignKey(item => item.FromProjectId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Project>().WithMany().HasForeignKey(item => item.ToProjectId).OnDelete(DeleteBehavior.Restrict);
 
         // The ledger of one item, newest first.
         builder.HasIndex(item => new { item.ItemId, item.RecordedAtUtc });

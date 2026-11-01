@@ -181,6 +181,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SubProjectId");
+
                     b.HasIndex("TenantId", "ClientRequestId")
                         .IsUnique()
                         .HasFilter("[ClientRequestId] IS NOT NULL");
@@ -327,6 +329,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SubProjectId");
+
                     b.HasIndex("TenantId", "ClientRequestId")
                         .IsUnique()
                         .HasFilter("[ClientRequestId] IS NOT NULL");
@@ -385,6 +389,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("Roles")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("SecurityStamp")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
@@ -521,6 +528,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProjectId");
+
                     b.HasIndex("ItemId", "LocationKey")
                         .IsUnique();
 
@@ -591,6 +600,10 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FromProjectId");
+
+                    b.HasIndex("ToProjectId");
 
                     b.HasIndex("ItemId", "RecordedAtUtc");
 
@@ -1024,6 +1037,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("ArchivedWithProject")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -1311,6 +1327,69 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.ToTable("WorkerRates", (string)null);
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Workforce.WorkerStatusChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("EffectiveOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset>("RecordedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("WorkerId", "EffectiveOn");
+
+                    b.ToTable("WorkerStatusChanges", (string)null);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Costing.BudgetLine", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Projects.SubProject", null)
+                        .WithMany()
+                        .HasForeignKey("SubProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Cms.Domain.Features.Costing.CostEntry", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Projects.SubProject", null)
+                        .WithMany()
+                        .HasForeignKey("SubProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.Inventory.StockBalance", b =>
                 {
                     b.HasOne("Cms.Domain.Features.Inventory.InventoryItem", null)
@@ -1318,15 +1397,30 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Cms.Domain.Features.Inventory.StockMovement", b =>
                 {
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("FromProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Cms.Domain.Features.Inventory.InventoryItem", null)
                         .WithMany("Movements")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Cms.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ToProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Cms.Domain.Features.Payroll.AttendanceEntry", b =>
@@ -1450,6 +1544,15 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Cms.Domain.Features.Workforce.WorkerStatusChange", b =>
+                {
+                    b.HasOne("Cms.Domain.Features.Workforce.Worker", null)
+                        .WithMany("StatusChanges")
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Cms.Domain.Features.Inventory.InventoryItem", b =>
                 {
                     b.Navigation("Balances");
@@ -1481,6 +1584,8 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.Navigation("Cases");
 
                     b.Navigation("Rates");
+
+                    b.Navigation("StatusChanges");
                 });
 #pragma warning restore 612, 618
         }

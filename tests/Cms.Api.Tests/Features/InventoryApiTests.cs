@@ -429,7 +429,10 @@ public sealed class InventoryApiTests : IClassFixture<CmsApiFactory>
         var rounds = await world.Client.PostAsync(Url(tooSmall.Id, "transfer"), Move(Warehouse, At(site.Id), 0.0001m, tooSmall.Version, charge: true));
         Assert.Equal(["chargeToProject"], await InvalidFieldsAsync(rounds));
 
-        var huge = await world.Client.PostAsync<InventoryItemDto>(ItemsUrl, ToolBody("Gold-plated hammer", unitCostMinor: 9_000_000_000_000_000_000));
+        // A unit cost beyond the limit is refused when the item is registered; one at the limit registers, but ten of them can't be charged.
+        var absurd = await world.Client.PostAsync(ItemsUrl, ToolBody("Gold bar", unitCostMinor: 9_000_000_000_000_000_000));
+        Assert.Equal(["unitCostMinor"], await InvalidFieldsAsync(absurd));
+        var huge = await world.Client.PostAsync<InventoryItemDto>(ItemsUrl, ToolBody("Gold-plated hammer", unitCostMinor: 10_000_000_000_000));
         var overflow = await world.Client.PostAsync(Url(huge.Id, "transfer"), Move(Warehouse, At(site.Id), 10m, huge.Version, charge: true));
         Assert.Equal(["chargeToProject"], await InvalidFieldsAsync(overflow));
 
@@ -463,6 +466,24 @@ public sealed class InventoryApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(8m, QuantityAt(reversed, "Warehouse"));
         var entryAfter = Assert.Single(await world.CostEntriesAsync());
         Assert.Equal("Voided in costing", entryAfter.VoidReason);
+    }
+
+    [SqlServerFact]
+    public async Task Reversing_a_charged_transfer_is_refused_while_the_project_it_was_charged_to_is_archived()
+    {
+        using var world = await StartAsync(_factory);
+        var site = await world.ProjectAsync("Tower A");
+        var hammer = await world.RegisterToolAsync();
+        var charged = await world.TransferAsync(hammer, Warehouse, At(site.Id), 3m, charge: true);
+        var line = (await world.LedgerAsync(hammer.Id))[0];
+        await world.ArchiveAsync(site);
+
+        var refused = await world.Client.PostAsync(Url(hammer.Id, $"movements/{line.Id}/reverse"), Reverse("Wrong site", charged.Version));
+
+        // The cost on the finished project must not change unnoticed: restore the project first.
+        Assert.Contains("Restore it", await RuleDetailAsync(refused));
+        Assert.Equal(charged.Version, (await world.GetAsync(hammer.Id)).Version);
+        Assert.False(Assert.Single(await world.CostEntriesAsync()).IsVoided);
     }
 
     // ---------------------------------------------------------------- reversals

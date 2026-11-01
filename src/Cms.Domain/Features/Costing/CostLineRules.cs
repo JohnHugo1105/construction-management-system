@@ -40,6 +40,7 @@ internal static class CostLineRules
         Try(errors, () => Guard.PositiveQuantity(quantity, "quantity"));
         if (!Enum.IsDefined(itemType)) errors.Add("itemType", "Choose what this line pays for.");
         if (unitCostMinor < 0) errors.Add("unitCostMinor", "The unit cost can't be negative.");
+        MoneyLimits.CheckAmount(errors, unitCostMinor, "unitCostMinor", "the unit cost");
         if (!Enum.IsDefined(vatTreatment)) errors.Add("vatTreatment", "Choose whether the unit cost includes VAT.");
         if (vatRateBps is < 0 or > LineAmounts.MaximumVatRateBps) errors.Add("vatRateBps", "Enter a VAT rate between 0% and 100%.");
         if (entryDate < EarliestDate) errors.Add("entryDate", "Choose a valid date.");
@@ -49,6 +50,8 @@ internal static class CostLineRules
         LineAmounts amounts;
         try { amounts = LineAmounts.Calculate(quantity, unitCostMinor, vatTreatment, vatRateBps); }
         catch (OverflowException) { throw new ValidationFailedException("unitCostMinor", "That amount is too large. Check the quantity and unit cost."); }
+        if (amounts.GrossMinor > MoneyLimits.MaximumAmountMinor)
+            throw new ValidationFailedException("unitCostMinor", "The total for this line is too large. Check the quantity and unit cost.");
 
         return new CostLineValues(classification, cleanDescription, itemType, quantity, cleanUnit, unitCostMinor, vatTreatment,
             vatRateBps, amounts, entryDate, cleanRemarks);

@@ -42,7 +42,8 @@ public sealed class InventoryRulesTests
     [Fact]
     public void A_charge_too_large_to_store_is_a_validation_error_and_nothing_moves()
     {
-        var item = NewTools(unitCost: 9_000_000_000_000_000_000);
+        // Each piece is within the limit, but ten of them charged together are not.
+        var item = NewTools(unitCost: MoneyLimits.MaximumAmountMinor);
         var site = StockLocation.Project(Guid.NewGuid());
 
         var ex = Assert.Throws<ValidationFailedException>(() => item.Transfer(StockLocation.Warehouse, site, 10m, Later, true, null,
@@ -51,6 +52,25 @@ public sealed class InventoryRulesTests
         Assert.Contains("chargeToProject", ex.Errors.Keys);
         Assert.Equal(10m, item.BalanceAt(StockLocation.Warehouse));
         Assert.Single(item.Movements);
+    }
+
+    [Fact]
+    public void A_unit_cost_above_the_limit_is_refused_when_the_item_is_registered()
+    {
+        var ex = Assert.Throws<ValidationFailedException>(() => NewTools(unitCost: 9_000_000_000_000_000_000));
+        Assert.Contains("unitCostMinor", ex.Errors.Keys);
+    }
+
+    [Fact]
+    public void A_single_piece_is_counted_as_zero_or_one_and_nothing_between()
+    {
+        var excavator = NewExcavator();
+
+        var half = Assert.Throws<ValidationFailedException>(() => excavator.Adjust(StockLocation.Warehouse, 0.5m, "Half there", Later, TestData.UserId, null,
+            TestData.Today, TestData.Now));
+
+        Assert.Contains("countedQuantity", half.Errors.Keys);
+        Assert.Equal(1m, excavator.BalanceAt(StockLocation.Warehouse));
     }
 
     [Fact]

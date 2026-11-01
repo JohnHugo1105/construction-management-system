@@ -9,6 +9,7 @@ using Cms.Domain.Features.Identity;
 using Cms.Infrastructure;
 using Cms.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,12 @@ public static class CmsApiExtensions
         var secureCookies = configuration.GetValue("Security:RequireSecureCookies", !environment.IsDevelopment())
             ? CookieSecurePolicy.Always
             : CookieSecurePolicy.SameAsRequest;
+
+        // Session and anti-forgery cookies are encrypted with keys that must survive a restart (and be shared by every instance), or each
+        // deployment signs everyone out. Production points DataProtection:KeysPath at a persistent, private, backed-up folder.
+        var dataProtection = services.AddDataProtection().SetApplicationName("ConstructionManagementSystem");
+        if (configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+            dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
         services.AddHttpContextAccessor();
         services.AddMemoryCache();

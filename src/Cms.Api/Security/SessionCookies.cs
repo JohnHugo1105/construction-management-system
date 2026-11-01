@@ -11,8 +11,9 @@ public static class SessionCookies
     public const string Scheme = "cms-session";
     public const string CsrfCookieName = "XSRF-TOKEN";
 
-    public static ClaimsPrincipal CreatePrincipal(SessionDto session)
+    public static ClaimsPrincipal CreatePrincipal(SignedInSession signedIn)
     {
+        var session = signedIn.Session;
         var roles = (int)AccessRoleParser.Parse(session.Roles);
         var claims = new List<Claim>
         {
@@ -21,7 +22,8 @@ public static class SessionCookies
             new(ClaimNames.TenantId, session.TenantId.ToString()),
             new(ClaimNames.DisplayName, session.DisplayName),
             new(ClaimNames.Roles, roles.ToString()),
-            new(ClaimNames.MustChangePassword, session.MustChangePassword ? "true" : "false")
+            new(ClaimNames.MustChangePassword, session.MustChangePassword ? "true" : "false"),
+            new(ClaimNames.SecurityStamp, signedIn.SecurityStamp.ToString("N"))
         };
         return new ClaimsPrincipal(new ClaimsIdentity(claims, Scheme));
     }
@@ -30,10 +32,10 @@ public static class SessionCookies
     /// Signs the person in and issues an anti-forgery token for their new identity. A token is tied to who is signed in, so one fetched
     /// before sign-in would be refused afterwards; issuing it here means the browser never holds a stale one.
     /// </summary>
-    public static async Task SignInAsync(HttpContext context, SessionDto session)
+    public static async Task SignInAsync(HttpContext context, SignedInSession signedIn)
     {
-        var principal = CreatePrincipal(session);
-        context.RequestServices.GetRequiredService<IMemoryCache>().Remove($"session:{session.Username}");
+        var principal = CreatePrincipal(signedIn);
+        context.RequestServices.GetRequiredService<IMemoryCache>().Remove($"session:{signedIn.Session.Username}");
         await context.SignInAsync(Scheme, principal, new AuthenticationProperties { IsPersistent = false });
         context.User = principal;
         IssueCsrfToken(context);

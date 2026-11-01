@@ -58,6 +58,7 @@ public sealed class Project : AggregateRoot
         try { cleanName = Guard.RequiredText(name, "name", "the project name", 120); }
         catch (ValidationFailedException ex) { errors.Add("name", ex.Errors["name"][0]); }
         if (contractPriceMinor is < 0) errors.Add("contractPriceMinor", "The contract price can't be negative.");
+        else if (contractPriceMinor is { } price) MoneyLimits.CheckAmount(errors, price, "contractPriceMinor", "the contract price");
         if (startDate == default) errors.Add("startDate", "Choose the date the project started.");
         if (targetEndDate is { } end && startDate != default && end < startDate) errors.Add("targetEndDate", "The target end date can't be before the start date.");
         errors.ThrowIfAny();
@@ -95,7 +96,7 @@ public sealed class Project : AggregateRoot
         ArchiveReason = reason;
         ArchiveNote = cleanNote;
         ArchivedAtUtc = now;
-        foreach (var sub in _subProjects) sub.Archive();
+        foreach (var sub in _subProjects) sub.ArchiveWithProject();
         Touch(now);
     }
 
@@ -108,7 +109,7 @@ public sealed class Project : AggregateRoot
         ArchiveReason = null;
         ArchiveNote = null;
         ArchivedAtUtc = null;
-        foreach (var sub in _subProjects) sub.Restore();
+        foreach (var sub in _subProjects) sub.RestoreWithProject();
         Touch(now);
     }
 

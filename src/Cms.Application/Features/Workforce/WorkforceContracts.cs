@@ -19,6 +19,9 @@ public interface IWorkerRepository
     /// <summary>The worker a form submission already hired, so a double click returns that worker instead of a second one.</summary>
     Task<Guid?> FindIdByClientRequestAsync(string clientRequestId, CancellationToken cancellationToken);
 
+    /// <summary>The latest work day of this worker that a payroll run has already taken (draft or approved), or null when none has.</summary>
+    Task<DateOnly?> LatestWorkDateInPayrollAsync(Guid workerId, CancellationToken cancellationToken);
+
     void Add(Worker worker);
 }
 
@@ -75,7 +78,12 @@ public sealed record ChangeWorkerRateRequest(string? Category, string? Designati
 
 public sealed record AssignWorkerRequest(Guid ProjectId, Guid? SubProjectId, DateOnly StartDate, int Version);
 
-public sealed record BulkAssignWorkersRequest(IReadOnlyList<Guid>? WorkerIds, Guid ProjectId, Guid? SubProjectId, DateOnly StartDate);
+/// <param name="Versions">
+/// Optional: the version of each worker as the person last saw it (worker id to version). A worker whose record changed since is refused
+/// like any stale edit, and the person reloads. Left out, the crew is posted on the current records.
+/// </param>
+public sealed record BulkAssignWorkersRequest(IReadOnlyList<Guid>? WorkerIds, Guid ProjectId, Guid? SubProjectId, DateOnly StartDate,
+    IReadOnlyDictionary<Guid, int>? Versions = null);
 
 public sealed record ReleaseWorkerRequest(DateOnly EndDate, int Version);
 

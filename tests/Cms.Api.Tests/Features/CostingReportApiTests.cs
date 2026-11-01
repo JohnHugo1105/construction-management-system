@@ -64,6 +64,32 @@ public sealed class CostingReportApiTests : IClassFixture<CmsApiFactory>
     }
 
     [SqlServerFact]
+    public async Task A_projects_dashboard_row_is_the_same_answer_as_its_cost_summary_on_either_basis()
+    {
+        var (client, _) = await AdminAsync();
+        using var _c = client;
+        var (project, _) = await BuildVarianceScenarioAsync(client);
+
+        foreach (var basis in new[] { "IncludingVat", "ExcludingVat" })
+        {
+            await ChangeOrganizationAsync(client, varianceBasis: basis);
+            var row = (await client.GetAsync<DashboardDto>("/api/reports/dashboard")).Projects.Single(item => item.Id == project.Id);
+            var summary = await client.GetAsync<CostSummaryDto>($"/api/projects/{project.Id}/cost-summary");
+
+            // Two places answering one question must never disagree: the dashboard row and the project page come from one calculation.
+            Assert.Equal(summary.Basis, basis);
+            Assert.Equal(summary.Position.BudgetMinor, row.BudgetMinor);
+            Assert.Equal(summary.Position.ActualMinor, row.ActualMinor);
+            Assert.Equal(summary.Position.RemainingMinor, row.RemainingMinor);
+            Assert.Equal(summary.Position.UsedBps, row.UsedBps);
+            Assert.Equal(summary.Position.Health, row.Health);
+            Assert.Equal(summary.MarginAfterActualMinor, row.MarginAfterActualMinor);
+            Assert.Equal(summary.BudgetMarginMinor, row.BudgetMarginMinor);
+            Assert.Equal(summary.ContractPriceMinor, row.ContractPriceMinor);
+        }
+    }
+
+    [SqlServerFact]
     public async Task The_cost_summary_matches_a_worked_scenario_at_every_health_threshold()
     {
         var (client, _) = await AdminAsync();

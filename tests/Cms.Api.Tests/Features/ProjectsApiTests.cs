@@ -49,6 +49,42 @@ public sealed class ProjectsApiTests : IClassFixture<CmsApiFactory>
     }
 
     [SqlServerFact]
+    public async Task The_contract_price_is_shown_only_to_people_who_see_money()
+    {
+        var (admin, adminUser) = await SignedInAsync();
+        using var _a = admin;
+        var created = await admin.PostAsync<ProjectDto>("/api/projects", NewProject("Tower P"));
+
+        foreach (var role in new[] { AccessRole.WarehouseKeeper, AccessRole.HrOfficer })
+        {
+            var (client, _) = await SignedInAsync(role, adminUser.TenantId);
+            using var _c = client;
+            var list = await client.GetAsync<PagedResult<ProjectListItemDto>>("/api/projects");
+            Assert.Null(Assert.Single(list.Items, item => item.Id == created.Id).ContractPriceMinor);
+            Assert.Null((await client.GetAsync<ProjectDto>($"/api/projects/{created.Id}")).ContractPriceMinor);
+        }
+
+        var (viewer, _) = await SignedInAsync(AccessRole.Viewer, adminUser.TenantId);
+        using var _v = viewer;
+        Assert.Equal(5_000_000_00, (await viewer.GetAsync<ProjectDto>($"/api/projects/{created.Id}")).ContractPriceMinor);
+    }
+
+    [SqlServerFact]
+    public async Task A_contract_price_beyond_the_limit_and_a_silly_page_number_are_handled_not_crashed()
+    {
+        var (client, _) = await SignedInAsync();
+        using var _c = client;
+
+        var tooBig = await client.PostAsync("/api/projects", NewProject("Tower Q", price: long.MaxValue));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, tooBig.StatusCode);
+        Assert.True((await ApiClient.ProblemAsync(tooBig)).GetProperty("errors").TryGetProperty("contractPriceMinor", out _));
+
+        var page = await client.GetAsync($"/api/projects?page={int.MaxValue}&pageSize=100");
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+        Assert.Empty((await client.ReadAsync<PagedResult<ProjectListItemDto>>(page)).Items);
+    }
+
+    [SqlServerFact]
     public async Task Invalid_input_reports_every_field_and_a_duplicate_name_is_refused()
     {
         var (client, _) = await SignedInAsync();

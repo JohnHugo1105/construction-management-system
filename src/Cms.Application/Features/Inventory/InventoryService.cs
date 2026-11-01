@@ -179,6 +179,9 @@ public sealed class InventoryService(IInventoryRepository inventory, IInventoryR
             await places.LoadAsync(original.To, "movement", cancellationToken);
             // The reversal puts the stock back where it came from, so that place must still accept it.
             if (original.From is { IsWarehouse: false } returnsTo) EnsureCanReceive(places.Require(returnsTo));
+            // Reversing a charged transfer voids a cost on the project it was charged to; an archived project is read-only, so restore it first.
+            if (original.ChargedAmountMinor > 0 && original.To is { IsWarehouse: false } chargedTo && places.Require(chargedTo).IsArchived)
+                throw new DomainRuleException($"{places.Require(chargedTo).Name} is archived. Restore it before reversing this transfer, so the finished project's figures don't change unnoticed.");
 
             var item = step.Item;
             var reversal = item.Reverse(original, request.Reason, step.Today, currentUser.UserId, step.Today, step.Now, step.RequestId);

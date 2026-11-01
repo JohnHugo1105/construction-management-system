@@ -31,7 +31,7 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | See projects | yes | yes | yes | yes | yes | yes | yes |
 | Create and change projects | yes | yes | | | | | |
-| See budget and costs, reports | yes | yes | yes | yes | | | yes |
+| See budget and costs, reports, the contract price | yes | yes | yes | yes | | | yes |
 | Enter budget and costs | yes | | yes | yes | | | |
 | See workers (not their pay) | yes | yes | | yes | | yes | yes |
 | Hire, change pay, assign workers | yes | | | | | yes | |
@@ -44,19 +44,25 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | Manage users and company settings | yes | | | | | | |
 | Read the activity log | yes | | | yes | | | |
 
-Sign-in: five wrong passwords lock the account for 15 minutes; an unknown username and a wrong password get the same message.
+Sign-in: five wrong passwords lock the account for 15 minutes; an unknown username, a wrong password and a locked account all get the
+same message, so the sign-in page can't be used to find out which accounts exist.
 Passwords need 10 or more characters with a letter and a number, and are stored only as a salted slow hash. An administrator sets a
 temporary password and the person must choose their own before doing anything else. Turning an account off ends its session within
-seconds. There must always be at least one active administrator, and you can't remove your own administrator role or turn off your
-own account.
+seconds. **A session can be ended from the server:** changing a password (yours, or a reset by an administrator), turning an account off,
+and **signing out** all end the person's sessions on every device, so a copied cookie stops working at once (within 15 seconds if the
+server is not the one that handled the change). There must always be at least one active administrator, and you can't remove your own
+administrator role or turn off your own account. Changes that could remove the last administrator run one at a time, so two administrators can't remove each other in the same instant
+(that guarantee holds per server process; with several servers, check the user list after changing administrators).
 
 ## 3. Projects
 
 * A project has a unique name within the company (case and spacing ignored), an optional client, location, contract price (including
-  VAT), start date and target end date. Sub-projects have a unique name within their project.
+  VAT), start date and target end date. Sub-projects have a unique name within their project. **The contract price is shown only to
+  people who can see costs**: a warehouse keeper or HR officer opens the project without seeing what the company will be paid.
 * Lifecycle: **Planning → Active ⇄ On hold → Completed → Active (reopen)**. Other moves are refused with an explanation.
 * **Archive** needs a reason: "Finished project", or "Other" with a note. An archived project and its sub-projects are read-only (no
-  new budget lines, costs, postings, attendance or stock moves) but stay fully readable. **Restore** returns it to the status it had.
+  new budget lines, costs, postings, attendance or stock moves) but stay fully readable. **Restore** returns it to the status it had,
+  and brings back only the sub-projects that were archived *with* it: one archived on its own earlier stays archived.
   Nothing moves or is deleted when archiving; the retired app copied rows to archive tables and could lose actual costs.
 * New budget lines, costs, assignments, attendance and stock moves may be recorded only against a project, and a sub-project, that is
   not archived.
@@ -91,20 +97,26 @@ Let *base* = quantity × unit cost, rounded to a whole centavo.
 The rate is the company's VAT rate (12% by default, set in company settings) **at the moment of entry**, and the line keeps it:
 changing the company rate later never alters recorded lines.
 
+**Limits.** Every amount is bounded so no total can overflow: a line (with VAT), a unit cost, a contract price and a deduction can each
+be at most ₱100,000,000,000.00, and a pay rate at most ₱10,000,000.00 a day or an hour. Anything larger is refused with a message.
+
 ### 4.5 Duplicates and dates
 * A supplier invoice can be recorded **once per project**: the same supplier and invoice number (ignoring case and punctuation)
   is refused while the first entry is posted. It can be entered again after the first is voided.
 * Supplier names are matched after trimming spaces and ignoring case only (punctuation in a *supplier* name still counts); only the
   *invoice number* ignores punctuation and spacing. Enter the same supplier the same way each time.
 * A cost can't be dated in the future (judged in the company time zone).
-* A repeated create with the same request id returns the original.
+* A repeated create with the same request id returns the original, including when two copies of the same submission arrive at the
+  very same moment. A request id reused for something else (another project, worker or day) is refused instead.
 
 ### 4.6 Changing and removing
 Manual cost entries and budget lines can be edited (the audit trail records it). **Editing keeps the line's own VAT rate**; only new
 lines use the company's current rate, so a change of company rate never alters history. Removing or voiding on an archived project is
 refused, like every other change. A budget line is **removed** with a reason, a cost
-entry **voided** with a reason; neither is deleted and neither counts afterwards. System-made cost entries are corrected where they
-came from (payroll or stock), not edited by hand.
+entry **voided** with a reason; neither is deleted and neither counts afterwards. **System-made cost entries (payroll and stock
+transfers) can be neither edited nor voided at the entry**: they are reversed where they came from (void the payroll run, reverse the
+transfer), so the source and the project never disagree. That reversal is itself refused while a project it would change is archived
+(restore it, reverse, archive again), including a payroll void, a charged stock reversal and removing attendance on an archived project.
 
 ### 4.7 Budget against actual
 For any slice (a project, sub-project, division, code, item type):
@@ -126,10 +138,15 @@ For any slice (a project, sub-project, division, code, item type):
   by **reinstating** (with a reason); the retired app let any status replace any other and could not record a dismissal.
 * **Pay history is append-only.** A rate has a unit (per day or per hour), a designation and an effective date. A change is a
   promotion, a demotion or a rate adjustment: a promotion or demotion changes the designation; a rate adjustment changes only the pay.
-  A change must start after the latest one and not before the hire date, so earlier pay is never rewritten. "What was this worker's
-  rate on 3 November?" always has one answer. The retired app let the rate be typed over in a grid with no record.
-* **Postings** (assignments) never overlap: assigning a worker ends the previous posting on the new start date. Only an active worker
-  on a project that can receive records can be posted. A bulk assignment is all or nothing and names every worker that blocked it.
+  A change must start after the latest one and not before the hire date, so earlier pay is never rewritten. **It also can't start on or
+  before a day a payroll run (draft or approved) has already paid**: that pay was worked out at the old rate, and the history would
+  disagree with it. Void the run first, or start the new rate after the last paid day. "What was this worker's rate on 3 November?"
+  always has one answer. The retired app let the rate be typed over in a grid with no record.
+* **Postings** (assignments) never overlap: assigning a worker ends the previous posting on the new start date, and a worker who was
+  released or left can't be posted again from a day before the old posting ended. Only an active worker on a project that can receive
+  records can be posted. A bulk assignment is all or nothing and names every worker that blocked it.
+* **Status history** is kept: from which day a worker was on leave, suspended, back at work or gone. It decides which days attendance
+  may be recorded for (section 6.1) long after the status changed again.
 * **Cases** (incidents or disciplinary notes) are added and never edited or deleted. A person's profile details and cases are visible
   to everyone who can see workers; restrict that further if your policy needs it.
 * **Pay is confidential.** Rates and pay amounts reach only people who can run payroll; project managers and viewers see who works
@@ -144,15 +161,17 @@ Attendance is the hours one worker put in on one project on one day: regular hou
 default) and overtime hours. A worker's hours across all projects on a date may not exceed 24. One entry per worker, project,
 sub-project and date (enforced by the database). The 24-hour check is made when an entry is saved: two entries for the same worker
 and date saved at the very same instant on different projects could both pass it, and payroll review would show the excess hours.
-A worker can be recorded from the hire date; one who left only up to the day they left; one on leave or
-suspended not from the day that began. Attendance can't be in the future.
+A worker can be recorded from the hire date on days they were **active**; one who left only up to the last day they worked; days of
+leave or suspension stay closed **even after the worker is back** (they are not paid time), because the status history is kept. Attendance
+can't be in the future. Removing an entry is refused on an archived project and for attendance a payroll run has taken.
 
 ### 6.2 Pay calculation
 Each attendance entry is paid at the rate **in force on its work date**, so a raise part-way through a period applies from its date.
 
-* A daily rate is divided by the company's paid hours per day to give an hourly rate; an hourly rate is used as is.
-* **Regular pay** = hourly rate × regular hours. **Overtime pay** = hourly rate × overtime hours × the overtime multiple (125% by
-  default).
+* A daily rate is spread over the company's paid hours per day; an hourly rate is used as is.
+* **Regular pay** = rate × regular hours (÷ paid hours per day for a daily rate). **Overtime pay** = the same hourly pay × overtime
+  hours × the overtime multiple (125% by default). The division happens **once, last**, so no rounded hourly figure is ever multiplied
+  (600.25 a day over 7.5 hours for 0.75 hours is 60.025, which is 60.03, not 60.02).
 * Each figure is rounded once per entry; a worker's pay and each project's share are sums of those rounded figures, so project shares
   always add up to the worker's pay exactly.
 
@@ -161,7 +180,8 @@ Pag-IBIG, withholding tax). They change by law and company policy. Premium hours
 advances are entered by a person as **deductions**.
 
 ### 6.3 Payroll runs
-1. **Draft:** for a pay period (at most 31 days, not ending in the future) the system takes all recorded attendance not yet paid,
+1. **Draft:** for a pay period (at most 31 days counting both ends, so 1 to 31 October but not 1 October to 1 November; not ending in
+   the future) the system takes all recorded attendance not yet paid,
    calculates every worker's pay, and **locks** that attendance. Locked attendance can't be edited or removed; the same attendance can
    never be in two runs, so nobody is paid twice.
 2. **Deductions** are entered per worker while the run is a draft. Deductions can't exceed pay.
@@ -169,7 +189,7 @@ advances are entered by a person as **deductions**.
    per project and sub-project for the period, equal to the gross pay of the attendance on it, with no VAT. The posted entries add up
    to the run's gross pay exactly. Two simultaneous approvals produce one approval.
 4. **Void** (with a reason): attendance is unlocked and the posted cost entries are voided. A draft is voided by whoever prepares it;
-   an approved run only by an accountant or administrator.
+   an approved run only by an accountant or administrator, and only while none of the projects it charged is archived.
 
 ## 7. Inventory (tools, equipment, machinery)
 
@@ -250,3 +270,10 @@ Found by reading its source and database model. File references are to the last 
 7. **Worker project** is the main project with an optional sub-project; the old HR screen knew only the main project.
 8. **Retention.** Nothing is purged. A retention policy for pay and personal data needs an explicit decision before any purge job is
    added.
+9. **Pay can be inferred from cost.** A payroll cost entry for a sub-project that only one worker was posted to equals that worker's gross
+   pay, and anyone who can see costs can see it (attendance shows the hours). Pay is confidential in the worker and payroll screens, but
+   labor cost is part of project cost. If that matters, post workers to the whole project rather than to one-person sub-projects, or
+   decide that labor cost should be hidden from some cost roles. Confirm.
+10. **Away days and recorded attendance.** Marking a worker on leave or suspended from a past day closes those days for new attendance but
+    does not remove attendance already recorded for them: HR removes it (with a reason) if it should not be paid.
+11. **Safe limits.** The largest amounts (section 4.4) are generous for a construction company; change `MoneyLimits` if the business needs more.

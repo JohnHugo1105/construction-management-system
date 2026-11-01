@@ -11,6 +11,9 @@ if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("Cms")) 
 builder.Services.AddCmsApi(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+if (!app.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(app.Configuration["DataProtection:KeysPath"]))
+    app.Logger.LogWarning("DataProtection:KeysPath is not set, so session keys are lost on every restart and everyone is signed out. " +
+        "Point it at a persistent folder (docs/operations/deployment.md).");
 app.UseCmsPipeline();
 app.MapCmsEndpoints();
 await app.MigrateIfRequestedAsync();

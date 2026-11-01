@@ -24,6 +24,12 @@ public sealed partial class User : AggregateRoot
     public DateTimeOffset? LockedUntilUtc { get; private set; }
     public DateTimeOffset? LastSignInUtc { get; private set; }
 
+    /// <summary>
+    /// Changes whenever every open session must end: a password change or reset, turning the account off, signing out. A session
+    /// cookie carries the value it was issued with, so a copied cookie stops working the moment this changes.
+    /// </summary>
+    public Guid SecurityStamp { get; private set; } = Guid.NewGuid();
+
     public static string NormalizeUsername(string? username) => (username ?? "").Trim().ToLowerInvariant();
 
     public static User Create(Guid id, Guid tenantId, string username, string displayName, string? email, string passwordHash,
@@ -79,6 +85,14 @@ public sealed partial class User : AggregateRoot
         MustChangePassword = mustChangeAtNextSignIn;
         FailedSignInCount = 0;
         LockedUntilUtc = null;
+        SecurityStamp = Guid.NewGuid();
+        Touch(now);
+    }
+
+    /// <summary>Ends every open session of this person, on every device.</summary>
+    public void EndAllSessions(DateTimeOffset now)
+    {
+        SecurityStamp = Guid.NewGuid();
         Touch(now);
     }
 
@@ -99,6 +113,7 @@ public sealed partial class User : AggregateRoot
     public void Deactivate(DateTimeOffset now)
     {
         IsActive = false;
+        SecurityStamp = Guid.NewGuid();
         Touch(now);
     }
 

@@ -37,7 +37,7 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
     {
         var requestId = CleanRequestId(request.ClientRequestId);
         if (requestId is not null && await attendance.FindIdByClientRequestAsync(requestId, cancellationToken) is { } already)
-            return await ReadAsync(already, cancellationToken);
+            return EnsureSameRequest(await ReadAsync(already, cancellationToken), request);
 
         try
         {
@@ -48,10 +48,17 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
             // The same form submitted twice at once: the first submission can be saved after this one looked for it and before this one
             // finished (so "this worker already has an entry" or the unique request id now refuses it). Answer it with the entry the first
             // recorded. Without such an entry the refusal is a real one and is reported as it is.
-            if (await attendance.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original) return await ReadAsync(original, cancellationToken);
+            if (await attendance.FindIdByClientRequestAsync(requestId, cancellationToken) is { } original)
+                return EnsureSameRequest(await ReadAsync(original, cancellationToken), request);
             throw;
         }
     }
+
+    /// <summary>A repeated request id answers with the original entry only when it was for the same worker, project and day.</summary>
+    private static AttendanceEntryDto EnsureSameRequest(AttendanceEntryDto original, RecordAttendanceRequest request) =>
+        original.WorkerId == request.WorkerId && original.ProjectId == request.ProjectId && original.WorkDate == request.WorkDate
+            ? original
+            : throw new DomainRuleException("That request id was already used for a different entry. Reload the page and try again.");
 
     private async Task<AttendanceEntryDto> RecordNewAsync(RecordAttendanceRequest request, string? requestId, CancellationToken cancellationToken)
     {
@@ -158,6 +165,8 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
     {
         var entry = await LoadAsync(id, cancellationToken);
         ConcurrencyGuard.Ensure(entry.Version, request.Version);
+        // An archived project is read-only: restore it first, so what its crew was recorded as working doesn't change unnoticed.
+        (await LoadProjectAsync(entry.ProjectId, cancellationToken)).EnsureNotArchived();
 
         entry.Void(request.Reason, clock.UtcNow);
         audit.Record("Attendance.Voided", nameof(AttendanceEntry), entry.Id,

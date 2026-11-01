@@ -101,6 +101,8 @@ public sealed class InventoryItem : AggregateRoot
             {
                 throw new ValidationFailedException("chargeToProject", "That amount is too large to charge. Check the quantity and the item's unit cost.");
             }
+            if (charge > MoneyLimits.MaximumAmountMinor)
+                throw new ValidationFailedException("chargeToProject", "That amount is too large to charge. Check the quantity and the item's unit cost.");
         }
 
         return Apply(MovementType.Transfer, from, to, qty, date, charge, note, null, recordedByUserId, clientRequestId, now);
@@ -113,7 +115,7 @@ public sealed class InventoryItem : AggregateRoot
         EnsureActive();
         if (countedQuantity < 0m || decimal.Round(countedQuantity, 4) != countedQuantity)
             throw new ValidationFailedException("countedQuantity", "Enter the counted quantity (zero or more, up to 4 decimals).");
-        if (IsUnitTracked && countedQuantity > 1m) throw new ValidationFailedException("countedQuantity", "A single piece is counted as 0 or 1.");
+        if (IsUnitTracked && countedQuantity is not (0m or 1m)) throw new ValidationFailedException("countedQuantity", "A single piece is counted as 0 or 1.");
         ValidateDate(date, today);
         var cleanReason = Guard.RequiredText(reason, "reason", "the reason for the adjustment", 300);
         var current = BalanceAt(location);
@@ -255,6 +257,7 @@ public sealed class InventoryItem : AggregateRoot
         if (IsUnitTracked && serial is null) errors.Add("serialNumber", "Enter the serial number. Equipment and machinery are tracked one by one.");
         if (serial is not null && NormalizeSerial(serial) is null) errors.Add("serialNumber", "The serial number needs at least one letter or digit.");
         if (unitCostMinor < 0) errors.Add("unitCostMinor", "The unit cost can't be negative.");
+        MoneyLimits.CheckAmount(errors, unitCostMinor, "unitCostMinor", "the unit cost");
         if (purchaseDate == default) errors.Add("purchaseDate", "Choose the purchase date.");
         else if (purchaseDate > today) errors.Add("purchaseDate", "The purchase date can't be in the future.");
         errors.ThrowIfAny();

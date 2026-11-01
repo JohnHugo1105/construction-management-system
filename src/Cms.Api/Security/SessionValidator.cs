@@ -8,8 +8,10 @@ using Microsoft.Extensions.Caching.Memory;
 namespace Cms.Api.Security;
 
 /// <summary>
-/// Checks on every request that the person behind the cookie may still sign in and still holds the same roles. A turned-off account or a
-/// changed role therefore takes effect within seconds, not when the cookie expires. The answer is cached briefly to spare the database.
+/// Checks on every request that the person behind the cookie may still sign in, still holds the same roles, and that the session has not
+/// been ended (password change or reset, account turned off, signing out). A turned-off account, a changed role or a copied cookie
+/// therefore stops working within seconds, not when the cookie expires. The answer is cached briefly to spare the database; the server
+/// that made the change forgets it at once, so other servers behind a load balancer would take up to <c>CacheFor</c> longer.
 /// </summary>
 public static class SessionValidator
 {
@@ -31,13 +33,14 @@ public static class SessionValidator
         {
             entry.AbsoluteExpirationRelativeToNow = CacheFor;
             var user = await services.GetRequiredService<IUserRepository>().FindByUsernameAsync(username, context.HttpContext.RequestAborted);
-            return user is null ? null : new SessionState(user.Id, user.IsActive, user.Roles, user.MustChangePassword);
+            return user is null ? null : new SessionState(user.Id, user.IsActive, user.Roles, user.MustChangePassword, user.SecurityStamp.ToString("N"));
         });
 
         var cookieUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
         var cookieMustChange = principal.FindFirstValue(ClaimNames.MustChangePassword) == "true";
+        var cookieStamp = principal.FindFirstValue(ClaimNames.SecurityStamp);
         if (state is null || !state.IsActive || state.UserId.ToString() != cookieUserId || (int)state.Roles != rolesInCookie ||
-            state.MustChangePassword != cookieMustChange)
+            state.MustChangePassword != cookieMustChange || !string.Equals(state.SecurityStamp, cookieStamp, StringComparison.Ordinal))
             await Reject(context);
     }
 
@@ -50,5 +53,5 @@ public static class SessionValidator
         await context.HttpContext.SignOutAsync(SessionCookies.Scheme);
     }
 
-    private sealed record SessionState(Guid UserId, bool IsActive, AccessRole Roles, bool MustChangePassword);
+    private sealed record SessionState(Guid UserId, bool IsActive, AccessRole Roles, bool MustChangePassword, string SecurityStamp);
 }

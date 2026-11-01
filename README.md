@@ -27,7 +27,7 @@ The exact rules, and the 25 defects found in the desktop program and how each wa
 You need the .NET 10 SDK (the version in `global.json`), Node 22, and a SQL Server 2022 (Docker is the easiest).
 
 ```bash
-cp .env.example .env                                  # then edit CMS_DB_PASSWORD (SQL Server needs a strong password)
+cp .env.example .env                                  # then replace every REPLACE-ME (SQL Server needs a strong password)
 docker compose -f deploy/docker-compose.yml up -d sql
 
 export CMS_DATABASE_CONNECTION="Server=localhost,1433;Database=Cms;User Id=sa;Password=<CMS_DB_PASSWORD>;TrustServerCertificate=True"

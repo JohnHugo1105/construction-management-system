@@ -32,7 +32,32 @@ public sealed class SubProject
         StartDate = startDate;
     }
 
-    internal void Archive() => Status = SubProjectStatus.Archived;
+    /// <summary>True when this sub-project was archived only because its whole project was, so restoring the project brings it back.</summary>
+    public bool ArchivedWithProject { get; private set; }
 
-    internal void Restore() => Status = SubProjectStatus.Active;
+    internal void Archive()
+    {
+        Status = SubProjectStatus.Archived;
+        ArchivedWithProject = false;
+    }
+
+    internal void Restore()
+    {
+        Status = SubProjectStatus.Active;
+        ArchivedWithProject = false;
+    }
+
+    /// <summary>Archives the sub-project along with its project. One that was already archived on its own stays that way.</summary>
+    internal void ArchiveWithProject()
+    {
+        if (Status != SubProjectStatus.Active) return;
+        Status = SubProjectStatus.Archived;
+        ArchivedWithProject = true;
+    }
+
+    internal void RestoreWithProject()
+    {
+        if (!ArchivedWithProject) return;
+        Restore();
+    }
 }
