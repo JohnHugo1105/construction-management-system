@@ -17,6 +17,11 @@ indent_size = 4
 dotnet_sort_system_directives_first = true
 csharp_style_namespace_declarations = file_scoped:warning
 
+# EF Core writes migrations with a block namespace and regenerates them whenever the model changes before a first release,
+# so style rules do not apply to them.
+[src/Cms.Infrastructure/Persistence/Migrations/*.cs]
+generated_code = true
+
 [*.md]
 trim_trailing_whitespace = false
 

@@ -373,6 +373,13 @@ Found by reading its source and database model. File references are to the last 
 
 ## 10. Decisions that rest on assumptions (confirm with the business owner)
 
+**Owner call, 1 Nov 2026:** go with the recommended defaults in this section and in 10.1 as they stand, and revisit one when the
+business needs it. Three open points were settled that way: (a) item 9 stays as documented, so labor cost is project cost, and a company
+that does not want one worker's pay to be inferable posts workers to the whole project instead of a one-person sub-project; (b) a
+per-project count of problem parts on the dashboard is not built, because the project page already shows which division is over
+budget; (c) rotating the credentials that remain in the desktop program's git history is deferred by the owner, and the risk is
+still listed in `docs/operations/secrets-and-access.md`.
+
 1. **Payroll scope.** The retired app had no payroll, so the calculation (section 6) is new. It covers regular and overtime pay only.
    Confirm the overtime multiple (125%), the paid hours per day (8), whether holiday, rest-day and night premiums are needed, and who
    enters statutory contributions.
