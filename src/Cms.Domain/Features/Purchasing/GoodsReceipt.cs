@@ -167,6 +167,12 @@ public sealed class GoodsReceipt : AggregateRoot
             return accepted;
         }
 
+        if (lines.Count > PurchaseOrder.MaximumLines)
+        {
+            errors.Add("lines", $"A delivery can list at most {PurchaseOrder.MaximumLines} lines, the most an order can have.");
+            return accepted;
+        }
+
         var seen = new HashSet<Guid>();
         for (var index = 0; index < lines.Count; index++)
         {

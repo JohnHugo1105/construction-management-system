@@ -642,8 +642,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         name: "FK_PayrollLines_PayrollRuns_PayrollRunId",
                         column: x => x.PayrollRunId,
                         principalTable: "PayrollRuns",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PayrollLines_Workers_WorkerId",
                         column: x => x.WorkerId,

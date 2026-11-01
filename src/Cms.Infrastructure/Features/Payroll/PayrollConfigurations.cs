@@ -58,8 +58,9 @@ internal sealed class PayrollRunConfiguration : IEntityTypeConfiguration<Payroll
         builder.Ignore(item => item.TotalNetMinor);
         builder.Ignore(item => item.IsThirteenthMonth);
 
-        // A draft being recalculated can lose a worker who is no longer paid in it; that line goes with its rows. Runs themselves are never deleted.
-        builder.HasMany(item => item.Lines).WithOne().HasForeignKey(line => line.PayrollRunId).OnDelete(DeleteBehavior.Cascade);
+        // A draft being recalculated can lose a worker who is no longer paid in it; EF removes that loaded line and the database removes its rows. Runs
+        // themselves are never deleted: the database refuses a raw DELETE of a run, so an approved payroll can't be wiped by a stray script.
+        builder.HasMany(item => item.Lines).WithOne().HasForeignKey(line => line.PayrollRunId).OnDelete(DeleteBehavior.ClientCascade);
         builder.Navigation(item => item.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(item => new { item.TenantId, item.CreatedAtUtc });

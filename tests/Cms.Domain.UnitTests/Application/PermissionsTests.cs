@@ -72,6 +72,17 @@ public sealed class PermissionsTests
     }
 
     [Fact]
+    public void Screens_that_show_the_contract_price_or_amounts_derived_from_it_stay_within_the_people_who_see_costs()
+    {
+        // The change-order limit, the down payment still to bill, purchase order totals and bond amounts can all be worked back to costs or
+        // the contract price. Widening one of these permissions beyond costs.read would leak them, so the test fails first.
+        var costs = Permissions.RolesFor(Permissions.CostsRead);
+        foreach (var permission in new[] { Permissions.ChangeOrdersRead, Permissions.BillingRead, Permissions.BondsRead, Permissions.PurchasingRead,
+                     Permissions.SubcontractsRead, Permissions.ProgressRead })
+            Assert.Equal(default, Permissions.RolesFor(permission) & ~costs);
+    }
+
+    [Fact]
     public void An_unknown_permission_is_an_error_not_a_silent_denial() =>
         Assert.Throws<ArgumentException>(() => Permissions.IsAllowed(AccessRole.Administrator, "projects.delete-everything"));
 }

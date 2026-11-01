@@ -81,6 +81,17 @@ public sealed class GoodsReceiptTests
     }
 
     [Fact]
+    public void A_delivery_lists_at_most_as_many_lines_as_an_order_can_have_and_says_so_once()
+    {
+        var (order, project) = ApprovedOrder();
+        var tooMany = Enumerable.Range(0, PurchaseOrder.MaximumLines + 1).Select(_ => Arrived(order, 1, 1m)).ToList();
+
+        var errors = Refusal(() => Record(order, project, tooMany));
+
+        Assert.Equal(["A delivery can list at most 100 lines, the most an order can have."], errors["lines"]);
+    }
+
+    [Fact]
     public void A_refused_delivery_leaves_the_order_untouched()
     {
         var (order, project) = ApprovedOrder();

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CmsDbContext))]
-    [Migration("20261101232140_InitialCreate")]
+    [Migration("20261101233528_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -3502,7 +3502,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                     b.HasOne("Cms.Domain.Features.Payroll.PayrollRun", null)
                         .WithMany("Lines")
                         .HasForeignKey("PayrollRunId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("Cms.Domain.Features.Workforce.Worker", null)
