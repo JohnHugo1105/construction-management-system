@@ -628,6 +628,14 @@ describe('PayrollRunPage premiums and 13th-month pay', () => {
     );
   });
 
+  it('says in one line how many workers on archived projects were left out of holiday pay, only when there are any', async () => {
+    const { root } = await open(run({ workersOnArchivedProjectsLeftOut: 2 }), READER);
+
+    expect(texts(root, '.setup-line')).toContain(
+      '2 workers posted to archived projects were left out of holiday pay.',
+    );
+  });
+
   it('offers a preparer one way to recalculate a draft, even without contribution tables', async () => {
     const { root } = await open(
       run(),

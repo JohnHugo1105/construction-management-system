@@ -193,7 +193,7 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
 
         // A regular holiday a payroll already paid as not worked: recording work on it would pay the day twice.
         if (day.PaidAsUnworkedHoliday.Contains(worker.Id))
-            return ("workDate", $"{worker.FullName} was paid for {Format(entry.WorkDate)} as a regular holiday not worked. Void that payroll before recording work on this day.");
+            return ("workDate", $"{worker.FullName} was paid for {Format(entry.WorkDate)} as a regular holiday not worked. If the day is no longer a holiday, recalculate that payroll; otherwise void it. Then record the work.");
 
         var others = day.OtherHours.GetValueOrDefault(worker.Id);
         var total = others + entry.RegularHours + entry.OvertimeHours;

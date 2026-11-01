@@ -34,6 +34,15 @@ export function holidayNote(run: PayrollRun): string | null {
     : null;
 }
 
+/** One line on a draft, only when the server counted workers left out of holiday pay because their project is archived. */
+export function archivedPostingsNote(run: PayrollRun): string | null {
+  const count = run.workersOnArchivedProjectsLeftOut ?? 0;
+  if (count <= 0) return null;
+  return count === 1
+    ? '1 worker posted to an archived project was left out of holiday pay.'
+    : `${count} workers posted to archived projects were left out of holiday pay.`;
+}
+
 /** "130%", "12.5%". */
 export function percentText(bps: number): string {
   return `${Number((bps / 100).toFixed(2))}%`;

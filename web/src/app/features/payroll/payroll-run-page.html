@@ -91,6 +91,9 @@
         @if (holidayNote(); as note) {
           <p class="text-muted text-small setup-line">{{ note }}</p>
         }
+        @if (archivedNote(); as note) {
+          <p class="text-muted text-small setup-line">{{ note }}</p>
+        }
         @for (setup of setupLines(); track setup) {
           <p class="text-muted text-small setup-line">{{ setup }}</p>
         }

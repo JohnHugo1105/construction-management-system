@@ -26,6 +26,18 @@ public interface IPayrollRepository
     /// </summary>
     Task<IReadOnlyList<ThirteenthMonthBasis>> ThirteenthMonthBasisAsync(int year, Guid? excludingRunId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// The workers of payroll <paramref name="runId"/> who are already in a standing (not voided) 13th-month payroll for
+    /// <paramref name="year"/>, each saying whether that 13th-month payroll is approved. One statement however many workers.
+    /// </summary>
+    Task<IReadOnlyList<ThirteenthMonthClaim>> ThirteenthMonthClaimsAsync(Guid runId, int year, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// The archived projects, and the sub-projects archived on their own, among <paramref name="places"/>, as names people read ("Tower A",
+    /// "the Phase 2 sub-project of Tower A"), in name order. One statement.
+    /// </summary>
+    Task<IReadOnlyList<string>> ArchivedPlacesAsync(IReadOnlyCollection<(Guid ProjectId, Guid? SubProjectId)> places, CancellationToken cancellationToken);
+
     void Add(PayrollRun run);
 }
 
@@ -76,6 +88,9 @@ public sealed record AddHolidayRequest(DateOnly Date, string? Name, string? Type
 
 public sealed record ChangeHolidayRequest(string? Name, string? Type, int Version);
 
+/// <summary>A worker already in a standing 13th-month payroll for a year, and whether that payroll is approved.</summary>
+public sealed record ThirteenthMonthClaim(Guid WorkerId, bool Approved);
+
 public interface IPayrollReader
 {
     Task<PagedResult<PayrollRunListItemDto>> ListAsync(PayrollRunListQuery query, PageRequest page, CancellationToken cancellationToken);
@@ -122,11 +137,15 @@ public sealed record PayrollLineDto(Guid WorkerId, string WorkerName, string Emp
 /// Set on a regular payroll when the company has no holiday entered for the year the period ends in, so the page can say holidays were
 /// not taken into account. Null otherwise.
 /// </param>
+/// <param name="WorkersOnArchivedProjectsLeftOut">
+/// On a draft regular payroll: how many workers paid by the day were posted to an archived project or sub-project on a regular holiday in
+/// the period that they did not work, and so were left out of holiday pay (6.12). Worked out when read; zero otherwise.
+/// </param>
 public sealed record PayrollRunDto(Guid Id, DateOnly PeriodStart, DateOnly PeriodEnd, string Status, int WorkerCount, long TotalGrossMinor,
     long TotalDeductionsMinor, long TotalNetMinor, decimal HoursPerDay, int OvertimeMultiplierBps, string? CreatedByName, DateTimeOffset CreatedAtUtc,
     string? ApprovedByName, DateTimeOffset? ApprovedAtUtc, string? VoidedByName, DateTimeOffset? VoidedAtUtc, string? VoidReason,
     IReadOnlyList<PayrollLineDto> Lines, int Version, int RunsPerMonth = 2, long TotalEmployerSharesMinor = 0, string Kind = "Regular",
-    int? Year = null, int? HolidaysMissingForYear = null);
+    int? Year = null, int? HolidaysMissingForYear = null, int WorkersOnArchivedProjectsLeftOut = 0);
 
 public sealed record CreatePayrollRunRequest(DateOnly PeriodStart, DateOnly PeriodEnd, string? ClientRequestId);
 

@@ -398,7 +398,13 @@ half away from zero; a worker's pay and each project's share are sums of those r
   paid.
 * A worker is paid for an unworked holiday by **one standing payroll only** (the database enforces it); voiding that payroll frees the
   day. Recording work on a day a standing payroll already paid as an unworked holiday is refused ("... was paid for 7 Oct 2026 as a
-  regular holiday not worked. Void that payroll before recording work on this day.").
+  regular holiday not worked. If the day is no longer a holiday, recalculate that payroll; otherwise void it. Then record the work.").
+  A holiday removed from the calendar keeps that claim on a draft until the draft is recalculated.
+* A posting on an **archived project or sub-project** earns no unworked-holiday pay: the cost could not be charged there, and it would
+  stop the payroll's approval. A draft says so in one line, only when it happens ("2 workers posted to archived projects were left out
+  of holiday pay."). The count is worked out when the payroll is read: workers paid by the day, posted to an archived project or
+  sub-project on a regular holiday in the period, with no attendance that day and not paid for it by another standing payroll.
+  Restoring the project and recalculating the draft pays them.
 
 ### 6.13 Recalculating and approving a draft
 
@@ -406,8 +412,8 @@ half away from zero; a worker's pay and each project's share are sums of those r
   overtime multiple as they are now, then the contributions and tax (6.7). Typed deductions are kept; it is refused when they would be
   more than the new pay, or when a worker who would leave the payroll has typed deductions.
 * **Approving** works the pay out again (with the paid hours and overtime multiple the draft was made with) and is refused when it no
-  longer matches: "The pay rules, holidays, or a worker's rest day or posting changed after this payroll was worked out. Recalculate the
-  payroll, then approve." An approved payroll can always be explained from its rules and calendar.
+  longer matches: "The pay rules, holidays, or a worker's pay rate, status, rest day or posting changed after this payroll was worked
+  out. Recalculate the payroll, then approve." An approved payroll can always be explained from its rules and calendar.
 
 ### 6.14 13th-month pay
 
@@ -425,6 +431,20 @@ half away from zero; a worker's pay and each project's share are sums of those r
   "13th-month pay 2026", dated the year's last day or, when paid within the year, the day it is approved. Voiding reverses it.
 * Approving is refused when the year's approved payrolls changed since the draft was worked out ("The approved payrolls of 2026 changed
   after this 13th-month pay was worked out. Recalculate it, then approve.").
+* **Archived projects.** Preparing or recalculating a 13th-month payroll is refused, and nothing is saved, when any project or
+  sub-project its cost would be charged to is archived, naming them all in one message: "Riverside Residences is archived. Restore it
+  to charge its share of the 13th-month pay, then archive it again." (several: "A and B are archived. Restore them to charge their
+  share ..., then archive them again."). The archive rule itself is unchanged.
+* **The year's regular payrolls after the 13th-month pay.** While a standing (draft or approved) 13th-month payroll for a year includes
+  any of a regular payroll's workers (the year the regular payroll's period ends in):
+  * **voiding** that approved regular payroll is refused: "The 13th-month pay for 2026 already includes 2 of this payroll's workers.
+    Void the 13th-month pay first, then void this payroll.";
+  * **approving** a regular payroll is refused: "The 13th-month pay for 2026 was already approved for 2 of this payroll's workers, so
+    it would not count this payroll. Void the 13th-month pay first, then approve this payroll." When that 13th-month payroll is still a
+    draft: "The 13th-month pay for 2026 is being prepared for 2 of this payroll's workers. Void the 13th-month pay first, then approve
+    this payroll."
+  So an approved 13th-month pay never goes quietly out of date. Voiding the 13th-month pay, correcting the regular payrolls and
+  preparing it again is the path.
 * Prepared with the permission to run payroll (HR officers, accountants, administrators), approved with the permission to approve
   payroll (accountants, administrators); an approved one is voided by those who approve, a draft by whoever prepares payroll (as for
   any payroll).

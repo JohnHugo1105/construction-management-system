@@ -45,6 +45,15 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
         await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{runId}/approve",
             new { version = (await client.GetAsync<PayrollRunDto>($"/api/payroll-runs/{runId}")).Version });
 
+    private static Task<ProjectDto> ArchiveAsync(ApiClient client, ProjectDto project) =>
+        client.PostAsync<ProjectDto>($"/api/projects/{project.Id}/archive", new { reason = "Finished", note = (string?)null, version = project.Version });
+
+    private static Task<ProjectDto> RestoreAsync(ApiClient client, ProjectDto project) =>
+        client.PostAsync<ProjectDto>($"/api/projects/{project.Id}/restore", new { version = project.Version });
+
+    private static async Task<int> RunCountAsync(ApiClient client) =>
+        (await client.GetAsync<PagedResult<PayrollRunListItemDto>>("/api/payroll-runs")).Items.Count;
+
     private static async Task<string?> RefusalAsync(HttpResponseMessage response, HttpStatusCode expected)
     {
         Assert.Equal(expected, response.StatusCode);
@@ -84,6 +93,7 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
 
         var run = await CreateRunAsync(client, "2026-10-01", "2026-10-15");
         Assert.Null(run.HolidaysMissingForYear);
+        Assert.Equal(0, run.WorkersOnArchivedProjectsLeftOut);
         Assert.Equal(2, run.WorkerCount);
         Assert.Equal(420_400, run.TotalGrossMinor);
         var juanLine = run.Lines.Single(line => line.WorkerId == juan.Id);
@@ -142,7 +152,7 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
 
         await SetRestDayAsync(client, juan, "Sunday");
         var stale = await client.PostAsync($"/api/payroll-runs/{draft.Id}/approve", new { version = draft.Version });
-        Assert.Equal("The pay rules, holidays, or a worker's rest day or posting changed after this payroll was worked out. Recalculate the payroll, then approve.",
+        Assert.Equal("The pay rules, holidays, or a worker's pay rate, status, rest day or posting changed after this payroll was worked out. Recalculate the payroll, then approve.",
             await RefusalAsync(stale, HttpStatusCode.Conflict));
 
         // Recalculating takes the rest day (130%: 1,040.00) and keeps the cash advance.
@@ -246,31 +256,34 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
         var warehouse = await NewProjectAsync(client, "Warehouse B");
         var juan = await AssignAsync(client, await HireAsync(client, "W-001", "Juan", "Dela Cruz", rateMinor: 80_000), tower);
         var ana = await AssignAsync(client, await HireAsync(client, "W-002", "Ana", "Abad", "Helper", 60_000), tower);
+        var pedro = await AssignAsync(client, await HireAsync(client, "W-003", "Pedro", "Reyes", "Helper", 60_000), tower);
 
-        // October, first half: Juan 8 h on Tower A, 8 h + 2 h overtime on Warehouse B (overtime is not basic pay); Ana 4 h on Tower A.
+        // October, first half: Juan 8 h on Tower A twice, 8 h + 2 h overtime on Warehouse B (overtime is not basic pay); Ana 4 h on Tower A.
         await RecordAsync(client, juan.Id, tower.Id, "2026-10-05", 8m);
         await RecordAsync(client, juan.Id, warehouse.Id, "2026-10-06", 8m, 2m);
+        await RecordAsync(client, juan.Id, tower.Id, "2026-10-07", 8m);
         await RecordAsync(client, ana.Id, tower.Id, "2026-10-05", 4m);
         await ApproveAsync(client, (await CreateRunAsync(client, "2026-10-01", "2026-10-15")).Id);
-        // Second half: Juan 8 h on Tower A, still a draft when the 13th-month pay is first worked out.
-        await RecordAsync(client, juan.Id, tower.Id, "2026-10-20", 8m);
+        // Second half: Pedro (new on site) 4 h on Tower A, still a draft when the 13th-month pay is first worked out. A payroll of a worker
+        // the 13th-month pay already includes could not be approved after it (6.14), so the second half pays only Pedro.
+        await RecordAsync(client, pedro.Id, tower.Id, "2026-10-20", 4m);
         var secondHalf = await CreateRunAsync(client, "2026-10-16", "2026-10-31");
 
         Assert.Equal(HttpStatusCode.Forbidden, (await manager.PostAsync("/api/payroll-runs/thirteenth-month", new { year = 2026 })).StatusCode);
         var future = await hr.PostAsync("/api/payroll-runs/thirteenth-month", new { year = 2027 });
         Assert.Contains("can't be for a future year", await RefusalAsync(future, HttpStatusCode.UnprocessableEntity));
 
-        // Basic pay so far: Juan 1,600.00 (133.33), Ana 300.00 (25.00).
+        // Basic pay so far: Juan 2,400.00 (200.00), Ana 300.00 (25.00).
         var requestId = Guid.NewGuid().ToString("N");
         var thirteenth = await hr.PostAsync<PayrollRunDto>("/api/payroll-runs/thirteenth-month", new { year = 2026, clientRequestId = requestId });
         Assert.Equal(thirteenth.Id, (await hr.PostAsync<PayrollRunDto>("/api/payroll-runs/thirteenth-month", new { year = 2026, clientRequestId = requestId })).Id);
         Assert.Equal(("ThirteenthMonth", 2026, new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)),
             (thirteenth.Kind, thirteenth.Year, thirteenth.PeriodStart, thirteenth.PeriodEnd));
-        Assert.Equal([13_333L, 2_500L], thirteenth.Lines.OrderBy(line => line.EmployeeNumber).Select(line => line.ThirteenthMonthPayMinor));
+        Assert.Equal([20_000L, 2_500L], thirteenth.Lines.OrderBy(line => line.EmployeeNumber).Select(line => line.ThirteenthMonthPayMinor));
         Assert.All(thirteenth.Lines, line => Assert.Empty(line.Deductions));
         Assert.Null(thirteenth.HolidaysMissingForYear);
 
-        // The second half is approved: the 13th-month draft no longer matches the year's pay and must be recalculated first.
+        // The second half is approved: the 13th-month draft no longer matches the year's pay (Pedro joins) and must be recalculated first.
         await ApproveAsync(client, secondHalf.Id);
         Assert.Equal(HttpStatusCode.Forbidden, (await hr.PostAsync($"/api/payroll-runs/{thirteenth.Id}/approve", new { version = thirteenth.Version })).StatusCode);
         var stale = await client.PostAsync($"/api/payroll-runs/{thirteenth.Id}/approve", new { version = thirteenth.Version });
@@ -282,7 +295,8 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
         var juanLine = thirteenth.Lines.Single(line => line.WorkerId == juan.Id);
         Assert.Equal((20_000L, 240_000L, 20_000L), (juanLine.ThirteenthMonthPayMinor, juanLine.ThirteenthMonthBasisMinor, juanLine.GrossPayMinor));
         Assert.Equal([13_333L, 6_667L], juanLine.Allocations.OrderBy(share => share.ProjectName).Select(share => share.GrossMinor));
-        Assert.Equal(22_500, thirteenth.TotalGrossMinor);
+        Assert.Equal([20_000L, 2_500L, 2_500L], thirteenth.Lines.OrderBy(line => line.EmployeeNumber).Select(line => line.ThirteenthMonthPayMinor));
+        Assert.Equal(25_000, thirteenth.TotalGrossMinor);
 
         // A second 13th-month payroll for the year finds nobody left to pay.
         var again = await hr.PostAsync("/api/payroll-runs/thirteenth-month", new { year = 2026 });
@@ -291,19 +305,146 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
 
         var approved = await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{thirteenth.Id}/approve", new { version = thirteenth.Version });
         var posted = await PostedCostsAsync(_factory, user.TenantId, approved.Id);
-        Assert.Equal(22_500, posted.Sum(entry => entry.GrossMinor));
-        Assert.Equal(15_833, posted.Single(entry => entry.ProjectId == tower.Id).GrossMinor);
+        Assert.Equal(25_000, posted.Sum(entry => entry.GrossMinor));
+        Assert.Equal(18_333, posted.Single(entry => entry.ProjectId == tower.Id).GrossMinor);
         Assert.Equal(6_667, posted.Single(entry => entry.ProjectId == warehouse.Id).GrossMinor);
         Assert.All(posted, entry => Assert.Equal("13th-month pay 2026", entry.Description));
         var list = await client.GetAsync<PagedResult<PayrollRunListItemDto>>("/api/payroll-runs");
-        Assert.Equal(("ThirteenthMonth", 2026, 22_500L), list.Items.Where(item => item.Id == approved.Id).Select(item => (item.Kind, item.Year, item.TotalGrossMinor)).Single());
+        Assert.Equal(("ThirteenthMonth", 2026, 25_000L), list.Items.Where(item => item.Id == approved.Id).Select(item => (item.Kind, item.Year, item.TotalGrossMinor)).Single());
 
         // Voiding reverses the cost and frees the workers' year: a new 13th-month payroll pays them again.
         await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{approved.Id}/void", new { reason = "Prepared early", version = approved.Version });
         Assert.All(await PostedCostsAsync(_factory, user.TenantId, approved.Id), entry => Assert.True(entry.IsVoided));
         var redo = await hr.PostAsync<PayrollRunDto>("/api/payroll-runs/thirteenth-month", new { year = 2026 });
-        Assert.Equal(22_500, redo.TotalGrossMinor);
+        Assert.Equal(25_000, redo.TotalGrossMinor);
         AssertNoPayFigures(await AuditSummariesAsync(_factory, user.TenantId));
+    }
+
+    [SqlServerFact]
+    public async Task A_worker_posted_to_an_archived_project_is_left_out_of_holiday_pay_so_the_payroll_can_still_be_approved()
+    {
+        var (client, user) = await SignedInAsync(_factory);
+        using var _c = client;
+        var tower = await NewProjectAsync(client, "Tower A");
+        var warehouse = await NewProjectAsync(client, "Warehouse B");
+        var juan = await AssignAsync(client, await HireAsync(client, "W-001", "Juan", "Dela Cruz", rateMinor: 80_000), warehouse);
+        var ana = await AssignAsync(client, await HireAsync(client, "W-002", "Ana", "Abad", "Helper", 60_000), tower);
+        await AddHolidayAsync(client, "2026-10-07");
+        await RecordAsync(client, juan.Id, tower.Id, "2026-10-05", 8m);
+        await RecordAsync(client, ana.Id, tower.Id, "2026-10-05", 8m);
+        // Warehouse B is finished while Juan is still posted there.
+        await ArchiveAsync(client, warehouse);
+
+        // Ana (posted to Tower A) is paid the holiday as before; Juan's holiday would be charged to the archived project, so it is left out.
+        var draft = await CreateRunAsync(client, "2026-10-01", "2026-10-15");
+        Assert.Equal(1, draft.WorkersOnArchivedProjectsLeftOut);
+        var juanLine = draft.Lines.Single(line => line.WorkerId == juan.Id);
+        Assert.Equal((0L, 80_000L), (juanLine.HolidayPayMinor, juanLine.GrossPayMinor));
+        Assert.Empty(juanLine.HolidayDates ?? []);
+        var anaLine = draft.Lines.Single(line => line.WorkerId == ana.Id);
+        Assert.Equal(60_000, anaLine.HolidayPayMinor);
+        Assert.Equal([new DateOnly(2026, 10, 7)], anaLine.HolidayDates);
+
+        var approved = await ApproveAsync(client, draft.Id);
+        Assert.Equal("Approved", approved.Status);
+        Assert.Equal(0, approved.WorkersOnArchivedProjectsLeftOut); // the note belongs to a draft
+        var posted = await PostedCostsAsync(_factory, user.TenantId, draft.Id);
+        Assert.Equal(200_000, Assert.Single(posted).GrossMinor);
+        Assert.Equal(tower.Id, posted[0].ProjectId);
+    }
+
+    [SqlServerFact]
+    public async Task A_13th_month_payroll_is_refused_up_front_while_a_project_its_cost_goes_to_is_archived()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var tower = await NewProjectAsync(client, "Tower A");
+        var warehouse = await NewProjectAsync(client, "Warehouse B");
+        var juan = await AssignAsync(client, await HireAsync(client, "W-001", rateMinor: 80_000), tower);
+        await RecordAsync(client, juan.Id, tower.Id, "2026-10-05", 8m);
+        await RecordAsync(client, juan.Id, warehouse.Id, "2026-10-06", 8m);
+        await ApproveAsync(client, (await CreateRunAsync(client, "2026-10-01", "2026-10-15")).Id);
+        tower = await ArchiveAsync(client, await client.GetAsync<ProjectDto>($"/api/projects/{tower.Id}"));
+        warehouse = await ArchiveAsync(client, await client.GetAsync<ProjectDto>($"/api/projects/{warehouse.Id}"));
+
+        // Both projects the basic pay was earned on are archived: one message names both, and nothing is saved.
+        var both = await client.PostAsync("/api/payroll-runs/thirteenth-month", new { year = 2026, clientRequestId = Guid.NewGuid().ToString("N") });
+        Assert.Equal("Tower A and Warehouse B are archived. Restore them to charge their share of the 13th-month pay, then archive them again.",
+            await RefusalAsync(both, HttpStatusCode.Conflict));
+        Assert.Equal(1, await RunCountAsync(client));
+
+        tower = await RestoreAsync(client, tower);
+        var one = await client.PostAsync("/api/payroll-runs/thirteenth-month", new { year = 2026 });
+        Assert.Equal("Warehouse B is archived. Restore it to charge its share of the 13th-month pay, then archive it again.",
+            await RefusalAsync(one, HttpStatusCode.Conflict));
+        Assert.Equal(1, await RunCountAsync(client));
+
+        // Restored, it prepares; archived again before a recalculation, the recalculation is refused the same way and changes nothing.
+        warehouse = await RestoreAsync(client, warehouse);
+        var thirteenth = await client.PostAsync<PayrollRunDto>("/api/payroll-runs/thirteenth-month", new { year = 2026 });
+        Assert.Equal(13_333, thirteenth.TotalGrossMinor);
+        await ArchiveAsync(client, warehouse);
+        var recalculate = await client.PostAsync($"/api/payroll-runs/{thirteenth.Id}/recalculate-statutory", new { version = thirteenth.Version });
+        Assert.Equal("Warehouse B is archived. Restore it to charge its share of the 13th-month pay, then archive it again.",
+            await RefusalAsync(recalculate, HttpStatusCode.Conflict));
+        Assert.Equal(thirteenth.Version, (await client.GetAsync<PayrollRunDto>($"/api/payroll-runs/{thirteenth.Id}")).Version);
+    }
+
+    [SqlServerFact]
+    public async Task Once_the_13th_month_pay_includes_a_payrolls_workers_that_years_payrolls_are_not_voided_or_approved_until_it_is_voided()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var tower = await NewProjectAsync(client, "Tower A");
+        var juan = await AssignAsync(client, await HireAsync(client, "W-001", rateMinor: 80_000), tower);
+        await RecordAsync(client, juan.Id, tower.Id, "2026-10-05", 8m);
+        var first = await ApproveAsync(client, (await CreateRunAsync(client, "2026-10-01", "2026-10-15")).Id);
+        await RecordAsync(client, juan.Id, tower.Id, "2026-10-20", 8m);
+        var second = await CreateRunAsync(client, "2026-10-16", "2026-10-31");
+        var thirteenth = await client.PostAsync<PayrollRunDto>("/api/payroll-runs/thirteenth-month", new { year = 2026 });
+
+        // A draft 13th-month pay already includes Juan.
+        var approveWhileDraft = await client.PostAsync($"/api/payroll-runs/{second.Id}/approve", new { version = second.Version });
+        Assert.Equal("The 13th-month pay for 2026 is being prepared for 1 of this payroll's workers. Void the 13th-month pay first, then approve this payroll.",
+            await RefusalAsync(approveWhileDraft, HttpStatusCode.Conflict));
+        var voidFirst = await client.PostAsync($"/api/payroll-runs/{first.Id}/void", new { reason = "Wrong hours", version = first.Version });
+        Assert.Equal("The 13th-month pay for 2026 already includes 1 of this payroll's workers. Void the 13th-month pay first, then void this payroll.",
+            await RefusalAsync(voidFirst, HttpStatusCode.Conflict));
+
+        // Approved, it would not count the second half.
+        thirteenth = await ApproveAsync(client, thirteenth.Id);
+        var approveAfter = await client.PostAsync($"/api/payroll-runs/{second.Id}/approve", new { version = second.Version });
+        Assert.Equal("The 13th-month pay for 2026 was already approved for 1 of this payroll's workers, so it would not count this payroll. Void the 13th-month pay first, then approve this payroll.",
+            await RefusalAsync(approveAfter, HttpStatusCode.Conflict));
+        Assert.Equal(("Draft", "Approved"), ((await client.GetAsync<PayrollRunDto>($"/api/payroll-runs/{second.Id}")).Status,
+            (await client.GetAsync<PayrollRunDto>($"/api/payroll-runs/{first.Id}")).Status));
+
+        // With the 13th-month pay voided, both go through as before.
+        await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{thirteenth.Id}/void", new { reason = "Prepared early", version = thirteenth.Version });
+        Assert.Equal("Approved", (await ApproveAsync(client, second.Id)).Status);
+        Assert.Equal("Voided", (await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{first.Id}/void", new { reason = "Wrong hours", version = first.Version })).Status);
+    }
+
+    [SqlServerFact]
+    public async Task Recalculating_a_draft_that_pays_an_unworked_holiday_gives_the_same_figures()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var tower = await NewProjectAsync(client);
+        var ana = await AssignAsync(client, await HireAsync(client, "W-002", "Ana", "Abad", "Helper", 60_000), tower);
+        await AddHolidayAsync(client, "2026-10-07");
+        await RecordAsync(client, ana.Id, tower.Id, "2026-10-05", 8m);
+        var draft = await CreateRunAsync(client, "2026-10-01", "2026-10-15");
+        Assert.Equal(60_000, Assert.Single(draft.Lines).HolidayPayMinor);
+
+        // The holiday claim is replaced in the same save as the old one is removed; the database allows one standing claim a day.
+        var recalculated = await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{draft.Id}/recalculate-statutory", new { version = draft.Version });
+        var line = Assert.Single(recalculated.Lines);
+        Assert.Equal((120_000L, 60_000L), (recalculated.TotalGrossMinor, line.HolidayPayMinor));
+        Assert.Equal([new DateOnly(2026, 10, 7)], line.HolidayDates);
+        recalculated = await client.PostAsync<PayrollRunDto>($"/api/payroll-runs/{draft.Id}/recalculate-statutory", new { version = recalculated.Version });
+        Assert.Equal(120_000, recalculated.TotalGrossMinor);
+        Assert.Equal("Approved", (await ApproveAsync(client, draft.Id)).Status);
     }
 
     [SqlServerFact]
@@ -322,7 +463,7 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
             Assert.All(names, name => Assert.True(element.TryGetProperty(name, out _), $"Missing {name} in {element}"));
 
         var runJson = await RawAsync(client, $"/api/payroll-runs/{run.Id}");
-        Has(runJson, "kind", "year", "holidaysMissingForYear", "lines");
+        Has(runJson, "kind", "year", "holidaysMissingForYear", "workersOnArchivedProjectsLeftOut", "lines");
         Has(runJson.GetProperty("lines")[0], "nightHours", "premiumPayMinor", "nightPayMinor", "holidayPayMinor", "thirteenthMonthPayMinor",
             "thirteenthMonthBasisMinor", "holidayDates");
         Has((await RawAsync(client, "/api/payroll-runs")).GetProperty("items")[0], "kind", "year");
@@ -379,7 +520,8 @@ public sealed class PayrollPremiumApiTests : IClassFixture<CmsApiFactory>
         var forty = await MeasureAsync(40);
 
         Assert.Equal(five, forty);
-        // Measured 1 Nov 2026: the read is 4 statements, approving (which works the pay out again to check it) 23, approving the 13th-month pay 16.
-        Assert.Equal((4, 23, 16), forty);
+        // Measured 1 Nov 2026: the read is 4 statements, approving (which works the pay out again to check it, and looks once for a 13th-month
+        // pay that already includes its workers) 24, approving the 13th-month pay 16.
+        Assert.Equal((4, 24, 16), forty);
     }
 }

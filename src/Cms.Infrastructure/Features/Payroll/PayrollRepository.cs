@@ -32,9 +32,13 @@ internal sealed class PayrollRepository(CmsDbContext db) : IPayrollRepository
         var last = wanted.Max();
 
         // Three statements however many workers and days: the postings that touch the holidays, the attendance on them, and the holidays
-        // other standing payrolls already paid.
+        // other standing payrolls already paid. A posting on an archived project or sub-project is left out: the holiday's cost could not be
+        // charged there, so it would stop the payroll's approval (6.12). The run page says how many workers that left out.
         var postings = await db.Set<WorkerAssignment>().AsNoTracking()
             .Where(assignment => assignment.StartDate <= last && (assignment.EndDate == null || assignment.EndDate > first))
+            .Where(assignment => db.Set<Project>().Any(project => project.Id == assignment.ProjectId && project.Status != ProjectStatus.Archived) &&
+                (assignment.SubProjectId == null ||
+                 db.Set<SubProject>().Any(sub => sub.Id == assignment.SubProjectId && sub.Status != SubProjectStatus.Archived)))
             .Select(assignment => new { assignment.WorkerId, assignment.ProjectId, assignment.SubProjectId, assignment.StartDate, assignment.EndDate })
             .ToListAsync(cancellationToken);
         if (postings.Count == 0) return [];
@@ -106,6 +110,40 @@ internal sealed class PayrollRepository(CmsDbContext db) : IPayrollRepository
                 person.EmployeeNumber, person.Designation ?? "",
                 sharesByWorker[person.Id].Select(item => new BasicPayShare(item.ProjectId, item.SubProjectId, item.BasicMinor)).ToArray()))
             .ToArray();
+    }
+
+    public async Task<IReadOnlyList<ThirteenthMonthClaim>> ThirteenthMonthClaimsAsync(Guid runId, int year, CancellationToken cancellationToken) =>
+        // The 13th-month year is cleared when its payroll is voided, so a line that still carries it belongs to a standing payroll.
+        await (
+            from claim in db.Set<PayrollLine>().AsNoTracking()
+            join thirteenth in db.Set<PayrollRun>() on claim.PayrollRunId equals thirteenth.Id
+            where claim.ThirteenthMonthYear == year && claim.PayrollRunId != runId &&
+                db.Set<PayrollLine>().Any(line => line.PayrollRunId == runId && line.WorkerId == claim.WorkerId)
+            select new ThirteenthMonthClaim(claim.WorkerId, thirteenth.Status == PayrollRunStatus.Approved))
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<string>> ArchivedPlacesAsync(IReadOnlyCollection<(Guid ProjectId, Guid? SubProjectId)> places,
+        CancellationToken cancellationToken)
+    {
+        var projectIds = places.Select(place => place.ProjectId).Distinct().ToArray();
+        if (projectIds.Length == 0) return [];
+        var wanted = places.ToHashSet();
+        var found = await db.Set<Project>().AsNoTracking().Include(project => project.SubProjects)
+            .Where(project => projectIds.Contains(project.Id))
+            .ToListAsync(cancellationToken);
+
+        var names = new List<string>();
+        foreach (var project in found.OrderBy(project => project.Name, StringComparer.CurrentCultureIgnoreCase))
+        {
+            if (project.IsArchived) names.Add(project.Name);
+            // A sub-project archived along with its project comes back when the project is restored, so only the project is named.
+            foreach (var sub in project.SubProjects
+                         .Where(sub => sub.Status == SubProjectStatus.Archived && !(project.IsArchived && sub.ArchivedWithProject) &&
+                             wanted.Contains((project.Id, sub.Id)))
+                         .OrderBy(sub => sub.Name, StringComparer.CurrentCultureIgnoreCase))
+                names.Add($"the {sub.Name} sub-project of {project.Name}");
+        }
+        return names;
     }
 
     public void Add(PayrollRun run) => db.Set<PayrollRun>().Add(run);
@@ -216,6 +254,26 @@ internal sealed class PayrollReader(CmsDbContext db) : IPayrollReader
             // The needs-setup note: a regular payroll for a year in which the company entered no holiday at all.
             NoHolidaysThatYear = item.Kind == PayrollRunKind.Regular &&
                 !db.Set<CompanyHoliday>().Any(holiday => holiday.Date.Year == item.PeriodEnd.Year),
+            // The workers a draft left out of holiday pay because they were posted to an archived project or sub-project (6.12): paid by the
+            // day, posted there on a regular holiday in the period, with no attendance that day and not paid for it by another standing
+            // payroll. Part of this statement, so the read stays at its statement count.
+            LeftOutOnArchived = item.Kind == PayrollRunKind.Regular && item.Status == PayrollRunStatus.Draft
+                ? (from holiday in db.Set<CompanyHoliday>()
+                   where holiday.Type == HolidayType.Regular && holiday.Date >= item.PeriodStart && holiday.Date <= item.PeriodEnd
+                   from posting in db.Set<WorkerAssignment>()
+                   where posting.StartDate <= holiday.Date && (posting.EndDate == null || posting.EndDate > holiday.Date) &&
+                       (db.Set<Project>().Any(project => project.Id == posting.ProjectId && project.Status == ProjectStatus.Archived) ||
+                        db.Set<SubProject>().Any(sub => sub.Id == posting.SubProjectId && sub.Status == SubProjectStatus.Archived)) &&
+                       !db.Set<AttendanceEntry>().Any(entry => entry.WorkerId == posting.WorkerId && entry.WorkDate == holiday.Date &&
+                           entry.Status == AttendanceStatus.Recorded) &&
+                       !(from paid in db.Set<PayrollHolidayPay>()
+                         join line in db.Set<PayrollLine>() on paid.PayrollLineId equals line.Id
+                         where paid.WorkerId == posting.WorkerId && paid.ClaimDate == holiday.Date && line.PayrollRunId != item.Id
+                         select paid.Id).Any() &&
+                       db.Set<WorkerRate>().Where(rate => rate.WorkerId == posting.WorkerId && rate.EffectiveFrom <= holiday.Date)
+                           .OrderByDescending(rate => rate.EffectiveFrom).Select(rate => (RateUnit?)rate.Unit).FirstOrDefault() == RateUnit.Daily
+                   select posting.WorkerId).Distinct().Count()
+                : 0,
             CreatedBy = db.Set<User>().Where(user => user.Id == item.CreatedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
             ApprovedBy = db.Set<User>().Where(user => user.Id == item.ApprovedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
             VoidedBy = db.Set<User>().Where(user => user.Id == item.VoidedByUserId).Select(user => user.DisplayName).FirstOrDefault()
@@ -296,6 +354,6 @@ internal sealed class PayrollReader(CmsDbContext db) : IPayrollReader
         return new PayrollRunDto(run.Id, run.PeriodStart, run.PeriodEnd, run.Status.ToString(), lineDtos.Length, totalGross, totalDeductions,
             totalGross - totalDeductions, run.HoursPerDay, run.OvertimeMultiplierBps, run.CreatedBy, run.CreatedAtUtc, run.ApprovedBy, run.ApprovedAtUtc,
             run.VoidedBy, run.VoidedAtUtc, run.VoidReason, lineDtos, run.Version, run.RunsPerMonth, lineDtos.Sum(line => line.EmployerSharesMinor),
-            run.Kind.ToString(), run.Year, run.NoHolidaysThatYear ? run.PeriodEnd.Year : null);
+            run.Kind.ToString(), run.Year, run.NoHolidaysThatYear ? run.PeriodEnd.Year : null, run.LeftOutOnArchived);
     }
 }

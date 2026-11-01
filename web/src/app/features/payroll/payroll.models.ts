@@ -118,6 +118,8 @@ export interface PayrollRun {
   readonly year?: number | null;
   /** Set when the company has no holiday entered for the year the period ends in: the run page says so in one line. */
   readonly holidaysMissingForYear?: number | null;
+  /** On a draft: workers posted to an archived project on a holiday in the period, left out of holiday pay (the server counts them). */
+  readonly workersOnArchivedProjectsLeftOut?: number;
 }
 
 /**

@@ -120,8 +120,9 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
 
         if (run.IsThirteenthMonth)
         {
-            run.Recalculate(await ThirteenthMonthLinesAsync(run.Year!.Value, run.Id, cancellationToken), organization.HoursPerDay,
-                organization.OvertimeMultiplierBps, now);
+            var thirteenthLines = await ThirteenthMonthLinesAsync(run.Year!.Value, run.Id, cancellationToken);
+            await EnsureNoArchivedPlacesAsync(thirteenthLines, cancellationToken);
+            run.Recalculate(thirteenthLines, organization.HoursPerDay, organization.OvertimeMultiplierBps, now);
             audit.Record("Payroll.Recalculated", nameof(PayrollRun), run.Id, $"Recalculated the 13th-month pay for {run.Year}.");
         }
         else
@@ -158,6 +159,7 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
             var lines = request.Year > today.Year || request.Year < PayrollRun.EarliestThirteenthMonthYear
                 ? []
                 : await ThirteenthMonthLinesAsync(request.Year, null, cancellationToken);
+            await EnsureNoArchivedPlacesAsync(lines, cancellationToken);
             var run = PayrollRun.DraftThirteenthMonth(Guid.NewGuid(), currentUser.TenantId, request.Year, lines, organization.HoursPerDay,
                 organization.OvertimeMultiplierBps, currentUser.UserId, requestId, today, clock.UtcNow);
             runs.Add(run);
@@ -213,6 +215,30 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     /// <summary>The 13th-month lines for a year, from the approved payrolls; three statements however many workers and payrolls.</summary>
     private async Task<IReadOnlyList<CalculatedPayLine>> ThirteenthMonthLinesAsync(int year, Guid? runId, CancellationToken cancellationToken) =>
         ThirteenthMonthCalculator.Calculate(await runs.ThirteenthMonthBasisAsync(year, runId, cancellationToken));
+
+    /// <summary>
+    /// A 13th-month payroll charges each worker's share to the projects (and sub-projects) where the basic pay was earned, and an archived
+    /// one takes no new cost. Rather than prepare a payroll that could never be approved, it is refused up front, naming every archived
+    /// place at once. The archive rule itself is unchanged: restore, approve, archive again.
+    /// </summary>
+    private async Task EnsureNoArchivedPlacesAsync(IReadOnlyList<CalculatedPayLine> lines, CancellationToken cancellationToken)
+    {
+        var places = lines.SelectMany(line => line.Allocations).Where(share => share.GrossMinor > 0)
+            .Select(share => (share.ProjectId, share.SubProjectId)).Distinct().ToArray();
+        if (places.Length == 0) return;
+        var archived = await runs.ArchivedPlacesAsync(places, cancellationToken);
+        if (archived.Count > 0) throw new DomainRuleException(ArchivedPlacesMessage(archived));
+    }
+
+    /// <summary>"Tower A is archived. Restore it ...", or "Tower A and Warehouse B are archived. Restore them ...".</summary>
+    internal static string ArchivedPlacesMessage(IReadOnlyList<string> places)
+    {
+        var list = places.Count == 1 ? places[0] : $"{string.Join(", ", places.Take(places.Count - 1))} and {places[^1]}";
+        list = char.ToUpperInvariant(list[0]) + list[1..];
+        return places.Count == 1
+            ? $"{list} is archived. Restore it to charge its share of the 13th-month pay, then archive it again."
+            : $"{list} are archived. Restore them to charge their share of the 13th-month pay, then archive them again.";
+    }
 
     /// <summary>Changes one worker's calculated contribution or tax on a draft, with a reason (kept on the payroll, not in the activity log).</summary>
     public async Task<PayrollRunDto> AdjustStatutoryAsync(Guid runId, Guid workerId, string agencyText, AdjustStatutoryRequest request,
@@ -270,7 +296,18 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
     {
         var run = await LoadAsync(runId, cancellationToken);
         ConcurrencyGuard.Ensure(run.Version, request.Version);
-        if (run.Status == PayrollRunStatus.Draft) await EnsureStillCalculatedAsync(run, cancellationToken);
+        if (run.Status == PayrollRunStatus.Draft)
+        {
+            // The year's 13th-month pay counts only the payrolls approved before it, so a payroll approved after it would be left out of it.
+            if (!run.IsThirteenthMonth && await ThirteenthMonthClaimsAsync(run, cancellationToken) is { Count: > 0 } claims)
+            {
+                var year = run.PeriodEnd.Year;
+                throw new DomainRuleException(claims.Any(claim => claim.Approved)
+                    ? $"The 13th-month pay for {year} was already approved for {claims.Count} of this payroll's workers, so it would not count this payroll. Void the 13th-month pay first, then approve this payroll."
+                    : $"The 13th-month pay for {year} is being prepared for {claims.Count} of this payroll's workers. Void the 13th-month pay first, then approve this payroll.");
+            }
+            await EnsureStillCalculatedAsync(run, cancellationToken);
+        }
         var now = clock.UtcNow;
         run.Approve(currentUser.UserId, now);
         // A 13th-month payroll's cost is dated the year's last day, or today when it is paid early in the year itself.
@@ -342,8 +379,12 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         var calculation = await CalculateAsync(await attendance.ListByPayrollRunAsync(run.Id, cancellationToken), run.PeriodStart, run.PeriodEnd,
             run.HoursPerDay, run.OvertimeMultiplierBps, run.Id, cancellationToken);
         if (!run.MatchesCalculation(calculation.Lines))
-            throw new DomainRuleException("The pay rules, holidays, or a worker's rest day or posting changed after this payroll was worked out. Recalculate the payroll, then approve.");
+            throw new DomainRuleException("The pay rules, holidays, or a worker's pay rate, status, rest day or posting changed after this payroll was worked out. Recalculate the payroll, then approve.");
     }
+
+    /// <summary>The workers of a regular payroll already in a standing 13th-month payroll for the year its period ends in (one statement).</summary>
+    private Task<IReadOnlyList<ThirteenthMonthClaim>> ThirteenthMonthClaimsAsync(PayrollRun run, CancellationToken cancellationToken) =>
+        runs.ThirteenthMonthClaimsAsync(run.Id, run.PeriodEnd.Year, cancellationToken);
 
     private static DateOnly DateOnlyMin(DateOnly first, DateOnly second) => first < second ? first : second;
 
@@ -358,6 +399,12 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         var wasApproved = run.Status == PayrollRunStatus.Approved;
         if (wasApproved && !Permissions.IsAllowed(currentUser.Roles, Permissions.PayrollApprove))
             throw new UnauthorizedAccessException("Only someone who can approve payroll may void an approved payroll.");
+
+        // A standing 13th-month pay for the year was worked out from this payroll's basic pay: voiding this one would leave it paying for
+        // pay that no longer stands. Its 13th-month pay is voided first, then prepared again after the correction.
+        if (wasApproved && !run.IsThirteenthMonth && await ThirteenthMonthClaimsAsync(run, cancellationToken) is { Count: > 0 } claims)
+            throw new DomainRuleException(
+                $"The 13th-month pay for {run.PeriodEnd.Year} already includes {claims.Count} of this payroll's workers. Void the 13th-month pay first, then void this payroll.");
 
         // Voiding changes the cost of every project the payroll charged. An archived project is read-only (restore it first), so a
         // finished project's figures can't change unnoticed because of a payroll void made weeks later. Checked before anything changes.

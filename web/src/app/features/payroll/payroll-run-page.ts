@@ -27,7 +27,7 @@ import { ApproveRunDialog } from './approve-run-dialog';
 import { DeductionsDialog } from './deductions-dialog';
 import { payrollExportUrl } from './payroll-api';
 import { PAYROLL_STATUS, runActions } from './payroll-rules';
-import { holidayNote, payBreakdown, runTitle } from './premium-rules';
+import { archivedPostingsNote, holidayNote, payBreakdown, runTitle } from './premium-rules';
 import { PayrollRunState } from './payroll-run-state';
 import { LineView, PayrollLineDetail } from './payroll-line-detail';
 import { PayrollDeduction, PayrollLine, PayrollRun } from './payroll.models';
@@ -100,6 +100,11 @@ export class PayrollRunPage {
   /** One quiet line when the company has no holiday entered for the payroll's year (the API decides). */
   protected readonly holidayNote = computed(() =>
     this.state.status() === 'ready' ? holidayNote(this.state.run()) : null,
+  );
+
+  /** One quiet line when the server left workers posted to archived projects out of holiday pay. */
+  protected readonly archivedNote = computed(() =>
+    this.state.status() === 'ready' ? archivedPostingsNote(this.state.run()) : null,
   );
 
   protected readonly actions = computed(() =>

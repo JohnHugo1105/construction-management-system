@@ -3,6 +3,7 @@ import {
   FACTOR_FIELDS,
   bpsFromPercent,
   checkFactor,
+  archivedPostingsNote,
   holidayNote,
   payBreakdown,
   percentText,
@@ -29,6 +30,17 @@ describe('premium rules presentation', () => {
     expect(holidayNote(run())).toBeNull();
     expect(holidayNote(run({ holidaysMissingForYear: 2026 }))).toBe(
       'No holidays are entered for 2026. Add them under Payroll, Holidays if any fall in this period.',
+    );
+  });
+
+  it('counts the workers left out of holiday pay for an archived project, only when there are any', () => {
+    expect(archivedPostingsNote(run())).toBeNull();
+    expect(archivedPostingsNote(run({ workersOnArchivedProjectsLeftOut: 0 }))).toBeNull();
+    expect(archivedPostingsNote(run({ workersOnArchivedProjectsLeftOut: 1 }))).toBe(
+      '1 worker posted to an archived project was left out of holiday pay.',
+    );
+    expect(archivedPostingsNote(run({ workersOnArchivedProjectsLeftOut: 3 }))).toBe(
+      '3 workers posted to archived projects were left out of holiday pay.',
     );
   });
 

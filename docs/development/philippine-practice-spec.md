@@ -144,7 +144,9 @@ from the date's holiday (if any) and the worker's rest day. The server decides i
   attendance entry that day**, and where the day is not the worker's rest day, a payroll run pays one day at the daily rate, posted to
   the project the worker is posted to that day. **Default: the "present on the day before" condition is not checked**; HR marks a worker
   away or suspended through the existing status history if the day should not be paid. Hourly-rated workers get none (documented).
-  This is a computed line in the draft; approval is a person's act as always.
+  This is a computed line in the draft; approval is a person's act as always. A posting on an **archived project or sub-project** earns
+  none (its cost could not be charged there); the run DTO carries `workersOnArchivedProjectsLeftOut` (a draft only, counted when read,
+  0 otherwise) and the run page says "N workers posted to archived projects were left out of holiday pay." only when it is above 0.
 * The run's lines and the worker's pay show the breakdown (Regular, Overtime and premium, Night, Holiday pay) folded under the gross, so
   the page is not longer; the gross is the sum.
 * Needs-setup note: show one line on the run page only when the company has no holiday entered for the year of the period's end
@@ -166,6 +168,12 @@ from the date's holiday (if any) and the worker's rest day. The server decides i
   "13th-month pay" as a secondary action; the primary action stays the next payroll run.
 * Period rules do not apply (the period is the calendar year); a run for the current year is allowed at any time (an early payout when a
   worker leaves is common), a run for a future year is refused.
+* Preparing or recalculating it is refused, saving nothing, when a project or sub-project its cost would be charged to is archived; the
+  message names them all ("Riverside Residences is archived. Restore it to charge its share of the 13th-month pay, then archive it
+  again.").
+* While a live 13th-month line for the year exists for any of a regular run's workers, voiding that approved regular run and approving
+  a regular run whose period ends in that year are both refused ("Void the 13th-month pay first, ..."), so the 13th-month pay never goes
+  quietly out of date (business rules 6.14).
 
 **UI.** `Payroll > Pay rules` and `Payroll > Holidays` pages (managers edit, readers read), the worker form's rest day, a night-hours field
 on the attendance entry, a day-type chip next to a recorded attendance date ("Rest day", "Regular holiday"), and the 13th-month run page
