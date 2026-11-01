@@ -7,6 +7,12 @@
   justify-content: flex-end;
 }
 
+.quiet-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .results--refreshing {
   opacity: 0.6;
   transition: opacity var(--duration-fast);

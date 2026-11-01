@@ -1,0 +1,365 @@
+<app-page-header
+  [title]="title()"
+  backLabel="Contribution and tax tables"
+  [backLink]="['/payroll/statutory']"
+/>
+
+@if (loading() && !loaded() && !isNew()) {
+  <app-skeleton [lines]="5" label="Loading table" />
+} @else if (loadError(); as problem) {
+  <div class="stack">
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="!problem.isNotFound"
+      reloadLabel="Try again"
+      (reload)="reload()"
+    />
+    <p><a appButton routerLink="/payroll/statutory">Back to the tables</a></p>
+  </div>
+} @else if (!editable()) {
+  @if (view(); as info) {
+    <div class="stack">
+      <div class="card stack">
+        <div class="view__head">
+          <p class="view__name">{{ info.name }}</p>
+          @if (info.chip; as chip) {
+            <app-status-chip [label]="chip.label" [tone]="chip.tone" [icon]="chip.icon" />
+          }
+        </div>
+        <p class="text-muted text-small">{{ info.facts }}</p>
+        @if (canManage() && info.used && !info.retired) {
+          <p class="text-small">
+            An approved payroll used this table, so it can't be changed. When the schedule changes,
+            copy it to a new table with the date the change takes effect.
+          </p>
+        }
+
+        @if (info.percentage.length > 0) {
+          <dl class="def-list">
+            @for (item of info.percentage; track item.label) {
+              <div>
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+              </div>
+            }
+          </dl>
+        } @else {
+          <ol class="view__rows" aria-label="Rows">
+            @for (row of info.rows; track row.key) {
+              <li>
+                <span class="view__range">{{ row.range }}</span>
+                <span class="text-muted text-small">{{ row.shares }}</span>
+              </li>
+            }
+          </ol>
+        }
+      </div>
+
+      @if (canManage()) {
+        <div class="form__actions">
+          @if (!info.retired) {
+            <button appButton type="button" (click)="retiring.set(true)">Retire table</button>
+          }
+          <a
+            appButton
+            variant="primary"
+            routerLink="/payroll/statutory/new"
+            [queryParams]="{ copy: loaded()?.id }"
+            >Copy to a new table</a
+          >
+        </div>
+      }
+    </div>
+  }
+} @else {
+  <div class="card stack stack--loose form-card">
+    @if (error(); as problem) {
+      <app-api-error-alert [error]="problem" [extra]="extra()" />
+    } @else if (showSummary()) {
+      <app-alert tone="danger" title="Some details need your attention"
+        >Check the highlighted fields and try again.</app-alert
+      >
+    }
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement novalidate>
+      @if (isNew()) {
+        <app-field-group
+          label="Agency"
+          [control]="form.controls.agency"
+          requiredMessage="Choose the agency."
+        >
+          <div class="choice-list">
+            @for (item of agencies; track item) {
+              <label class="choice">
+                <input type="radio" formControlName="agency" [value]="item" [attr.value]="item" />
+                <span class="choice__text">
+                  <span class="choice__label">{{ agencyLabel[item] }}</span>
+                </span>
+              </label>
+            }
+          </div>
+        </app-field-group>
+
+        @if (copyCandidate(); as candidate) {
+          <div class="copy">
+            <p class="text-small text-muted">
+              A {{ candidate.label }} table is in force. Start from its figures and change what is
+              new.
+            </p>
+            <button appButton type="button" (click)="copyFrom(candidate.scheduleId!)">
+              Copy from the table in force
+            </button>
+          </div>
+        }
+      } @else if (loaded(); as schedule) {
+        <p>
+          <strong>{{ schedule.agencyLabel }}</strong>
+        </p>
+      }
+
+      @if (agency()) {
+        <app-form-field
+          label="Name"
+          hint="Where the figures come from, for example the circular and its year."
+          [control]="form.controls.name"
+          requiredMessage="Enter a name for the table."
+        >
+          <input appControl formControlName="name" autocomplete="off" maxlength="120" />
+        </app-form-field>
+
+        <app-form-field
+          label="Takes effect on"
+          hint="Payrolls ending on or after this day use this table."
+          [control]="form.controls.effectiveFrom"
+          requiredMessage="Choose the date the table takes effect."
+        >
+          <input appControl type="date" formControlName="effectiveFrom" />
+        </app-form-field>
+
+        @if (methods().length > 1) {
+          <app-field-group
+            label="How it works"
+            [control]="form.controls.method"
+            requiredMessage="Choose how the table works."
+          >
+            <div class="choice-list">
+              @for (item of methods(); track item) {
+                <label class="choice">
+                  <input type="radio" formControlName="method" [value]="item" [attr.value]="item" />
+                  <span class="choice__text">
+                    <span class="choice__label">{{ methodLabel[item] }}</span>
+                    <span class="choice__hint">{{ methodHint[item] }}</span>
+                  </span>
+                </label>
+              }
+            </div>
+          </app-field-group>
+        }
+
+        <app-field-group
+          label="The amounts are"
+          [control]="form.controls.periodBasis"
+          requiredMessage="Choose whether the amounts are per month or per pay run."
+        >
+          <div class="choice-list">
+            @for (item of bases; track item) {
+              <label class="choice">
+                <input
+                  type="radio"
+                  formControlName="periodBasis"
+                  [value]="item"
+                  [attr.value]="item"
+                />
+                <span class="choice__text">
+                  <span class="choice__label">{{ basisLabel[item] }}</span>
+                  <span class="choice__hint">{{
+                    item === 'Monthly'
+                      ? "Applied to one run's pay times your pay runs a month, then split across the runs."
+                      : "Applied to each run's pay as it is."
+                  }}</span>
+                </span>
+              </label>
+            }
+          </div>
+        </app-field-group>
+      }
+
+      @if (method() === 'Percentage') {
+        <div class="form__section">
+          <h2 class="card__title">Rates</h2>
+          <div class="form__row">
+            <app-form-field label="Employee's rate" [control]="form.controls.employeeRate">
+              <app-percent-input formControlName="employeeRate" />
+            </app-form-field>
+            <app-form-field label="Employer's rate" [control]="form.controls.employerRate">
+              <app-percent-input formControlName="employerRate" />
+            </app-form-field>
+          </div>
+          <div class="form__row">
+            <app-form-field
+              label="Lowest pay it applies to"
+              [optional]="true"
+              hint="Pay below this is counted as this."
+              [control]="form.controls.baseFloor"
+            >
+              <app-money-input formControlName="baseFloor" placeholder="0.00" />
+            </app-form-field>
+            <app-form-field
+              label="Highest pay it applies to"
+              [optional]="true"
+              hint="Pay above this is counted as this."
+              [control]="form.controls.baseCeiling"
+            >
+              <app-money-input formControlName="baseCeiling" placeholder="No limit" />
+            </app-form-field>
+          </div>
+          <details class="limits">
+            <summary>Smallest and largest shares (if the schedule sets them)</summary>
+            <div class="form__row">
+              <app-form-field
+                label="Employee's smallest"
+                [optional]="true"
+                [control]="form.controls.employeeMinimum"
+              >
+                <app-money-input formControlName="employeeMinimum" />
+              </app-form-field>
+              <app-form-field
+                label="Employee's largest"
+                [optional]="true"
+                [control]="form.controls.employeeMaximum"
+              >
+                <app-money-input formControlName="employeeMaximum" />
+              </app-form-field>
+            </div>
+            <div class="form__row">
+              <app-form-field
+                label="Employer's smallest"
+                [optional]="true"
+                [control]="form.controls.employerMinimum"
+              >
+                <app-money-input formControlName="employerMinimum" />
+              </app-form-field>
+              <app-form-field
+                label="Employer's largest"
+                [optional]="true"
+                [control]="form.controls.employerMaximum"
+              >
+                <app-money-input formControlName="employerMaximum" />
+              </app-form-field>
+            </div>
+          </details>
+        </div>
+      } @else if (method()) {
+        <div class="form__section">
+          <h2 class="card__title">Rows</h2>
+          <p class="text-small text-muted">
+            Each row starts where the one above ends. The last row covers every larger amount.
+          </p>
+          <ol formArrayName="rows" class="rows">
+            @for (row of rows.controls; track row; let index = $index; let last = $last) {
+              <li class="row" [formGroupName]="index">
+                <p class="row__title">
+                  Row {{ index + 1 }}: from {{ fromOf(index) }}{{ last ? ' and above' : '' }}
+                </p>
+                @if (!last) {
+                  <app-form-field
+                    [label]="'Row ' + (index + 1) + ' ends before'"
+                    [control]="row.controls.to"
+                  >
+                    <app-money-input formControlName="to" placeholder="0.00" />
+                  </app-form-field>
+                }
+                @if (method() === 'Brackets') {
+                  <div class="form__row">
+                    <app-form-field [label]="'Employee pays'" [control]="row.controls.employee">
+                      <app-money-input formControlName="employee" placeholder="0.00" />
+                    </app-form-field>
+                    <app-form-field [label]="'Employer pays'" [control]="row.controls.employer">
+                      <app-money-input formControlName="employer" placeholder="0.00" />
+                    </app-form-field>
+                  </div>
+                } @else {
+                  <div class="form__row">
+                    <app-form-field
+                      label="Base tax"
+                      [optional]="true"
+                      [control]="row.controls.baseTax"
+                    >
+                      <app-money-input formControlName="baseTax" placeholder="0.00" />
+                    </app-form-field>
+                    <app-form-field
+                      label="Rate on the amount above the start"
+                      [control]="row.controls.rate"
+                    >
+                      <app-percent-input formControlName="rate" />
+                    </app-form-field>
+                  </div>
+                }
+                @if (rows.length > 1) {
+                  <button
+                    appButton
+                    variant="ghost"
+                    type="button"
+                    class="row__remove"
+                    (click)="removeRow(index)"
+                  >
+                    <app-icon name="close" [size]="18" />
+                    Remove row {{ index + 1 }}
+                  </button>
+                }
+              </li>
+            }
+          </ol>
+          <div>
+            <button appButton type="button" (click)="addRow()">
+              <app-icon name="plus" [size]="18" />
+              Add a row
+            </button>
+          </div>
+        </div>
+      }
+
+      <div class="form__actions form__actions--sticky">
+        @if (!isNew()) {
+          <button appButton type="button" (click)="retiring.set(true)">Retire table</button>
+        }
+        <a appButton routerLink="/payroll/statutory">Cancel</a>
+        <button appButton variant="primary" type="submit" [busy]="saving()">
+          {{ isNew() ? 'Add table' : 'Save table' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (retiring()) {
+  <app-dialog title="Retire this table?" [locked]="saving()" (closed)="retiring.set(false)">
+    <div class="stack">
+      <p>
+        Payrolls prepared from now on stop using it. Payrolls already worked out keep their amounts;
+        recalculate a draft to apply the change.
+      </p>
+      @if (retireError(); as problem) {
+        <app-api-error-alert
+          [error]="problem"
+          [allowRetry]="problem.status === 409"
+          reloadLabel="Reload table"
+          (reload)="reload()"
+        />
+      }
+    </div>
+    <div dialogActions class="dialog-actions">
+      <button
+        appButton
+        type="button"
+        [attr.disabled]="saving() ? '' : null"
+        (click)="retiring.set(false)"
+      >
+        Keep table
+      </button>
+      <button appButton variant="danger" type="button" [busy]="saving()" (click)="retire()">
+        Retire table
+      </button>
+    </div>
+  </app-dialog>
+}

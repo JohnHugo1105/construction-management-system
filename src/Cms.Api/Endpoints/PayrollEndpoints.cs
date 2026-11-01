@@ -32,6 +32,18 @@ public sealed class PayrollEndpoints : IEndpointModule
                 CancellationToken ct) =>
             Results.Ok(await payroll.SetDeductionsAsync(id, workerId, request, ct))).RequirePermission(Permissions.PayrollRun);
 
+        // Contributions and tax: what each agency is owed for the payroll, a person's change to one worker's calculated amount, and
+        // working them out again for a draft.
+        group.MapGet("/{id:guid}/statutory", async (Guid id, PayrollService payroll, CancellationToken ct) => Results.Ok(await payroll.GetStatutoryAsync(id, ct)))
+            .RequirePermission(Permissions.PayrollRead);
+
+        group.MapPost("/{id:guid}/workers/{workerId:guid}/statutory/{agency}/adjust", async (Guid id, Guid workerId, string agency,
+                AdjustStatutoryRequest request, PayrollService payroll, CancellationToken ct) =>
+            Results.Ok(await payroll.AdjustStatutoryAsync(id, workerId, agency, request, ct))).RequirePermission(Permissions.PayrollRun);
+
+        group.MapPost("/{id:guid}/recalculate-statutory", async (Guid id, VersionRequest request, PayrollService payroll, CancellationToken ct) =>
+            Results.Ok(await payroll.RecalculateStatutoryAsync(id, request, ct))).RequirePermission(Permissions.PayrollRun);
+
         group.MapPost("/{id:guid}/approve", async (Guid id, ApprovePayrollRunRequest request, PayrollService payroll, CancellationToken ct) =>
             Results.Ok(await payroll.ApproveAsync(id, request, ct))).RequirePermission(Permissions.PayrollApprove);
 

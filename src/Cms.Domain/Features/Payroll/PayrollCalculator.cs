@@ -24,8 +24,8 @@ public sealed record CalculatedPayLine(Guid WorkerId, string WorkerName, string 
 /// <item>Regular pay = rate x regular hours (divided by paid hours per day for a daily rate). Overtime pay = the same hourly pay x overtime hours x overtime multiplier. The division happens once, last, so no rounded hourly figure is ever multiplied.</item>
 /// <item>Each figure is rounded once, per entry, half away from zero. A worker's pay and every project's share are sums of those same rounded figures, so the parts always add up to the whole.</item>
 /// </list>
-/// Holiday and rest-day premiums and statutory contributions (SSS, PhilHealth, Pag-IBIG, withholding tax) are deliberately not
-/// computed: they change by law and by company policy. They are entered as deductions, or as extra hours, by the HR officer.
+/// Holiday and rest-day premiums are deliberately not computed: they change by company policy and are entered as extra hours.
+/// Contributions and withholding tax are worked out afterwards from the tables a person entered (<see cref="Statutory.StatutoryCalculator"/>).
 /// </summary>
 public static class PayrollCalculator
 {

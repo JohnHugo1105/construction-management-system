@@ -70,6 +70,7 @@ internal sealed class PayrollReader(CmsDbContext db) : IPayrollReader
             item.VoidedAtUtc,
             item.VoidReason,
             item.Version,
+            item.RunsPerMonth,
             CreatedBy = db.Set<User>().Where(user => user.Id == item.CreatedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
             ApprovedBy = db.Set<User>().Where(user => user.Id == item.ApprovedByUserId).Select(user => user.DisplayName).FirstOrDefault(),
             VoidedBy = db.Set<User>().Where(user => user.Id == item.VoidedByUserId).Select(user => user.DisplayName).FirstOrDefault()
@@ -84,7 +85,19 @@ internal sealed class PayrollReader(CmsDbContext db) : IPayrollReader
             join line in db.Set<PayrollLine>() on deduction.PayrollLineId equals line.Id
             where line.PayrollRunId == id
             orderby deduction.Description, deduction.AmountMinor
-            select new { deduction.PayrollLineId, deduction.Id, deduction.Description, deduction.AmountMinor }).ToListAsync(cancellationToken);
+            select new
+            {
+                deduction.PayrollLineId,
+                deduction.Id,
+                deduction.Description,
+                deduction.AmountMinor,
+                deduction.Source,
+                deduction.Agency,
+                deduction.EmployerShareMinor,
+                deduction.CalculatedMinor,
+                deduction.IsAdjusted,
+                deduction.AdjustmentReason
+            }).ToListAsync(cancellationToken);
 
         var allocations = await (
             from allocation in db.Set<PayrollAllocation>().AsNoTracking()
@@ -110,19 +123,29 @@ internal sealed class PayrollReader(CmsDbContext db) : IPayrollReader
         var allocationsByLine = allocations.ToLookup(item => item.PayrollLineId);
         var lineDtos = lines.Select(line =>
         {
-            var lineDeductions = deductionsByLine[line.Id].Select(item => new PayrollDeductionDto(item.Id, item.Description, item.AmountMinor)).ToArray();
+            // Calculated contributions and tax first, in agency order, then what a person typed (by description).
+            var lineDeductions = deductionsByLine[line.Id]
+                .OrderBy(item => item.Source == PayrollDeductionSource.Statutory ? 0 : 1).ThenBy(item => item.Agency.HasValue ? (int)item.Agency.Value : 0)
+                .Select(item =>
+            {
+                var statutory = item.Source == PayrollDeductionSource.Statutory;
+                return new PayrollDeductionDto(item.Id, item.Description, item.AmountMinor, item.Source.ToString(), item.Agency?.ToString(),
+                    item.EmployerShareMinor, item.CalculatedMinor, item.IsAdjusted, statutory && !item.IsAdjusted && item.AmountMinor < item.CalculatedMinor,
+                    item.AdjustmentReason);
+            }).ToArray();
             var deducted = lineDeductions.Sum(item => item.AmountMinor);
             var gross = line.RegularPayMinor + line.OvertimePayMinor;
             return new PayrollLineDto(line.WorkerId, line.WorkerName, line.EmployeeNumber, line.Designation, line.RegularHours, line.OvertimeHours,
                 line.RegularPayMinor, line.OvertimePayMinor, gross, deducted, gross - deducted, lineDeductions,
                 allocationsByLine[line.Id].Select(item => new PayrollAllocationDto(item.ProjectId, item.ProjectName, item.SubProjectId, item.SubProjectName,
-                    item.RegularHours, item.OvertimeHours, item.GrossMinor)).ToArray());
+                    item.RegularHours, item.OvertimeHours, item.GrossMinor)).ToArray(),
+                lineDeductions.Sum(item => item.EmployerShareMinor), lineDeductions.Any(item => item.IsLimited));
         }).ToArray();
 
         var totalGross = lineDtos.Sum(line => line.GrossPayMinor);
         var totalDeductions = lineDtos.Sum(line => line.DeductionsMinor);
         return new PayrollRunDto(run.Id, run.PeriodStart, run.PeriodEnd, run.Status.ToString(), lineDtos.Length, totalGross, totalDeductions,
             totalGross - totalDeductions, run.HoursPerDay, run.OvertimeMultiplierBps, run.CreatedBy, run.CreatedAtUtc, run.ApprovedBy, run.ApprovedAtUtc,
-            run.VoidedBy, run.VoidedAtUtc, run.VoidReason, lineDtos, run.Version);
+            run.VoidedBy, run.VoidedAtUtc, run.VoidReason, lineDtos, run.Version, run.RunsPerMonth, lineDtos.Sum(line => line.EmployerSharesMinor));
     }
 }

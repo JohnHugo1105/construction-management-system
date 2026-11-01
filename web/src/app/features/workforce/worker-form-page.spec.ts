@@ -107,10 +107,36 @@ describe('WorkerFormPage', () => {
       designation: 'Mason',
       rateMinor: 85050,
       rateUnit: 'Daily',
+      // A new worker pays every fund and is taxed unless the folded choices are changed.
+      sssMember: true,
+      philHealthMember: true,
+      pagIbigMember: true,
+      taxExempt: false,
     });
     expect(String(sent['clientRequestId']).length).toBeGreaterThanOrEqual(30);
     await flushMicrotasks(6);
     expect(router.url).toBe('/workers/new-1');
+  });
+
+  it('sends the contribution choices a person changed', async () => {
+    const { root, hire, harness } = await open(HR_PERMISSIONS);
+
+    fillIn(root);
+    expect(texts(root, '.contributions summary')).toEqual([
+      'Contributions: SSS, PhilHealth and Pag-IBIG; tax withheld',
+    ]);
+    // In order: SSS, PhilHealth, Pag-IBIG, exempt from tax.
+    const boxes = root.querySelectorAll<HTMLInputElement>('.contributions input[type="checkbox"]');
+    boxes[3]!.click();
+    boxes[0]!.click();
+    await settle(harness.fixture);
+    expect(texts(root, '.contributions summary')).toEqual([
+      'Contributions: PhilHealth and Pag-IBIG; exempt from tax',
+    ]);
+    buttonNamed(root, 'Hire worker').click();
+    await settle(harness.fixture);
+
+    expect(hire.mock.calls[0]![0]).toMatchObject({ sssMember: false, taxExempt: true });
   });
 
   it('checks the form before sending anything and says what to do in plain words', async () => {

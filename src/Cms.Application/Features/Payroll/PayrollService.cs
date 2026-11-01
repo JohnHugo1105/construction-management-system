@@ -3,11 +3,13 @@ using Cms.Application.Common;
 using Cms.Application.Features.Costing;
 using Cms.Application.Features.Organizations;
 using Cms.Application.Features.Projects;
+using Cms.Application.Features.Statutory;
 using Cms.Application.Features.Workforce;
 using Cms.Domain.Common;
 using Cms.Domain.Features.Costing;
 using Cms.Domain.Features.Payroll;
 using Cms.Domain.Features.Projects;
+using Cms.Domain.Features.Statutory;
 using Cms.Domain.Features.Workforce;
 
 namespace Cms.Application.Features.Payroll;
@@ -16,12 +18,14 @@ namespace Cms.Application.Features.Payroll;
 /// Payroll use cases. A run is prepared from recorded, unpaid attendance (which it locks), has its deductions entered by a person,
 /// and is approved, which posts each project's labor cost; voiding it releases the attendance and reverses the labor cost. Every one of
 /// those steps is a single save, so the run, the locks and the project costs change together or not at all.
-/// Statutory contributions (SSS, PhilHealth, Pag-IBIG, tax) are not calculated here: a person enters them as deductions.
+/// Contributions (SSS, PhilHealth, Pag-IBIG) and withholding tax are worked out when a draft is prepared, from the tables in force at
+/// the period's end; an agency without a table is left for the person to enter as a deduction. The employee's share reduces net pay; the
+/// employer's share is recorded but never posted to a project, so the posted labor cost stays the gross pay.
 /// Pay figures appear only in the responses of this service: never in an audit line, a log or an error message.
 /// </summary>
 public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reader, IAttendanceRepository attendance, IWorkerRepository workers,
-    IProjectRepository projects, ICostEntryRepository costs, IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock,
-    IUnitOfWork unitOfWork, IAuditTrail audit)
+    IProjectRepository projects, ICostEntryRepository costs, IOrganizationRepository organizations, IStatutoryScheduleRepository statutory,
+    IStatutoryReader statutoryReader, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
 {
     private const int MaximumDeductionsPerWorker = 25;
 
@@ -85,6 +89,12 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         var run = PayrollRun.Draft(Guid.NewGuid(), currentUser.TenantId, request.PeriodStart, request.PeriodEnd, lines, organization.HoursPerDay,
             organization.OvertimeMultiplierBps, currentUser.UserId, requestId, today, now);
 
+        // Contributions and tax from the tables in force at the period's end: one read for the tables, none per worker (the workers'
+        // flags came with the workers above).
+        var tables = await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken);
+        run.ApplyStatutory(StatutoryFor(run, tables, found.ToDictionary(pair => pair.Key, pair => pair.Value.Statutory), organization.PayrollRunsPerMonth),
+            organization.PayrollRunsPerMonth, now);
+
         foreach (var entry in unpaid) entry.LockTo(run.Id, now);
         runs.Add(run);
         audit.Record("Payroll.Drafted", nameof(PayrollRun), run.Id,
@@ -93,7 +103,59 @@ public sealed class PayrollService(IPayrollRepository runs, IPayrollReader reade
         return await ReadAsync(run.Id, cancellationToken);
     }
 
-    /// <summary>Replaces one worker's deductions (statutory contributions, cash advances) on a draft payroll.</summary>
+    /// <summary>
+    /// Works the contributions and tax out again for every worker of a draft, from the tables and worker details as they are now and the
+    /// company's runs per month. Adjustments are reset; manual deductions are kept.
+    /// </summary>
+    public async Task<PayrollRunDto> RecalculateStatutoryAsync(Guid runId, VersionRequest request, CancellationToken cancellationToken)
+    {
+        var run = await LoadAsync(runId, cancellationToken);
+        ConcurrencyGuard.Ensure(run.Version, request.Version);
+        if (run.Status != PayrollRunStatus.Draft)
+            throw new DomainRuleException("Contributions and tax can only be recalculated while the payroll is a draft.");
+        var organization = await organizations.GetCurrentAsync(cancellationToken);
+        var tables = await statutory.ListInForceAsync(run.PeriodEnd, cancellationToken);
+        var participation = await statutory.ParticipationAsync(run.Lines.Select(line => line.WorkerId).ToArray(), cancellationToken);
+        run.ApplyStatutory(StatutoryFor(run, tables, participation, organization.PayrollRunsPerMonth), organization.PayrollRunsPerMonth, clock.UtcNow);
+
+        audit.Record("Payroll.StatutoryRecalculated", nameof(PayrollRun), run.Id,
+            $"Recalculated the contributions and tax in the payroll for {Period(run)}.");
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return await ReadAsync(run.Id, cancellationToken);
+    }
+
+    /// <summary>Changes one worker's calculated contribution or tax on a draft, with a reason (kept on the payroll, not in the activity log).</summary>
+    public async Task<PayrollRunDto> AdjustStatutoryAsync(Guid runId, Guid workerId, string agencyText, AdjustStatutoryRequest request,
+        CancellationToken cancellationToken)
+    {
+        var agency = StatutoryText.Agency(agencyText) ?? throw new NotFoundException("that contribution");
+        var run = await LoadAsync(runId, cancellationToken);
+        ConcurrencyGuard.Ensure(run.Version, request.Version);
+        run.AdjustStatutory(workerId, agency, request.AmountMinor, request.Reason, clock.UtcNow);
+        var worker = run.Lines.First(line => line.WorkerId == workerId).WorkerName;
+        audit.Record("Payroll.StatutoryAdjusted", nameof(PayrollRun), run.Id,
+            $"Adjusted the {(agency == StatutoryAgency.WithholdingTax ? "withholding tax" : $"{StatutoryAgencies.Label(agency)} contribution")} of {worker} in the payroll for {Period(run)}.");
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return await ReadAsync(run.Id, cancellationToken);
+    }
+
+    /// <summary>A payroll's contributions and tax: what each agency is owed (the workers' and the employer's shares) and each worker's part.</summary>
+    public async Task<PayrollStatutoryDto> GetStatutoryAsync(Guid runId, CancellationToken cancellationToken) =>
+        await statutoryReader.RunStatutoryAsync(runId, cancellationToken) ?? throw new NotFoundException("that payroll");
+
+    /// <summary>Each worker's amounts from the tables in force, worked out on the run's gross pay. A worker with no flags on record is treated as new.</summary>
+    private static Dictionary<Guid, IReadOnlyList<StatutoryAmount>> StatutoryFor(PayrollRun run, IReadOnlyList<StatutorySchedule> tables,
+        IReadOnlyDictionary<Guid, StatutoryParticipation> participation, int runsPerMonth)
+    {
+        var result = new Dictionary<Guid, IReadOnlyList<StatutoryAmount>>();
+        if (tables.Count == 0) return result;
+        foreach (var line in run.Lines)
+            result[line.WorkerId] = StatutoryCalculator.Calculate(line.GrossPayMinor,
+                participation.TryGetValue(line.WorkerId, out var who) ? who : StatutoryParticipation.Default, tables, runsPerMonth);
+        return result;
+    }
+
+    /// <summary>Replaces one worker's manual deductions (cash advances, loans) on a draft payroll. Calculated contributions and tax are kept.</summary>
     public async Task<PayrollRunDto> SetDeductionsAsync(Guid runId, Guid workerId, SetDeductionsRequest request, CancellationToken cancellationToken)
     {
         var run = await LoadAsync(runId, cancellationToken);

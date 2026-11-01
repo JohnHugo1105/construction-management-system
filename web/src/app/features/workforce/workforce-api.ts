@@ -21,6 +21,7 @@ import {
   WorkerDetail,
   WorkerListItem,
   WorkerListParams,
+  WorkerStatutory,
 } from './workforce.models';
 
 /** The worker and attendance endpoints, one method each. Every worker action answers with the whole worker. */
@@ -46,6 +47,11 @@ export class WorkforceApi {
 
   updateProfile(id: string, request: ProfileRequest): Observable<WorkerDetail> {
     return this.http.put<WorkerDetail>(`/api/workers/${id}`, request);
+  }
+
+  /** Which contributions the worker pays and whether tax is withheld (people who manage workers and see pay). */
+  setStatutory(id: string, flags: WorkerStatutory, version: number): Observable<WorkerDetail> {
+    return this.http.put<WorkerDetail>(`/api/workers/${id}/statutory`, { ...flags, version });
   }
 
   changeRate(id: string, request: ChangeRateRequest): Observable<WorkerDetail> {

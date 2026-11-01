@@ -96,6 +96,16 @@ export interface WorkerDetail {
   readonly rates: readonly WorkerRate[];
   readonly cases: readonly WorkerCase[];
   readonly version: number;
+  /** Which contributions the worker pays; null unless the person may see pay. */
+  readonly statutory: WorkerStatutory | null;
+}
+
+/** Which contributions a worker pays and whether tax is withheld. */
+export interface WorkerStatutory {
+  readonly sssMember: boolean;
+  readonly philHealthMember: boolean;
+  readonly pagIbigMember: boolean;
+  readonly taxExempt: boolean;
 }
 
 export interface WorkerListParams {
@@ -118,6 +128,10 @@ export interface HireRequest {
   readonly rateMinor: number;
   readonly rateUnit: RateUnit;
   readonly clientRequestId: string;
+  readonly sssMember?: boolean;
+  readonly philHealthMember?: boolean;
+  readonly pagIbigMember?: boolean;
+  readonly taxExempt?: boolean;
 }
 
 export interface ProfileRequest {

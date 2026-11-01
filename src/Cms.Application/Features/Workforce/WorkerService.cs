@@ -4,6 +4,7 @@ using Cms.Application.Features.Organizations;
 using Cms.Application.Features.Projects;
 using Cms.Domain.Common;
 using Cms.Domain.Features.Projects;
+using Cms.Domain.Features.Statutory;
 using Cms.Domain.Features.Workforce;
 
 namespace Cms.Application.Features.Workforce;
@@ -60,12 +61,38 @@ public sealed class WorkerService(IWorkerRepository workers, IWorkerReader reade
     {
         var worker = Worker.Hire(Guid.NewGuid(), currentUser.TenantId, request.EmployeeNumber, request.FirstName, request.MiddleName, request.LastName,
             request.DateHired, request.Designation, request.RateMinor, EnumText.Parse<RateUnit>(request.RateUnit), currentUser.UserId, today,
-            clock.UtcNow, requestId);
+            clock.UtcNow, requestId, HireStatutory(request));
         if (await workers.EmployeeNumberExistsAsync(worker.NormalizedEmployeeNumber, null, cancellationToken))
             throw new ValidationFailedException("employeeNumber", $"Another worker already has the employee number {worker.EmployeeNumber}. Use a different number.");
 
         workers.Add(worker);
         audit.Record("Worker.Hired", nameof(Worker), worker.Id, $"Hired {worker.FullName} ({worker.EmployeeNumber}) as {worker.CurrentRate.Designation}.");
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return await ReadAsync(worker.Id, today, cancellationToken);
+    }
+
+    /// <summary>The contributions a new worker pays: the defaults, changed only by someone who may see pay (only they see the choices).</summary>
+    private StatutoryParticipation HireStatutory(HireWorkerRequest request)
+    {
+        var defaults = StatutoryParticipation.Default;
+        return CanSeePay
+            ? new StatutoryParticipation(request.SssMember ?? defaults.Sss, request.PhilHealthMember ?? defaults.PhilHealth,
+                request.PagIbigMember ?? defaults.PagIbig, request.TaxExempt ?? defaults.TaxExempt)
+            : defaults;
+    }
+
+    /// <summary>
+    /// Which contributions the worker pays and whether tax is withheld. These decide pay deductions, so only someone who may see pay
+    /// changes them. Payrolls already prepared keep their amounts until recalculated.
+    /// </summary>
+    public async Task<WorkerDetailDto> SetStatutoryAsync(Guid id, SetWorkerStatutoryRequest request, CancellationToken cancellationToken)
+    {
+        if (!CanSeePay) throw new UnauthorizedAccessException("Only someone who may see pay can change contributions.");
+        var today = await TodayAsync(cancellationToken);
+        var worker = await LoadAsync(id, includeHistory: false, cancellationToken);
+        ConcurrencyGuard.Ensure(worker.Version, request.Version);
+        worker.SetStatutory(new StatutoryParticipation(request.SssMember, request.PhilHealthMember, request.PagIbigMember, request.TaxExempt), clock.UtcNow);
+        audit.Record("Worker.StatutoryChanged", nameof(Worker), worker.Id, $"Changed the contributions and tax settings of {worker.FullName}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(worker.Id, today, cancellationToken);
     }

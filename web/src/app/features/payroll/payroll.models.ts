@@ -17,10 +17,25 @@ export interface PayrollRunListItem {
   readonly version: number;
 }
 
+/** The agencies a contribution or tax is paid to, in the order they are taken from pay. */
+export type StatutoryAgency = 'Sss' | 'PhilHealth' | 'PagIbig' | 'WithholdingTax';
+
+/**
+ * One deduction. A manual one was typed by a person; a statutory one was worked out from its agency's table: `calculatedMinor`
+ * is what the table gave, `isAdjusted` says a person changed it, `isLimited` that it was cut to fit the pay, and
+ * `employerShareMinor` is what the employer adds (not taken from pay).
+ */
 export interface PayrollDeduction {
   readonly id: string;
   readonly description: string;
   readonly amountMinor: number;
+  readonly source: 'Manual' | 'Statutory';
+  readonly agency: StatutoryAgency | null;
+  readonly employerShareMinor: number;
+  readonly calculatedMinor: number | null;
+  readonly isAdjusted: boolean;
+  readonly isLimited: boolean;
+  readonly adjustmentReason: string | null;
 }
 
 /** The part of one worker's pay that belongs to one project (and sub-project). The shares add up to the line's gross pay. */
@@ -49,6 +64,10 @@ export interface PayrollLine {
   readonly netPayMinor: number;
   readonly deductions: readonly PayrollDeduction[];
   readonly allocations: readonly PayrollAllocation[];
+  /** What the employer adds to the worker's contributions. */
+  readonly employerSharesMinor: number;
+  /** A calculated amount was cut because the deductions would have been more than the pay. */
+  readonly statutoryLimited: boolean;
 }
 
 /** A whole run. Every change sends back the `version` the person opened. */
@@ -72,6 +91,9 @@ export interface PayrollRun {
   readonly voidReason: string | null;
   readonly lines: readonly PayrollLine[];
   readonly version: number;
+  /** The company's pay runs a month when the contributions were last worked out. */
+  readonly runsPerMonth: number;
+  readonly totalEmployerSharesMinor: number;
 }
 
 export interface CreateRunRequest {

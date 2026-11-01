@@ -1,5 +1,6 @@
 using Cms.Domain.Common;
 using Cms.Domain.Features.Projects;
+using Cms.Domain.Features.Statutory;
 
 namespace Cms.Domain.Features.Workforce;
 
@@ -36,6 +37,20 @@ public sealed class Worker : AggregateRoot
     /// <summary>The id of the form submission that hired this worker, so a repeated submission returns the same worker.</summary>
     public string? ClientRequestId { get; private set; }
 
+    /// <summary>Pays SSS contributions (a new worker does).</summary>
+    public bool IsSssMember { get; private set; } = true;
+
+    /// <summary>Pays PhilHealth contributions (a new worker does).</summary>
+    public bool IsPhilHealthMember { get; private set; } = true;
+
+    /// <summary>Pays Pag-IBIG contributions (a new worker does).</summary>
+    public bool IsPagIbigMember { get; private set; } = true;
+
+    /// <summary>No withholding tax is taken (for example a minimum-wage earner). A new worker is not exempt.</summary>
+    public bool IsTaxExempt { get; private set; }
+
+    public StatutoryParticipation Statutory => new(IsSssMember, IsPhilHealthMember, IsPagIbigMember, IsTaxExempt);
+
     public WorkerStatus Status { get; private set; } = WorkerStatus.Active;
     public DateOnly? StatusChangedOn { get; private set; }
     public string? StatusReason { get; private set; }
@@ -55,8 +70,9 @@ public sealed class Worker : AggregateRoot
 
     public static Worker Hire(Guid id, Guid tenantId, string? employeeNumber, string? firstName, string? middleName, string? lastName,
         DateOnly dateHired, string? designation, long rateMinor, RateUnit rateUnit, Guid recordedByUserId, DateOnly today,
-        DateTimeOffset now, string? clientRequestId = null)
+        DateTimeOffset now, string? clientRequestId = null, StatutoryParticipation? statutory = null)
     {
+        statutory ??= StatutoryParticipation.Default;
         var errors = new ValidationErrors();
         string number = "", first = "", last = "", title = "";
         Capture(errors, () => number = Guard.RequiredText(employeeNumber, "employeeNumber", "the employee number", 40));
@@ -80,7 +96,11 @@ public sealed class Worker : AggregateRoot
             MiddleName = middle,
             LastName = last,
             DateHired = dateHired,
-            ClientRequestId = requestId
+            ClientRequestId = requestId,
+            IsSssMember = statutory.Sss,
+            IsPhilHealthMember = statutory.PhilHealth,
+            IsPagIbigMember = statutory.PagIbig,
+            IsTaxExempt = statutory.TaxExempt
         };
         worker.Initialize(id, tenantId, now);
         worker._rates.Add(new WorkerRate(Guid.NewGuid(), tenantId, id, title, rateMinor, rateUnit, RateChangeCategory.Initial, dateHired,
@@ -112,6 +132,19 @@ public sealed class Worker : AggregateRoot
         ProvincialAddress = Guard.OptionalText(provincialAddress, "provincialAddress", "the provincial address", 250);
         ContactNumber = Guard.OptionalText(contactNumber, "contactNumber", "the contact number", 40);
         Reference = Guard.OptionalText(reference, "reference", "the reference", 200);
+        Touch(now);
+    }
+
+    /// <summary>
+    /// Which contributions the worker pays and whether tax is withheld. A change applies to payrolls calculated (or recalculated) from
+    /// now on; an approved payroll keeps what it took.
+    /// </summary>
+    public void SetStatutory(StatutoryParticipation participation, DateTimeOffset now)
+    {
+        IsSssMember = participation.Sss;
+        IsPhilHealthMember = participation.PhilHealth;
+        IsPagIbigMember = participation.PagIbig;
+        IsTaxExempt = participation.TaxExempt;
         Touch(now);
     }
 

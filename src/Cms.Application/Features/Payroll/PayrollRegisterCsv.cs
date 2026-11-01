@@ -12,7 +12,14 @@ public static class PayrollRegisterCsv
     private static readonly string[] Headers =
     [
         "Employee number", "Worker", "Designation", "Regular hours", "Overtime hours", "Regular pay", "Overtime pay", "Gross pay", "Deductions",
-        "Net pay", "Deduction details"
+        "Net pay", "Deduction details", "SSS employee", "SSS employer", "PhilHealth employee", "PhilHealth employer", "Pag-IBIG employee",
+        "Pag-IBIG employer", "Withholding tax", "Employer contributions"
+    ];
+
+    /// <summary>The statutory columns, in order: each agency's employee share, then its employer share (tax has no employer share).</summary>
+    private static readonly (string Agency, bool Employer)[] StatutoryColumns =
+    [
+        ("Sss", false), ("Sss", true), ("PhilHealth", false), ("PhilHealth", true), ("PagIbig", false), ("PagIbig", true), ("WithholdingTax", false)
     ];
 
     public static PayrollExportFile Build(PayrollRunDto run)
@@ -25,14 +32,18 @@ public static class PayrollRegisterCsv
             [
                 Text(line.EmployeeNumber), Text(line.WorkerName), Text(line.Designation), Hours(line.RegularHours), Hours(line.OvertimeHours),
                 Money(line.RegularPayMinor), Money(line.OvertimePayMinor), Money(line.GrossPayMinor), Money(line.DeductionsMinor), Money(line.NetPayMinor),
-                Text(string.Join("; ", line.Deductions.Select(deduction => $"{deduction.Description} {Money(deduction.AmountMinor)}")))
+                Text(string.Join("; ", line.Deductions.Select(deduction => $"{deduction.Description} {Money(deduction.AmountMinor)}"))),
+                .. StatutoryColumns.Select(column => Money(Statutory([line], column.Agency, column.Employer))),
+                Money(line.Deductions.Sum(deduction => deduction.EmployerShareMinor))
             ]);
 
         AppendRow(text,
         [
             Text("Total"), "", "", Hours(run.Lines.Sum(line => line.RegularHours)), Hours(run.Lines.Sum(line => line.OvertimeHours)),
             Money(run.Lines.Sum(line => line.RegularPayMinor)), Money(run.Lines.Sum(line => line.OvertimePayMinor)), Money(run.TotalGrossMinor),
-            Money(run.TotalDeductionsMinor), Money(run.TotalNetMinor), ""
+            Money(run.TotalDeductionsMinor), Money(run.TotalNetMinor), "",
+            .. StatutoryColumns.Select(column => Money(Statutory(run.Lines, column.Agency, column.Employer))),
+            Money(run.Lines.SelectMany(line => line.Deductions).Sum(deduction => deduction.EmployerShareMinor))
         ]);
 
         var preamble = Encoding.UTF8.GetPreamble();
@@ -44,6 +55,11 @@ public static class PayrollRegisterCsv
         var fileName = string.Create(CultureInfo.InvariantCulture, $"payroll-{run.PeriodStart:yyyy-MM-dd}-to-{run.PeriodEnd:yyyy-MM-dd}.csv");
         return new PayrollExportFile(fileName, "text/csv; charset=utf-8", content);
     }
+
+    private static long Statutory(IEnumerable<PayrollLineDto> lines, string agency, bool employer) =>
+        lines.SelectMany(line => line.Deductions)
+            .Where(deduction => deduction.Source == "Statutory" && deduction.Agency == agency)
+            .Sum(deduction => employer ? deduction.EmployerShareMinor : deduction.AmountMinor);
 
     /// <summary>1,050.00 pesos is written 1050.00: no thousands separator, a dot for decimals, whatever the computer's language.</summary>
     internal static string Money(long minor) => (minor / 100m).ToString("0.00", CultureInfo.InvariantCulture);

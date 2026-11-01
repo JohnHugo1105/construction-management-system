@@ -29,8 +29,14 @@ import { payrollExportUrl } from './payroll-api';
 import { PAYROLL_STATUS, periodLabel, runActions } from './payroll-rules';
 import { PayrollRunState } from './payroll-run-state';
 import { LineView, PayrollLineDetail } from './payroll-line-detail';
-import { PayrollLine, PayrollRun } from './payroll.models';
+import { PayrollDeduction, PayrollLine, PayrollRun } from './payroll.models';
+import { RecalculateStatutoryDialog } from './recalculate-statutory-dialog';
+import { StatutoryApi } from './statutory-api';
+import { deductionSource, needsSetupLines } from './statutory-rules';
+import { PayrollStatutory, StatutoryStatus } from './statutory.models';
 import { VoidRunDialog } from './void-run-dialog';
+import { AdjustStatutoryDialog } from './adjust-statutory-dialog';
+import { firstValueFrom } from 'rxjs';
 
 /**
  * One payroll run: its period and state, the API's totals, and a line for each worker that opens to show how the pay was made
@@ -53,6 +59,8 @@ import { VoidRunDialog } from './void-run-dialog';
     DeductionsDialog,
     PayrollLineDetail,
     VoidRunDialog,
+    AdjustStatutoryDialog,
+    RecalculateStatutoryDialog,
   ],
   providers: [PayrollRunState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,6 +79,13 @@ export class PayrollRunPage {
   protected readonly approving = signal(false);
   protected readonly voiding = signal(false);
   protected readonly editing = signal<PayrollLine | null>(null);
+  protected readonly adjusting = signal<{ line: PayrollLine; deduction: PayrollDeduction } | null>(
+    null,
+  );
+  protected readonly recalculating = signal(false);
+  private readonly statutoryApi = inject(StatutoryApi);
+  protected readonly statutory = signal<PayrollStatutory | null>(null);
+  protected readonly statutoryStatus = signal<StatutoryStatus | null>(null);
   protected readonly expanded = signal<ReadonlySet<string>>(new Set());
 
   protected readonly title = computed(() =>
@@ -136,7 +151,12 @@ export class PayrollRunPage {
         id: item.id,
         description: item.description,
         amount: money(item.amountMinor),
+        source: deductionSource(item),
+        reason: item.isAdjusted ? item.adjustmentReason : null,
+        deduction: item,
       })),
+      employerShares: line.employerSharesMinor > 0 ? money(line.employerSharesMinor) : null,
+      limited: line.statutoryLimited,
       shares: line.allocations.map((share, index) => ({
         key: `${share.projectId}|${share.subProjectId ?? ''}|${index}`,
         place: share.subProjectName
@@ -148,11 +168,73 @@ export class PayrollRunPage {
     }));
   });
 
+  /** The calculated contributions owed for this run, per agency, from the API (null until loaded, or when there are none). */
+  protected readonly remit = computed(() => {
+    const data = this.statutory();
+    if (!data || data.agencies.length === 0) return null;
+    const currency = this.session.currencyCode();
+    const money = (minor: number): string => formatMoney(minor, currency);
+    return {
+      total: money(data.totalToRemitMinor),
+      agencies: data.agencies.map((agency) => ({
+        key: agency.agency,
+        label: agency.label,
+        workers: agency.workerCount === 1 ? '1 worker' : `${agency.workerCount} workers`,
+        employee: money(agency.employeeMinor),
+        employer: agency.agency === 'WithholdingTax' ? null : money(agency.employerMinor),
+        toRemit: money(agency.toRemitMinor),
+      })),
+    };
+  });
+
+  /** One quiet line per agency that is not worked out yet; only on a draft, where it can still be entered. */
+  protected readonly setupLines = computed(() =>
+    this.state.status() === 'ready' && this.state.run().status === 'Draft'
+      ? needsSetupLines(this.statutoryStatus())
+      : [],
+  );
+
+  protected readonly canRecalculate = computed(
+    () =>
+      this.actions().editDeductions &&
+      (this.statutoryStatus()?.agencies.some((agency) => agency.state === 'Available') ||
+        (this.statutory()?.agencies.length ?? 0) > 0),
+  );
+
   constructor() {
     effect(() => {
       const id = this.id();
       untracked(() => void this.state.load(id));
     });
+    // Each time the run changes (loaded, or an action answered), read what it owes the agencies; the status only once.
+    effect(() => {
+      if (this.state.status() !== 'ready') return;
+      const run = this.state.run();
+      untracked(() => void this.loadStatutory(run));
+    });
+  }
+
+  private async loadStatutory(run: PayrollRun): Promise<void> {
+    try {
+      if (run.status === 'Draft' && this.statutoryStatus() === null)
+        this.statutoryStatus.set(await firstValueFrom(this.statutoryApi.status()));
+      this.statutory.set(await firstValueFrom(this.statutoryApi.runStatutory(run.id)));
+    } catch {
+      // The contributions summary is extra: the run and its deductions are already on screen, so a failure here stays quiet.
+      this.statutory.set(null);
+    }
+  }
+
+  protected adjustSaved(run: PayrollRun): void {
+    this.adjusting.set(null);
+    this.state.replace(run);
+    this.toast.success('Amount saved.');
+  }
+
+  protected recalculated(run: PayrollRun): void {
+    this.recalculating.set(false);
+    this.state.replace(run);
+    this.toast.success('Contributions and tax recalculated.');
   }
 
   protected isOpen(workerId: string): boolean {
@@ -189,6 +271,8 @@ export class PayrollRunPage {
     this.approving.set(false);
     this.voiding.set(false);
     this.editing.set(null);
+    this.adjusting.set(null);
+    this.recalculating.set(false);
     void this.state.reload();
   }
 }

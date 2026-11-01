@@ -1,5 +1,6 @@
 using Cms.Domain.Features.Payroll;
 using Cms.Domain.Features.Projects;
+using Cms.Domain.Features.Statutory;
 using Cms.Domain.Features.Workforce;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -78,6 +79,10 @@ internal sealed class PayrollLineConfiguration : IEntityTypeConfiguration<Payrol
         builder.Ignore(item => item.GrossPayMinor);
         builder.Ignore(item => item.DeductionsMinor);
         builder.Ignore(item => item.NetPayMinor);
+        builder.Ignore(item => item.ManualDeductionsMinor);
+        builder.Ignore(item => item.StatutoryDeductionsMinor);
+        builder.Ignore(item => item.EmployerSharesMinor);
+        builder.Ignore(item => item.StatutoryLimited);
 
         builder.HasOne<Worker>().WithMany().HasForeignKey(item => item.WorkerId).OnDelete(DeleteBehavior.Restrict);
         // A draft's deductions are replaced as a set, so removing one from the line deletes its row (the only delete in this feature).
@@ -117,8 +122,17 @@ internal sealed class PayrollDeductionConfiguration : IEntityTypeConfiguration<P
         builder.HasKey(item => item.Id);
         builder.Property(item => item.Id).ValueGeneratedNever();
         builder.Property(item => item.Description).HasMaxLength(120).IsRequired();
+        builder.Property(item => item.Source).HasConversion<string>().HasMaxLength(20);
+        builder.Property(item => item.Agency).HasConversion<string>().HasMaxLength(20);
+        builder.Property(item => item.AdjustmentReason).HasMaxLength(300);
+        builder.Ignore(item => item.IsStatutory);
+        builder.Ignore(item => item.IsLimited);
+
+        // A calculated deduction remembers the table it came from, so a table an approved payroll used is never changed.
+        builder.HasOne<StatutorySchedule>().WithMany().HasForeignKey(item => item.ScheduleId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(item => item.PayrollLineId);
         builder.HasIndex(item => item.TenantId);
+        builder.HasIndex(item => new { item.TenantId, item.ScheduleId }).HasFilter("[ScheduleId] IS NOT NULL");
     }
 }

@@ -1,4 +1,48 @@
-import { PayrollLine, PayrollRun, PayrollRunListItem } from './payroll.models';
+import { PayrollDeduction, PayrollLine, PayrollRun, PayrollRunListItem } from './payroll.models';
+
+/** A deduction typed by a person. */
+export function manual(id: string, description: string, amountMinor: number): PayrollDeduction {
+  return {
+    id,
+    description,
+    amountMinor,
+    source: 'Manual',
+    agency: null,
+    employerShareMinor: 0,
+    calculatedMinor: null,
+    isAdjusted: false,
+    isLimited: false,
+    adjustmentReason: null,
+  };
+}
+
+/** A deduction worked out from a table (the figures in specs are artificial). */
+export function statutory(
+  id: string,
+  agency: PayrollDeduction['agency'],
+  amountMinor: number,
+  overrides: Partial<PayrollDeduction> = {},
+): PayrollDeduction {
+  const descriptions: Record<string, string> = {
+    Sss: 'SSS contribution',
+    PhilHealth: 'PhilHealth contribution',
+    PagIbig: 'Pag-IBIG contribution',
+    WithholdingTax: 'Withholding tax',
+  };
+  return {
+    id,
+    description: descriptions[agency ?? 'Sss'] ?? 'Contribution',
+    amountMinor,
+    source: 'Statutory',
+    agency,
+    employerShareMinor: 0,
+    calculatedMinor: amountMinor,
+    isAdjusted: false,
+    isLimited: false,
+    adjustmentReason: null,
+    ...overrides,
+  };
+}
 
 export function line(overrides: Partial<PayrollLine> = {}): PayrollLine {
   return {
@@ -14,6 +58,8 @@ export function line(overrides: Partial<PayrollLine> = {}): PayrollLine {
     deductionsMinor: 0,
     netPayMinor: 862500,
     deductions: [],
+    employerSharesMinor: 0,
+    statutoryLimited: false,
     allocations: [
       {
         projectId: 'p1',
@@ -72,7 +118,7 @@ export function run(overrides: Partial<PayrollRun> = {}): PayrollRun {
         grossPayMinor: 400000,
         deductionsMinor: 15000,
         netPayMinor: 385000,
-        deductions: [{ id: 'd1', description: 'SSS contribution', amountMinor: 15000 }],
+        deductions: [manual('d1', 'SSS contribution', 15000)],
         allocations: [
           {
             projectId: 'p2',
@@ -87,6 +133,8 @@ export function run(overrides: Partial<PayrollRun> = {}): PayrollRun {
       }),
     ],
     version: 2,
+    runsPerMonth: 2,
+    totalEmployerSharesMinor: 0,
     ...overrides,
   };
 }

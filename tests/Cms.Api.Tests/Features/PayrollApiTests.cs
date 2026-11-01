@@ -408,11 +408,14 @@ public sealed class PayrollApiTests : IClassFixture<CmsApiFactory>
         var lines = new UTF8Encoding(false).GetString(bytes[3..]).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
 
         // Juan: 800.00 + 250.00 = 1,050.00, less 120.00 and 200.00 = 730.00. The other worker: 8 h at 75.00 = 600.00.
-        Assert.Equal("Employee number,Worker,Designation,Regular hours,Overtime hours,Regular pay,Overtime pay,Gross pay,Deductions,Net pay,Deduction details", lines[0]);
+        Assert.Equal("Employee number,Worker,Designation,Regular hours,Overtime hours,Regular pay,Overtime pay,Gross pay,Deductions,Net pay,Deduction details," +
+            "SSS employee,SSS employer,PhilHealth employee,PhilHealth employer,Pag-IBIG employee,Pag-IBIG employer,Withholding tax,Employer contributions", lines[0]);
         Assert.Equal(4, lines.Length);
-        Assert.Contains("W-001,Juan Dela Cruz,Mason,8,2,800.00,250.00,1050.00,320.00,730.00,\"Cash advance, March 200.00; SSS contribution 120.00\"", lines);
+        // No contribution table is set up, so the deductions typed by hand stay in the details and the statutory columns are zero.
+        Assert.Contains("W-001,Juan Dela Cruz,Mason,8,2,800.00,250.00,1050.00,320.00,730.00,\"Cash advance, March 200.00; SSS contribution 120.00\"," +
+            "0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00", lines);
         Assert.Contains(lines, text => text.StartsWith("W-002,\"'=HYPERLINK(\"\"http://example.com\"\") Reyes\",Helper,8,0,600.00,0.00,600.00,0.00,600.00,", StringComparison.Ordinal));
-        Assert.Equal("Total,,,16,2,1400.00,250.00,1650.00,320.00,1330.00,", lines[^1]);
+        Assert.Equal("Total,,,16,2,1400.00,250.00,1650.00,320.00,1330.00,,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00", lines[^1]);
     }
 
     [SqlServerFact]

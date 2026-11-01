@@ -16,10 +16,10 @@ public interface IOrganizationRepository
 }
 
 public sealed record OrganizationDto(Guid Id, string Name, string CurrencyCode, int VatRateBps, string TimeZoneId, decimal HoursPerDay,
-    int OvertimeMultiplierBps, string VarianceBasis, int Version);
+    int OvertimeMultiplierBps, string VarianceBasis, int Version, int PayrollRunsPerMonth = Organization.DefaultPayrollRunsPerMonth);
 
 public sealed record UpdateOrganizationRequest(string? Name, string? CurrencyCode, int VatRateBps, string? TimeZoneId, decimal HoursPerDay,
-    int OvertimeMultiplierBps, string? VarianceBasis, int Version);
+    int OvertimeMultiplierBps, string? VarianceBasis, int Version, int? PayrollRunsPerMonth = null);
 
 public sealed class OrganizationService(IOrganizationRepository organizations, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
 {
@@ -35,7 +35,7 @@ public sealed class OrganizationService(IOrganizationRepository organizations, I
 
         var vatBefore = organization.VatRateBps;
         organization.UpdateSettings(request.Name ?? "", request.CurrencyCode ?? "", request.VatRateBps, request.TimeZoneId ?? "", request.HoursPerDay,
-            request.OvertimeMultiplierBps, basis, clock.UtcNow);
+            request.OvertimeMultiplierBps, basis, clock.UtcNow, request.PayrollRunsPerMonth);
         audit.Record("Organization.SettingsChanged", nameof(Organization), organization.Id,
             vatBefore == organization.VatRateBps
                 ? "Changed the company settings."
@@ -46,5 +46,5 @@ public sealed class OrganizationService(IOrganizationRepository organizations, I
 
     internal static OrganizationDto ToDto(Organization organization) => new(organization.Id, organization.Name, organization.CurrencyCode,
         organization.VatRateBps, organization.TimeZoneId, organization.HoursPerDay, organization.OvertimeMultiplierBps,
-        organization.VarianceBasis.ToString(), organization.Version);
+        organization.VarianceBasis.ToString(), organization.Version, organization.PayrollRunsPerMonth);
 }

@@ -105,6 +105,15 @@
           >
             <app-percent-input formControlName="overtimeRate" />
           </app-form-field>
+
+          <app-form-field
+            label="Pay runs a month"
+            hint="How many payrolls you make in a month (1 to 4). Monthly contribution tables use one run's pay times this, as an estimate of the month's pay."
+            [control]="form.controls.payrollRunsPerMonth"
+            requiredMessage="Enter how many pay runs you make in a month."
+          >
+            <app-number-input formControlName="payrollRunsPerMonth" [decimals]="0" unit="runs" />
+          </app-form-field>
         </div>
       </section>
 

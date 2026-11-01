@@ -22,6 +22,7 @@ const company: Organization = {
   hoursPerDay: 8,
   overtimeMultiplierBps: 12500,
   varianceBasis: 'IncludingVat',
+  payrollRunsPerMonth: 2,
   version: 3,
 };
 
@@ -88,6 +89,7 @@ describe('CompanySettingsPage', () => {
       hoursPerDay: 8,
       overtimeMultiplierBps: 12500,
       varianceBasis: 'ExcludingVat',
+      payrollRunsPerMonth: 2,
       version: 3,
     });
     // The session is read again so the new currency, time zone and VAT rate apply at once.
@@ -134,6 +136,27 @@ describe('CompanySettingsPage', () => {
 
     expect(texts(root, '.field__error')).toEqual(['Enter paid hours per day between 1 and 24.']);
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it('shows and sends the pay runs a month, and refuses more than 4', async () => {
+    const { harness, root, update, backend } = await open();
+    const runs = root.querySelectorAll<HTMLInputElement>('app-number-input input')[1]!;
+    expect(runs.value).toBe('2');
+
+    type(root, '[formControlName="payrollRunsPerMonth"] input', '5');
+    save(root).click();
+    await settle(harness.fixture);
+    expect(texts(root, '.field__error')).toEqual([
+      'Enter how many pay runs you make in a month, from 1 to 4.',
+    ]);
+    expect(update).not.toHaveBeenCalled();
+
+    type(root, '[formControlName="payrollRunsPerMonth"] input', '4');
+    save(root).click();
+    await settle(harness.fixture);
+    expect(update.mock.calls[0]![0]).toMatchObject({ payrollRunsPerMonth: 4 });
+    await flushMicrotasks(6);
+    backend.expectOne('/api/identity/session').flush(sessionFixture());
   });
 
   it('puts the API message for the VAT rate under the VAT field, whatever unit the API uses', async () => {

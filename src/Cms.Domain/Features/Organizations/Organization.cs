@@ -41,6 +41,14 @@ public sealed class Organization : AggregateRoot
 
     public VarianceBasis VarianceBasis { get; private set; } = VarianceBasis.IncludingVat;
 
+    public const int DefaultPayrollRunsPerMonth = 2;
+
+    /// <summary>
+    /// How many pay runs the company makes in a month (1 to 4). A monthly contribution or tax table is applied to one run's pay times
+    /// this number, and the month's amount is split across the runs.
+    /// </summary>
+    public int PayrollRunsPerMonth { get; private set; } = DefaultPayrollRunsPerMonth;
+
     public static Organization Create(Guid id, string name, DateTimeOffset now)
     {
         var organization = new Organization { Name = Guard.RequiredText(name, "name", "the company name", 120) };
@@ -49,8 +57,9 @@ public sealed class Organization : AggregateRoot
     }
 
     public void UpdateSettings(string name, string currencyCode, int vatRateBps, string timeZoneId, decimal hoursPerDay,
-        int overtimeMultiplierBps, VarianceBasis varianceBasis, DateTimeOffset now)
+        int overtimeMultiplierBps, VarianceBasis varianceBasis, DateTimeOffset now, int? payrollRunsPerMonth = null)
     {
+        var runsPerMonth = payrollRunsPerMonth ?? PayrollRunsPerMonth;
         var errors = new ValidationErrors();
         var cleanName = (name ?? "").Trim();
         if (cleanName.Length is 0 or > 120) errors.Add("name", "Enter the company name (up to 120 characters).");
@@ -61,6 +70,7 @@ public sealed class Organization : AggregateRoot
         if (overtimeMultiplierBps is < 10_000 or > 30_000) errors.Add("overtimeMultiplierBps", "Enter an overtime rate between 100% and 300% of the hourly rate.");
         if (!Enum.IsDefined(varianceBasis)) errors.Add("varianceBasis", "Choose whether to compare amounts with or without VAT.");
         if (!IsKnownTimeZone(timeZoneId)) errors.Add("timeZoneId", "Choose a valid time zone.");
+        if (runsPerMonth is < 1 or > 4) errors.Add("payrollRunsPerMonth", "Enter how many pay runs you make in a month, from 1 to 4.");
         errors.ThrowIfAny();
 
         Name = cleanName;
@@ -70,6 +80,7 @@ public sealed class Organization : AggregateRoot
         HoursPerDay = hoursPerDay;
         OvertimeMultiplierBps = overtimeMultiplierBps;
         VarianceBasis = varianceBasis;
+        PayrollRunsPerMonth = runsPerMonth;
         Touch(now);
     }
 

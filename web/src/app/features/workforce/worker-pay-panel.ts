@@ -9,6 +9,7 @@ import { Viewport } from '../../shared/ui/viewport/viewport';
 import { ChangeRateDialog } from './change-rate-dialog';
 import { rateInForce } from './rate-change';
 import { WorkerDetailState } from './worker-detail-state';
+import { WorkerStatutoryDialog, statutoryWords } from './worker-statutory';
 import { RATE_CATEGORY_LABEL, RATE_UNIT_LABEL } from './worker-status';
 import { WorkerDetail } from './workforce.models';
 
@@ -19,7 +20,7 @@ import { WorkerDetail } from './workforce.models';
  */
 @Component({
   selector: 'app-worker-pay-panel',
-  imports: [Button, ChangeRateDialog],
+  imports: [Button, ChangeRateDialog, WorkerStatutoryDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="card" aria-labelledby="pay-heading">
@@ -45,6 +46,22 @@ import { WorkerDetail } from './workforce.models';
             <span class="money">{{ next.amount }}</span>
             {{ next.unit }}
           </p>
+        }
+
+        @if (contributions(); as words) {
+          <div class="pay__statutory">
+            <p class="text-small"><span class="text-muted">Contributions:</span> {{ words }}</p>
+            @if (canChangeContributions()) {
+              <button
+                appButton
+                variant="ghost"
+                type="button"
+                (click)="editingContributions.set(true)"
+              >
+                Change contributions
+              </button>
+            }
+          </div>
         }
 
         @if (history().length > 1) {
@@ -98,6 +115,15 @@ import { WorkerDetail } from './workforce.models';
       }
     </section>
 
+    @if (editingContributions()) {
+      <app-worker-statutory-dialog
+        [worker]="worker()"
+        (changed)="contributionsChanged($event)"
+        (dismissed)="editingContributions.set(false)"
+        (reloaded)="reload()"
+      />
+    }
+
     @if (changing()) {
       <app-change-rate-dialog
         [worker]="worker()"
@@ -121,6 +147,15 @@ import { WorkerDetail } from './workforce.models';
       margin-top: var(--space-2);
       color: var(--color-info);
       font-weight: 600;
+    }
+
+    .pay__statutory {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
     }
 
     .pay__history {
@@ -216,6 +251,25 @@ export class WorkerPayPanel {
       })),
   );
 
+  protected readonly editingContributions = signal(false);
+
+  /** The contributions the worker pays, in words; only sent to people who may see pay. */
+  protected readonly contributions = computed(() => {
+    const flags = this.worker().statutory;
+    return flags ? statutoryWords(flags) : null;
+  });
+
+  /** Changing contributions needs the right to manage workers; a worker who has left can still be in a draft payroll. */
+  protected readonly canChangeContributions = computed(
+    () => this.session.can(Permission.workforceManage) && this.worker().statutory !== null,
+  );
+
+  protected contributionsChanged(updated: WorkerDetail): void {
+    this.editingContributions.set(false);
+    this.state.replace(updated);
+    this.toast.success('Contributions saved.');
+  }
+
   protected changed(updated: WorkerDetail): void {
     this.changing.set(false);
     this.state.replace(updated);
@@ -224,6 +278,7 @@ export class WorkerPayPanel {
 
   protected reload(): void {
     this.changing.set(false);
+    this.editingContributions.set(false);
     void this.state.reload();
   }
 }

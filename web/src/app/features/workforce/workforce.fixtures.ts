@@ -157,13 +157,20 @@ export function workerWithPay(overrides: Partial<WorkerDetail> = {}): WorkerDeta
     rates: [rate()],
     cases: [],
     version: 4,
+    statutory: { sssMember: true, philHealthMember: true, pagIbigMember: true, taxExempt: false },
     ...overrides,
   };
 }
 
 /** The same worker as everyone without payroll.read receives them: no rate, no history. */
 export function workerWithoutPay(overrides: Partial<WorkerDetail> = {}): WorkerDetail {
-  return workerWithPay({ currentRateMinor: null, currentRateUnit: null, rates: [], ...overrides });
+  return workerWithPay({
+    currentRateMinor: null,
+    currentRateUnit: null,
+    rates: [],
+    statutory: null,
+    ...overrides,
+  });
 }
 
 export function entry(overrides: Partial<AttendanceEntry> = {}): AttendanceEntry {

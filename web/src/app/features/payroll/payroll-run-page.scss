@@ -142,3 +142,43 @@
     flex: 1 1 auto;
   }
 }
+
+.setup-line {
+  margin: 0;
+}
+
+.remit__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.remit__row,
+.remit__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.remit__row {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.remit__who {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.remit__amount,
+.remit__total {
+  font-weight: 650;
+}
+
+.remit__total {
+  margin-top: var(--space-2);
+}

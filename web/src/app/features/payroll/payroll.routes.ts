@@ -18,6 +18,21 @@ export const PAYROLL_ROUTES: Routes = [
     canActivate: [permissionGuard(Permission.payrollRun)],
     loadComponent: () => import('./payroll-new-page').then((m) => m.PayrollNewPage),
   },
+  // The contribution and tax tables: read with payroll.read, added and changed with statutory.manage (the API checks the same).
+  {
+    path: 'statutory',
+    pathMatch: 'full',
+    loadComponent: () => import('./statutory-page').then((m) => m.StatutoryPage),
+  },
+  {
+    path: 'statutory/new',
+    canActivate: [permissionGuard(Permission.statutoryManage)],
+    loadComponent: () => import('./statutory-schedule-page').then((m) => m.StatutorySchedulePage),
+  },
+  {
+    path: 'statutory/:id',
+    loadComponent: () => import('./statutory-schedule-page').then((m) => m.StatutorySchedulePage),
+  },
   {
     path: ':id',
     loadComponent: () => import('./payroll-run-page').then((m) => m.PayrollRunPage),

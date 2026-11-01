@@ -63,10 +63,18 @@ public sealed record WorkerDetailDto(Guid Id, string EmployeeNumber, string Firs
     DateOnly? DateOfBirth, DateOnly DateHired, string? MaritalStatus, string? SpouseName, string? Religion, string? EducationalAttainment,
     string? PresentAddress, string? ProvincialAddress, string? ContactNumber, string? Reference, string Status, DateOnly? StatusChangedOn,
     string? StatusReason, string? Designation, long? CurrentRateMinor, string? CurrentRateUnit, WorkerAssignmentDto? CurrentAssignment,
-    IReadOnlyList<WorkerAssignmentDto> Assignments, IReadOnlyList<WorkerRateDto> Rates, IReadOnlyList<WorkerCaseDto> Cases, int Version);
+    IReadOnlyList<WorkerAssignmentDto> Assignments, IReadOnlyList<WorkerRateDto> Rates, IReadOnlyList<WorkerCaseDto> Cases, int Version,
+    WorkerStatutoryDto? Statutory = null);
 
+/// <summary>Which contributions the worker pays and whether tax is withheld. Only returned to people who may see pay.</summary>
+public sealed record WorkerStatutoryDto(bool SssMember, bool PhilHealthMember, bool PagIbigMember, bool TaxExempt);
+
+/// <param name="SssMember">Optional; a new worker pays SSS, PhilHealth and Pag-IBIG and is taxed unless told otherwise.</param>
 public sealed record HireWorkerRequest(string? EmployeeNumber, string? FirstName, string? MiddleName, string? LastName, DateOnly DateHired,
-    string? Designation, long RateMinor, string? RateUnit, string? ClientRequestId);
+    string? Designation, long RateMinor, string? RateUnit, string? ClientRequestId, bool? SssMember = null, bool? PhilHealthMember = null,
+    bool? PagIbigMember = null, bool? TaxExempt = null);
+
+public sealed record SetWorkerStatutoryRequest(bool SssMember, bool PhilHealthMember, bool PagIbigMember, bool TaxExempt, int Version);
 
 public sealed record UpdateWorkerRequest(string? FirstName, string? MiddleName, string? LastName, DateOnly? DateOfBirth, string? MaritalStatus,
     string? SpouseName, string? Religion, string? EducationalAttainment, string? PresentAddress, string? ProvincialAddress, string? ContactNumber,

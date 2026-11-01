@@ -13,6 +13,8 @@ export interface Organization {
   /** Overtime pay as a share of the hourly rate, in basis points (12,500 is 125%). */
   readonly overtimeMultiplierBps: number;
   readonly varianceBasis: VarianceBasis;
+  /** How many pay runs the company makes in a month (1 to 4). */
+  readonly payrollRunsPerMonth: number;
   readonly version: number;
 }
 
@@ -24,5 +26,6 @@ export interface UpdateOrganizationRequest {
   readonly hoursPerDay: number;
   readonly overtimeMultiplierBps: number;
   readonly varianceBasis: VarianceBasis;
+  readonly payrollRunsPerMonth: number;
   readonly version: number;
 }

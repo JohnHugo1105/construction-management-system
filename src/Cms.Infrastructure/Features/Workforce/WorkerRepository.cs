@@ -150,7 +150,8 @@ internal sealed class WorkerReader(CmsDbContext db) : IWorkerReader
         return new WorkerDetailDto(worker.Id, worker.EmployeeNumber, worker.FirstName, worker.MiddleName, worker.LastName, worker.FullName, worker.DateOfBirth,
             worker.DateHired, worker.MaritalStatus, worker.SpouseName, worker.Religion, worker.EducationalAttainment, worker.PresentAddress,
             worker.ProvincialAddress, worker.ContactNumber, worker.Reference, worker.Status.ToString(), worker.StatusChangedOn, worker.StatusReason,
-            designation, currentRateMinor, currentRateUnit, assignments.FirstOrDefault(item => item.IsCurrent), assignments, rates, cases, worker.Version);
+            designation, currentRateMinor, currentRateUnit, assignments.FirstOrDefault(item => item.IsCurrent), assignments, rates, cases, worker.Version,
+            includePay ? new WorkerStatutoryDto(worker.IsSssMember, worker.IsPhilHealthMember, worker.IsPagIbigMember, worker.IsTaxExempt) : null);
     }
 
     private static IQueryable<Worker> Search(IQueryable<Worker> workers, string? search)

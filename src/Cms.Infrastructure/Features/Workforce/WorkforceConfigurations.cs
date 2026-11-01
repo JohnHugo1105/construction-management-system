@@ -30,6 +30,8 @@ internal sealed class WorkerConfiguration : IEntityTypeConfiguration<Worker>
         builder.Ignore(item => item.FullName);
         builder.Ignore(item => item.CurrentRate);
         builder.Ignore(item => item.CurrentAssignment);
+        // The four contribution flags are plain bit columns; Statutory is the same four read as one value.
+        builder.Ignore(item => item.Statutory);
 
         builder.HasMany(item => item.Rates).WithOne().HasForeignKey(rate => rate.WorkerId).OnDelete(DeleteBehavior.Restrict);
         builder.HasMany(item => item.Assignments).WithOne().HasForeignKey(assignment => assignment.WorkerId).OnDelete(DeleteBehavior.Restrict);

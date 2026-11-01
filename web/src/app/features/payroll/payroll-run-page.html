@@ -83,10 +83,52 @@
           </div>
         </dl>
 
-        @if (actions().editDeductions) {
-          <p class="text-muted text-small">
-            SSS, PhilHealth, Pag-IBIG and tax aren't calculated. A person enters them as deductions
-            for each worker.
+        @for (setup of setupLines(); track setup) {
+          <p class="text-muted text-small setup-line">{{ setup }}</p>
+        }
+
+        @if (remit(); as owed) {
+          <section class="card remit" aria-labelledby="remit-heading">
+            <div class="panel-head">
+              <h2 id="remit-heading" class="card__title">Contributions and tax to remit</h2>
+              @if (canRecalculate()) {
+                <button appButton type="button" (click)="recalculating.set(true)">
+                  Recalculate
+                </button>
+              }
+            </div>
+            <ul class="remit__list">
+              @for (agency of owed.agencies; track agency.key) {
+                <li class="remit__row">
+                  <span class="remit__who">
+                    <strong>{{ agency.label }}</strong>
+                    <span class="text-muted text-small">
+                      From pay <span class="money">{{ agency.employee }}</span>
+                      @if (agency.employer) {
+                        · employer adds <span class="money">{{ agency.employer }}</span>
+                      }
+                      · {{ agency.workers }}
+                    </span>
+                  </span>
+                  <span class="money remit__amount">{{ agency.toRemit }}</span>
+                </li>
+              }
+            </ul>
+            <p class="remit__total">
+              <span>Total to remit</span><span class="money">{{ owed.total }}</span>
+            </p>
+            @if (info.draft) {
+              <p class="text-muted text-small">
+                Monthly tables use this run's pay times the pay runs a month, as an estimate of the
+                month's pay. Open a worker's details to adjust an amount.
+              </p>
+            }
+          </section>
+        } @else if (canRecalculate()) {
+          <p>
+            <button appButton type="button" (click)="recalculating.set(true)">
+              Calculate contributions and tax
+            </button>
           </p>
         }
 
@@ -150,7 +192,11 @@
                     @if (isOpen(item.id)) {
                       <tr class="detail-row">
                         <td colspan="6" [id]="'detail-' + item.id">
-                          <app-payroll-line-detail [item]="item" />
+                          <app-payroll-line-detail
+                            [item]="item"
+                            [canAdjust]="actions().editDeductions"
+                            (adjust)="adjusting.set({ line: item.line, deduction: $event })"
+                          />
                         </td>
                       </tr>
                     }
@@ -206,7 +252,11 @@
                   </div>
                   @if (isOpen(item.id)) {
                     <div [id]="'detail-' + item.id">
-                      <app-payroll-line-detail [item]="item" />
+                      <app-payroll-line-detail
+                        [item]="item"
+                        [canAdjust]="actions().editDeductions"
+                        (adjust)="adjusting.set({ line: item.line, deduction: $event })"
+                      />
                     </div>
                   }
                 </li>
@@ -245,4 +295,24 @@
       (reloaded)="reload()"
     />
   }
+}
+@if (adjusting(); as target) {
+  @if (state.status() === 'ready') {
+    <app-adjust-statutory-dialog
+      [run]="state.run()"
+      [line]="target.line"
+      [deduction]="target.deduction"
+      (saved)="adjustSaved($event)"
+      (dismissed)="adjusting.set(null)"
+      (reloaded)="reload()"
+    />
+  }
+}
+@if (recalculating() && state.status() === 'ready') {
+  <app-recalculate-statutory-dialog
+    [run]="state.run()"
+    (recalculated)="recalculated($event)"
+    (dismissed)="recalculating.set(false)"
+    (reloaded)="reload()"
+  />
 }

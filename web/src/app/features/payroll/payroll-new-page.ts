@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  computed,
   inject,
   signal,
   viewChild,
@@ -32,6 +33,9 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { newRequestId } from '../workforce/request-id';
 import { PayrollApi } from './payroll-api';
 import { checkPeriod, defaultPeriod } from './payroll-rules';
+import { StatutoryApi } from './statutory-api';
+import { needsSetupLines } from './statutory-rules';
+import { StatutoryStatus } from './statutory.models';
 
 /** Checks the pair of days against each other as soon as either changes (the same rules the server applies). */
 function periodDay(which: 'start' | 'end', today: () => string) {
@@ -78,6 +82,9 @@ function periodDay(which: 'start' | 'end', today: () => string) {
         Takes all attendance that hasn't been paid and locks it. Locked attendance can't be changed
         until the payroll run is voided.
       </p>
+      @for (setup of setupLines(); track setup) {
+        <p class="text-muted text-small">{{ setup }}</p>
+      }
 
       @if (error(); as problem) {
         <app-api-error-alert [error]="problem" [extra]="extraMessages()" />
@@ -146,7 +153,17 @@ export class PayrollNewPage {
   /** One id for this visit to the form: a second press makes the same run, not another. */
   private readonly requestId = newRequestId();
 
+  /** One quiet line per agency whose amounts won't be worked out (no table yet). Never a block. */
+  protected readonly setupLines = computed(() => needsSetupLines(this.statutoryStatus()));
+  private readonly statutoryStatus = signal<StatutoryStatus | null>(null);
+
   constructor() {
+    // The capability check is extra: when it fails, the form still works and nothing is said.
+    firstValueFrom(inject(StatutoryApi).status()).then(
+      (status) => this.statutoryStatus.set(status),
+      () => undefined,
+    );
+
     // Each day is checked against the other, so check both whenever either changes. The change is announced, so a message
     // already on screen follows (a "last day" error goes away as soon as the first day is moved). A guard stops the two from
     // answering each other forever.

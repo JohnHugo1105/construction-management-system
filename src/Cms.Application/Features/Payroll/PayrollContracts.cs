@@ -26,7 +26,14 @@ public sealed record PayrollRunListQuery(string? Status);
 public sealed record PayrollRunListItemDto(Guid Id, DateOnly PeriodStart, DateOnly PeriodEnd, string Status, int WorkerCount, long TotalGrossMinor,
     long TotalDeductionsMinor, long TotalNetMinor, DateTimeOffset CreatedAtUtc, DateTimeOffset? ApprovedAtUtc, int Version);
 
-public sealed record PayrollDeductionDto(Guid Id, string Description, long AmountMinor);
+/// <summary>
+/// One deduction. <c>Source</c> is Manual (typed by a person) or Statutory (worked out from <c>Agency</c>'s table). For a statutory one,
+/// <c>CalculatedMinor</c> is what the table gave, <c>IsAdjusted</c> says a person changed it (with <c>AdjustmentReason</c>), <c>IsLimited</c>
+/// says it was cut because the deductions would have been more than the pay, and <c>EmployerShareMinor</c> is what the employer adds
+/// (not taken from pay, not charged to a project).
+/// </summary>
+public sealed record PayrollDeductionDto(Guid Id, string Description, long AmountMinor, string Source = "Manual", string? Agency = null,
+    long EmployerShareMinor = 0, long? CalculatedMinor = null, bool IsAdjusted = false, bool IsLimited = false, string? AdjustmentReason = null);
 
 /// <summary>The part of one worker's pay that belongs to one project (and sub-project). The shares add up to the line's gross pay.</summary>
 public sealed record PayrollAllocationDto(Guid ProjectId, string ProjectName, Guid? SubProjectId, string? SubProjectName, decimal RegularHours,
@@ -34,18 +41,24 @@ public sealed record PayrollAllocationDto(Guid ProjectId, string ProjectName, Gu
 
 public sealed record PayrollLineDto(Guid WorkerId, string WorkerName, string EmployeeNumber, string Designation, decimal RegularHours,
     decimal OvertimeHours, long RegularPayMinor, long OvertimePayMinor, long GrossPayMinor, long DeductionsMinor, long NetPayMinor,
-    IReadOnlyList<PayrollDeductionDto> Deductions, IReadOnlyList<PayrollAllocationDto> Allocations);
+    IReadOnlyList<PayrollDeductionDto> Deductions, IReadOnlyList<PayrollAllocationDto> Allocations, long EmployerSharesMinor = 0,
+    bool StatutoryLimited = false);
 
+/// <param name="RunsPerMonth">The company's pay runs per month when the contributions and tax were last worked out.</param>
+/// <param name="TotalEmployerSharesMinor">What the employer adds to the contributions. Recorded and exported, not part of net pay or project cost.</param>
 public sealed record PayrollRunDto(Guid Id, DateOnly PeriodStart, DateOnly PeriodEnd, string Status, int WorkerCount, long TotalGrossMinor,
     long TotalDeductionsMinor, long TotalNetMinor, decimal HoursPerDay, int OvertimeMultiplierBps, string? CreatedByName, DateTimeOffset CreatedAtUtc,
     string? ApprovedByName, DateTimeOffset? ApprovedAtUtc, string? VoidedByName, DateTimeOffset? VoidedAtUtc, string? VoidReason,
-    IReadOnlyList<PayrollLineDto> Lines, int Version);
+    IReadOnlyList<PayrollLineDto> Lines, int Version, int RunsPerMonth = 2, long TotalEmployerSharesMinor = 0);
 
 public sealed record CreatePayrollRunRequest(DateOnly PeriodStart, DateOnly PeriodEnd, string? ClientRequestId);
 
 public sealed record DeductionInput(string? Description, long AmountMinor);
 
 public sealed record SetDeductionsRequest(IReadOnlyList<DeductionInput>? Deductions, int Version);
+
+/// <summary>Changes one worker's calculated contribution or tax. The reason stays on the payroll (never in the activity log).</summary>
+public sealed record AdjustStatutoryRequest(long AmountMinor, string? Reason, int Version);
 
 public sealed record ApprovePayrollRunRequest(int Version);
 

@@ -66,9 +66,23 @@ type DeductionForm = FormGroup<{
           <span class="money">{{ gross() }}</span> in this payroll. Deductions can't be more than
           that.
         </p>
-        <p class="text-muted text-small">
-          SSS, PhilHealth, Pag-IBIG and tax aren't calculated for you. Enter the amounts that apply.
-        </p>
+        @if (calculated().length > 0) {
+          <div class="calculated">
+            <p class="text-small">Worked out from the tables (change them with Adjust):</p>
+            <ul class="calculated__list">
+              @for (item of calculated(); track item.id) {
+                <li>
+                  <span>{{ item.description }}</span>
+                  <span class="money">{{ item.amount }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        } @else {
+          <p class="text-muted text-small">
+            Contributions and tax without a table are entered here, with any advances or loans.
+          </p>
+        }
 
         @if (general().length > 0) {
           <app-alert tone="danger" title="The deductions couldn't be saved">
@@ -175,6 +189,20 @@ type DeductionForm = FormGroup<{
     .row__remove {
       justify-self: start;
     }
+
+    .calculated__list {
+      display: grid;
+      gap: var(--space-1);
+      margin: var(--space-2) 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .calculated__list li {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
   `,
 })
 export class DeductionsDialog implements OnInit {
@@ -198,6 +226,16 @@ export class DeductionsDialog implements OnInit {
     formatMoney(this.line().grossPayMinor, this.session.currencyCode()),
   );
 
+  protected readonly calculated = computed(() =>
+    this.line()
+      .deductions.filter((deduction) => deduction.source === 'Statutory')
+      .map((deduction) => ({
+        id: deduction.id,
+        description: deduction.description,
+        amount: formatMoney(deduction.amountMinor, this.session.currencyCode()),
+      })),
+  );
+
   protected readonly saving = signal(false);
   protected readonly error = signal<ApiError | null>(null);
   protected readonly general = signal<readonly string[]>([]);
@@ -207,7 +245,10 @@ export class DeductionsDialog implements OnInit {
   }
 
   ngOnInit(): void {
-    for (const item of this.line().deductions)
+    // Only the deductions typed by hand are edited here: saving replaces that set, and the calculated ones stay as they are.
+    for (const item of this.line().deductions.filter(
+      (deduction) => deduction.source !== 'Statutory',
+    ))
       this.rows.push(this.newRow(item.description, item.amountMinor));
   }
 

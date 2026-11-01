@@ -14,8 +14,34 @@ import { signInForTest } from '../../testing/session-fixture';
 import { conflict, ruleViolation, validationError } from '../workforce/workforce.fixtures';
 import { PayrollApi } from './payroll-api';
 import { PayrollRunPage } from './payroll-run-page';
-import { run } from './payroll.fixtures';
+import { line, manual, run, statutory as statutoryDeduction } from './payroll.fixtures';
 import { PayrollRun } from './payroll.models';
+import { StatutoryApi } from './statutory-api';
+import { PayrollStatutory, StatutoryStatus } from './statutory.models';
+
+const allSetUp = (): StatutoryStatus => ({
+  today: '2026-11-01',
+  agencies: (['Sss', 'PhilHealth', 'PagIbig', 'WithholdingTax'] as const).map((agency) => ({
+    agency,
+    label: agency,
+    state: 'Available' as const,
+    message: 'Worked out.',
+    fallback: null,
+    scheduleId: `t-${agency}`,
+    scheduleName: 'Artificial test table',
+    effectiveFrom: '2026-01-01',
+  })),
+});
+
+const noRemittance = (runId: string): PayrollStatutory => ({
+  runId,
+  status: 'Draft',
+  runsPerMonth: 2,
+  totalEmployeeMinor: 0,
+  totalEmployerMinor: 0,
+  totalToRemitMinor: 0,
+  agencies: [],
+});
 
 type Call = (...args: unknown[]) => Observable<unknown>;
 const stub = (implementation: Call): Mock<Call> => vi.fn<Call>(implementation);
@@ -36,8 +62,14 @@ async function open(
   current: PayrollRun,
   permissions: readonly string[],
   api: Record<string, Mock<Call>> = {},
+  statutoryApi: Record<string, Mock<Call>> = {},
 ) {
   const get = stub(() => of(current));
+  const statutory = {
+    status: stub(() => of(allSetUp())),
+    runStatutory: stub(() => of(noRemittance(current.id))),
+    ...statutoryApi,
+  };
   TestBed.configureTestingModule({
     providers: [
       provideRouter(
@@ -47,6 +79,7 @@ async function open(
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: PayrollApi, useValue: { get, ...api } },
+      { provide: StatutoryApi, useValue: statutory },
       { provide: Viewport, useValue: { isTablet: signal(true), isDesktop: signal(true) } },
     ],
   });
@@ -99,7 +132,7 @@ describe('PayrollRunPage figures', () => {
     const detail = root.querySelector('.detail-row')!;
     expect(texts(detail, '.detail__pairs dd')).toEqual(['₱4,000.00', '₱0.00']);
     expect(texts(detail, 'section[aria-label^="Deductions"] li')).toEqual([
-      'SSS contribution₱150.00',
+      'SSS contribution ₱150.00',
     ]);
     expect(texts(detail, 'section[aria-label^="Projects"] li')).toEqual([
       'Harbour Annex 40 h₱4,000.00',
@@ -325,7 +358,9 @@ describe('PayrollRunPage deductions', () => {
     expect(text(dialog, '.dialog__body p')).toContain(
       'Juan Dela Cruz earned ₱8,625.00 in this payroll.',
     );
-    expect(text(dialog, '.dialog__body p:nth-of-type(2)')).toContain("aren't calculated for you");
+    expect(text(dialog, '.dialog__body p:nth-of-type(2)')).toContain(
+      'Contributions and tax without a table are entered here',
+    );
     expect(dialog.querySelectorAll('.row')).toHaveLength(0);
 
     buttonNamed(dialog, 'Add a deduction').click();
@@ -394,5 +429,163 @@ describe('PayrollRunPage deductions', () => {
   it('gives a person who may not prepare payroll no way to change deductions', async () => {
     const { root } = await open(run(), READER);
     expect(texts(root, 'button')).not.toContain('Edit deductions');
+  });
+});
+
+describe('PayrollRunPage contributions and tax', () => {
+  // Artificial figures: 166.67 SSS (employer 222.23) and 25.77 tax, the SSS one adjusted from 150.00 with a reason.
+  const withStatutory = (overrides: Partial<PayrollRun> = {}): PayrollRun =>
+    run({
+      lines: [
+        line({
+          deductions: [
+            statutoryDeduction('s1', 'Sss', 16667, {
+              employerShareMinor: 22223,
+              calculatedMinor: 15000,
+              isAdjusted: true,
+              adjustmentReason: 'Agency statement',
+            }),
+            statutoryDeduction('s2', 'WithholdingTax', 2577, { isLimited: true }),
+            manual('m1', 'Cash advance', 10000),
+          ],
+          employerSharesMinor: 22223,
+          statutoryLimited: true,
+        }),
+      ],
+      ...overrides,
+    });
+
+  const remittance = (runId: string): PayrollStatutory => ({
+    runId,
+    status: 'Draft',
+    runsPerMonth: 2,
+    totalEmployeeMinor: 19244,
+    totalEmployerMinor: 22223,
+    totalToRemitMinor: 41467,
+    agencies: [
+      {
+        agency: 'Sss',
+        label: 'SSS',
+        scheduleNames: ['Artificial test table'],
+        workerCount: 1,
+        employeeMinor: 16667,
+        employerMinor: 22223,
+        toRemitMinor: 38890,
+        adjustedCount: 1,
+        limitedCount: 0,
+      },
+      {
+        agency: 'WithholdingTax',
+        label: 'Withholding tax',
+        scheduleNames: ['Artificial test table'],
+        workerCount: 1,
+        employeeMinor: 2577,
+        employerMinor: 0,
+        toRemitMinor: 2577,
+        adjustedCount: 0,
+        limitedCount: 1,
+      },
+    ],
+  });
+
+  it('says in one quiet line per agency what was not calculated, and only on a draft', async () => {
+    const status = allSetUp();
+    const needsSss: StatutoryStatus = {
+      ...status,
+      agencies: status.agencies.map((agency) =>
+        agency.agency === 'Sss'
+          ? {
+              ...agency,
+              state: 'NeedsSetup' as const,
+              message: 'SSS contributions were not calculated because no SSS table is set up.',
+              fallback: 'Enter them as deductions, or ask an accountant to set the table up.',
+            }
+          : agency,
+      ),
+    };
+
+    const draft = await open(run(), PREPARER, {}, { status: stub(() => of(needsSss)) });
+    expect(texts(draft.root, '.setup-line')).toEqual([
+      'SSS contributions were not calculated because no SSS table is set up. Enter them as deductions, or ask an accountant to set the table up.',
+    ]);
+    TestBed.resetTestingModule();
+
+    const done = await open(approved(), APPROVER, {}, { status: stub(() => of(needsSss)) });
+    expect(texts(done.root, '.setup-line')).toEqual([]);
+  });
+
+  it('shows where each deduction came from, the employer share and the limit, and adjusts one with a reason', async () => {
+    const adjust = stub(() => of(withStatutory({ version: 3 })));
+    const { root, fixture } = await open(
+      withStatutory(),
+      PREPARER,
+      {},
+      { adjust, runStatutory: stub(() => of(remittance('run1'))) },
+    );
+
+    root.querySelector<HTMLButtonElement>('tbody button[aria-expanded]')!.click();
+    await settle(fixture);
+    const detail = root.querySelector('.detail-row')!;
+    expect(texts(detail, 'section[aria-label^="Deductions"] li .text-small')).toEqual([
+      'SSS, adjusted',
+      'Reason: Agency statement',
+      'Withholding tax, limited to the pay',
+    ]);
+    expect(texts(detail, '.detail__note')).toEqual([
+      'Deductions were limited to the pay.',
+      'Employer adds ₱222.23 (not taken from pay).',
+    ]);
+    // Adjust is offered on calculated amounts only, never on one typed by hand.
+    expect(detail.querySelectorAll('.detail__adjust')).toHaveLength(2);
+
+    detail.querySelector<HTMLButtonElement>('.detail__adjust')!.click();
+    await settle(fixture);
+    const dialog = root.querySelector('app-adjust-statutory-dialog')!;
+    expect(text(dialog, '.dialog__body p')).toContain('The table gave ₱150.00 for Juan Dela Cruz.');
+    type(dialog, 'app-money-input input', '140.50');
+    type(dialog, 'textarea', ' Agency statement ');
+    buttonNamed(dialog, 'Save amount').click();
+    await settle(fixture);
+
+    expect(adjust).toHaveBeenCalledWith('run1', 'w1', 'Sss', 14050, 'Agency statement', 2);
+    expect(root.querySelector('app-adjust-statutory-dialog')).toBeNull();
+  });
+
+  it('shows what each agency is owed and recalculates a draft after saying adjustments are reset', async () => {
+    const recalculate = stub(() => of(withStatutory({ version: 3 })));
+    const { root, fixture } = await open(
+      withStatutory(),
+      PREPARER,
+      {},
+      { recalculate, runStatutory: stub(() => of(remittance('run1'))) },
+    );
+
+    expect(texts(root, '.remit__amount')).toEqual(['₱388.90', '₱25.77']);
+    expect(text(root, '.remit__total')).toBe('Total to remit₱414.67');
+    expect(texts(root, '.remit__who strong')).toEqual(['SSS', 'Withholding tax']);
+
+    buttonNamed(root, 'Recalculate').click();
+    await settle(fixture);
+    const dialog = root.querySelector('app-recalculate-statutory-dialog')!;
+    expect(text(dialog, 'strong')).toBe('1 adjusted amount goes');
+    buttonNamed(dialog, 'Recalculate').click();
+    await settle(fixture);
+
+    expect(recalculate).toHaveBeenCalledWith('run1', 2);
+  });
+
+  it('gives a reader the summary but no way to adjust or recalculate', async () => {
+    const { root, fixture } = await open(
+      withStatutory(),
+      READER,
+      {},
+      { runStatutory: stub(() => of(remittance('run1'))) },
+    );
+    root.querySelector<HTMLButtonElement>('tbody button[aria-expanded]')!.click();
+    await settle(fixture);
+
+    expect(texts(root, '.remit__amount')).toEqual(['₱388.90', '₱25.77']);
+    expect(root.querySelectorAll('.detail__adjust')).toHaveLength(0);
+    expect(texts(root, 'button')).not.toContain('Recalculate');
   });
 });

@@ -101,6 +101,12 @@ export class CompanySettingsPage implements OnInit {
         numberBetween(10_000, 30_000, 'Enter an overtime rate between 100% and 300%.'),
       ],
     }),
+    payrollRunsPerMonth: new FormControl<number | null>(null, {
+      validators: [
+        Validators.required,
+        numberBetween(1, 4, 'Enter how many pay runs you make in a month, from 1 to 4.'),
+      ],
+    }),
     varianceBasis: new FormControl<VarianceBasis | null>(null, {
       validators: [Validators.required],
     }),
@@ -149,6 +155,7 @@ export class CompanySettingsPage implements OnInit {
           hoursPerDay: value.hoursPerDay ?? 0,
           overtimeMultiplierBps: value.overtimeRate ?? 0,
           varianceBasis: value.varianceBasis ?? 'IncludingVat',
+          payrollRunsPerMonth: value.payrollRunsPerMonth ?? current.payrollRunsPerMonth,
           version: current.version,
         }),
       );
@@ -186,6 +193,7 @@ export class CompanySettingsPage implements OnInit {
       vatRate: organization.vatRateBps,
       hoursPerDay: organization.hoursPerDay,
       overtimeRate: organization.overtimeMultiplierBps,
+      payrollRunsPerMonth: organization.payrollRunsPerMonth,
       varianceBasis: organization.varianceBasis,
     });
   }

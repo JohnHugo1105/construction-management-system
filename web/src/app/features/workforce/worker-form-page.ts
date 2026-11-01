@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -25,6 +27,7 @@ import { MoneyInput } from '../../shared/ui/inputs/money-input';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { newRequestId } from './request-id';
 import { WorkforceApi } from './workforce-api';
+import { DEFAULT_STATUTORY, STATUTORY_CHOICES, statutoryWords } from './worker-statutory';
 import { RateUnit } from './workforce.models';
 
 /** The API names the pay rate `rateMinor`; the form calls it the pay rate. */
@@ -161,6 +164,23 @@ const SERVER_FIELD_NAMES = { rateMinor: 'rate' } as const;
                 </label>
               </div>
             </app-field-group>
+
+            <details class="contributions">
+              <summary>Contributions: {{ contributionWords() }}</summary>
+              <div class="choice-list">
+                @for (choice of statutoryChoices; track choice.key) {
+                  <label class="choice">
+                    <input type="checkbox" [formControlName]="choice.key" />
+                    <span class="choice__text">
+                      <span class="choice__label">{{ choice.label }}</span>
+                      @if (choice.hint) {
+                        <span class="choice__hint">{{ choice.hint }}</span>
+                      }
+                    </span>
+                  </label>
+                }
+              </div>
+            </details>
           </div>
 
           <div class="form__actions form__actions--sticky">
@@ -169,6 +189,19 @@ const SERVER_FIELD_NAMES = { rateMinor: 'rate' } as const;
           </div>
         </form>
       </div>
+    }
+  `,
+  styles: `
+    .contributions summary {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .contributions .choice-list {
+      margin-top: var(--space-2);
     }
   `,
 })
@@ -208,6 +241,25 @@ export class WorkerFormPage {
     }),
     // Neither choice is pre-selected: a day's pay and an hour's pay differ eight times over.
     rateUnit: new FormControl<RateUnit | null>(null, { validators: [Validators.required] }),
+    // A new worker pays every fund and is taxed; the choices are folded away until someone needs them.
+    sssMember: new FormControl(DEFAULT_STATUTORY.sssMember, { nonNullable: true }),
+    philHealthMember: new FormControl(DEFAULT_STATUTORY.philHealthMember, { nonNullable: true }),
+    pagIbigMember: new FormControl(DEFAULT_STATUTORY.pagIbigMember, { nonNullable: true }),
+    taxExempt: new FormControl(DEFAULT_STATUTORY.taxExempt, { nonNullable: true }),
+  });
+
+  protected readonly statutoryChoices = STATUTORY_CHOICES;
+  private readonly statutoryValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
+  protected readonly contributionWords = computed(() => {
+    const value = this.statutoryValue();
+    return statutoryWords({
+      sssMember: value.sssMember ?? true,
+      philHealthMember: value.philHealthMember ?? true,
+      pagIbigMember: value.pagIbigMember ?? true,
+      taxExempt: value.taxExempt ?? false,
+    });
   });
 
   protected readonly saving = signal(false);
@@ -247,6 +299,10 @@ export class WorkerFormPage {
           rateMinor: value.rate ?? 0,
           rateUnit: value.rateUnit as RateUnit,
           clientRequestId: this.requestId,
+          sssMember: value.sssMember,
+          philHealthMember: value.philHealthMember,
+          pagIbigMember: value.pagIbigMember,
+          taxExempt: value.taxExempt,
         }),
       );
       this.toast.success('Worker hired.');
