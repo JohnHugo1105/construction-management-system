@@ -107,8 +107,6 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
     {
         Permissions.TasksUse,
         Permissions.NotificationsRead,
-        Permissions.DiaryRead,
-        Permissions.DiaryWrite,
         Permissions.DocumentsRead,
         Permissions.DocumentsManage,
         Permissions.ScheduleRead,

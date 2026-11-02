@@ -494,6 +494,42 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SiteDiaryEntries",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Weather = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    WeatherNote = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    WorkDone = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    IssuesAndDelays = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    VisitorsAndInspections = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    SafetyNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    SubcontractorWorkers = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    AuthorUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SiteDiaryEntries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SiteDiaryEntries_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StockBalances",
                 columns: table => new
                 {
@@ -2224,6 +2260,25 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "SupplierId" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_SiteDiaryEntries_OneLivePerProjectPerDay",
+                table: "SiteDiaryEntries",
+                columns: new[] { "TenantId", "ProjectId", "ReportDate" },
+                unique: true,
+                filter: "[Status] <> 'Void'");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SiteDiaryEntries_ProjectId",
+                table: "SiteDiaryEntries",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SiteDiaryEntries_TenantId_ClientRequestId",
+                table: "SiteDiaryEntries",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StatutoryScheduleRows_ScheduleId_RowNumber",
                 table: "StatutoryScheduleRows",
                 columns: new[] { "ScheduleId", "RowNumber" },
@@ -2628,6 +2683,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProjectBillingTerms");
+
+            migrationBuilder.DropTable(
+                name: "SiteDiaryEntries");
 
             migrationBuilder.DropTable(
                 name: "StatutoryScheduleRows");
