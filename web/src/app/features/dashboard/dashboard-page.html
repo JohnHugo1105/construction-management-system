@@ -101,6 +101,12 @@
                     <a class="row-link" [routerLink]="item.link">{{ item.row.name }}</a>
                     <span class="cell-sub">{{ item.status }}</span>
                     <app-commitment-line [commitments]="item.row.commitments" />
+                    @if (item.forecastOver !== null) {
+                      <app-forecast-chip
+                        [projectId]="item.row.id"
+                        [overMinor]="item.forecastOver"
+                      />
+                    }
                   </th>
                   <td>
                     <div class="flags">
@@ -109,12 +115,6 @@
                         [tone]="item.health.tone"
                         [icon]="item.health.icon"
                       />
-                      @if (item.forecastOver !== null) {
-                        <app-forecast-chip
-                          [projectId]="item.row.id"
-                          [overMinor]="item.forecastOver"
-                        />
-                      }
                     </div>
                   </td>
                   @if (item.idle) {

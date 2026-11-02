@@ -40,6 +40,15 @@ import { Icon } from '../../shared/ui/icon/icon';
     .forecast-chip:hover .chip {
       text-decoration: underline;
     }
+
+    /* The chip sits under the project's name, where the committed lines already make the column wide, so it never widens the table. On a narrow
+       card the words may wrap instead of running off the edge. */
+    .chip {
+      max-width: 100%;
+      white-space: normal;
+      text-align: left;
+      line-height: 1.25;
+    }
   `,
 })
 export class ForecastChip {

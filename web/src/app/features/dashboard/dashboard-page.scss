@@ -68,7 +68,7 @@
   }
 }
 
-// The health chip and, when the work done says the project will finish over budget, the forecast chip beside it.
+// The health chip; the forecast chip (when the work done says the project will finish over budget) sits under the project name.
 .flags {
   display: flex;
   flex-wrap: wrap;
