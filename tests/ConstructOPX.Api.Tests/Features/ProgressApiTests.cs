@@ -242,20 +242,30 @@ public sealed class ProgressApiTests : IClassFixture<ConstructOpxApiFactory>
     }
 
     [SqlServerFact]
-    public async Task Recording_progress_changes_nothing_on_the_dashboard_or_the_cost_summary()
+    public async Task Recording_progress_adds_only_the_forecast_to_the_dashboard_and_the_cost_summary()
     {
         var (client, _) = await AdminAsync();
         using var _c = client;
         var (project, footings, _, _) = await WorkedProjectAsync(client);
         var dashboardBefore = await client.GetAsync<DashboardDto>("/api/reports/dashboard");
         var summaryBefore = await client.GetAsync<CostSummaryDto>($"/api/projects/{project.Id}/cost-summary");
+        Assert.Null(dashboardBefore.Projects.Single().ProgressForecast);
+        Assert.Null(summaryBefore.ProgressForecast);
 
         await RecordOkAsync(client, project.Id, Feb10, Entry(footings.Id, 9_000));
 
-        // The lists inside the DTOs compare by reference, so compare what the API sent.
+        var dashboardAfter = await client.GetAsync<DashboardDto>("/api/reports/dashboard");
+        var summaryAfter = await client.GetAsync<CostSummaryDto>($"/api/projects/{project.Id}/cost-summary");
+        // 900,000 of work for 400,000 spent: a forecast of 1,700,000 x 400,000 / 900,000 = 755,556, under the budget, so it flags nothing.
+        Assert.Equal(new ProgressForecastDto(755_556, -944_444, 5_294), dashboardAfter.Projects.Single().ProgressForecast);
+        Assert.Equal(dashboardAfter.Projects.Single().ProgressForecast, summaryAfter.ProgressForecast);
+        Assert.Equal(0, dashboardAfter.Totals.ForecastOverBudgetCount);
+
+        // Every other figure and every health is what it was. The lists inside the DTOs compare by reference, so compare what the API sent.
         string Sent<T>(T value) => JsonSerializer.Serialize(value, ApiClient.Json);
-        Assert.Equal(Sent(dashboardBefore), Sent(await client.GetAsync<DashboardDto>("/api/reports/dashboard")));
-        Assert.Equal(Sent(summaryBefore), Sent(await client.GetAsync<CostSummaryDto>($"/api/projects/{project.Id}/cost-summary")));
+        Assert.Equal(Sent(dashboardBefore with { Projects = [dashboardBefore.Projects.Single()] }),
+            Sent(dashboardAfter with { Projects = [dashboardAfter.Projects.Single() with { ProgressForecast = null }] }));
+        Assert.Equal(Sent(summaryBefore), Sent(summaryAfter with { ProgressForecast = null }));
     }
 
     // ---- Recording ----------------------------------------------------------------------------------------------------------

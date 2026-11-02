@@ -55,6 +55,14 @@ public sealed class ProgressDemoTests : IClassFixture<ConstructOpxApiFactory>
         Assert.True(ev.ForecastMinor > ev.BudgetMinor);
         Assert.NotNull(ev.ForecastMarginMinor);
 
+        // The dashboard may not read calmer than the project page: Riverside is flagged there with the Progress tab's own figure.
+        var dashboard = await client.GetAsync<ConstructOPX.Application.Features.Costing.DashboardDto>("/api/reports/dashboard");
+        var row = dashboard.Projects.Single(item => item.Id == riverside.Id);
+        Assert.NotNull(row.ProgressForecast);
+        Assert.Equal(ev.ForecastMinor, row.ProgressForecast.EstimateAtCompletionMinor);
+        Assert.Equal(ev.ForecastMinor - ev.BudgetMinor, row.ProgressForecast.OverBudgetMinor);
+        Assert.True(dashboard.Totals.ForecastOverBudgetCount >= 1);
+
         var rebar = report.Divisions.SelectMany(division => division.Lines).Single(line => line.WbsCode == "3200");
         Assert.Equal(9_000, rebar.PercentBps);
         var history = await client.GetAsync<PagedResult<ProgressHistoryItemDto>>($"/api/budget-lines/{rebar.BudgetLineId}/progress");

@@ -304,8 +304,10 @@ public sealed class CostingReportApiTests : IClassFixture<ConstructOpxApiFactory
         Assert.Equal(12 * 150_000, dashboard.Totals.BudgetMinor);
 
         Assert.Equal(small, large);
-        // The company, the projects, the budget sums, the actual sums, and one grouped statement for each commitment source.
-        Assert.Equal(4 + _factory.CommitmentSourceCount(), large);
+        // The company, the projects, the budget sums, the actual sums, and one grouped statement for each commitment source. Before the
+        // forecast flag this was 4 + sources; now it is 5 + sources: the forecast reads the lines with progress in one more statement, and
+        // when no project has any progress it stops there (with progress it is 6 + sources: CostingProgressForecastApiTests).
+        Assert.Equal(5 + _factory.CommitmentSourceCount(), large);
     }
 
     [SqlServerFact]
@@ -337,7 +339,8 @@ public sealed class CostingReportApiTests : IClassFixture<ConstructOpxApiFactory
 
         Assert.Equal(small, large);
         // The project, the company, three grouped sums each for budget and actual, and one grouped statement for each commitment source.
-        Assert.Equal(8 + _factory.CommitmentSourceCount(), large);
+        // Before the forecast flag this was 8 + sources; now it is 9 + sources (10 + sources once the project has progress).
+        Assert.Equal(9 + _factory.CommitmentSourceCount(), large);
     }
 
     [SqlServerFact]

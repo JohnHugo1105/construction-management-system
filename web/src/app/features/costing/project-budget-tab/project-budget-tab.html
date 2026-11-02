@@ -18,6 +18,15 @@
           <p class="text-muted text-small">{{ basisLine() }}</p>
         </div>
         <app-cost-position [figures]="summary.position" [commitments]="summary.commitments">
+          @if (forecast(); as view) {
+            <p class="forecast-line">
+              <app-icon name="warning" [size]="18" class="forecast-line__icon" />
+              <span
+                >Forecast to finish {{ view.estimate }}, which is {{ view.over }} over the budget.
+                <a routerLink="../progress">See Progress</a>.</span
+              >
+            </p>
+          }
           @if (margins(); as margin) {
             <dl class="margins">
               <div>

@@ -13,7 +13,7 @@ public static class DependencyInjection
     public const string ConnectionStringName = "ConstructOpx";
 
     /// <summary>
-    /// Registers persistence and adapters. Classes in this assembly named <c>*Repository</c>, <c>*Reader</c> or <c>*CommitmentSource</c> are
+    /// Registers persistence and adapters. Classes in this assembly named <c>*Repository</c>, <c>*Reader</c>, <c>*CommitmentSource</c> or <c>*ForecastSource</c> are
     /// registered against the Application ports they implement, so a feature adds its adapters without editing this file.
     /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
@@ -41,7 +41,8 @@ public static class DependencyInjection
         var adapters = typeof(ConstructOpxDbContext).Assembly.GetTypes()
             .Where(type => type is { IsClass: true, IsAbstract: false } && (type.Name.EndsWith("Repository", StringComparison.Ordinal) ||
                 type.Name.EndsWith("Reader", StringComparison.Ordinal) ||
-                type.Name.EndsWith("CommitmentSource", StringComparison.Ordinal)));
+                type.Name.EndsWith("CommitmentSource", StringComparison.Ordinal) ||
+                type.Name.EndsWith("ForecastSource", StringComparison.Ordinal)));
         foreach (var adapter in adapters)
             foreach (var port in adapter.GetInterfaces().Where(item => item.Assembly == applicationAssembly))
                 services.AddScoped(port, adapter);

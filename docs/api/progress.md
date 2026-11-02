@@ -49,6 +49,9 @@ entries the project has (project, company, lines with their current percent, act
 * Nulls: `plannedMinor`, `scheduleVarianceMinor`, `spiBps` and `plannedPercentBps` are null without a target end date (`spiBps` also
   while nothing is planned yet); `cpiBps` is null while nothing is spent; `percentCompleteBps` is null when nothing is budgeted;
   `contractPriceMinor` and `forecastMarginMinor` are null without a contract price.
+* **On the dashboard.** With no `asOf` (today), `forecastMinor`, `forecastVarianceMinor` (negated) and `percentCompleteBps` are the figures
+  the dashboard rows and the cost summary carry as `progressForecast { estimateAtCompletionMinor, overBudgetMinor, percentCompleteBps }`
+  (see [costing](costing.md)); an API test pins that they are equal.
 
 The formulas are in [business rules](../business-rules.md) (progress and earned value) and in `EarnedValueCalculator`.
 

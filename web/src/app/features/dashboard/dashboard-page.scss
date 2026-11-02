@@ -68,6 +68,14 @@
   }
 }
 
+// The health chip and, when the work done says the project will finish over budget, the forecast chip beside it.
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
 .used {
   display: grid;
   gap: var(--space-1);

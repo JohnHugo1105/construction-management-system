@@ -1,5 +1,6 @@
 using ConstructOPX.Domain.Features.Costing;
 using ConstructOPX.Domain.Features.Organizations;
+using ConstructOPX.Domain.Features.Progress;
 
 namespace ConstructOPX.Application.Features.Costing;
 
@@ -15,8 +16,10 @@ public static class CostReportBuilder
     // ---- Dashboard ----------------------------------------------------------------------------------------------------------
 
     public static DashboardDto BuildDashboard(VarianceBasis basis, IReadOnlyList<ProjectHeader> projects, IReadOnlyList<ProjectAmounts> budgets,
-        IReadOnlyList<ProjectAmounts> actuals, IReadOnlyList<ProjectAmounts>? commitments = null)
+        IReadOnlyList<ProjectAmounts> actuals, IReadOnlyList<ProjectAmounts>? commitments = null,
+        IReadOnlyList<ProgressForecastInputs>? progress = null)
     {
+        var progressByProject = (progress ?? []).ToDictionary(item => item.ProjectId);
         var commitmentByProject = (commitments ?? []).GroupBy(item => item.ProjectId)
             .ToDictionary(group => group.Key, group => new MeasuredAmounts(group.Sum(item => item.NetMinor), group.Sum(item => item.GrossMinor)));
         var budgetByProject = budgets.ToDictionary(item => item.ProjectId, item => new MeasuredAmounts(item.NetMinor, item.GrossMinor));
@@ -24,6 +27,7 @@ public static class CostReportBuilder
 
         var rows = new List<DashboardProjectRowDto>(projects.Count);
         long totalBudget = 0, totalActual = 0, totalCommitted = 0;
+        var forecastOver = 0;
         long? totalPrice = null, totalMargin = null, totalBudgetMargin = null;
 
         foreach (var project in projects)
@@ -35,9 +39,11 @@ public static class CostReportBuilder
             var budgetMargin = Margin(project.ContractPriceMinor, budget.GrossMinor);
 
             var committed = commitmentByProject.GetValueOrDefault(project.Id).On(basis);
+            var progressForecast = ProgressForecast(position.BudgetMinor, progressByProject.GetValueOrDefault(project.Id), basis);
+            if (progressForecast is { OverBudgetMinor: > 0 }) forecastOver++;
             rows.Add(new DashboardProjectRowDto(project.Id, project.Name, project.Status, project.ContractPriceMinor, position.BudgetMinor,
                 position.ActualMinor, position.RemainingMinor, position.UsedBps, position.Health.ToString(), margin, budgetMargin,
-                Forecast(position, committed)));
+                Forecast(position, committed), progressForecast));
 
             totalBudget = checked(totalBudget + position.BudgetMinor);
             totalActual = checked(totalActual + position.ActualMinor);
@@ -49,7 +55,7 @@ public static class CostReportBuilder
 
         var overall = new BudgetPosition(totalBudget, totalActual);
         var totals = new DashboardTotalsDto(rows.Count, totalPrice, overall.BudgetMinor, overall.ActualMinor, overall.RemainingMinor,
-            overall.UsedBps, overall.Health.ToString(), totalMargin, totalBudgetMargin, Forecast(overall, totalCommitted));
+            overall.UsedBps, overall.Health.ToString(), totalMargin, totalBudgetMargin, Forecast(overall, totalCommitted), forecastOver);
         return new DashboardDto(basis.ToString(), rows, totals);
     }
 
@@ -57,7 +63,7 @@ public static class CostReportBuilder
 
     /// <param name="subProjectNames">Every sub-project of the project by id, so rows carry names.</param>
     public static CostSummaryDto BuildSummary(ProjectHeader project, IReadOnlyDictionary<Guid, string> subProjectNames, VarianceBasis basis,
-        GroupedSums budget, GroupedSums actual, MeasuredAmounts commitment = default)
+        GroupedSums budget, GroupedSums actual, MeasuredAmounts commitment = default, ProgressForecastInputs? progress = null)
     {
         // Every line has exactly one item type, so the item-type groups add up to the whole project.
         var budgetTotal = Total(budget.ByItemType);
@@ -89,7 +95,8 @@ public static class CostReportBuilder
         return new CostSummaryDto(project.Id, project.Name, project.Status, basis.ToString(), project.ContractPriceMinor,
             new BudgetPositionDto(position.BudgetMinor, position.ActualMinor, position.RemainingMinor, position.UsedBps, position.Health.ToString()),
             Margin(project.ContractPriceMinor, actualTotal.GrossMinor), Margin(project.ContractPriceMinor, budgetTotal.GrossMinor),
-            BuildDivisions(budget, actual, basis), bySubProject, byItemType, Forecast(position, commitment.On(basis)));
+            BuildDivisions(budget, actual, basis), bySubProject, byItemType, Forecast(position, commitment.On(basis)),
+            ProgressForecast(position.BudgetMinor, progress, basis));
     }
 
     /// <summary>
@@ -101,6 +108,25 @@ public static class CostReportBuilder
         if (committedMinor <= 0) return null;
         var forecast = new BudgetPosition(position.BudgetMinor, checked(position.ActualMinor + committedMinor));
         return new CommitmentPositionDto(committedMinor, forecast.ActualMinor, forecast.RemainingMinor, forecast.Health.ToString());
+    }
+
+    /// <summary>
+    /// Where the work done says the project will finish: the Progress tab's forecast at completion (<see cref="EarnedValueCalculator"/>, cost
+    /// index method) set against the budget, both on the company's comparison basis. Null until some work is worth money, because without it
+    /// there is nothing to forecast from. One place, so the dashboard row, the dashboard count and the project page agree, and agree with
+    /// the Progress tab.
+    /// </summary>
+    public static ProgressForecastDto? ProgressForecast(long budgetMinor, ProgressForecastInputs? inputs, VarianceBasis basis)
+    {
+        if (inputs is null) return null;
+        var earned = inputs.Earned.On(basis);
+        // The budget and the work done are read in separate statements: a line added in between could leave the work worth more than the
+        // budget. That moment shows no forecast rather than a wrong one.
+        if (earned <= 0 || earned > budgetMinor) return null;
+
+        var figures = EarnedValueCalculator.Calculate(budgetMinor, earned, inputs.Actual.On(basis), planned: null);
+        return new ProgressForecastDto(figures.EstimateAtCompletionMinor, checked(figures.EstimateAtCompletionMinor - figures.BudgetAtCompletionMinor),
+            figures.PercentCompleteBps ?? 0);
     }
 
     private static DivisionSummaryDto[] BuildDivisions(GroupedSums budget, GroupedSums actual, VarianceBasis basis)

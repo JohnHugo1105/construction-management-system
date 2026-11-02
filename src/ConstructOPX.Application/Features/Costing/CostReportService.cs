@@ -14,7 +14,7 @@ namespace ConstructOPX.Application.Features.Costing;
 /// Every report is a fixed number of grouped SQL statements, however many projects or lines exist.
 /// </summary>
 public sealed class CostReportService(ICostReportReader reader, IProjectRepository projects, IOrganizationRepository organizations, IClock clock,
-    IEnumerable<ICommitmentSource> commitmentSources)
+    IEnumerable<ICommitmentSource> commitmentSources, IProgressForecastSource progressForecast)
 {
     public async Task<DashboardDto> DashboardAsync(bool includeArchived, CancellationToken cancellationToken)
     {
@@ -24,16 +24,17 @@ public sealed class CostReportService(ICostReportReader reader, IProjectReposito
         var actuals = await reader.SumByProjectAsync(CostMeasure.Actual, includeArchived, cancellationToken);
         var commitments = new List<ProjectAmounts>();
         foreach (var source in commitmentSources) commitments.AddRange(await source.OpenCommitmentsAsync(null, includeArchived, cancellationToken));
-        return CostReportBuilder.BuildDashboard(organization.VarianceBasis, headers, budgets, actuals, commitments);
+        var progress = await progressForecast.ForecastInputsAsync(null, includeArchived, organization.TodayLocal(clock.UtcNow), cancellationToken);
+        return CostReportBuilder.BuildDashboard(organization.VarianceBasis, headers, budgets, actuals, commitments, progress);
     }
 
     public async Task<CostSummaryDto> ProjectSummaryAsync(Guid projectId, CancellationToken cancellationToken) =>
-        (await BuildSummaryAsync(projectId, cancellationToken)).Summary;
+        (await BuildSummaryAsync(projectId, withProgressForecast: true, cancellationToken)).Summary;
 
     /// <summary>The variance by work-breakdown code as a CSV file, in division and code order, with the unclassified amounts last.</summary>
     public async Task<ExportFile> ExportSummaryAsync(Guid projectId, CancellationToken cancellationToken)
     {
-        var (summary, organization, projectName) = await BuildSummaryAsync(projectId, cancellationToken);
+        var (summary, organization, projectName) = await BuildSummaryAsync(projectId, withProgressForecast: false, cancellationToken);
         var basis = CostingLabels.BasisLabel(organization.VarianceBasis);
 
         var csv = new CsvExport.Document("Division", "Main scope", "WBS code", "Work item", "Budget", "Actual", "Remaining", "Used %", "Status", "Compared on");
@@ -56,7 +57,7 @@ public sealed class CostReportService(ICostReportReader reader, IProjectReposito
     }
 
     private async Task<(CostSummaryDto Summary, Organization Organization, string ProjectName)> BuildSummaryAsync(Guid projectId,
-        CancellationToken cancellationToken)
+        bool withProgressForecast, CancellationToken cancellationToken)
     {
         var project = await projects.GetAsync(projectId, cancellationToken) ?? throw new NotFoundException("that project");
         var organization = await organizations.GetCurrentAsync(cancellationToken);
@@ -67,9 +68,16 @@ public sealed class CostReportService(ICostReportReader reader, IProjectReposito
             foreach (var open in await source.OpenCommitmentsAsync(projectId, includeArchived: true, cancellationToken))
                 commitment += new MeasuredAmounts(open.NetMinor, open.GrossMinor);
 
+        // The export has no use for the forecast, so it does not pay for it.
+        var progress = withProgressForecast
+            ? (await progressForecast.ForecastInputsAsync(projectId, includeArchived: true, organization.TodayLocal(clock.UtcNow), cancellationToken))
+                .SingleOrDefault()
+            : null;
+
         var header = new ProjectHeader(project.Id, project.Name, project.Status.ToString(), project.ContractPriceMinor);
         var subProjectNames = project.SubProjects.ToDictionary(sub => sub.Id, sub => sub.Name);
-        return (CostReportBuilder.BuildSummary(header, subProjectNames, organization.VarianceBasis, budget, actual, commitment), organization, project.Name);
+        return (CostReportBuilder.BuildSummary(header, subProjectNames, organization.VarianceBasis, budget, actual, commitment, progress),
+            organization, project.Name);
     }
 
     private static string HealthLabel(string health) => CostingLabels.HealthLabel(Enum.Parse<BudgetHealth>(health));

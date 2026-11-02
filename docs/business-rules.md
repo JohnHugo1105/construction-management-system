@@ -155,6 +155,22 @@ For any slice (a project, sub-project, division, code, item type):
 * Removed budget lines and voided cost entries never count.
 * **Contract price** (including VAT) minus actual cost (including VAT) is the margin so far; contract price minus budget (including
   VAT) is the planned margin. They are shown only when a contract price exists.
+* **Forecast over budget (dashboard and project pages).** Health above only compares money spent with the budget, so on its own it can
+  call a project "On track" while the work done says it will finish over. Once progress is recorded (section 11), a project also carries
+  its **forecast at completion**: the very figure the project's Progress tab shows (section 11.2: budget x spent / work done), worked out
+  by the same calculation on the same comparison basis and the same date (today), so the dashboard row, the project's Budget tab and its
+  Progress tab can never disagree. It is shown only when progress is recorded and the work done is worth some money. A project is
+  **forecast over budget** when the forecast is above its budget. This is a separate signal: it never changes the health, the "used"
+  percentage or any total above.
+  * The dashboard shows an amber "Forecast ₱x over" chip beside the health chip, linking to the project's Progress tab, and the Budget
+    tab adds one line under the committed cost saying where the project will finish and how far over the budget that is.
+  * The headline stays "No project is over its total budget" only while nothing is forecast over either; when no project is over budget
+    but some are forecast over, it says how many are forecast to finish over budget. When a project is over budget the headline is
+    unchanged and its second line adds the forecast count.
+  * Sorting: over budget first, then the projects forecast over budget (biggest overrun first), then the other health groups in their
+    usual order.
+  * Nothing is shown (no chip, no count) for a project without progress, one whose forecast is within its budget, or one with no
+    forecast.
 
 ### 4.8 The budget baseline
 
@@ -742,7 +758,8 @@ line and the earned-value figures built on it. Amounts are in minor units; every
 * **Stale figures.** When the person tells the system which percent they were looking at and someone saved a different one meanwhile,
   the update is refused and they are asked to reload, so two people updating the same line never overwrite each other unnoticed.
 * **Access.** Administrators, project managers and cost engineers record progress. Those and accountants and viewers read it. Warehouse
-  keepers and HR officers have no access. Progress changes nothing on the dashboard or the project cost summary.
+  keepers and HR officers have no access. Progress changes no money figure and no health on the dashboard or the project cost summary;
+  it only adds the forecast over budget flag (section 4.7).
 
 ### 11.2 Earned value
 

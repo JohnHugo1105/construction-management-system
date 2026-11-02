@@ -44,9 +44,28 @@ public interface ICommitmentSource
     Task<IReadOnlyList<ProjectAmounts>> OpenCommitmentsAsync(Guid? projectId, bool includeArchived, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// What the earned-value forecast needs of each project, read the same way the Progress tab reads it, so the dashboard and the project
+/// pages show one figure. Implementations are classes named <c>*ForecastSource</c> in Infrastructure.
+/// </summary>
+public interface IProgressForecastSource
+{
+    /// <summary>
+    /// For every project that has progress recorded (archived ones only when asked, or just <paramref name="projectId"/>): the value of the
+    /// work done and the posted cost, both as they stood on <paramref name="asOf"/>. A line's work is worth its budget times the percent of
+    /// its latest entry on or before the date; removed lines never count. A project with no progress, or none above 0%, is simply absent.
+    /// The statement count does not grow with the number of projects, lines or entries.
+    /// </summary>
+    Task<IReadOnlyList<ProgressForecastInputs>> ForecastInputsAsync(Guid? projectId, bool includeArchived, DateOnly asOf, CancellationToken cancellationToken);
+}
+
 public sealed record ProjectHeader(Guid Id, string Name, string Status, long? ContractPriceMinor);
 
 public sealed record ProjectAmounts(Guid ProjectId, long NetMinor, long GrossMinor);
+
+/// <param name="Earned">What the work done is worth: the sum over lines of budget x percent complete, each line rounded once.</param>
+/// <param name="Actual">Posted cost dated on or before the date the inputs are for: the Progress tab's "spent".</param>
+public sealed record ProgressForecastInputs(Guid ProjectId, MeasuredAmounts Earned, MeasuredAmounts Actual);
 
 /// <summary>One group of a project's sums. Only the key fields of the grouping it came from are filled in.</summary>
 /// <param name="Division">Work breakdown grouping: the division, or null for lines with no classification.</param>
@@ -84,16 +103,21 @@ public readonly record struct MeasuredAmounts(long NetMinor, long GrossMinor)
 /// <param name="BudgetMarginMinor">Contract price minus budgeted gross cost: the margin if the project is delivered on budget.</param>
 /// <param name="Commitments">What is promised but not yet spent, and the forecast it implies. Null when nothing is open, so a project without
 /// purchase orders or subcontracts shows no empty figures.</param>
+/// <param name="ProgressForecast">Where the work done says the project will finish. Null until progress is recorded, so a project nobody has
+/// measured shows nothing. A separate signal from <c>Health</c>, which only compares money spent with the budget.</param>
 public sealed record DashboardProjectRowDto(Guid Id, string Name, string Status, long? ContractPriceMinor, long BudgetMinor, long ActualMinor,
     long RemainingMinor, int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor,
-    CommitmentPositionDto? Commitments = null);
+    CommitmentPositionDto? Commitments = null, ProgressForecastDto? ProgressForecast = null);
 
 /// <summary>
 /// The overall row. Budget, actual and remaining add up every project in the list. The contract price and the two margins add up only the
 /// projects that have a contract price (null when none has), so a project with no price does not distort the margin.
 /// </summary>
+/// <param name="ForecastOverBudgetCount">How many of the listed projects are forecast to finish over budget (their row has a progress forecast
+/// with a positive <c>OverBudgetMinor</c>); 0 when none is.</param>
 public sealed record DashboardTotalsDto(int ProjectCount, long? ContractPriceMinor, long BudgetMinor, long ActualMinor, long RemainingMinor,
-    int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor, CommitmentPositionDto? Commitments = null);
+    int? UsedBps, string Health, long? MarginAfterActualMinor, long? BudgetMarginMinor, CommitmentPositionDto? Commitments = null,
+    int ForecastOverBudgetCount = 0);
 
 /// <param name="Basis">IncludingVat or ExcludingVat: which amounts budget and actual are compared on.</param>
 public sealed record DashboardDto(string Basis, IReadOnlyList<DashboardProjectRowDto> Projects, DashboardTotalsDto Totals);
@@ -123,9 +147,20 @@ public sealed record BudgetPositionDto(long BudgetMinor, long ActualMinor, long 
 public sealed record CommitmentPositionDto(long CommittedMinor, long ForecastMinor, long ForecastRemainingMinor, string ForecastHealth);
 
 /// <summary>
+/// The earned-value forecast of a project: what it is expected to cost at completion if the work so far keeps costing what it has
+/// (<c>EAC = budget x spent / work done</c>), on the company's comparison basis. It is the figure the project's Progress tab shows, from the
+/// same calculation. Carries no contract price or margin.
+/// </summary>
+/// <param name="EstimateAtCompletionMinor">The expected cost at completion.</param>
+/// <param name="OverBudgetMinor">The forecast minus the budget; zero or negative means the project is forecast to finish within its budget.</param>
+/// <param name="PercentCompleteBps">The work done as a share of the budget, in basis points (10,000 is 100%).</param>
+public sealed record ProgressForecastDto(long EstimateAtCompletionMinor, long OverBudgetMinor, int PercentCompleteBps);
+
+/// <summary>
 /// A project's position plus where the money goes. Inside each breakdown the rows run from the biggest overrun to the most money left, so
 /// problems come first. A row with actual cost but no budget is Unbudgeted.
 /// </summary>
 public sealed record CostSummaryDto(Guid ProjectId, string ProjectName, string ProjectStatus, string Basis, long? ContractPriceMinor,
     BudgetPositionDto Position, long? MarginAfterActualMinor, long? BudgetMarginMinor, IReadOnlyList<DivisionSummaryDto> ByDivision,
-    IReadOnlyList<SubProjectSummaryDto> BySubProject, IReadOnlyList<ItemTypeSummaryDto> ByItemType, CommitmentPositionDto? Commitments = null);
+    IReadOnlyList<SubProjectSummaryDto> BySubProject, IReadOnlyList<ItemTypeSummaryDto> ByItemType, CommitmentPositionDto? Commitments = null,
+    ProgressForecastDto? ProgressForecast = null);

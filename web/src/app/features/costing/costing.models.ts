@@ -211,6 +211,23 @@ export interface CommitmentPosition {
   readonly forecastHealth: Health;
 }
 
+/**
+ * Where the work done says the project will finish: the Progress tab's forecast at completion, on the company's comparison basis.
+ * Absent until progress is recorded. It is a separate signal from health, which only compares money spent with the budget.
+ */
+export interface ProgressForecast {
+  readonly estimateAtCompletionMinor: number;
+  /** Forecast minus budget: zero or negative means the project is forecast to finish within its budget. */
+  readonly overBudgetMinor: number;
+  /** The work done as a share of the budget, in basis points. */
+  readonly percentCompleteBps: number;
+}
+
+/** True when the forecast is above the budget, the only case the dashboard and the Budget tab flag. */
+export function isForecastOver(forecast: ProgressForecast | null | undefined): boolean {
+  return forecast !== null && forecast !== undefined && forecast.overBudgetMinor > 0;
+}
+
 export interface CostSummary {
   readonly projectId: string;
   readonly projectName: string;
@@ -224,4 +241,5 @@ export interface CostSummary {
   readonly bySubProject: readonly SubProjectSummary[];
   readonly byItemType: readonly ItemTypeSummary[];
   readonly commitments?: CommitmentPosition | null;
+  readonly progressForecast?: ProgressForecast | null;
 }
