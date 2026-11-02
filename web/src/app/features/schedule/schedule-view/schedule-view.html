@@ -1,0 +1,234 @@
+<div class="stack stack--loose">
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading the schedule" />
+  } @else if (state.schedule(); as schedule) {
+    @if (actionError(); as problem) {
+      <app-api-error-alert [error]="problem" reloadLabel="Reload schedule" (reload)="reload()" />
+    }
+
+    @if (noBudget()) {
+      <app-empty-state
+        icon="calendar"
+        title="Add the budget before planning the schedule"
+        message="Each activity is weighted by the budget lines it covers, so the schedule can be planned once the project has budget lines."
+      />
+    } @else if (schedule.activities.length === 0) {
+      <app-empty-state
+        icon="calendar"
+        title="Plan the work over time"
+        [message]="
+          canWrite()
+            ? 'Add activities with their planned dates and the budget lines they cover. Progress is then measured against this plan.'
+            : 'No activities are planned yet. A project manager or cost engineer can plan them.'
+        "
+      >
+        @if (canWrite()) {
+          <button appButton variant="primary" type="button" (click)="editing.set('new')">
+            <app-icon name="plus" [size]="18" />
+            Add activity
+          </button>
+        }
+        @if (archivedNote()) {
+          <p class="text-muted">This project is archived, so its schedule can't be changed.</p>
+        }
+      </app-empty-state>
+    } @else {
+      @if (summary(); as facts) {
+        <section class="card" aria-labelledby="schedule-heading">
+          <div class="panel-head">
+            <h2 id="schedule-heading" class="card__title">Schedule</h2>
+            @if (facts.baseline) {
+              <p class="text-muted text-small">{{ facts.baseline }}</p>
+            }
+          </div>
+          <ul class="facts">
+            @if (facts.planned) {
+              <li class="facts__item">
+                <app-icon class="facts__icon" name="calendar" [size]="18" />
+                <span>{{ facts.planned }}</span>
+              </li>
+            }
+            @if (facts.behind) {
+              <li class="facts__item">
+                <app-icon class="facts__icon facts__icon--warning" name="warning" [size]="18" />
+                <span>{{ facts.behind }}</span>
+              </li>
+            }
+            @if (facts.unplanned) {
+              <li class="facts__item">
+                <app-icon class="facts__icon" name="info" [size]="18" />
+                <span>{{ facts.unplanned }}</span>
+              </li>
+            }
+            @if (facts.notInUse) {
+              <li class="facts__item">
+                <app-icon class="facts__icon" name="info" [size]="18" />
+                <span>{{ facts.notInUse }}</span>
+              </li>
+            }
+          </ul>
+
+          @if (canWrite()) {
+            <div class="actions">
+              <button appButton variant="primary" type="button" (click)="editing.set('new')">
+                <app-icon name="plus" [size]="18" />
+                Add activity
+              </button>
+              <button appButton type="button" (click)="confirmingBaseline.set(true)">
+                {{ schedule.baselineSetAtUtc ? 'Set the baseline again' : 'Set baseline' }}
+              </button>
+            </div>
+          } @else if (archivedNote()) {
+            <p class="text-muted text-small">
+              This project is archived, so its schedule can't be changed.
+            </p>
+          }
+        </section>
+      }
+
+      <section class="stack" aria-labelledby="activities-heading">
+        <h2 id="activities-heading" class="card__title">Activities</h2>
+        <ol class="card-list activities">
+          @for (row of rows(); track row.activity.id) {
+            <li class="row-card activity">
+              <div class="row-card__head">
+                <h3 class="row-card__title">{{ row.activity.name }}</h3>
+                <app-status-chip
+                  [label]="row.status.label"
+                  [tone]="row.status.tone"
+                  [icon]="row.status.icon"
+                />
+              </div>
+              <p class="row-card__meta">{{ row.meta }}</p>
+
+              @if (row.activity.needsLines) {
+                <p class="activity__note">Link budget lines to include it in the plan.</p>
+              } @else {
+                <p class="text-small text-muted">{{ row.lines }}</p>
+              }
+              @if (row.slip) {
+                <p class="text-small" [class.activity__late]="(row.activity.slipDays ?? 0) > 0">
+                  {{ row.slip }}
+                  <span class="text-muted">· {{ row.baselineDates }}</span>
+                </p>
+              }
+
+              @if (row.bar; as bar) {
+                <div class="track" aria-hidden="true">
+                  @if (row.baselineBar; as baseline) {
+                    <span
+                      class="track__baseline"
+                      [style.left.%]="baseline.left"
+                      [style.width.%]="baseline.width"
+                    ></span>
+                  }
+                  <span class="track__bar" [style.left.%]="bar.left" [style.width.%]="bar.width">
+                    <span class="track__fill" [style.width.%]="row.fill"></span>
+                  </span>
+                  @if (todayAt() !== null) {
+                    <span class="track__today" [style.left.%]="todayAt()"></span>
+                  }
+                </div>
+              }
+
+              @if (canWrite()) {
+                <div class="activity__actions">
+                  <button
+                    appButton
+                    type="button"
+                    [attr.aria-label]="'Change ' + row.activity.name"
+                    (click)="editing.set(row.activity)"
+                  >
+                    <app-icon name="pencil" [size]="18" />
+                    Change
+                  </button>
+                  <app-menu
+                    label="More"
+                    [ariaLabel]="'More actions for ' + row.activity.name"
+                    variant="ghost"
+                  >
+                    <button
+                      type="button"
+                      class="menu__item menu__item--danger"
+                      (click)="removing.set(row.activity)"
+                    >
+                      Remove activity
+                    </button>
+                  </app-menu>
+                </div>
+              }
+            </li>
+          }
+        </ol>
+        @if (hiddenCount() > 0) {
+          <button appButton type="button" (click)="showMore()">
+            Show more activities ({{ hiddenCount() }} left)
+          </button>
+        }
+      </section>
+
+      @if (schedule.usesSchedule) {
+        <section class="card" aria-labelledby="curve-heading">
+          <div class="panel-head">
+            <h2 id="curve-heading" class="card__title">Planned against actual</h2>
+            <p class="text-muted text-small">Cumulative, week by week</p>
+          </div>
+          @if (state.curveError(); as problem) {
+            <app-api-error-alert
+              [error]="problem"
+              [allowRetry]="true"
+              reloadLabel="Try again"
+              (reload)="reload()"
+            />
+          } @else if (state.curve(); as curve) {
+            <app-s-curve-chart [curve]="curve" [currency]="currency()" />
+          } @else {
+            <app-skeleton [lines]="4" label="Loading the S-curve" />
+          }
+        </section>
+      }
+    }
+  }
+</div>
+
+@if (editing() !== null) {
+  <app-activity-dialog
+    [activity]="editTarget()"
+    (saved)="saved()"
+    (dismissed)="editing.set(null)"
+  />
+}
+
+@if (removeAction(); as perform) {
+  <app-reason-dialog
+    title="Remove this activity?"
+    message="It leaves the plan and frees its budget lines for another activity. It stays on record with your reason and can't be put back."
+    reasonLabel="Why are you removing it?"
+    requiredMessage="Say why it is being removed."
+    confirmLabel="Remove activity"
+    [perform]="perform"
+    (done)="removed()"
+    (dismissed)="removing.set(null)"
+    (reloadRequested)="reload()"
+  />
+}
+
+@if (confirmingBaseline()) {
+  <app-confirm-dialog
+    title="Set the baseline?"
+    [message]="baselineMessage()"
+    confirmLabel="Set baseline"
+    [busy]="settingBaseline()"
+    (confirmed)="setBaseline()"
+    (cancelled)="confirmingBaseline.set(false)"
+  />
+}

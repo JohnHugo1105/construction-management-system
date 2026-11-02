@@ -1,0 +1,58 @@
+// Two date fields side by side when there is room, one above the other on a phone.
+.dates {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.picker__count {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+}
+
+.picker__division {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.picker__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-border-strong);
+  }
+}
+
+.picker__name {
+  flex: 1 1 10rem;
+  min-width: 0;
+  font-weight: 650;
+}
+
+.picker__chevron {
+  transform: rotate(-90deg);
+  transition: transform 150ms ease;
+}
+
+.picker__chevron--open {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker__chevron {
+    transition: none;
+  }
+}

@@ -1,5 +1,5 @@
 import { formatMoney } from '../../shared/presentation/money';
-import { EarnedValue } from './progress.models';
+import { EarnedValue, PlannedFrom } from './progress.models';
 
 // Plain-words sentences for the figures the server worked out. Nothing here calculates earned value: it only turns the numbers
 // the API sent into the words a project manager would use.
@@ -43,14 +43,25 @@ export function costIndexSentence(cpiBps: number | null, spentMinor: number): Se
   };
 }
 
-/** Where the work stands against the plan for today. Nothing when the project has no target end date to plan against. */
-export function scheduleSentence(spiBps: number | null): Sentence | null {
+/**
+ * Where the work stands against the plan for today. Nothing when there is no plan to measure against. When the planned value
+ * follows the project's schedule, the sentence says so, so nobody mistakes it for the straight line between the project's dates.
+ */
+export function scheduleSentence(spiBps: number | null, plannedFrom: PlannedFrom | null = null): Sentence | null {
   if (spiBps === null) return null;
   const share = wholePercent(spiBps);
-  if (spiBps === 10_000) return { text: 'On schedule: the work done matches the plan for today.', tone: 'good' };
+  const bySchedule = plannedFrom === 'Schedule';
+  const plan = bySchedule ? 'the schedule planned' : 'was planned';
+  if (spiBps === 10_000)
+    return {
+      text: bySchedule
+        ? 'On schedule: the work done matches what the schedule planned for today.'
+        : 'On schedule: the work done matches the plan for today.',
+      tone: 'good',
+    };
   return spiBps > 10_000
-    ? { text: `Ahead of schedule: the work done is ${share} of what was planned by today.`, tone: 'good' }
-    : { text: `Behind schedule: the work done is ${share} of what was planned by today.`, tone: 'warning' };
+    ? { text: `Ahead of schedule: the work done is ${share} of what ${plan} by today.`, tone: 'good' }
+    : { text: `Behind schedule: the work done is ${share} of what ${plan} by today.`, tone: 'warning' };
 }
 
 /** "Forecast to finish at ₱21,270,000.00, which is ₱3,360,000.00 over the budget." */

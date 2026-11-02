@@ -561,8 +561,9 @@ public sealed class ProgressApiTests : IClassFixture<ConstructOpxApiFactory>
 
         Assert.Equal(41, report.Divisions.Sum(division => division.Lines.Count));
         Assert.Equal(small, large);
-        // The project, the company, the lines with their current percent, and the actual cost.
-        Assert.Equal(4, large);
+        // The project, the company, the lines with their current percent, the actual cost, and the schedule's activities (which decide
+        // whether the planned value follows the schedule).
+        Assert.Equal(5, large);
     }
 
     [SqlServerFact]

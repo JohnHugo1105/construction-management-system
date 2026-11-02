@@ -49,7 +49,8 @@ public sealed record ProgressLineRow(Guid BudgetLineId, string Description, int?
 /// <param name="BudgetMinor">The budget at completion: every active line.</param>
 /// <param name="EarnedMinor">What the work done so far is worth: each line's budget times its percent complete.</param>
 /// <param name="SpentMinor">Posted cost on the date.</param>
-/// <param name="PlannedMinor">What should be done by the date if the work were spread evenly over the planned time; null without a target end date.</param>
+/// <param name="PlannedMinor">What should be done by the date: from the schedule's activities when the project has a schedule, otherwise the work
+/// spread evenly over the planned time; null without either.</param>
 /// <param name="CostVarianceMinor">Earned minus spent; negative means the work cost more than it was worth.</param>
 /// <param name="ScheduleVarianceMinor">Earned minus planned; negative means behind schedule. Null without a planned value.</param>
 /// <param name="CpiBps">Earned per unit spent; null when nothing is spent.</param>
@@ -58,7 +59,8 @@ public sealed record ProgressLineRow(Guid BudgetLineId, string Description, int?
 /// <param name="ToCompleteMinor">The expected cost of the rest of the work.</param>
 /// <param name="ForecastVarianceMinor">Budget minus forecast; negative means a forecast overrun.</param>
 /// <param name="PercentCompleteBps">Earned as a share of the budget; null when nothing is budgeted.</param>
-/// <param name="PlannedPercentBps">The share of the planned time that has passed; null without a target end date.</param>
+/// <param name="PlannedPercentBps">The share of the planned time that has passed (with a schedule: the planned value as a share of the budget); null
+/// without a planned value.</param>
 /// <param name="ContractPriceMinor">The contract price with VAT; null when the project has none.</param>
 /// <param name="ForecastMarginMinor">Contract price minus the forecast cost, both with VAT; null without a contract price.</param>
 public sealed record EarnedValueDto(long BudgetMinor, long EarnedMinor, long SpentMinor, long? PlannedMinor, long CostVarianceMinor,
@@ -76,8 +78,13 @@ public sealed record ProgressDivisionDto(int? Division, string Name, long Budget
 /// <param name="Basis">IncludingVat or ExcludingVat: which amounts the budget and spending are compared on.</param>
 /// <param name="HasProgress">False until someone has recorded progress on any line.</param>
 /// <param name="LastUpdatedOn">The latest date progress was recorded for, or null before any.</param>
+/// <param name="PlannedFrom">
+/// Where the planned value comes from: "Schedule" when the project has at least one schedule activity with budget lines linked (the planned value,
+/// schedule index and schedule variance then follow the activities' dates), "ProjectDates" for the straight line over the project's start and
+/// target end dates, or null when there is no planned value.
+/// </param>
 public sealed record ProgressDto(Guid ProjectId, DateOnly AsOfDate, string Basis, bool HasProgress, DateOnly? LastUpdatedOn, EarnedValueDto EarnedValue,
-    IReadOnlyList<ProgressDivisionDto> Divisions);
+    IReadOnlyList<ProgressDivisionDto> Divisions, string? PlannedFrom = null);
 
 public sealed record ProgressHistoryItemDto(Guid Id, DateOnly AsOfDate, int PercentBps, string? Note, string? RecordedBy, DateTimeOffset RecordedAtUtc);
 

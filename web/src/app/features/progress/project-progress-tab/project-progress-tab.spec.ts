@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
@@ -15,6 +15,8 @@ import { PROJECT_ID, projectFixture } from '../../costing/testing/costing-fixtur
 import { ProjectContext } from '../../projects/project-context';
 import { ProjectsApi } from '../../projects/projects-api';
 import { Project } from '../../projects/projects.models';
+import { ScheduleApi } from '../../schedule/schedule-api';
+import { curveFixture, scheduleFixture } from '../../schedule/testing/schedule-fixtures';
 import { ProgressApi } from '../progress-api';
 import { Progress } from '../progress.models';
 import {
@@ -34,6 +36,7 @@ interface Options {
   readonly permissions?: readonly string[];
   readonly report?: Progress;
   readonly api?: Record<string, Mock<Call>>;
+  readonly url?: string;
 }
 
 const READER = [Permission.projectsRead, Permission.progressRead];
@@ -46,6 +49,10 @@ async function open(options: Options = {}) {
     record: stub(() => of({ asOfDate: '2026-11-02', linesUpdated: 1, recordedAtUtc: '2026-11-02T03:00:00Z' })),
     ...options.api,
   };
+  const scheduleApi = {
+    get: stub(() => of(scheduleFixture())),
+    curve: stub(() => of(curveFixture())),
+  };
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'projects/:id/progress', component: ProjectProgressTab }]),
@@ -54,6 +61,7 @@ async function open(options: Options = {}) {
       ProjectContext,
       { provide: ProjectsApi, useValue: {} },
       { provide: ProgressApi, useValue: api },
+      { provide: ScheduleApi, useValue: scheduleApi },
     ],
   });
   await signInForTest(
@@ -63,9 +71,9 @@ async function open(options: Options = {}) {
   );
   TestBed.inject(ProjectContext).replace(options.project ?? projectFixture());
   const harness = await RouterTestingHarness.create();
-  await harness.navigateByUrl(`/projects/${PROJECT_ID}/progress`, ProjectProgressTab);
+  await harness.navigateByUrl(options.url ?? `/projects/${PROJECT_ID}/progress`, ProjectProgressTab);
   await settle(harness.fixture);
-  return { harness, root: harness.fixture.nativeElement as HTMLElement, api };
+  return { harness, root: harness.fixture.nativeElement as HTMLElement, api, scheduleApi };
 }
 
 const percentField = (root: HTMLElement, description: string) =>
@@ -362,5 +370,60 @@ describe('ProjectProgressTab: history', () => {
     expect(text(dialog, '.history__main')).toBe('50% on 20 Oct 2026');
     expect(text(dialog, '.history__meta')).toContain('Paolo Project-Manager');
     expect(text(dialog, '.history__note')).toBe('Poured the last footing');
+  });
+});
+
+describe('ProjectProgressTab: the schedule view', () => {
+  const SCHEDULER = [...WRITER, Permission.scheduleRead];
+
+  it('offers no view switch to someone who may not read the schedule', async () => {
+    const { root } = await open();
+
+    expect(root.querySelector('app-segmented-control')).toBeNull();
+  });
+
+  it('switches to the schedule through the address, reading the schedule instead of the progress report', async () => {
+    const { harness, root, api, scheduleApi } = await open({ permissions: SCHEDULER });
+    expect(texts(root, 'app-segmented-control button')).toEqual(['Update progress', 'Schedule']);
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    buttonNamed(root, 'Schedule').click();
+    await settle(harness.fixture);
+    await settle(harness.fixture);
+
+    expect(TestBed.inject(Router).url).toContain('view=schedule');
+    expect(root.querySelector('app-schedule-view')).not.toBeNull();
+    expect(root.querySelector('#lines-heading')).toBeNull();
+    expect(scheduleApi.get).toHaveBeenCalledTimes(1);
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    buttonNamed(root, 'Update progress').click();
+    await settle(harness.fixture);
+    await settle(harness.fixture);
+
+    expect(root.querySelector('app-schedule-view')).toBeNull();
+    // Back from the schedule the report is read again: a change to the plan moves the planned value.
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
+
+  it('opens straight on the schedule from a shared address without reading the progress report', async () => {
+    const { root, api } = await open({
+      permissions: SCHEDULER,
+      url: `/projects/${PROJECT_ID}/progress?view=schedule`,
+    });
+
+    expect(root.querySelector('app-schedule-view')).not.toBeNull();
+    expect(api.get).not.toHaveBeenCalled();
+  });
+
+  it('says when the planned value follows the schedule', async () => {
+    const report = progressFixture();
+    const { root } = await open({
+      report: { ...report, plannedFrom: 'Schedule', earnedValue: { ...report.earnedValue, spiBps: 7900 } },
+    });
+
+    expect(texts(root, '.facts__item')).toContain(
+      'Behind schedule: the work done is 79% of what the schedule planned by today.',
+    );
   });
 });

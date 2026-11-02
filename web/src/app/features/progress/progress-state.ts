@@ -19,6 +19,7 @@ import {
   steppedText,
 } from './progress-draft';
 import { ProgressApi } from './progress-api';
+import { injectProgressView } from './progress-view';
 import { Progress, ProgressLine } from './progress.models';
 
 /**
@@ -33,8 +34,11 @@ export class ProgressState {
   private readonly session = inject(SessionState);
   private readonly toast = inject(ToastService);
 
+  /** The report is read only while the progress view shows; coming back from the schedule reads it again (a plan change moves it). */
+  private readonly view = injectProgressView();
+
   private readonly resource = rxResource({
-    params: () => this.context.projectId() ?? undefined,
+    params: () => (this.view() === 'progress' ? (this.context.projectId() ?? undefined) : undefined),
     stream: ({ params }) => this.api.get(params),
   });
 

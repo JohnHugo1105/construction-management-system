@@ -2377,6 +2377,113 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                     b.ToTable("PurchaseOrderLines", (string)null);
                 });
 
+            modelBuilder.Entity("ConstructOPX.Domain.Features.Schedule.ScheduleActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("BaselineFinish")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset?>("BaselineSetAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly?>("BaselineStart")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ClientRequestId")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateOnly>("PlannedFinish")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("PlannedStart")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("RemovedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("RemovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RemovedReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("TenantId", "ClientRequestId")
+                        .IsUnique()
+                        .HasFilter("[ClientRequestId] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "ProjectId", "Status");
+
+                    b.HasIndex("TenantId", "Status", "PlannedFinish");
+
+                    b.ToTable("ScheduleActivities", (string)null);
+                });
+
+            modelBuilder.Entity("ConstructOPX.Domain.Features.Schedule.ScheduleActivityLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BudgetLineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
+
+                    b.HasIndex("BudgetLineId");
+
+                    b.HasIndex("TenantId", "BudgetLineId")
+                        .IsUnique();
+
+                    b.ToTable("ScheduleActivityLines", (string)null);
+                });
+
             modelBuilder.Entity("ConstructOPX.Domain.Features.SiteDiary.SiteDiaryEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3892,6 +3999,30 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConstructOPX.Domain.Features.Schedule.ScheduleActivity", b =>
+                {
+                    b.HasOne("ConstructOPX.Domain.Features.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConstructOPX.Domain.Features.Schedule.ScheduleActivityLine", b =>
+                {
+                    b.HasOne("ConstructOPX.Domain.Features.Schedule.ScheduleActivity", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ConstructOPX.Domain.Features.Costing.BudgetLine", null)
+                        .WithMany()
+                        .HasForeignKey("BudgetLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConstructOPX.Domain.Features.SiteDiary.SiteDiaryEntry", b =>
                 {
                     b.HasOne("ConstructOPX.Domain.Features.Projects.Project", null)
@@ -4095,6 +4226,11 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("ConstructOPX.Domain.Features.Purchasing.PurchaseOrder", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("ConstructOPX.Domain.Features.Schedule.ScheduleActivity", b =>
                 {
                     b.Navigation("Lines");
                 });

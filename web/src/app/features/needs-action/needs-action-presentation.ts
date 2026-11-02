@@ -108,9 +108,16 @@ export function urgentChip(key: NeedsActionGroupKey): UrgentChip {
     case 'time-clock-to-review':
       // Urgent here means a day whose scans don't pair up or a worker not posted there: it needs a look, it isn't late.
       return { label: 'Check scans', tone: 'warning', icon: 'warning' };
+    case 'activities-behind':
+      return { label: 'Behind', tone: 'warning', icon: 'clock' };
     default:
       return { label: 'Overdue', tone: 'danger', icon: 'clock' };
   }
+}
+
+/** The query a row's page opens with (empty for most): a schedule that is behind opens the Schedule view of the Progress tab, not the progress form. */
+export function rowQuery(key: NeedsActionGroupKey): Params {
+  return key === 'activities-behind' ? { view: 'schedule' } : {};
 }
 
 export interface PresentedRow {
@@ -121,6 +128,7 @@ export interface PresentedRow {
   readonly amount: string;
   readonly urgent: UrgentChip | null;
   readonly link: Link;
+  readonly queryParams: Params;
   readonly openLabel: string;
   readonly primary: boolean;
 }
@@ -166,6 +174,7 @@ export function presentGroups(
             : formatMoney(row.amountMinor, context.currencyCode),
         urgent: row.isUrgent ? urgentChip(group.key) : null,
         link: rowLink(group.key, row, context),
+        queryParams: rowQuery(group.key),
         openLabel: `Open ${row.label}`,
         primary: row === primaryRow,
       })),

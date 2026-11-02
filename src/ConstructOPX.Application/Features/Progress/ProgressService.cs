@@ -3,6 +3,7 @@ using ConstructOPX.Application.Common;
 using ConstructOPX.Application.Features.Costing;
 using ConstructOPX.Application.Features.Organizations;
 using ConstructOPX.Application.Features.Projects;
+using ConstructOPX.Application.Features.Schedule;
 using ConstructOPX.Domain.Common;
 using ConstructOPX.Domain.Features.Costing;
 using ConstructOPX.Domain.Features.Progress;
@@ -14,10 +15,11 @@ namespace ConstructOPX.Application.Features.Progress;
 /// Progress and earned value. A person says how far along each budget line is (an append-only entry per change); the report turns those
 /// percentages into the value of the work done and sets it against what was spent and what was planned. Recording is all or nothing for
 /// the whole batch, and a repeated request id returns the first result instead of recording again. The report is a fixed number of SQL
-/// statements however many lines and entries a project has.
+/// statements however many lines and entries a project has (five: the project, the company, the lines, the posted cost and the schedule's
+/// activities, which decide whether the planned value follows the schedule).
 /// </summary>
 public sealed class ProgressService(IProgressRepository progress, IProgressReader reader, IProjectRepository projects, IBudgetLineRepository budgetLines,
-    IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
+    IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit, IScheduleReader schedule)
 {
     /// <summary>The project's progress and earned value on a date (today when none is given; never a future date).</summary>
     public async Task<ProgressDto> GetAsync(Guid projectId, DateOnly? asOf, CancellationToken cancellationToken)
@@ -30,7 +32,8 @@ public sealed class ProgressService(IProgressRepository progress, IProgressReade
 
         var rows = await reader.ListLinesAsync(projectId, date, cancellationToken);
         var actual = await reader.SumActualAsync(projectId, date, cancellationToken);
-        return ProgressReportBuilder.Build(project, organization.VarianceBasis, date, rows, actual);
+        var activities = await schedule.ListAsync(projectId, cancellationToken);
+        return ProgressReportBuilder.Build(project, organization.VarianceBasis, date, rows, actual, activities);
     }
 
     /// <summary>A budget line's progress entries, newest first. Removed lines keep their history.</summary>

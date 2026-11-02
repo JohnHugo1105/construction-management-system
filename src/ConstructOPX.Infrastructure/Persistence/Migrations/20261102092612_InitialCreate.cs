@@ -494,6 +494,41 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ScheduleActivities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    PlannedStart = table.Column<DateOnly>(type: "date", nullable: false),
+                    PlannedFinish = table.Column<DateOnly>(type: "date", nullable: false),
+                    BaselineStart = table.Column<DateOnly>(type: "date", nullable: true),
+                    BaselineFinish = table.Column<DateOnly>(type: "date", nullable: true),
+                    BaselineSetAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    RemovedReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    RemovedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    RemovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScheduleActivities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ScheduleActivities_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SiteDiaryEntries",
                 columns: table => new
                 {
@@ -1390,6 +1425,32 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ScheduleActivityLines",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ActivityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BudgetLineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScheduleActivityLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ScheduleActivityLines_BudgetLines_BudgetLineId",
+                        column: x => x.BudgetLineId,
+                        principalTable: "BudgetLines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ScheduleActivityLines_ScheduleActivities_ActivityId",
+                        column: x => x.ActivityId,
+                        principalTable: "ScheduleActivities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GoodsReceipts",
                 columns: table => new
                 {
@@ -2260,6 +2321,44 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 columns: new[] { "TenantId", "SupplierId" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivities_ProjectId",
+                table: "ScheduleActivities",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivities_TenantId_ClientRequestId",
+                table: "ScheduleActivities",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivities_TenantId_ProjectId_Status",
+                table: "ScheduleActivities",
+                columns: new[] { "TenantId", "ProjectId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivities_TenantId_Status_PlannedFinish",
+                table: "ScheduleActivities",
+                columns: new[] { "TenantId", "Status", "PlannedFinish" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivityLines_ActivityId",
+                table: "ScheduleActivityLines",
+                column: "ActivityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivityLines_BudgetLineId",
+                table: "ScheduleActivityLines",
+                column: "BudgetLineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScheduleActivityLines_TenantId_BudgetLineId",
+                table: "ScheduleActivityLines",
+                columns: new[] { "TenantId", "BudgetLineId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SiteDiaryEntries_OneLivePerProjectPerDay",
                 table: "SiteDiaryEntries",
                 columns: new[] { "TenantId", "ProjectId", "ReportDate" },
@@ -2685,6 +2784,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "ProjectBillingTerms");
 
             migrationBuilder.DropTable(
+                name: "ScheduleActivityLines");
+
+            migrationBuilder.DropTable(
                 name: "SiteDiaryEntries");
 
             migrationBuilder.DropTable(
@@ -2734,6 +2836,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "BudgetLines");
+
+            migrationBuilder.DropTable(
+                name: "ScheduleActivities");
 
             migrationBuilder.DropTable(
                 name: "StatutorySchedules");

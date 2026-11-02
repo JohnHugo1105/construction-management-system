@@ -172,6 +172,16 @@ describe('NeedsActionPage', () => {
     expect(openLink(deliveries).getAttribute('href')).toBe('/receiving/record-1');
   });
 
+  it('opens a project whose schedule is behind on the Schedule view of its Progress tab', async () => {
+    const { root } = await open({
+      permissions: [Permission.projectsRead, Permission.scheduleWrite],
+      result: { groups: [actionGroup('activities-behind', [actionRow({ id: 'project-9', amountMinor: undefined })])] },
+    });
+
+    const link = openLink(root.querySelector('section.group') as HTMLElement);
+    expect(link.getAttribute('href')).toBe('/projects/project-9/progress?view=schedule');
+  });
+
   it('shows a Warehouse Keeper their deliveries on the receiving page and no amount anywhere', async () => {
     const { root } = await open({
       roles: ['WarehouseKeeper'],
