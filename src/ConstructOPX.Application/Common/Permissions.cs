@@ -52,6 +52,9 @@ public static class Permissions
     // The quantity-only receiving screen: the warehouse keeper records and voids deliveries without any purchasing permission, so never a price.
     public const string ReceivingRecord = "receiving.record";
 
+    // The "Needs your action" queue: everyone reads their own; which groups a person receives follows the permissions above.
+    public const string ActionsRead = "actions.read";
+
     private const AccessRole Admin = AccessRole.Administrator;
     private const AccessRole Pm = AccessRole.ProjectManager;
     private const AccessRole Cost = AccessRole.CostEngineer;
@@ -110,7 +113,9 @@ public static class Permissions
         [PayrollRulesManage] = Admin | Acct | Hr,
         // Receiving says what physically arrived. Its screens carry quantities only (no unit cost, VAT, total or invoice), which is why the
         // warehouse keeper may hold it while purchasing.read and purchasing.receive stay with the people who see the company's amounts.
-        [ReceivingRecord] = Admin | Wh
+        [ReceivingRecord] = Admin | Wh,
+        // Everyone has a queue of what waits on them. It holds only the groups their other permissions let them act on, so a Viewer's is empty.
+        [ActionsRead] = AccessRoles.All
     };
 
     public static IReadOnlyCollection<string> All => Matrix.Keys;

@@ -40,6 +40,27 @@ export const Permission = {
   bondsManage: 'bonds.manage',
   payrollRulesManage: 'payrollrules.manage',
   receivingRecord: 'receiving.record',
+  actionsRead: 'actions.read',
 } as const;
 
 export type PermissionName = (typeof Permission)[keyof typeof Permission];
+
+/**
+ * The permissions that can put something on a person's "Needs your action" page (each one acts on a group there). Everyone holds
+ * `actions.read`, but a person with none of these would only ever see an empty page, so the entry and its badge are shown only to
+ * someone who holds at least one.
+ */
+export const NEEDS_ACTION_PERMISSIONS: readonly string[] = [
+  Permission.purchasingApprove,
+  Permission.changeOrdersApprove,
+  Permission.billingApprove,
+  Permission.billingManage,
+  Permission.subcontractsApprove,
+  Permission.payrollApprove,
+  Permission.purchasingReceive,
+  Permission.receivingRecord,
+  Permission.bondsManage,
+  Permission.progressWrite,
+  Permission.attendanceWrite,
+  Permission.statutoryManage,
+];

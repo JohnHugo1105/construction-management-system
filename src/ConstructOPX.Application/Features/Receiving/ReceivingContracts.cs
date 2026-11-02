@@ -13,6 +13,9 @@ public interface IReceivingReader
 {
     Task<ReceivingOrderPageDto> ListAsync(ReceivingOrderFilter filter, PageRequest page, CancellationToken cancellationToken);
 
+    /// <summary>How many orders await delivery (the list's <c>OrderCount</c>) in one statement, without reading a row.</summary>
+    Task<int> CountAsync(ReceivingOrderFilter filter, CancellationToken cancellationToken);
+
     /// <summary>One order with its lines and deliveries, quantities only. Null when it isn't in the organization.</summary>
     Task<ReceivingOrderDto?> GetAsync(Guid id, CancellationToken cancellationToken);
 }

@@ -1,4 +1,4 @@
-import { Permission } from '../session/permissions';
+import { NEEDS_ACTION_PERMISSIONS, Permission } from '../session/permissions';
 import { IconName } from '../../shared/ui/icon/icon';
 
 export interface NavItem {
@@ -7,6 +7,8 @@ export interface NavItem {
   readonly icon: IconName;
   /** The entry is shown to anyone holding at least one of these. */
   readonly permissions: readonly string[];
+  /** The entry carries the "Needs your action" badge (how many things wait on the person). */
+  readonly showsWaitingCount?: boolean;
 }
 
 /**
@@ -19,6 +21,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     link: '/dashboard',
     icon: 'dashboard',
     permissions: [Permission.costsRead],
+  },
+  {
+    label: 'Needs action',
+    link: '/needs-action',
+    icon: 'check-circle',
+    // Only people whose role acts on something see it, so nobody is sent to a page that can never fill.
+    permissions: NEEDS_ACTION_PERMISSIONS,
+    showsWaitingCount: true,
   },
   {
     label: 'Projects',

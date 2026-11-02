@@ -1,4 +1,4 @@
-import { Permission } from '../session/permissions';
+import { NEEDS_ACTION_PERMISSIONS, Permission } from '../session/permissions';
 import { NAV_ITEMS, NavItem, splitForBottomBar, visibleNavItems } from './navigation';
 
 function allowing(...held: string[]) {
@@ -24,6 +24,7 @@ describe('navigation', () => {
 
     expect(labels(items)).toEqual([
       'Dashboard',
+      'Needs action',
       'Projects',
       'Workers',
       'Payroll',
@@ -52,8 +53,8 @@ describe('navigation', () => {
       allowing(Permission.projectsRead, Permission.purchasingRead, Permission.purchasingReceive),
     );
 
-    expect(labels(keeper)).toEqual(['Projects', 'Stock', 'Receiving']);
-    expect(labels(purchaser)).toEqual(['Projects', 'Purchasing']);
+    expect(labels(keeper)).toEqual(['Needs action', 'Projects', 'Stock', 'Receiving']);
+    expect(labels(purchaser)).toEqual(['Needs action', 'Projects', 'Purchasing']);
     expect(NAV_ITEMS.find((item) => item.label === 'Receiving')?.link).toBe('/receiving');
   });
 
@@ -76,8 +77,9 @@ describe('navigation', () => {
   it('turns the fifth slot into "More" when there are more than five, so no destination is lost', () => {
     const { primary, overflow } = splitForBottomBar(NAV_ITEMS);
 
-    expect(labels(primary)).toEqual(['Dashboard', 'Projects', 'Workers', 'Payroll']);
+    expect(labels(primary)).toEqual(['Dashboard', 'Needs action', 'Projects', 'Workers']);
     expect(labels(overflow)).toEqual([
+      'Payroll',
       'Stock',
       'Receiving',
       'Purchasing',
@@ -86,5 +88,48 @@ describe('navigation', () => {
       'Admin',
     ]);
     expect(primary.length + 1).toBeLessThanOrEqual(5);
+  });
+
+  it('puts Needs action right after the Dashboard, with the waiting badge', () => {
+    const entry = NAV_ITEMS[1]!;
+
+    expect(entry).toEqual(
+      expect.objectContaining({
+        label: 'Needs action',
+        link: '/needs-action',
+        showsWaitingCount: true,
+      }),
+    );
+    expect(NAV_ITEMS.filter((item) => item.showsWaitingCount)).toHaveLength(1);
+  });
+
+  it('shows Needs action to anyone whose role acts on something it lists, one permission at a time', () => {
+    for (const permission of NEEDS_ACTION_PERMISSIONS) {
+      expect(
+        labels(visibleNavItems(NAV_ITEMS, allowing(Permission.projectsRead, permission))),
+      ).toContain('Needs action');
+    }
+    const hr = visibleNavItems(
+      NAV_ITEMS,
+      allowing(Permission.projectsRead, Permission.workforceRead, Permission.attendanceWrite),
+    );
+    expect(labels(hr)).toEqual(['Needs action', 'Projects', 'Workers']);
+  });
+
+  it('hides Needs action from a Viewer, whose page could never fill, although every role may read it', () => {
+    const viewer = visibleNavItems(
+      NAV_ITEMS,
+      allowing(
+        Permission.actionsRead,
+        Permission.projectsRead,
+        Permission.costsRead,
+        Permission.purchasingRead,
+        Permission.billingRead,
+        Permission.bondsRead,
+        Permission.progressRead,
+      ),
+    );
+
+    expect(labels(viewer)).not.toContain('Needs action');
   });
 });

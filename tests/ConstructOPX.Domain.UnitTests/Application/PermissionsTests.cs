@@ -96,6 +96,15 @@ public sealed class PermissionsTests
     }
 
     [Fact]
+    public void Everyone_reads_their_own_needs_action_queue()
+    {
+        Assert.Equal(AccessRoles.All, Permissions.RolesFor(Permissions.ActionsRead));
+        foreach (var role in AccessRoles.Split(AccessRoles.All))
+            Assert.True(Permissions.IsAllowed(role, Permissions.ActionsRead), role.ToString());
+        Assert.False(Permissions.IsAllowed(AccessRole.None, Permissions.ActionsRead));
+    }
+
+    [Fact]
     public void An_unknown_permission_is_an_error_not_a_silent_denial() =>
         Assert.Throws<ArgumentException>(() => Permissions.IsAllowed(AccessRole.Administrator, "projects.delete-everything"));
 }

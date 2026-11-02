@@ -77,6 +77,9 @@ async function open(options: Options = {}) {
 }
 
 const mainNav = (root: HTMLElement) => root.querySelector<HTMLElement>('nav[aria-label="Main"]');
+const COUNT = '/api/needs-action/count';
+const needsActionLink = (root: HTMLElement) =>
+  mainNav(root)!.querySelector<HTMLAnchorElement>('a[href="/needs-action"]')!;
 
 describe('Shell on a wide screen', () => {
   it('shows a navigation rail with every section the person may use, in order', async () => {
@@ -85,6 +88,7 @@ describe('Shell on a wide screen', () => {
     expect(root.querySelector('.bottom-nav')).toBeNull();
     expect(texts(mainNav(root)!, 'a')).toEqual([
       'Dashboard',
+      'Needs action',
       'Projects',
       'Workers',
       'Payroll',
@@ -158,9 +162,9 @@ describe('Shell on a phone', () => {
     expect(root.querySelector('.rail')).toBeNull();
     expect(texts(mainNav(root)!, 'a, button')).toEqual([
       'Dashboard',
+      'Needs action',
       'Projects',
       'Workers',
-      'Payroll',
       'More',
     ]);
     expect(mainNav(root)!.querySelectorAll('li')).toHaveLength(5);
@@ -174,6 +178,7 @@ describe('Shell on a phone', () => {
     const sheet = root.querySelector<HTMLDialogElement>('dialog')!;
     expect(sheet.hasAttribute('open')).toBe(true);
     expect(texts(sheet, '.more-list__link')).toEqual([
+      'Payroll',
       'Stock',
       'Receiving',
       'Purchasing',
@@ -199,10 +204,82 @@ describe('Shell on a phone', () => {
   });
 });
 
+describe('Shell Needs action badge', () => {
+  it('reads the count once when the shell starts, and shows no badge while nothing waits', async () => {
+    const { harness, backend, root } = await open();
+
+    backend.expectOne(COUNT).flush({ total: 0 });
+    await settle(harness.fixture);
+
+    expect(root.querySelector('.nav-badge')).toBeNull();
+    expect(needsActionLink(root).getAttribute('aria-label')).toBeNull();
+    expect(needsActionLink(root).textContent?.trim()).toBe('Needs action');
+  });
+
+  it('shows how many things wait, with the number in the link’s accessible name', async () => {
+    const { harness, backend, root } = await open();
+
+    backend.expectOne(COUNT).flush({ total: 6 });
+    await settle(harness.fixture);
+
+    expect(text(needsActionLink(root), '.nav-badge')).toBe('6');
+    expect(needsActionLink(root).querySelector('.nav-badge')!.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+    expect(needsActionLink(root).getAttribute('aria-label')).toBe('Needs action, 6 waiting');
+    expect(root.querySelectorAll('.nav-badge')).toHaveLength(1);
+  });
+
+  it('caps the badge at 99+ but says the real number to assistive technology', async () => {
+    const { harness, backend, root } = await open();
+
+    backend.expectOne(COUNT).flush({ total: 132 });
+    await settle(harness.fixture);
+
+    expect(text(needsActionLink(root), '.nav-badge')).toBe('99+');
+    expect(needsActionLink(root).getAttribute('aria-label')).toBe('Needs action, 132 waiting');
+  });
+
+  it('shows the badge on the phone bottom bar too', async () => {
+    const { harness, backend, root } = await open({ desktop: false });
+
+    backend.expectOne(COUNT).flush({ total: 3 });
+    await settle(harness.fixture);
+
+    expect(text(needsActionLink(root), '.nav-badge')).toBe('3');
+    expect(needsActionLink(root).getAttribute('aria-label')).toBe('Needs action, 3 waiting');
+  });
+
+  it('never asks for someone whose role acts on nothing on that page', async () => {
+    const { backend, root } = await open({
+      permissions: [Permission.projectsRead, Permission.inventoryRead, Permission.actionsRead],
+    });
+
+    backend.expectNone(COUNT);
+    expect(mainNav(root)!.querySelector('a[href="/needs-action"]')).toBeNull();
+  });
+
+  it('reads the count again when the browser tab becomes visible', async () => {
+    const { harness, backend, root } = await open();
+    backend.expectOne(COUNT).flush({ total: 1 });
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'visible',
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+    backend.expectOne(COUNT).flush({ total: 4 });
+    await settle(harness.fixture);
+
+    expect(text(needsActionLink(root), '.nav-badge')).toBe('4');
+  });
+});
+
 describe('Shell while a new password is required', () => {
   it('shows no navigation, only the way to sign out', async () => {
-    const { harness, root } = await open({ mustChangePassword: true });
+    const { harness, root, backend } = await open({ mustChangePassword: true });
 
+    backend.expectNone(COUNT);
     expect(mainNav(root)).toBeNull();
     expect(root.querySelector('.rail')).toBeNull();
     expect(root.querySelector('.shell--minimal')).not.toBeNull();

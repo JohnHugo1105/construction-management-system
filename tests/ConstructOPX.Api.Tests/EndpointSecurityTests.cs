@@ -67,6 +67,19 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
         Assert.True(unused.Length == 0 || ExpectedUnusedWhileBuilding.IsSupersetOf(unused), $"Unenforced permissions: {string.Join(", ", unused)}");
     }
 
+    [Fact]
+    public void The_needs_action_routes_are_read_only_and_need_actions_read()
+    {
+        var routes = ApiEndpoints().Where(endpoint => endpoint.Route.StartsWith("/api/needs-action", StringComparison.Ordinal)).ToArray();
+
+        Assert.Equal(["/api/needs-action", "/api/needs-action/count"], routes.Select(endpoint => endpoint.Route).Order());
+        Assert.All(routes, endpoint =>
+        {
+            Assert.Equal(["GET"], endpoint.Methods);
+            Assert.Equal([Permissions.ActionsRead], endpoint.Policies);
+        });
+    }
+
     // Permissions whose feature's endpoints are added in a later slice. Remove entries as the endpoints land; the final test run has none.
     private static readonly HashSet<string> ExpectedUnusedWhileBuilding = new(StringComparer.Ordinal)
     {

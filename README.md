@@ -26,6 +26,7 @@ Architecture. The engineering standards come from DriveOPX and are in [AGENTS.md
 | **Down payment and government clients** | A down payment billed before the first progress bill and recovered from the progress bills that follow, VAT withheld by the client as a second withholding line, and a government-client setting that caps the down payment at 15% and warns when added work passes 10% of the original price. |
 | **Bonds register** | Bonds given to clients and received from subcontractors and suppliers, with validity dates and what is expiring; a bond is not a cost and changes no money figure. |
 | **Stock** | Tools, equipment and machinery in the warehouse and on projects, an append-only ledger with no negative stock, reversals, and optional charging of a transfer to a project. |
+| **Needs your action** | One page, and a number on the navigation, of what is waiting on you: drafts to approve, bills to issue or chase, deliveries still to come, bonds lapsing, projects without recent progress or yesterday's attendance. Only the work your role acts on; nothing is stored or sent. |
 | **Administration** | Users and roles, company settings (VAT rate, time zone, paid hours, overtime rate), and an activity log of every change. |
 
 The exact rules, and the 25 defects found in the desktop program and how each was corrected, are in

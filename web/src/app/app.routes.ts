@@ -47,6 +47,12 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
       {
+        path: 'needs-action',
+        canActivate: [permissionGuard(Permission.actionsRead)],
+        loadChildren: () =>
+          import('./features/needs-action/needs-action.routes').then((m) => m.NEEDS_ACTION_ROUTES),
+      },
+      {
         path: 'projects',
         canActivate: [permissionGuard(Permission.projectsRead)],
         loadChildren: () =>

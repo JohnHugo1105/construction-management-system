@@ -5,9 +5,7 @@
     <aside class="rail">
       <p class="rail__brand">
         <app-icon name="construction" [size]="26" />
-        <span class="rail__company">{{
-          session.organizationName() || 'ConstructOPX'
-        }}</span>
+        <span class="rail__company">{{ session.organizationName() || 'ConstructOPX' }}</span>
       </p>
       <nav aria-label="Main">
         <ul class="rail__list">
@@ -18,9 +16,15 @@
                 [routerLink]="item.link"
                 routerLinkActive="rail__link--active"
                 ariaCurrentWhenActive="page"
+                [attr.aria-label]="accessibleName(item)"
               >
                 <app-icon [name]="item.icon" />
                 {{ item.label }}
+                @if (item.showsWaitingCount && waiting.badge()) {
+                  <span class="nav-badge nav-badge--end" aria-hidden="true">{{
+                    waiting.badge()
+                  }}</span>
+                }
               </a>
             </li>
           }
@@ -50,9 +54,15 @@
               [routerLink]="item.link"
               routerLinkActive="bottom-nav__item--active"
               ariaCurrentWhenActive="page"
+              [attr.aria-label]="accessibleName(item)"
             >
               <app-icon [name]="item.icon" />
               <span>{{ item.label }}</span>
+              @if (item.showsWaitingCount && waiting.badge()) {
+                <span class="nav-badge nav-badge--icon" aria-hidden="true">{{
+                  waiting.badge()
+                }}</span>
+              }
             </a>
           </li>
         }
@@ -79,9 +89,17 @@
     <ul class="more-list">
       @for (item of bottomBar().overflow; track item.link) {
         <li>
-          <a class="more-list__link" [routerLink]="item.link" (click)="moreOpen.set(false)">
+          <a
+            class="more-list__link"
+            [routerLink]="item.link"
+            [attr.aria-label]="accessibleName(item)"
+            (click)="moreOpen.set(false)"
+          >
             <app-icon [name]="item.icon" />
             {{ item.label }}
+            @if (item.showsWaitingCount && waiting.badge()) {
+              <span class="nav-badge nav-badge--end" aria-hidden="true">{{ waiting.badge() }}</span>
+            }
           </a>
         </li>
       }

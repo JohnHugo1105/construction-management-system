@@ -95,11 +95,18 @@
     color: var(--color-text);
   }
 
+  // A two-word label ("Needs action") may take a second line rather than be cut off; one long word still ends in an ellipsis.
   span {
+    display: -webkit-box;
     max-width: 100%;
     overflow: hidden;
+    overflow-wrap: normal;
+    line-height: 1.15;
+    text-align: center;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 }
 
@@ -140,6 +147,36 @@
   &:hover {
     background: var(--color-surface-2);
   }
+}
+
+// The "Needs action" badge: a number in words for assistive technology (on the link's name), a pill on screen. Hidden at 0.
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: var(--color-on-danger);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.nav-badge--end {
+  margin-left: auto;
+}
+
+// Over the icon's top-right corner in the bottom bar, where the label has no room beside it.
+.bottom-nav__item .nav-badge--icon {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 4px);
+  max-width: none;
+  overflow: visible;
 }
 
 // Navigation rail (wide screens) ----------------------------------------------------------------------------------

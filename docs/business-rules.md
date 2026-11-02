@@ -63,6 +63,7 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | See bonds | yes | yes | yes | yes | | | yes |
 | Record, change, extend, release, mark as called or void bonds | yes | yes | | yes | | | |
 | Keep the pay rules and the holiday calendar | yes | | | yes | | yes | |
+| See what needs your action (only the kinds of work your role acts on, section 16) | yes | yes | yes | yes | yes | yes | yes |
 
 Everyone who may see purchase orders sees the deliveries on them. Everyone who can see payroll reads the pay rules and the holiday
 calendar (sections 6.8 and 6.9). A **warehouse keeper records deliveries on the receiving screen** (section 12.5), which shows items,
@@ -1183,3 +1184,64 @@ bond of another company is "not found".
 * Swapping retention for a bond (a bond does not release or replace retention held).
 * Automatic expiry emails or messages (the register and the project card show what is lapsing; nothing is sent).
 * Bond premiums as a cost.
+
+## 16. Needs your action
+
+A page (and a number on the navigation entry "Needs action") that lists the work **waiting on the signed-in person**, read from the
+statuses records already have. **Nothing is stored, sent or scheduled**: no new record, no notification, no task and no message. When
+someone acts on a record on its own page (approves, issues, certifies, records), it simply stops waiting and leaves the list.
+
+### 16.1 Who sees which group
+
+Everyone may open the page (`actions.read`, every role), but **each group appears only for a person whose role can act on it**, decided
+by the server from their own roles. A group they cannot act on is not read and not returned at all (absent, not empty). The navigation
+entry is shown only to someone who holds at least one permission that yields a group, so a Viewer is never sent to a page that cannot fill.
+
+| Group | Who receives it (permission) | What it counts | Amount shown |
+| --- | --- | --- | --- |
+| Purchase orders waiting for your approval | Approve purchase orders: Administrator, Project Manager, Accountant | Draft purchase orders | The order total with VAT |
+| Change orders waiting for your approval | Approve change orders: Administrator, Project Manager | Submitted change orders | The budget change with VAT |
+| Bills ready to issue | Issue bills: Administrator, Accountant | Draft client bills (a discarded draft is not one) | The net receivable |
+| Subcontract claims to certify | Certify claims: Administrator, Accountant | Draft subcontract claims | The claim's gross |
+| Payroll waiting for approval | Approve payroll: Administrator, Accountant | Draft payrolls, 13th-month ones included (the row says so) | **None** (pay data): the period and the number of workers |
+| Overdue bills to chase | Draft bills and record payments: Administrator, Project Manager, Accountant | Issued bills past their due date with something still outstanding, the most overdue first | What is still outstanding |
+| Deliveries still to come | Receive deliveries (`purchasing.receive`) or the receiving screen (`receiving.record`): Administrator, Project Manager, Cost Engineer, Accountant, Warehouse Keeper | Approved orders with something still to receive (section 12.5), those whose expected date has passed first | **None, ever** (read from the quantity-only receiving read model) |
+| Bonds that have expired or expire soon | Manage bonds: Administrator, Project Manager, Accountant | Active bonds that have expired or expire within 30 days (the expiry rule of section 15.3), expired first | The bond amount |
+| Progress not updated for 14 days | Record progress: Administrator, Project Manager, Cost Engineer | Active projects whose latest progress is more than 14 days old, or that have none and started more than 14 days ago | None |
+| Attendance not recorded yesterday | Record attendance: Administrator, Project Manager, HR Officer | See 16.2 | None |
+| Contribution and tax tables need setup | Enter the statutory tables: Administrator, Accountant | One row while the statutory status (section 6.4) reports a table needing setup today | None |
+
+So, for example, a Project Manager receives purchase orders and change orders to approve, bills to chase, deliveries, bonds, progress
+and attendance, and never bills to issue, claims or payroll; an HR Officer receives only attendance (HR prepares payroll but cannot approve
+it); a Warehouse Keeper receives only deliveries, and **neither route ever sends them an amount or any property named for one** (a row of
+a group without an amount has no amount property at all); a Viewer receives no group and a count of 0. **Amounts appear only where the
+person can already see them** on the record's own page.
+
+### 16.2 Thresholds
+
+All days are judged on the company's calendar day (its time zone), never the UTC day.
+
+* **Waiting**: a draft or submitted record shows how many days it has waited since it was drafted (submitted, for a change order):
+  "Waiting since today", "Waiting 1 day", "Waiting 3 days". Waiting alone is not urgent.
+* **Overdue bill**: overdue from the day after its due date (a bill due today is not overdue). Always urgent.
+* **Late delivery**: an order expected yesterday or earlier is late and urgent; one expected today is not.
+* **Bond**: listed when it has 30 days or fewer left, the last day included (30 days left is listed, 31 is not); urgent from the day after
+  its valid-until date (Expired).
+* **Progress**: listed when the latest progress is **more than 14 days** old (14 days is not listed, 15 is); a project with no progress at
+  all is listed once it started more than 14 days ago ("No progress recorded yet"). Planning, on hold, completed and archived projects are
+  not listed.
+* **Attendance**: for **yesterday**, unless yesterday is a company holiday: each Active project that recorded attendance on at least one of
+  the six days before yesterday and has posted workers (active, posted to it yesterday, and yesterday is not their rest day) with no
+  attendance entry for yesterday. One row per project: "4 workers have no attendance recorded for 1 Nov".
+
+### 16.3 What else holds
+
+* **Archived projects' records never appear**, in any group; and another company's records never appear.
+* Each group shows at most its **8 most urgent rows** and carries its true count; the page links to the nearest list with the same filter
+  when there is one (the purchase order list with the Draft status; the receiving list), and otherwise says "N in total".
+* Groups with an urgent row come first, then the order of the table above. A row opens the record's own page; nothing is approved or
+  issued from this page.
+* The badge's number is the sum of the group counts, read once when the app opens, again when the page is opened and when the browser tab
+  becomes visible again; nothing polls.
+* Every read is a fixed number of SQL statements whatever the number of records (asserted by a test): see
+  [docs/api/needs-action.md](api/needs-action.md).

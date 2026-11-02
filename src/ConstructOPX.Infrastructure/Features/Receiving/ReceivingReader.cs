@@ -21,24 +21,7 @@ internal sealed class ReceivingReader(ConstructOpxDbContext db) : IReceivingRead
 
     public async Task<ReceivingOrderPageDto> ListAsync(ReceivingOrderFilter filter, PageRequest page, CancellationToken cancellationToken)
     {
-        // Awaiting delivery: approved, of a project that can still take a delivery, with at least one line still short of what was ordered.
-        var orders = db.Set<PurchaseOrder>().AsNoTracking()
-            .Where(order => order.Status == PurchaseOrderStatus.Approved &&
-                !db.Set<Project>().Any(project => project.Id == order.ProjectId && project.Status == ProjectStatus.Archived) &&
-                order.Lines.Any(line =>
-                    (db.Set<GoodsReceiptLine>().Where(received => received.PurchaseOrderLineId == line.Id &&
-                        db.Set<GoodsReceipt>().Any(receipt => receipt.Id == received.GoodsReceiptId && receipt.Status == GoodsReceiptStatus.Posted))
-                        .Sum(received => (decimal?)received.Quantity) ?? 0m) < line.Quantity));
-        if (filter.ProjectId is { } projectId) orders = orders.Where(order => order.ProjectId == projectId);
-        if (filter.Search is { } search)
-        {
-            var pattern = Sql.Contains(search);
-            orders = orders.Where(order => EF.Functions.Like(order.Number, pattern, Sql.LikeEscape) ||
-                (order.SupplierReference != null && EF.Functions.Like(order.SupplierReference, pattern, Sql.LikeEscape)) ||
-                db.Set<Supplier>().Any(supplier => supplier.Id == order.SupplierId && EF.Functions.Like(supplier.Name, pattern, Sql.LikeEscape)) ||
-                db.Set<Project>().Any(project => project.Id == order.ProjectId && EF.Functions.Like(project.Name, pattern, Sql.LikeEscape)));
-        }
-
+        var orders = AwaitingDelivery(filter);
         var total = await orders.CountAsync(cancellationToken);
         // Soonest expected first; an order with no expected date waits at the end.
         var rows = await orders.OrderBy(order => order.ExpectedDate == null).ThenBy(order => order.ExpectedDate).ThenBy(order => order.Number).ThenBy(order => order.Id)
@@ -58,6 +41,31 @@ internal sealed class ReceivingReader(ConstructOpxDbContext db) : IReceivingRead
         var items = rows.Select(row => new ReceivingOrderListItemDto(row.Id, row.Number, row.SupplierName ?? "", row.ProjectName ?? "", row.SubProjectName,
             row.ExpectedDate, (row.AnyReceived ? DeliveryState.PartlyReceived : DeliveryState.NotReceived).ToString(), row.Version)).ToArray();
         return new ReceivingOrderPageDto(items, total, page.SafePage, page.SafePageSize);
+    }
+
+    public Task<int> CountAsync(ReceivingOrderFilter filter, CancellationToken cancellationToken) => AwaitingDelivery(filter).CountAsync(cancellationToken);
+
+    private IQueryable<PurchaseOrder> AwaitingDelivery(ReceivingOrderFilter filter)
+    {
+        // Awaiting delivery: approved, of a project that can still take a delivery, with at least one line still short of what was ordered.
+        var orders = db.Set<PurchaseOrder>().AsNoTracking()
+            .Where(order => order.Status == PurchaseOrderStatus.Approved &&
+                !db.Set<Project>().Any(project => project.Id == order.ProjectId && project.Status == ProjectStatus.Archived) &&
+                order.Lines.Any(line =>
+                    (db.Set<GoodsReceiptLine>().Where(received => received.PurchaseOrderLineId == line.Id &&
+                        db.Set<GoodsReceipt>().Any(receipt => receipt.Id == received.GoodsReceiptId && receipt.Status == GoodsReceiptStatus.Posted))
+                        .Sum(received => (decimal?)received.Quantity) ?? 0m) < line.Quantity));
+        if (filter.ProjectId is { } projectId) orders = orders.Where(order => order.ProjectId == projectId);
+        if (filter.Search is { } search)
+        {
+            var pattern = Sql.Contains(search);
+            orders = orders.Where(order => EF.Functions.Like(order.Number, pattern, Sql.LikeEscape) ||
+                (order.SupplierReference != null && EF.Functions.Like(order.SupplierReference, pattern, Sql.LikeEscape)) ||
+                db.Set<Supplier>().Any(supplier => supplier.Id == order.SupplierId && EF.Functions.Like(supplier.Name, pattern, Sql.LikeEscape)) ||
+                db.Set<Project>().Any(project => project.Id == order.ProjectId && EF.Functions.Like(project.Name, pattern, Sql.LikeEscape)));
+        }
+
+        return orders;
     }
 
     public async Task<ReceivingOrderDto?> GetAsync(Guid id, CancellationToken cancellationToken)
