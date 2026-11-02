@@ -109,7 +109,12 @@ import { PurchaseOrder } from './purchasing.models';
             }
           </div>
 
-          <app-form-field label="Note" [optional]="true" [control]="form.controls.note">
+          <app-form-field
+            label="Note"
+            hint="Warehouse staff can read this note, so leave out prices."
+            [optional]="true"
+            [control]="form.controls.note"
+          >
             <textarea appControl formControlName="note" rows="2" maxlength="300"></textarea>
           </app-form-field>
         </form>

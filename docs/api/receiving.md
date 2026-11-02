@@ -43,6 +43,10 @@ order of a project that is not archived with something still to receive), `versi
   `recordedAtUtc`, `voidedByName?`, `voidedAtUtc?`, `canVoid`, `version`, `lines` (`id`, `orderLineId`, `lineNumber`, `description`,
   `unit`, `quantity`). The newest 100 are returned, voided ones too, newest day first; `deliveryCount` is the true number. **The reason
   typed when a delivery was voided is not returned** (a reason can mention people or amounts); only that it was voided, by whom and when.
+* **Free text written by the office is shown as typed.** A Warehouse Keeper sees the delivery `note`, each line's `description` and the order's
+  `supplierReference` exactly as someone with purchasing access typed them, so the system cannot know whether they mention a price. The
+  record-delivery form on the order page says so next to the note. A Warehouse Keeper can also void a delivery that office staff recorded
+  (an owner decision: it changes no money, the version check applies and the audit entry names who did it).
 
 The read is five SQL statements (the order, its lines, what each line has received, the newest deliveries and their lines) however many
 lines or deliveries exist.
