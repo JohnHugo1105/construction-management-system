@@ -5,14 +5,20 @@ using ConstructOPX.Api.Tests.Infrastructure;
 using ConstructOPX.Application.Features.Billing;
 using ConstructOPX.Application.Features.Bonds;
 using ConstructOPX.Application.Features.ChangeOrders;
+using ConstructOPX.Application.Common;
 using ConstructOPX.Application.Features.Costing;
 using ConstructOPX.Application.Features.NeedsAction;
 using ConstructOPX.Application.Features.Projects;
+using ConstructOPX.Application.Features.Payroll;
 using ConstructOPX.Application.Features.Purchasing;
+using ConstructOPX.Application.Features.Receiving;
 using ConstructOPX.Application.Features.Subcontracts;
 using ConstructOPX.Application.Features.Suppliers;
+using ConstructOPX.Application.Features.Workforce;
 using ConstructOPX.Domain.Features.Identity;
 using ConstructOPX.TestSupport;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using static ConstructOPX.Api.Tests.Features.CostingTestKit;
 
 namespace ConstructOPX.Api.Tests.Features;
@@ -140,7 +146,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
 
         var attendance = Single(groups, "attendance-not-recorded");
         Assert.Equal((world.Sites[0].Id, (long?)null), (attendance.Id, attendance.AmountMinor));
-        Assert.Equal($"1 worker has no attendance recorded for {today.AddDays(-1).ToString("d MMM", CultureInfo.InvariantCulture)}", attendance.Detail);
+        Assert.Equal($"No attendance recorded for {today.AddDays(-1).ToString("ddd d MMM", CultureInfo.InvariantCulture)}", attendance.Detail);
 
         var tables = Single(groups, "statutory-needs-setup");
         Assert.Equal("No table in force for SSS, PhilHealth, Pag-IBIG and withholding tax, so payroll can't work them out.", tables.Detail);
@@ -187,8 +193,8 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         Assert.Equal(1, mine.Groups.Single(group => group.Key == "purchase-orders-to-approve").Count);
         Assert.Equal([otherDraft.Id], theirs.Groups.Single(group => group.Key == "purchase-orders-to-approve").Rows.Select(row => row.Id));
         Assert.DoesNotContain(theirs.Groups.SelectMany(group => group.Rows), row => world.AllIds.Contains(row.Id));
-        // Only their statutory tables and their one draft wait on the other company's administrator.
-        Assert.Equal(2, (await other.GetAsync<NeedsActionCountDto>(Count)).Total);
+        // Only their one draft waits on the other company's administrator: with no worker and no payroll their statutory tables are not yet a task.
+        Assert.Equal(1, (await other.GetAsync<NeedsActionCountDto>(Count)).Total);
     }
 
     [SqlServerFact]
@@ -198,7 +204,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         using var _c = admin;
         var today = BondTestKit.Today();
         var firm = await PurchasingTestKit.CreateFirmAsync(admin);
-        var project = await StartAsync(admin, await CreateProjectAsync(admin));
+        var project = await StartedWithBudgetLineAsync(admin, null);
         await PurchasingTestKit.DraftAsync(admin, project, firm);
         await LateOrderAsync(admin, project, firm, today);
         await BondTestKit.CreateAsync(admin, project.Id, validUntil: BondTestKit.DaysFromToday(-3));
@@ -212,8 +218,8 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         await ArchiveAsync(admin, await admin.GetAsync<ProjectDto>($"/api/projects/{project.Id}"));
 
         var after = await admin.GetAsync<NeedsActionDto>(Full);
-        Assert.All(after.Groups.Where(group => group.Key != "statutory-needs-setup"), group => Assert.Equal((group.Key, 0), (group.Key, group.Count)));
-        Assert.Equal(1, (await admin.GetAsync<NeedsActionCountDto>(Count)).Total);
+        Assert.All(after.Groups, group => Assert.Equal((group.Key, 0), (group.Key, group.Count)));
+        Assert.Equal(0, (await admin.GetAsync<NeedsActionCountDto>(Count)).Total);
     }
 
     [SqlServerFact]
@@ -225,21 +231,306 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         var before = await accountant.GetAsync<NeedsActionDto>(Full);
         var totalBefore = (await accountant.GetAsync<NeedsActionCountDto>(Count)).Total;
 
-        // Approving the draft order takes it off the approvals (it now waits to be delivered instead).
+        // Approving the draft order takes it off the approvals. It has no expected date, so it is not yet due and joins no other group.
         await PurchasingTestKit.ApproveAsync(accountant, await PurchasingTestKit.GetOrderAsync(accountant, world.DraftOrder.Id));
         var approved = await accountant.GetAsync<NeedsActionDto>(Full);
         var orders = approved.Groups.Single(group => group.Key == "purchase-orders-to-approve");
         Assert.Equal((0, 0), (orders.Count, orders.Rows.Count));
-        Assert.Equal(Group(before, "deliveries-expected").Count + 1, Group(approved, "deliveries-expected").Count);
+        Assert.Equal(Group(before, "deliveries-expected").Count, Group(approved, "deliveries-expected").Count);
 
-        // Certifying the claim takes it off the queue altogether: the badge drops by one.
+        // Certifying the claim takes it off the queue altogether: with the approved order, the badge is down by two.
         var subcontract = await accountant.GetAsync<SubcontractDto>($"/api/subcontracts/{world.Subcontract.Id}");
         Assert.True((await SubcontractTestKit.CertifyAsync(accountant, subcontract, world.ClaimId)).IsSuccessStatusCode);
         var certified = await accountant.GetAsync<NeedsActionDto>(Full);
         Assert.Equal(0, Group(certified, "claims-to-certify").Count);
         Assert.DoesNotContain(certified.Groups.SelectMany(group => group.Rows), row => row.Id == world.ClaimId);
-        Assert.Contains(Group(certified, "deliveries-expected").Rows, row => row.Id == world.DraftOrder.Id);
-        Assert.Equal(totalBefore, (await accountant.GetAsync<NeedsActionCountDto>(Count)).Total + 1);
+        Assert.DoesNotContain(Group(certified, "deliveries-expected").Rows, row => row.Id == world.DraftOrder.Id);
+        Assert.Equal(totalBefore, (await accountant.GetAsync<NeedsActionCountDto>(Count)).Total + 2);
+    }
+
+    // ---- What each rule leaves out ------------------------------------------------------------------------------------------
+
+    [SqlServerFact]
+    public async Task Attendance_lists_a_project_only_when_it_recorded_a_week_ago_and_nothing_yesterday_and_orders_the_biggest_crews_first()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+        var today = BondTestKit.Today();
+        var yesterday = today.AddDays(-1);
+        string Yesterday() => BondTestKit.Date(yesterday);
+        string WeekAgo() => BondTestKit.Date(yesterday.AddDays(-7));
+
+        // Listed: nothing recorded yesterday, entries a week ago, two workers posted.
+        var (quiet, quietCrew) = await SiteWithCrewAsync(admin, "Beta quiet site", 2);
+        await WorkforceTestKit.RecordAsync(admin, quietCrew[0].Id, quiet.Id, WeekAgo(), 8m);
+
+        // Listed, but with one worker only: the second is on their rest day yesterday.
+        var (resting, restingCrew) = await SiteWithCrewAsync(admin, "Alpha resting site", 2);
+        await SetRestDayAsync(admin, restingCrew[1], yesterday.DayOfWeek.ToString());
+        await WorkforceTestKit.RecordAsync(admin, restingCrew[0].Id, resting.Id, WeekAgo(), 8m);
+
+        // Listed: the only entry yesterday was voided, and a voided entry is not recorded attendance.
+        var (voidedToday, voidedTodayCrew) = await SiteWithCrewAsync(admin, "Epsilon voided site", 1);
+        await WorkforceTestKit.RecordAsync(admin, voidedTodayCrew[0].Id, voidedToday.Id, WeekAgo(), 8m);
+        var entered = await WorkforceTestKit.RecordAsync(admin, voidedTodayCrew[0].Id, voidedToday.Id, Yesterday(), 8m);
+        await admin.PostAsync<AttendanceEntryDto>($"/api/attendance/{entered.Id}/void", new { reason = "Entered twice", version = entered.Version });
+
+        // Not listed: some entries yesterday (the other worker is sick, and absences cannot be recorded, so one entry is enough).
+        var (recorded, recordedCrew) = await SiteWithCrewAsync(admin, "Gamma recorded site", 2);
+        await WorkforceTestKit.RecordAsync(admin, recordedCrew[0].Id, recorded.Id, WeekAgo(), 8m);
+        await WorkforceTestKit.RecordAsync(admin, recordedCrew[0].Id, recorded.Id, Yesterday(), 8m);
+
+        // Not listed: nothing yesterday, but nothing a week ago either (a Monday-to-Saturday site on a Sunday).
+        var (sixDay, sixDayCrew) = await SiteWithCrewAsync(admin, "Delta six-day site", 1);
+        await WorkforceTestKit.RecordAsync(admin, sixDayCrew[0].Id, sixDay.Id, BondTestKit.Date(yesterday.AddDays(-2)), 8m);
+
+        // Not listed: the entry a week ago was voided, so the project did not record that day.
+        var (voidedBefore, voidedBeforeCrew) = await SiteWithCrewAsync(admin, "Zeta voided last week site", 1);
+        var before = await WorkforceTestKit.RecordAsync(admin, voidedBeforeCrew[0].Id, voidedBefore.Id, WeekAgo(), 8m);
+        await admin.PostAsync<AttendanceEntryDto>($"/api/attendance/{before.Id}/void", new { reason = "Entered twice", version = before.Version });
+
+        // Not listed: the only posted worker rests yesterday, so nobody is expected.
+        var (restOnly, restOnlyCrew) = await SiteWithCrewAsync(admin, "Eta rest day site", 1);
+        await SetRestDayAsync(admin, restOnlyCrew[0], yesterday.DayOfWeek.ToString());
+        await WorkforceTestKit.RecordAsync(admin, restOnlyCrew[0].Id, restOnly.Id, WeekAgo(), 8m);
+
+        var group = Group(await admin.GetAsync<NeedsActionDto>(Full), "attendance-not-recorded");
+
+        // The biggest crew first, then by name: "Alpha" would sort before "Beta" if the crew sizes (2 and 1) were not what orders them.
+        Assert.Equal(["Beta quiet site", "Alpha resting site", "Epsilon voided site"], group.Rows.Select(row => row.Label));
+        Assert.Equal([quiet.Id, resting.Id, voidedToday.Id], group.Rows.Select(row => row.Id));
+        Assert.Equal(3, group.Count);
+        Assert.All(group.Rows, row => Assert.Equal($"No attendance recorded for {yesterday.ToString("ddd d MMM", CultureInfo.InvariantCulture)}", row.Detail));
+    }
+
+    [SqlServerFact]
+    public async Task Attendance_is_not_asked_for_on_a_company_holiday()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+        var yesterday = BondTestKit.Today().AddDays(-1);
+        var (site, crew) = await SiteWithCrewAsync(admin, "Holiday site", 1);
+        await WorkforceTestKit.RecordAsync(admin, crew[0].Id, site.Id, BondTestKit.Date(yesterday.AddDays(-7)), 8m);
+        Assert.Equal([site.Id], Group(await admin.GetAsync<NeedsActionDto>(Full), "attendance-not-recorded").Rows.Select(row => row.Id));
+
+        Assert.True((await admin.PostAsync("/api/payroll-holidays", new { date = BondTestKit.Date(yesterday), name = "Founders day (test)", type = "Regular" })).IsSuccessStatusCode);
+
+        Assert.Equal(0, Group(await admin.GetAsync<NeedsActionDto>(Full), "attendance-not-recorded").Count);
+        // The badge agrees with the page.
+        var after = await admin.GetAsync<NeedsActionDto>(Full);
+        Assert.Equal(after.Groups.Sum(group => group.Count), (await admin.GetAsync<NeedsActionCountDto>(Count)).Total);
+    }
+
+    [SqlServerFact]
+    public async Task Progress_is_only_asked_for_on_a_project_that_has_a_budget_line_to_record_it_against()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+        var withoutLine = await StartAsync(admin, await WorkforceTestKit.NewProjectAsync(admin, "No budget line yet"));
+        Assert.Equal(0, Group(await admin.GetAsync<NeedsActionDto>(Full), "progress-not-updated").Count);
+
+        var withLine = await StartedWithBudgetLineAsync(admin, "With a budget line");
+
+        var group = Group(await admin.GetAsync<NeedsActionDto>(Full), "progress-not-updated");
+        Assert.Equal(1, group.Count);
+        Assert.Equal([withLine.Id], group.Rows.Select(row => row.Id));
+        Assert.DoesNotContain(group.Rows, row => row.Id == withoutLine.Id);
+    }
+
+    [SqlServerFact]
+    public async Task Deliveries_are_listed_and_counted_only_once_due_while_the_receiving_screen_still_lists_every_open_order()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+        var today = BondTestKit.Today();
+        var project = await CreateProjectAsync(admin);
+        var firm = await PurchasingTestKit.CreateFirmAsync(admin);
+        async Task<PurchaseOrderDto> ApprovedAsync(DateOnly? expected) => await PurchasingTestKit.ApproveAsync(admin, await admin.PostAsync<PurchaseOrderDto>(
+            "/api/purchase-orders", PurchasingTestKit.OrderBody(project.Id, firm.Id, expectedDate: expected is { } date ? BondTestKit.Date(date) : null)));
+        var late = await ApprovedAsync(today.AddDays(-3));
+        var dueToday = await ApprovedAsync(today);
+        await ApprovedAsync(today.AddDays(1));
+        await ApprovedAsync(null);
+
+        var result = await admin.GetAsync<NeedsActionDto>(Full);
+        var group = Group(result, "deliveries-expected");
+
+        // The most overdue first; tomorrow's order and the one with no date are not due, so they are neither listed nor counted.
+        Assert.Equal(2, group.Count);
+        Assert.Equal([late.Id, dueToday.Id], group.Rows.Select(row => row.Id));
+        Assert.Equal([($"3 days late, expected {Day(today.AddDays(-3))}", true), ("Due today", false)], group.Rows.Select(row => (row.Detail, row.IsUrgent)));
+        Assert.Equal(result.Groups.Sum(item => item.Count), (await admin.GetAsync<NeedsActionCountDto>(Count)).Total);
+
+        // The receiving screen is unchanged: every open order.
+        Assert.Equal(4, (await admin.GetAsync<ReceivingOrderPageDto>("/api/receiving/orders")).OrderCount);
+    }
+
+    [SqlServerFact]
+    public async Task The_statutory_tables_are_a_task_only_once_the_company_has_a_worker_or_a_payroll()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+
+        // A brand-new company: the group is there for those who may act on it, but empty, and the badge stays at 0.
+        var empty = Group(await admin.GetAsync<NeedsActionDto>(Full), "statutory-needs-setup");
+        Assert.Equal((0, 0), (empty.Count, empty.Rows.Count));
+        Assert.Equal(0, (await admin.GetAsync<NeedsActionCountDto>(Count)).Total);
+
+        // An active worker makes payroll real: the tables are missing, so the row appears.
+        var worker = await WorkforceTestKit.HireAsync(admin, "W-001");
+        var needed = Group(await admin.GetAsync<NeedsActionDto>(Full), "statutory-needs-setup");
+        Assert.Equal(1, needed.Count);
+        Assert.Contains("No table in force for SSS", Assert.Single(needed.Rows).Detail);
+        Assert.Equal(1, (await admin.GetAsync<NeedsActionCountDto>(Count)).Total);
+
+        // A draft payroll keeps it there when the worker has left.
+        var site = await WorkforceTestKit.NewProjectAsync(admin, "Payroll site");
+        worker = await WorkforceTestKit.AssignAsync(admin, worker, site);
+        await WorkforceTestKit.RecordAsync(admin, worker.Id, site.Id, "2026-02-02", 8m);
+        await WorkforceTestKit.CreateRunAsync(admin, "2026-02-01", "2026-02-14");
+        var left = await admin.PostAsync<WorkerDetailDto>($"/api/workers/{worker.Id}/status",
+            new { status = "Resigned", effectiveDate = "2026-06-30", reason = (string?)null, version = worker.Version });
+        Assert.Equal("Resigned", left.Status);
+        Assert.Equal(1, Group(await admin.GetAsync<NeedsActionDto>(Full), "statutory-needs-setup").Count);
+    }
+
+    [SqlServerFact]
+    public async Task A_change_order_that_is_still_a_draft_and_a_discarded_bill_are_not_waiting_for_anyone()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+        var budgeted = await LockedBudgetProjectAsync(admin);
+
+        var draft = await admin.PostAsync<ChangeOrderDto>($"/api/projects/{budgeted.Id}/change-orders",
+            new { title = "Extra waterproofing", description = "The client asked for a membrane.", reason = "ClientRequest", contractPriceDeltaMinor = 0 });
+        Assert.Equal(0, Group(await admin.GetAsync<NeedsActionDto>(Full), "change-orders-to-approve").Count);
+        var withLine = await admin.PostAsync<ChangeOrderDto>($"/api/change-orders/{draft.Id}/lines", new
+        {
+            kind = "Add", description = "Waterproofing membrane", itemType = "Material", quantity = 3m, unit = "roll", unitCostMinor = 33_333,
+            vatTreatment = "Inclusive", entryDate = "2026-02-01", version = draft.Version
+        });
+        await admin.PostAsync<ChangeOrderDto>($"/api/change-orders/{draft.Id}/submit", new { version = withLine.Version });
+        Assert.Equal([draft.Id], Group(await admin.GetAsync<NeedsActionDto>(Full), "change-orders-to-approve").Rows.Select(row => row.Id));
+
+        var billed = await CreateProjectAsync(admin);
+        var bill = await DraftBillAsync(admin, billed.Id, 100_000_00, BondTestKit.Today().AddDays(-35));
+        Assert.Equal(1, Group(await admin.GetAsync<NeedsActionDto>(Full), "bills-to-issue").Count);
+        Assert.True((await admin.PostAsync($"/api/client-invoices/{bill.Id}/discard", new { reason = "Wrong period", version = bill.Version })).IsSuccessStatusCode);
+        Assert.Equal(0, Group(await admin.GetAsync<NeedsActionDto>(Full), "bills-to-issue").Count);
+    }
+
+    [SqlServerFact]
+    public async Task The_amount_to_chase_is_what_is_still_outstanding_after_partial_payments_and_ignores_voided_ones()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _c = admin;
+        var today = BondTestKit.Today();
+        var project = await CreateProjectAsync(admin);
+        var draft = await DraftBillAsync(admin, project.Id, 100_000_00, today.AddDays(-40));
+        var bill = await admin.PostAsync<ClientInvoiceDto>($"/api/client-invoices/{draft.Id}/issue", new { version = draft.Version });
+        var net = bill.NetReceivableMinor;
+        Task<ClientInvoiceDto> PayAsync(ClientInvoiceDto current, long amount) => admin.PostAsync<ClientInvoiceDto>($"/api/client-invoices/{current.Id}/payments", new
+        {
+            amountMinor = amount, paidOn = BondTestKit.Date(today.AddDays(-5)), method = "BankTransfer", reference = "BDO 1234", note = (string?)null,
+            clientRequestId = (string?)null, version = current.Version
+        });
+        async Task<NeedsActionRowDto> ChaseAsync() => Assert.Single(Group(await admin.GetAsync<NeedsActionDto>(Full), "bills-to-chase").Rows);
+
+        Assert.Equal(net, (await ChaseAsync()).AmountMinor);
+
+        // A partial payment stands: the bill is chased for the rest.
+        bill = await PayAsync(bill, 10_000_00);
+        Assert.Equal(net - 10_000_00, (await ChaseAsync()).AmountMinor);
+
+        // A payment that is then voided does not count.
+        bill = await PayAsync(bill, 20_000_00);
+        Assert.Equal(net - 30_000_00, (await ChaseAsync()).AmountMinor);
+        var second = bill.Payments.Single(payment => payment.AmountMinor == 20_000_00);
+        bill = await admin.PostAsync<ClientInvoiceDto>($"/api/client-invoices/{bill.Id}/payments/{second.Id}/void", new { reason = "Bounced", version = bill.Version });
+        Assert.Equal(net - 10_000_00, (await ChaseAsync()).AmountMinor);
+
+        // Paid in full, it is no longer chased.
+        await PayAsync(bill, net - 10_000_00);
+        Assert.Equal(0, Group(await admin.GetAsync<NeedsActionDto>(Full), "bills-to-chase").Count);
+    }
+
+    // ---- Groups other features contribute ------------------------------------------------------------------------------------
+
+    [SqlServerFact]
+    public async Task A_contributed_group_appears_only_for_the_roles_it_acts_for_adds_into_both_totals_and_sorts_urgent_first()
+    {
+        var source = new FakeSource();
+        await using var host = _factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.AddSingleton<INeedsActionSource>(source)));
+        var admin = await TenantSeeder.CreateTenantAsync(_factory);
+        async Task<ApiClient> SignInAsync(AccessRole role)
+        {
+            var user = role == AccessRole.Administrator ? admin : await TenantSeeder.AddUserAsync(_factory, admin.TenantId, role);
+            var client = new ApiClient(host);
+            await client.SignInAsync(user.Username, user.Password);
+            return client;
+        }
+
+        // Roles that cannot act on it never cost it a read, on either route (a Viewer holds no group at all).
+        foreach (var role in new[] { AccessRole.Administrator, AccessRole.WarehouseKeeper, AccessRole.Viewer })
+        {
+            using var other = await SignInAsync(role);
+            var full = await other.GetAsync<NeedsActionDto>(Full);
+            var count = await other.GetAsync<NeedsActionCountDto>(Count);
+            Assert.DoesNotContain(full.Groups, group => group.Key == FakeSource.GroupKey);
+            Assert.Equal(full.Groups.Sum(group => group.Count), count.Total);
+        }
+        Assert.Equal((0, 0), (source.CountCalls, source.ReadCalls));
+
+        // The HR Officer can: its true count is in both totals, and its urgent row puts it above the attendance group, which comes first on page order.
+        using var hr = await SignInAsync(AccessRole.HrOfficer);
+        var result = await hr.GetAsync<NeedsActionDto>(Full);
+        Assert.Equal([FakeSource.GroupKey, "attendance-not-recorded"], result.Groups.Select(group => group.Key));
+        Assert.Equal(FakeSource.Rows, result.Groups[0].Count);
+        Assert.Equal(FakeSource.Rows, result.Groups.Sum(group => group.Count));
+        Assert.Equal(FakeSource.Rows, (await hr.GetAsync<NeedsActionCountDto>(Count)).Total);
+        // The queue read it once for its rows; the badge route read its count once.
+        Assert.Equal((1, 1), (source.CountCalls, source.ReadCalls));
+    }
+
+    [SqlServerFact]
+    public void Every_registered_source_acts_only_for_roles_holding_a_permission_the_web_page_knows()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var sources = scope.ServiceProvider.GetServices<INeedsActionSource>().ToArray();
+
+        foreach (var role in AccessRoles.Split(AccessRoles.All))
+            foreach (var source in sources.Where(source => source.CanActOn(role)))
+                Assert.True(NeedsActionGroups.ActingPermissions.Any(permission => Permissions.IsAllowed(role, permission)),
+                    $"{source.Key} acts for {role}, which holds none of NeedsActionGroups.ActingPermissions (and the web NEEDS_ACTION_PERMISSIONS)");
+    }
+
+    /// <summary>A group a feature contributes: three waiting records, one urgent row, for the HR Officer only; it counts how often it is read.</summary>
+    private sealed class FakeSource : INeedsActionSource
+    {
+        public const string GroupKey = "fake-group";
+        public const int Rows = 3;
+        private int _countCalls, _readCalls;
+
+        public int CountCalls => Volatile.Read(ref _countCalls);
+
+        public int ReadCalls => Volatile.Read(ref _readCalls);
+
+        public string Key => GroupKey;
+
+        public bool CanActOn(AccessRole roles) => roles.HasFlag(AccessRole.HrOfficer);
+
+        public Task<int> CountAsync(NeedsActionDates dates, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _countCalls);
+            return Task.FromResult(Rows);
+        }
+
+        public Task<NeedsActionGroupDto> ReadAsync(NeedsActionDates dates, int take, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _readCalls);
+            return Task.FromResult(new NeedsActionGroupDto(GroupKey, Rows,
+                [new NeedsActionRowDto(Guid.NewGuid(), null, "Something waiting", null, null, "Overdue by a day", null, null, true, null)]));
+        }
     }
 
     // ---- Cost ---------------------------------------------------------------------------------------------------------------
@@ -265,9 +556,10 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             Assert.Equal(NeedsActionRules.RowsShown, group.Rows.Count);
         });
         Assert.Equal(small, large);
-        // The organization (for today's date), then a count and the rows for each of the ten record groups, and one statement for the
-        // statutory tables; the count route is the organization and one count per group.
-        Assert.Equal((22, 12), large);
+        // The organization (for today's date), then a count and the rows for each of the ten record groups, and two statements for the
+        // statutory tables (the status, then whether the company has a worker or a payroll, asked only while a table is missing); the count
+        // route is the organization, one count per group and the same two statements.
+        Assert.Equal((23, 13), large);
 
         // A role with no group costs nothing beyond signing in.
         using var viewer = await AsRoleAsync(world, AccessRole.Viewer);
@@ -306,7 +598,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
     /// <summary>
     /// Adds <paramref name="count"/> waiting records to every group: draft and late approved orders, an expired bond and a subcontract with a draft
     /// claim on a buying project; submitted change orders on a project with a locked budget; per billed project an overdue issued bill and a
-    /// second, draft bill; per active site a posted worker with attendance three days ago and none yesterday (and no progress); and draft
+    /// second, draft bill; per active site (with a budget line) a posted worker with attendance a week before yesterday and none yesterday (and no progress); and draft
     /// payroll for a half-month period of 2026 paying that worker.
     /// </summary>
     private static async Task<Added> AddRecordsAsync(ApiClient admin, SupplierDto firm, int count, int firstPeriod)
@@ -332,9 +624,10 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             added.IssuedBills.Add(await admin.PostAsync<ClientInvoiceDto>($"/api/client-invoices/{first.Id}/issue", new { version = first.Version }));
             added.DraftBills.Add(await DraftBillAsync(admin, billed.Id, 200_000_00, today.AddDays(-35)));
 
-            var site = await StartAsync(admin, await WorkforceTestKit.NewProjectAsync(admin, TenantSeeder.Unique("Site")));
+            var site = await StartedWithBudgetLineAsync(admin, TenantSeeder.Unique("Site"));
             var worker = await WorkforceTestKit.AssignAsync(admin, await WorkforceTestKit.HireAsync(admin, TenantSeeder.Unique("E")[..12]), site);
-            await WorkforceTestKit.RecordAsync(admin, worker.Id, site.Id, BondTestKit.Date(today.AddDays(-3)), 8m);
+            // The same weekday a week before yesterday: this site recorded then and nothing yesterday.
+            await WorkforceTestKit.RecordAsync(admin, worker.Id, site.Id, BondTestKit.Date(NeedsActionRules.AttendanceCompareDay(today)), 8m);
             added.Sites.Add(site);
 
             // Half-month periods from 1 Feb 2026: attendance on the second day of each, then the payroll for it.
@@ -345,6 +638,35 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             added.PayrollRuns.Add((await WorkforceTestKit.CreateRunAsync(admin, BondTestKit.Date(start), BondTestKit.Date(end))).Id);
         }
         return added;
+    }
+
+    /// <summary>An Active project with one active budget line (so it can take progress), started long ago.</summary>
+    private static async Task<ProjectDto> StartedWithBudgetLineAsync(ApiClient client, string? name)
+    {
+        var planned = name is null ? await CreateProjectAsync(client) : await WorkforceTestKit.NewProjectAsync(client, name);
+        await client.PostAsync<BudgetLineDto>($"/api/projects/{planned.Id}/budget-lines", Line("Ready-mix concrete", unitCostMinor: 50_000));
+        return await StartAsync(client, await client.GetAsync<ProjectDto>($"/api/projects/{planned.Id}"));
+    }
+
+    private static async Task<(ProjectDto Site, List<WorkerDetailDto> Crew)> SiteWithCrewAsync(ApiClient admin, string name, int size)
+    {
+        var site = await StartedWithBudgetLineAsync(admin, name);
+        var crew = new List<WorkerDetailDto>();
+        for (var index = 0; index < size; index++)
+            crew.Add(await WorkforceTestKit.AssignAsync(admin, await WorkforceTestKit.HireAsync(admin, TenantSeeder.Unique("E")[..12]), site));
+        return (site, crew);
+    }
+
+    private static async Task SetRestDayAsync(ApiClient client, WorkerDetailDto worker, string restDay)
+    {
+        var current = await client.GetAsync<WorkerDetailDto>($"/api/workers/{worker.Id}");
+        await client.PutAsync<WorkerDetailDto>($"/api/workers/{worker.Id}", new
+        {
+            firstName = current.FirstName, middleName = current.MiddleName, lastName = current.LastName, dateOfBirth = current.DateOfBirth,
+            maritalStatus = current.MaritalStatus, spouseName = current.SpouseName, religion = current.Religion,
+            educationalAttainment = current.EducationalAttainment, presentAddress = current.PresentAddress, provincialAddress = current.ProvincialAddress,
+            contactNumber = current.ContactNumber, reference = current.Reference, version = current.Version, restDay
+        });
     }
 
     private static async Task<ProjectDto> StartAsync(ApiClient client, ProjectDto project) =>

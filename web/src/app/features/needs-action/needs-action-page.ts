@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { tap } from 'rxjs';
@@ -34,6 +34,11 @@ export class NeedsActionPage {
   private readonly resource = rxResource({
     stream: () => this.api.get().pipe(tap((result) => this.badge.setTotal(totalOf(result.groups)))),
   });
+
+  constructor() {
+    // A tab that comes back to the front reloads this page, which also sets the badge: the page and the badge never disagree.
+    this.badge.reloadPageWhenVisible(() => this.reload(), inject(DestroyRef));
+  }
 
   protected readonly loading = computed(
     () => this.resource.isLoading() && !this.resource.hasValue(),

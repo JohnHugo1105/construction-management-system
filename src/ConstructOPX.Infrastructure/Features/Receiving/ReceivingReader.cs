@@ -56,6 +56,7 @@ internal sealed class ReceivingReader(ConstructOpxDbContext db) : IReceivingRead
                         db.Set<GoodsReceipt>().Any(receipt => receipt.Id == received.GoodsReceiptId && receipt.Status == GoodsReceiptStatus.Posted))
                         .Sum(received => (decimal?)received.Quantity) ?? 0m) < line.Quantity));
         if (filter.ProjectId is { } projectId) orders = orders.Where(order => order.ProjectId == projectId);
+        if (filter.ExpectedOnOrBefore is { } dueBy) orders = orders.Where(order => order.ExpectedDate != null && order.ExpectedDate <= dueBy);
         if (filter.Search is { } search)
         {
             var pattern = Sql.Contains(search);

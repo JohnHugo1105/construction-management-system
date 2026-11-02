@@ -1,3 +1,4 @@
+using ConstructOPX.Application.Common;
 using ConstructOPX.Application.Features.NeedsAction;
 using ConstructOPX.Application.Features.Receiving;
 using ConstructOPX.Domain.Features.Identity;
@@ -84,7 +85,7 @@ public sealed class NeedsActionRulesTests
         var late = NeedsActionRows.Delivery(Order(Today.AddDays(-1), "PartlyReceived"), Today);
         var undated = NeedsActionRows.Delivery(Order(null), Today);
 
-        Assert.Equal(("PO-0007, Visayas Steel", "Expected today", false), (today.Label, today.Detail, today.IsUrgent));
+        Assert.Equal(("PO-0007, Visayas Steel", "Due today", false), (today.Label, today.Detail, today.IsUrgent));
         Assert.Equal(("1 day late, expected 1 Nov 2026, partly received", true), (late.Detail, late.IsUrgent));
         Assert.Equal(("No expected date", false), (undated.Detail, undated.IsUrgent));
         Assert.Equal("Expected 5 Nov 2026", NeedsActionRows.Delivery(Order(Today.AddDays(3)), Today).Detail);
@@ -93,16 +94,21 @@ public sealed class NeedsActionRulesTests
     }
 
     [Fact]
-    public void Attendance_is_checked_for_yesterday_against_the_six_days_before()
+    public void Attendance_is_checked_for_yesterday_against_the_same_weekday_a_week_earlier()
     {
         var dates = new NeedsActionDates(Today);
-        Assert.Equal((new DateOnly(2026, 11, 1), new DateOnly(2026, 10, 26), new DateOnly(2026, 10, 31)),
-            (dates.AttendanceDay, dates.AttendanceLookbackFrom, dates.AttendanceLookbackTo));
+        // Monday 2 Nov 2026: yesterday is Sunday 1 Nov, compared with Sunday 25 Oct.
+        Assert.Equal((new DateOnly(2026, 11, 1), new DateOnly(2026, 10, 25)), (dates.AttendanceDay, dates.AttendanceCompareDay));
+        Assert.Equal(dates.AttendanceDay.DayOfWeek, dates.AttendanceCompareDay.DayOfWeek);
 
-        Assert.Equal("4 workers have no attendance recorded for 1 Nov",
-            Row(NeedsActionGroup.AttendanceNotRecorded, Record(date: dates.AttendanceDay, quantity: 4)).Detail);
-        Assert.Equal("1 worker has no attendance recorded for 1 Nov",
-            Row(NeedsActionGroup.AttendanceNotRecorded, Record(date: dates.AttendanceDay, quantity: 1)).Detail);
+        // One row per project that says only what is missing; the number of posted workers just puts the biggest crews first.
+        foreach (var workers in new[] { 1, 4 })
+        {
+            var row = Row(NeedsActionGroup.AttendanceNotRecorded, Record(date: dates.AttendanceDay, quantity: workers));
+            Assert.Equal(("Riverside Residences", "No attendance recorded for Sun 1 Nov", false, (long?)null), (row.Label, row.Detail, row.IsUrgent, row.AmountMinor));
+        }
+        // Without a date on the record, the row names the day itself.
+        Assert.Equal("No attendance recorded for Sun 1 Nov", Row(NeedsActionGroup.AttendanceNotRecorded, Record(quantity: 2)).Detail);
     }
 
     // ---- Wording ------------------------------------------------------------------------------------------------------------
@@ -174,6 +180,33 @@ public sealed class NeedsActionRulesTests
         Assert.Empty(Keys(AccessRole.None));
         // Roles combine.
         Assert.Equal(["deliveries-expected", "progress-not-updated", "attendance-not-recorded"], Keys(AccessRole.CostEngineer | AccessRole.HrOfficer));
+    }
+
+    // The web client keeps its own copy of this list (NEEDS_ACTION_PERMISSIONS in web/src/app/core/session/permissions.ts) to decide whether to
+    // show the navigation entry, and needs-action-presentation / the spec there pin the same array. The two tests are the only link between the
+    // two places: when a group gains a permission, change both arrays or one of the two tests fails.
+    private static readonly string[] ActingPermissionsPinned =
+    [
+        "purchasing.approve", "changeorders.approve", "billing.approve", "billing.manage", "subcontracts.approve", "payroll.approve", "purchasing.receive",
+        "receiving.record", "bonds.manage", "progress.write", "attendance.write", "statutory.manage", "tasks.use", "diary.write", "documents.manage",
+        "schedule.write"
+    ];
+
+    [Fact]
+    public void The_permissions_that_put_work_on_the_page_are_pinned_so_the_web_list_can_be_kept_in_step()
+    {
+        Assert.Equal(ActingPermissionsPinned, NeedsActionGroups.ActingPermissions);
+        Assert.All(NeedsActionGroups.ActingPermissions, permission => Assert.True(Permissions.RolesFor(permission) != default, permission));
+    }
+
+    [Fact]
+    public void A_built_in_group_is_acted_on_exactly_through_the_first_twelve_listed_permissions()
+    {
+        // The eleven built-in groups act on the first twelve permissions (deliveries on two, bills to issue and to chase on one each); the last four belong to
+        // groups other features contribute, which the API tests check against the registered sources.
+        var builtIn = NeedsActionGroups.ActingPermissions.Take(12).ToArray();
+        foreach (var role in AccessRoles.Split(AccessRoles.All).Append(AccessRole.None))
+            Assert.Equal(builtIn.Any(permission => Permissions.IsAllowed(role, permission)), NeedsActionGroups.For(role).Count > 0);
     }
 
     [Fact]

@@ -22,7 +22,9 @@ public interface IReceivingReader
 
 // ---- Queries ----------------------------------------------------------------------------------------------------------------
 
-public sealed record ReceivingOrderFilter(Guid? ProjectId, string? Search);
+/// <param name="ExpectedOnOrBefore">When set, only orders with an expected date on or before it (due or late); an order with no expected date is not
+/// listed. The receiving screen never sets it (it lists every open order); "Needs your action" does.</param>
+public sealed record ReceivingOrderFilter(Guid? ProjectId, string? Search, DateOnly? ExpectedOnOrBefore = null);
 
 // ---- DTOs -------------------------------------------------------------------------------------------------------------------
 

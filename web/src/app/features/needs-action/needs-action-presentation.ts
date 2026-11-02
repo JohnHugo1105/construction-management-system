@@ -13,7 +13,7 @@ export const GROUP_HEADINGS: Readonly<Record<NeedsActionGroupKey, string>> = {
   'claims-to-certify': 'Subcontract claims to certify',
   'payroll-to-approve': 'Payroll waiting for approval',
   'bills-to-chase': 'Overdue bills to chase',
-  'deliveries-expected': 'Deliveries still to come',
+  'deliveries-expected': 'Deliveries due or late',
   'bonds-to-attend': 'Bonds that have expired or expire soon',
   'progress-not-updated': 'Progress not updated for 14 days',
   'attendance-not-recorded': 'Attendance not recorded yesterday',
@@ -74,20 +74,18 @@ export interface SeeAll {
   readonly queryParams: Params;
 }
 
-/** The nearest existing list that shows exactly the same records, or null when there is none (the page then says "N in total"). */
+/**
+ * The groups whose count equals an existing list: "See all 12" leads there. A list qualifies only when it shows exactly the records the
+ * count counts, never a wider one, or the person sees a different number after the click. None qualifies today: the purchase order list
+ * also holds drafts of archived projects, and the receiving list holds every open order, not just the due ones. The page then says
+ * "N in total".
+ */
+const SEE_ALL_LISTS: Partial<Record<NeedsActionGroupKey, (context: LinkContext) => SeeAll | null>> =
+  {};
+
+/** The existing list that shows exactly the same records as the group's count, or null when there is none. */
 export function seeAllLink(key: NeedsActionGroupKey, context: LinkContext): SeeAll | null {
-  switch (key) {
-    case 'purchase-orders-to-approve':
-      return context.can(Permission.purchasingRead)
-        ? { link: ['/purchasing'], queryParams: { status: 'Draft' } }
-        : null;
-    case 'deliveries-expected':
-      return context.can(Permission.receivingRecord)
-        ? { link: ['/receiving'], queryParams: {} }
-        : null;
-    default:
-      return null;
-  }
+  return SEE_ALL_LISTS[key]?.(context) ?? null;
 }
 
 export interface UrgentChip {
@@ -98,9 +96,14 @@ export interface UrgentChip {
 
 /** An urgent row says so in words and with an icon, never colour alone. */
 export function urgentChip(key: NeedsActionGroupKey): UrgentChip {
-  return key === 'bonds-to-attend'
-    ? { label: 'Expired', tone: 'danger', icon: 'warning' }
-    : { label: 'Overdue', tone: 'danger', icon: 'clock' };
+  switch (key) {
+    case 'bonds-to-attend':
+      return { label: 'Expired', tone: 'danger', icon: 'warning' };
+    case 'deliveries-expected':
+      return { label: 'Late', tone: 'danger', icon: 'clock' };
+    default:
+      return { label: 'Overdue', tone: 'danger', icon: 'clock' };
+  }
 }
 
 export interface PresentedRow {

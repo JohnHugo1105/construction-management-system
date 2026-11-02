@@ -95,8 +95,9 @@
     color: var(--color-text);
   }
 
-  // A two-word label ("Needs action") may take a second line rather than be cut off; one long word still ends in an ellipsis.
-  span {
+  // A two-word label ("Needs action") may take a second line rather than be cut off; one long word still ends in an ellipsis. Not the
+  // waiting-count badge, which is a span too and keeps its own centred pill.
+  > span:not(.nav-badge) {
     display: -webkit-box;
     max-width: 100%;
     overflow: hidden;

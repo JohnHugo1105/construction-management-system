@@ -252,6 +252,26 @@ describe('Shell Needs action badge', () => {
     expect(needsActionLink(root).getAttribute('aria-label')).toBe('Needs action, 3 waiting');
   });
 
+  it('keeps the bottom bar’s label styling off the badge, so the pill stays a centred one-line pill', async () => {
+    const { harness, backend, root } = await open({ desktop: false });
+    backend.expectOne(COUNT).flush({ total: 3 });
+    await settle(harness.fixture);
+
+    const link = needsActionLink(root);
+    const badge = getComputedStyle(link.querySelector('.nav-badge')!);
+    const label = getComputedStyle(link.querySelector('span:not(.nav-badge)')!);
+
+    // The label's rule (a clamped two-line box) must not reach the badge, which centres its digit with inline-flex and line-height 1.
+    expect([badge.display, badge.lineHeight, badge.justifyContent, badge.alignItems]).toEqual([
+      'inline-flex',
+      '1',
+      'center',
+      'center',
+    ]);
+    expect(label.display).not.toBe('inline-flex');
+    expect(label.lineHeight).toBe('1.15');
+  });
+
   it('never asks for someone whose role acts on nothing on that page', async () => {
     const { backend, root } = await open({
       permissions: [Permission.projectsRead, Permission.inventoryRead, Permission.actionsRead],

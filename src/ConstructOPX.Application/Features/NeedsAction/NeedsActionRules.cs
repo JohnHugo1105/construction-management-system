@@ -25,6 +25,20 @@ public static class NeedsActionGroups
         _ => throw new ArgumentOutOfRangeException(nameof(group), group, null)
     };
 
+    /// <summary>
+    /// Every permission that can put work on the page, in the order the page's navigation entry checks them: the permission each built-in group
+    /// acts on (<see cref="CanActOn"/>), then those of the groups other features contribute through <see cref="INeedsActionSource"/> (tasks, the
+    /// site diary, documents, the schedule). The web client keeps the same list (<c>NEEDS_ACTION_PERMISSIONS</c>) to decide whether to show the
+    /// entry; a test on each side pins the same array so the two cannot drift apart.
+    /// </summary>
+    public static readonly IReadOnlyList<string> ActingPermissions =
+    [
+        Permissions.PurchasingApprove, Permissions.ChangeOrdersApprove, Permissions.BillingApprove, Permissions.BillingManage,
+        Permissions.SubcontractsApprove, Permissions.PayrollApprove, Permissions.PurchasingReceive, Permissions.ReceivingRecord, Permissions.BondsManage,
+        Permissions.ProgressWrite, Permissions.AttendanceWrite, Permissions.StatutoryManage,
+        Permissions.TasksUse, Permissions.DiaryWrite, Permissions.DocumentsManage, Permissions.ScheduleWrite
+    ];
+
     /// <summary>True when the roles hold the permission that acts on the group (the approval, issue, certify or record step).</summary>
     public static bool CanActOn(AccessRole roles, NeedsActionGroup group) => group switch
     {
@@ -65,8 +79,8 @@ public static class NeedsActionRules
     /// <summary>A project whose latest progress is older than this many days (or that started longer ago and has none) is listed.</summary>
     public const int ProgressStaleDays = 14;
 
-    /// <summary>A project is expected to record attendance yesterday if it recorded some on one of the six days before.</summary>
-    public const int AttendanceLookbackDays = 6;
+    /// <summary>A project is expected to record attendance yesterday if it recorded some on the same weekday one week earlier.</summary>
+    public const int AttendanceCompareDays = 7;
 
     /// <summary>Progress dated before this day is stale: more than 14 days old.</summary>
     public static DateOnly ProgressStaleBefore(DateOnly today) => today.AddDays(-ProgressStaleDays);
@@ -84,11 +98,17 @@ public static class NeedsActionRules
     /// <summary>A bill with something outstanding is overdue from the day after its due date.</summary>
     public static bool IsBillOverdue(DateOnly dueDate, DateOnly today) => today > dueDate;
 
-    /// <summary>A delivery is late once its expected date has passed; one expected today is not late yet.</summary>
+    /// <summary>
+    /// A delivery is listed once it is due (expected today or earlier; one with no expected date, or expected later, is not yet due) and is late
+    /// once its expected date has passed; one expected today is due, not late yet.
+    /// </summary>
     public static bool IsDeliveryLate(DateOnly? expectedDate, DateOnly today) => expectedDate is { } expected && expected < today;
 
     /// <summary>The day attendance should have been recorded for: yesterday on the company's calendar.</summary>
     public static DateOnly AttendanceDay(DateOnly today) => today.AddDays(-1);
+
+    /// <summary>The same weekday a week before the attendance day: the day a project that records attendance would also have recorded some.</summary>
+    public static DateOnly AttendanceCompareDay(DateOnly today) => AttendanceDay(today).AddDays(-AttendanceCompareDays);
 
     /// <summary>Whole days from <paramref name="from"/> to <paramref name="today"/>.</summary>
     public static int DaysBetween(DateOnly from, DateOnly today) => today.DayNumber - from.DayNumber;
@@ -101,8 +121,6 @@ public sealed record NeedsActionDates(DateOnly Today)
     public DateOnly BondsNeedAttentionUntil => NeedsActionRules.BondsNeedAttentionUntil(Today);
     public DateOnly AttendanceDay => NeedsActionRules.AttendanceDay(Today);
 
-    /// <summary>The first and last day of the six days before the attendance day.</summary>
-    public DateOnly AttendanceLookbackFrom => AttendanceDay.AddDays(-NeedsActionRules.AttendanceLookbackDays);
-
-    public DateOnly AttendanceLookbackTo => AttendanceDay.AddDays(-1);
+    /// <summary>The attendance day's weekday a week earlier.</summary>
+    public DateOnly AttendanceCompareDay => NeedsActionRules.AttendanceCompareDay(Today);
 }

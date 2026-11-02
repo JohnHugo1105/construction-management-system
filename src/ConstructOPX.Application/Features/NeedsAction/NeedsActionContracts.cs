@@ -37,6 +37,12 @@ public interface INeedsActionReader
     Task<int> CountAsync(NeedsActionGroup group, NeedsActionDates dates, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<NeedsActionRecord>> TopAsync(NeedsActionGroup group, NeedsActionDates dates, int take, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// True when the company has an active worker or a draft payroll, in one statement: the contribution and tax tables only matter once
+    /// payroll is in use, so the "tables need setup" group is not raised for a company that has neither.
+    /// </summary>
+    Task<bool> PayrollIsInUseAsync(CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -52,7 +58,7 @@ public interface INeedsActionReader
 /// <param name="Date">The date that decides urgency or the label: a due date, a valid-until date, the latest progress, a period start.</param>
 /// <param name="OtherDate">A second date: a project's start, a period end.</param>
 /// <param name="AmountMinor">The one amount the group shows, or null for a group that shows none.</param>
-/// <param name="Quantity">A count: the workers of a payroll, the workers without attendance.</param>
+/// <param name="Quantity">A count: the workers of a payroll, the workers posted to a project that recorded no attendance.</param>
 public sealed record NeedsActionRecord(Guid Id, Guid? ParentId, string? Number, string? Party, string? Kind, Guid? ProjectId, string? ProjectName,
     DateTimeOffset? SinceUtc, DateOnly? Date, DateOnly? OtherDate, long? AmountMinor, int? Quantity);
 

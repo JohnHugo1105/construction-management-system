@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -32,6 +32,7 @@ interface Options {
 async function open(options: Options = {}) {
   const answers = [...(options.answers ?? [])];
   const get = vi.fn(() => answers.shift()?.() ?? of(options.result ?? everyGroup()));
+  const count = vi.fn(() => of({ total: 0 }));
   TestBed.configureTestingModule({
     providers: [
       provideRouter([
@@ -40,7 +41,7 @@ async function open(options: Options = {}) {
       ]),
       provideHttpClient(),
       provideHttpClientTesting(),
-      { provide: NeedsActionApi, useValue: { get, count: vi.fn(() => of({ total: 0 })) } },
+      { provide: NeedsActionApi, useValue: { get, count } },
     ],
   });
   await signInForTest(TestBed.inject(SessionState), TestBed.inject(HttpTestingController), {
@@ -51,7 +52,7 @@ async function open(options: Options = {}) {
   await harness.navigateByUrl('/needs-action', NeedsActionPage);
   if (options.settle === false) harness.fixture.detectChanges();
   else await settle(harness.fixture);
-  return { harness, root: harness.fixture.nativeElement as HTMLElement, get };
+  return { harness, root: harness.fixture.nativeElement as HTMLElement, get, count };
 }
 
 const cards = (root: HTMLElement) =>
@@ -72,7 +73,7 @@ describe('NeedsActionPage', () => {
       'Bills ready to issue',
       'Subcontract claims to certify',
       'Payroll waiting for approval',
-      'Deliveries still to come',
+      'Deliveries due or late',
       'Progress not updated for 14 days',
       'Attendance not recorded yesterday',
       'Contribution and tax tables need setup',
@@ -114,7 +115,7 @@ describe('NeedsActionPage', () => {
       'Bills ready to issue': '/billing/bills/bill-4',
       'Subcontract claims to certify': '/subcontracts/subcontract-4',
       'Payroll waiting for approval': '/payroll/run-1',
-      'Deliveries still to come': '/purchasing/orders/po-7',
+      'Deliveries due or late': '/purchasing/orders/po-7',
       'Progress not updated for 14 days': '/projects/project-1/progress',
       'Attendance not recorded yesterday': '/projects/project-2/team',
       'Contribution and tax tables need setup': '/payroll/statutory',
@@ -139,19 +140,24 @@ describe('NeedsActionPage', () => {
     expect(texts(root, 'button')).toEqual([]);
   });
 
-  it('links "See all" to a list with the same filter, and otherwise says how many there are in total', async () => {
+  it('never links "See all" to a list that shows more than the count, and says how many there are in total', async () => {
     const { root } = await open();
 
+    // The purchase order list also holds drafts of archived projects, and the receiving list every open order: neither matches the count.
     const orders = card(root, 'Purchase orders waiting for your approval');
-    const seeAll = buttonNamed(orders, 'See all 12');
-    expect(seeAll.getAttribute('href')).toBe('/purchasing?status=Draft');
+    expect(orders.querySelector('.group__more a')).toBeNull();
+    expect(text(orders, '.group__more')).toBe('12 in total');
 
-    const deliveries = card(root, 'Deliveries still to come');
-    expect(buttonNamed(deliveries, 'See all 11').getAttribute('href')).toBe('/receiving');
+    const deliveries = card(root, 'Deliveries due or late');
+    expect(deliveries.querySelector('.group__more a')).toBeNull();
+    expect(text(deliveries, '.group__more')).toBe('11 in total');
+    expect(root.querySelectorAll('section.group a[href="/purchasing?status=Draft"]')).toHaveLength(
+      0,
+    );
     expect(card(root, 'Bills ready to issue').querySelector('.group__more')).toBeNull();
   });
 
-  it('says "N in total" when no list shows the same records', async () => {
+  it('opens a delivery on the receiving page for someone who may not read purchase orders, with its total in words', async () => {
     const { root } = await open({
       permissions: [Permission.projectsRead, Permission.purchasingReceive],
       result: {
@@ -159,7 +165,7 @@ describe('NeedsActionPage', () => {
       },
     });
 
-    const deliveries = card(root, 'Deliveries still to come');
+    const deliveries = card(root, 'Deliveries due or late');
     expect(text(deliveries, '.group__more')).toBe('9 in total');
     expect(deliveries.querySelector('.group__more a')).toBeNull();
     // Without purchasing.read the order opens on the receiving page.
@@ -185,7 +191,8 @@ describe('NeedsActionPage', () => {
     ).toEqual(['/receiving/po-7', '/receiving/po-8']);
     expect(root.querySelectorAll('.item__amount')).toHaveLength(0);
     expect(root.textContent).not.toMatch(/₱|PHP|\d+\.\d{2}/);
-    expect(text(root, '.chip')).toBe('Overdue');
+    // A delivery is late, not overdue.
+    expect(text(root, '.chip')).toBe('Late');
   });
 
   it('leaves out groups with nothing waiting, and says so when nothing waits at all', async () => {
@@ -235,6 +242,45 @@ describe('NeedsActionPage', () => {
     expect(text(card(root, 'Bills ready to issue'), '.item__label')).toBe(
       'Progress bill for ACME Realty',
     );
+  });
+
+  it('reloads the page, and with it the badge, when the tab comes back to the front, at most every 30 seconds', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-02T08:00:00Z'));
+    try {
+      const smaller: NeedsActionResult = {
+        groups: [actionGroup('bonds-to-attend', [actionRow({ id: 'bond-1' })], 5)],
+      };
+      const { harness, root, get, count } = await open({
+        answers: [() => of(everyGroup()), () => of(smaller)],
+      });
+      // The shell starts this listener once; the page registers its own reload with the same state.
+      const state = TestBed.inject(NeedsActionState);
+      state.refreshWhenVisible(TestBed.inject(DestroyRef));
+      expect(state.count()).toBe(32);
+
+      // Straight back to the tab: inside the 30 seconds the page read, nothing is asked again.
+      document.dispatchEvent(new Event('visibilitychange'));
+      await settle(harness.fixture);
+      expect(get).toHaveBeenCalledTimes(1);
+
+      vi.setSystemTime(Date.now() + 31_000);
+      document.dispatchEvent(new Event('visibilitychange'));
+      await settle(harness.fixture);
+
+      // The page reloaded (not just the badge) and the badge is the new page total.
+      expect(get).toHaveBeenCalledTimes(2);
+      expect(count).not.toHaveBeenCalled();
+      expect(cards(root)).toHaveLength(1);
+      expect(state.count()).toBe(5);
+
+      // The clock was shared: the reload counts as a read, so another return straight away asks for nothing.
+      document.dispatchEvent(new Event('visibilitychange'));
+      await settle(harness.fixture);
+      expect(get).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows a skeleton while the queue loads', async () => {

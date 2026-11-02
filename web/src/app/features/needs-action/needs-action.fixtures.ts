@@ -84,7 +84,7 @@ export function everyGroup(): NeedsActionResult {
       ]),
       actionGroup(
         'deliveries-expected',
-        [noAmount({ id: 'po-7', label: 'PO-0007, Cebu Hardware', detail: 'Expected 5 Nov 2026' })],
+        [noAmount({ id: 'po-7', label: 'PO-0007, Cebu Hardware', detail: 'Due today' })],
         11,
       ),
       actionGroup('progress-not-updated', [
@@ -100,7 +100,7 @@ export function everyGroup(): NeedsActionResult {
           label: 'Harbor Warehouse',
           projectId: 'project-2',
           projectName: 'Harbor Warehouse',
-          detail: '4 workers have no attendance recorded for 1 Nov',
+          detail: 'No attendance recorded for Sun 1 Nov',
         }),
       ]),
       actionGroup('statutory-needs-setup', [
@@ -128,7 +128,7 @@ export function warehouseKeeperResult(): NeedsActionResult {
           dueDate: '2026-10-31',
           isUrgent: true,
         }),
-        noAmount({ id: 'po-8', label: 'PO-0008, Visayas Steel', detail: 'Expected 5 Nov 2026' }),
+        noAmount({ id: 'po-8', label: 'PO-0008, Visayas Steel', detail: 'Due today' }),
       ]),
     ],
   };

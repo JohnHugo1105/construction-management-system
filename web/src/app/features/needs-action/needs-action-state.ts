@@ -10,13 +10,14 @@ export function badgeText(total: number): string {
   return total > 99 ? '99+' : String(total);
 }
 
-/** The shortest time between two refreshes caused by the tab coming back to the front. */
+/** The shortest time between two reads caused by the tab coming back to the front (the badge and the page share it). */
 const MIN_FOCUS_REFRESH_MS = 30_000;
 
 /**
  * How many things wait on the signed-in person, for the navigation badge. It is loaded once when the shell starts, again when the
  * browser tab becomes visible, and taken from the page whenever the page reads the full queue, so the badge and the page never
- * disagree. There is no timer: nothing polls.
+ * disagree. With the page open, the tab coming back to the front reloads the page (which sets the badge) instead of asking for the
+ * number alone, under the same 30-second minimum. There is no timer: nothing polls.
  */
 @Injectable({ providedIn: 'root' })
 export class NeedsActionState {
@@ -29,6 +30,8 @@ export class NeedsActionState {
     null,
   );
   private request: Subscription | null = null;
+  /** How the open page reloads itself, while one is open. */
+  private pageReload: (() => void) | null = null;
   /** When the number was last asked for or set, so switching tabs back and forth does not ask again each time. */
   private lastReadAtMs = 0;
 
@@ -67,15 +70,31 @@ export class NeedsActionState {
     this.latest.set({ userId, total });
   }
 
+  /**
+   * The open page registers how it reloads itself, until it goes away. While it is registered, a tab that comes back to the front
+   * reloads the page rather than the badge alone, so the two cannot disagree.
+   */
+  reloadPageWhenVisible(reload: () => void, destroyRef: DestroyRef): void {
+    this.pageReload = reload;
+    destroyRef.onDestroy(() => {
+      if (this.pageReload === reload) this.pageReload = null;
+    });
+  }
+
   /** Called once by the shell: refreshes whenever the browser tab becomes visible again, until the shell goes away. */
   refreshWhenVisible(destroyRef: DestroyRef): void {
     const listener = () => {
-      // A tab that comes back to the front re-reads the number, but not more often than every 30 seconds: the badge is a hint.
+      // A tab that comes back to the front re-reads what it shows, but not more often than every 30 seconds: the badge is a hint.
       if (
-        this.document.visibilityState === 'visible' &&
-        Date.now() - this.lastReadAtMs >= MIN_FOCUS_REFRESH_MS
+        this.document.visibilityState !== 'visible' ||
+        Date.now() - this.lastReadAtMs < MIN_FOCUS_REFRESH_MS
       )
-        this.refresh();
+        return;
+      if (this.pageReload) {
+        // The page's own read sets the badge (setTotal), so the two stay equal; the clock starts now, not when the answer arrives.
+        this.lastReadAtMs = Date.now();
+        this.pageReload();
+      } else this.refresh();
     };
     this.document.addEventListener('visibilitychange', listener);
     destroyRef.onDestroy(() => {

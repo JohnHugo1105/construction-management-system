@@ -32,6 +32,18 @@ even when it holds nothing (`count: 0`, `rows: []`).
 | `attendance-not-recorded` | `attendance.write` | never |
 | `statutory-needs-setup` | `statutory.manage` | never |
 
+Notes on what each group counts (the full rules are in Business rules, section 16.2):
+
+* `deliveries-expected`: only approved orders with something left to receive whose **expected date is today or earlier** (the row says "Due
+  today" or "N days late, expected 28 Oct 2026"; only the late ones are urgent). Orders expected later, or with no date, are not counted. The
+  receiving screen's own list (`GET /api/receiving/orders`) is unchanged and lists every open order.
+* `progress-not-updated`: Active projects with at least one active budget line.
+* `attendance-not-recorded`: an Active project with no recorded attendance entry for yesterday that did record some a week earlier, with at
+  least one posted worker not on their rest day; the row says `"No attendance recorded for Sun 1 Nov"`. A day that was a company holiday
+  lists nothing.
+* `statutory-needs-setup`: counts 1 only while a table is missing **and** the company has an active worker or a draft payroll; otherwise
+  the group is present with `count: 0` for a caller who may act on it.
+
 A group: `key`, `count` (how many wait in all) and `rows` (at most the 8 most urgent). A row:
 
 * `id`: the record the row opens. For `claims-to-certify` it is the claim and `parentId` is its subcontract (the claim is certified on the
@@ -55,7 +67,8 @@ above). It reads counts only, never a row. `total` is a number of waiting record
 A fixed number of SQL statements, however many records wait (asserted with 1 and with 10 records in every group):
 
 * `GET /api/needs-action`: the organization (for today's date in its time zone), then for each record group a count and, when the count
-  is not zero, its rows (deliveries are the receiving list's count and page; the statutory tables are one statement). An administrator,
-  with all eleven groups, costs **22** statements.
-* `GET /api/needs-action/count`: the organization plus one count per group: **12** for an administrator.
+  is not zero, its rows (deliveries are the receiving list's count and page; the statutory tables are one statement, plus one more while a table is missing). An administrator,
+  with all eleven groups, costs **22** statements, **23** while a statutory table is missing (one more statement asks whether the company has
+  an active worker or a draft payroll).
+* `GET /api/needs-action/count`: the organization plus one count per group: **12** for an administrator, **13** while a table is missing.
 * A caller with no group (a Viewer) costs **no** statement.

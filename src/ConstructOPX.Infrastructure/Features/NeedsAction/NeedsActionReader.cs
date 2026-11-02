@@ -2,6 +2,7 @@ using ConstructOPX.Application.Features.NeedsAction;
 using ConstructOPX.Domain.Features.Billing;
 using ConstructOPX.Domain.Features.Bonds;
 using ConstructOPX.Domain.Features.ChangeOrders;
+using ConstructOPX.Domain.Features.Costing;
 using ConstructOPX.Domain.Features.Payroll;
 using ConstructOPX.Domain.Features.Progress;
 using ConstructOPX.Domain.Features.Projects;
@@ -34,6 +35,11 @@ internal sealed class NeedsActionReader(ConstructOpxDbContext db) : INeedsAction
         NeedsActionGroup.AttendanceNotRecorded => MissingAttendance(dates).CountAsync(cancellationToken),
         _ => throw new ArgumentOutOfRangeException(nameof(group), group, "This group is not read here.")
     };
+
+    /// <summary>One statement: an active worker or a draft payroll, whichever the database finds first.</summary>
+    public Task<bool> PayrollIsInUseAsync(CancellationToken cancellationToken) =>
+        db.Set<Worker>().AsNoTracking().Where(worker => worker.Status == WorkerStatus.Active).Select(worker => 1)
+            .Concat(DraftPayrolls().Select(run => 1)).AnyAsync(cancellationToken);
 
     public async Task<IReadOnlyList<NeedsActionRecord>> TopAsync(NeedsActionGroup group, NeedsActionDates dates, int take,
         CancellationToken cancellationToken) => group switch
@@ -85,11 +91,11 @@ internal sealed class NeedsActionReader(ConstructOpxDbContext db) : INeedsAction
             .Select(row => new NeedsActionRecord(row.Project.Id, null, null, null, null, row.Project.Id, row.Project.Name, null, row.Latest,
                 row.Project.StartDate, null, null))
             .ToListAsync(cancellationToken),
-        // The most workers without an entry first.
+        // The most workers posted first.
         NeedsActionGroup.AttendanceNotRecorded => await MissingAttendance(dates)
-            .OrderByDescending(row => row.Missing).ThenBy(row => row.Project.Name).ThenBy(row => row.Project.Id).Take(take)
+            .OrderByDescending(row => row.Posted).ThenBy(row => row.Project.Name).ThenBy(row => row.Project.Id).Take(take)
             .Select(row => new NeedsActionRecord(row.Project.Id, null, null, null, null, row.Project.Id, row.Project.Name, null, dates.AttendanceDay, null,
-                null, row.Missing))
+                null, row.Posted))
             .ToListAsync(cancellationToken),
         _ => throw new ArgumentOutOfRangeException(nameof(group), group, "This group is not read here.")
     };
@@ -143,35 +149,42 @@ internal sealed class NeedsActionReader(ConstructOpxDbContext db) : INeedsAction
         join project in LiveProjects() on bond.ProjectId equals project.Id
         select new BondRow { Bond = bond, Project = project };
 
-    /// <summary>Active projects whose latest progress (or, with none, start) is more than 14 days old.</summary>
+    /// <summary>
+    /// Active projects whose latest progress (or, with none, start) is more than 14 days old, and that can take progress at all: progress is
+    /// recorded against a budget line, so a project with no active budget line is never listed.
+    /// </summary>
     private IQueryable<ProgressRow> StaleProgress(NeedsActionDates dates) =>
         from project in db.Set<Project>().AsNoTracking()
-        where project.Status == ProjectStatus.Active
+        where project.Status == ProjectStatus.Active &&
+            db.Set<BudgetLine>().Any(line => line.ProjectId == project.Id && line.Status == BudgetLineStatus.Active)
         let latest = db.Set<ProgressEntry>().Where(entry => entry.ProjectId == project.Id).Max(entry => (DateOnly?)entry.AsOfDate)
         where (latest ?? project.StartDate) < dates.ProgressStaleBefore
         select new ProgressRow { Project = project, Latest = latest };
 
     /// <summary>
-    /// Active projects that recorded attendance on one of the six days before yesterday, when yesterday is not a company holiday, with the
-    /// number of workers posted to them yesterday (active, and not on their rest day) who have no entry for yesterday.
+    /// Active projects that recorded attendance on the same weekday a week before yesterday but have no recorded entry at all for yesterday
+    /// (a voided entry does not count as recorded), when yesterday is not a company holiday, with the number of workers posted to them
+    /// yesterday (active, and not on their rest day). A project with no such worker is not listed. An absence cannot be recorded (hours must be
+    /// above zero), so the rule never asks for a worker-by-worker entry: a project that recorded some of its crew is simply up to date.
     /// </summary>
     private IQueryable<AttendanceRow> MissingAttendance(NeedsActionDates dates)
     {
         var day = dates.AttendanceDay;
+        var weekAgo = dates.AttendanceCompareDay;
         DayOfWeek? weekday = day.DayOfWeek;
         return from project in db.Set<Project>().AsNoTracking()
                where project.Status == ProjectStatus.Active &&
                    !db.Set<CompanyHoliday>().Any(holiday => holiday.Date == day) &&
-                   db.Set<AttendanceEntry>().Any(entry => entry.ProjectId == project.Id && entry.Status == AttendanceStatus.Recorded &&
-                       entry.WorkDate >= dates.AttendanceLookbackFrom && entry.WorkDate <= dates.AttendanceLookbackTo)
-               let missing = db.Set<Worker>().Count(worker => worker.Status == WorkerStatus.Active &&
+                   !db.Set<AttendanceEntry>().Any(entry => entry.ProjectId == project.Id && entry.WorkDate == day &&
+                       entry.Status == AttendanceStatus.Recorded) &&
+                   db.Set<AttendanceEntry>().Any(entry => entry.ProjectId == project.Id && entry.WorkDate == weekAgo &&
+                       entry.Status == AttendanceStatus.Recorded)
+               let posted = db.Set<Worker>().Count(worker => worker.Status == WorkerStatus.Active &&
                    (worker.RestDay == null || worker.RestDay != weekday) &&
                    db.Set<WorkerAssignment>().Any(assignment => assignment.WorkerId == worker.Id && assignment.ProjectId == project.Id &&
-                       assignment.StartDate <= day && (assignment.EndDate == null || day < assignment.EndDate)) &&
-                   !db.Set<AttendanceEntry>().Any(entry => entry.WorkerId == worker.Id && entry.ProjectId == project.Id && entry.WorkDate == day &&
-                       entry.Status == AttendanceStatus.Recorded))
-               where missing > 0
-               select new AttendanceRow { Project = project, Missing = missing };
+                       assignment.StartDate <= day && (assignment.EndDate == null || day < assignment.EndDate)))
+               where posted > 0
+               select new AttendanceRow { Project = project, Posted = posted };
     }
 
     // Rows are built with object initializers (not constructors) so EF can keep composing the query after them.
@@ -197,5 +210,5 @@ internal sealed class NeedsActionReader(ConstructOpxDbContext db) : INeedsAction
 
     private sealed class ProgressRow { public required Project Project { get; init; } public DateOnly? Latest { get; init; } }
 
-    private sealed class AttendanceRow { public required Project Project { get; init; } public int Missing { get; init; } }
+    private sealed class AttendanceRow { public required Project Project { get; init; } public int Posted { get; init; } }
 }

@@ -18,7 +18,7 @@ namespace ConstructOPX.Application.Features.NeedsAction;
 /// <item>Bill to chase: Number, Party (client), Date (due), AmountMinor (outstanding).</item>
 /// <item>Bond: Number, Party (issuer), Kind, Date (valid until), AmountMinor (bond amount).</item>
 /// <item>Progress: Id and project (the project), Date (latest progress, or null), OtherDate (start).</item>
-/// <item>Attendance: Id and project (the project), Date (the day), Quantity (workers without an entry).</item>
+/// <item>Attendance: Id and project (the project), Date (the day), Quantity (workers posted to it that day; only orders the rows).</item>
 /// </list>
 /// </summary>
 public static class NeedsActionRows
@@ -41,13 +41,13 @@ public static class NeedsActionRows
                 ? $"Progress not updated for {Days(NeedsActionRules.DaysBetween(latest, today))}"
                 : "No progress recorded yet", null),
             NeedsActionGroup.AttendanceNotRecorded => Row(record, record.ProjectName ?? "",
-                $"{Workers(record.Quantity ?? 0)} {(record.Quantity == 1 ? "has" : "have")} no attendance recorded for " +
-                (record.Date ?? NeedsActionRules.AttendanceDay(today)).ToString("d MMM", CultureInfo.InvariantCulture), null),
+                "No attendance recorded for " + (record.Date ?? NeedsActionRules.AttendanceDay(today)).ToString("ddd d MMM", CultureInfo.InvariantCulture),
+                null),
             _ => throw new ArgumentOutOfRangeException(nameof(group), group, "This group is not read from records.")
         };
     }
 
-    /// <summary>An order still to be delivered, from the quantity-only receiving read model: never an amount.</summary>
+    /// <summary>An order due or late (it is read with the due date filter), from the quantity-only receiving read model: never an amount.</summary>
     public static NeedsActionRowDto Delivery(ReceivingOrderListItemDto order, DateOnly today)
     {
         var late = NeedsActionRules.IsDeliveryLate(order.ExpectedDate, today);
@@ -55,7 +55,7 @@ public static class NeedsActionRows
         {
             null => "No expected date",
             { } expected when late => $"{Days(NeedsActionRules.DaysBetween(expected, today))} late, expected {Day(expected)}",
-            { } expected when expected == today => "Expected today",
+            { } expected when expected == today => "Due today",
             { } expected => $"Expected {Day(expected)}"
         };
         if (order.DeliveryState == nameof(DeliveryState.PartlyReceived)) when += ", partly received";

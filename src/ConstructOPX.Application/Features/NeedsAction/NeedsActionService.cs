@@ -11,13 +11,12 @@ namespace ConstructOPX.Application.Features.NeedsAction;
 /// The "Needs your action" queue of the signed-in person. The groups come from the caller's own roles (a group they cannot act on is not
 /// read and not returned); each group is a count and its eight most urgent rows, read from statuses that already exist. Nothing is stored,
 /// sent or scheduled. The full read costs the organization (for today's date) plus at most two SQL statements per group; the count costs
-/// the organization plus one statement per group. A caller with no group costs nothing.
+/// the organization plus one statement per group (the statutory tables group is one more while a table is missing). A caller with no group
+/// and no contributed group costs nothing.
 /// </summary>
 public sealed class NeedsActionService(INeedsActionReader reader, IReceivingReader receiving, StatutoryService statutory,
     IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock, IEnumerable<INeedsActionSource> sources)
 {
-    private static readonly ReceivingOrderFilter EveryOrder = new(null, null);
-
     public async Task<NeedsActionDto> GetAsync(CancellationToken cancellationToken)
     {
         var groups = NeedsActionGroups.For(currentUser.Roles);
@@ -51,7 +50,7 @@ public sealed class NeedsActionService(INeedsActionReader reader, IReceivingRead
 
     private async Task<int> CountAsync(NeedsActionGroup group, NeedsActionDates dates, CancellationToken cancellationToken) => group switch
     {
-        NeedsActionGroup.DeliveriesExpected => await receiving.CountAsync(EveryOrder, cancellationToken),
+        NeedsActionGroup.DeliveriesExpected => await receiving.CountAsync(DueBy(dates), cancellationToken),
         NeedsActionGroup.StatutoryNeedsSetup => (await TablesNeedingSetupAsync(dates, cancellationToken)).Count > 0 ? 1 : 0,
         _ => await reader.CountAsync(group, dates, cancellationToken)
     };
@@ -64,8 +63,9 @@ public sealed class NeedsActionService(INeedsActionReader reader, IReceivingRead
         {
             case NeedsActionGroup.DeliveriesExpected:
             {
-                // The receiving read model selects quantities and names only, so this group can never carry an amount.
-                var page = await receiving.ListAsync(EveryOrder, new PageRequest(1, NeedsActionRules.RowsShown), cancellationToken);
+                // The receiving read model selects quantities and names only, so this group can never carry an amount. Only orders due today or
+                // earlier are listed (the receiving screen itself lists every open order).
+                var page = await receiving.ListAsync(DueBy(dates), new PageRequest(1, NeedsActionRules.RowsShown), cancellationToken);
                 return new NeedsActionGroupDto(key, page.OrderCount, page.Items.Select(order => NeedsActionRows.Delivery(order, dates.Today)).ToArray());
             }
             case NeedsActionGroup.StatutoryNeedsSetup:
@@ -86,11 +86,18 @@ public sealed class NeedsActionService(INeedsActionReader reader, IReceivingRead
         }
     }
 
-    /// <summary>The agencies the statutory status reports as needing setup today, labelled for a sentence ("withholding tax" in lower case).</summary>
+    private static ReceivingOrderFilter DueBy(NeedsActionDates dates) => new(null, null, dates.Today);
+
+    /// <summary>
+    /// The agencies the statutory status reports as needing setup today, labelled for a sentence ("withholding tax" in lower case). Empty
+    /// while the company has neither an active worker nor a draft payroll: tables matter once payroll is in use, and that check is only
+    /// made when a table is missing.
+    /// </summary>
     private async Task<IReadOnlyList<string>> TablesNeedingSetupAsync(NeedsActionDates dates, CancellationToken cancellationToken)
     {
         var status = await statutory.StatusAsync(dates.Today, cancellationToken);
-        return status.Agencies.Where(agency => agency.State == "NeedsSetup")
+        var missing = status.Agencies.Where(agency => agency.State == "NeedsSetup")
             .Select(agency => agency.Agency == nameof(StatutoryAgency.WithholdingTax) ? "withholding tax" : agency.Label).ToArray();
+        return missing.Length > 0 && await reader.PayrollIsInUseAsync(cancellationToken) ? missing : [];
     }
 }

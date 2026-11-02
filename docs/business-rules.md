@@ -1205,11 +1205,11 @@ entry is shown only to someone who holds at least one permission that yields a g
 | Subcontract claims to certify | Certify claims: Administrator, Accountant | Draft subcontract claims | The claim's gross |
 | Payroll waiting for approval | Approve payroll: Administrator, Accountant | Draft payrolls, 13th-month ones included (the row says so) | **None** (pay data): the period and the number of workers |
 | Overdue bills to chase | Draft bills and record payments: Administrator, Project Manager, Accountant | Issued bills past their due date with something still outstanding, the most overdue first | What is still outstanding |
-| Deliveries still to come | Receive deliveries (`purchasing.receive`) or the receiving screen (`receiving.record`): Administrator, Project Manager, Cost Engineer, Accountant, Warehouse Keeper | Approved orders with something still to receive (section 12.5), those whose expected date has passed first | **None, ever** (read from the quantity-only receiving read model) |
+| Deliveries due or late | Receive deliveries (`purchasing.receive`) or the receiving screen (`receiving.record`): Administrator, Project Manager, Cost Engineer, Accountant, Warehouse Keeper | Approved orders with something still to receive (section 12.5) whose expected date is **today or earlier** (a later date, or none, is not yet due), the most overdue first | **None, ever** (read from the quantity-only receiving read model) |
 | Bonds that have expired or expire soon | Manage bonds: Administrator, Project Manager, Accountant | Active bonds that have expired or expire within 30 days (the expiry rule of section 15.3), expired first | The bond amount |
-| Progress not updated for 14 days | Record progress: Administrator, Project Manager, Cost Engineer | Active projects whose latest progress is more than 14 days old, or that have none and started more than 14 days ago | None |
+| Progress not updated for 14 days | Record progress: Administrator, Project Manager, Cost Engineer | Active projects with at least one active budget line (progress is recorded against one) whose latest progress is more than 14 days old, or that have none and started more than 14 days ago | None |
 | Attendance not recorded yesterday | Record attendance: Administrator, Project Manager, HR Officer | See 16.2 | None |
-| Contribution and tax tables need setup | Enter the statutory tables: Administrator, Accountant | One row while the statutory status (section 6.4) reports a table needing setup today | None |
+| Contribution and tax tables need setup | Enter the statutory tables: Administrator, Accountant | One row while the statutory status (section 6.4) reports a table needing setup today **and** the company has at least one active worker or one draft payroll; a company that has neither shows 0 (tables only matter once payroll is in use) | None |
 
 So, for example, a Project Manager receives purchase orders and change orders to approve, bills to chase, deliveries, bonds, progress
 and attendance, and never bills to issue, claims or payroll; an HR Officer receives only attendance (HR prepares payroll but cannot approve
@@ -1224,24 +1224,31 @@ All days are judged on the company's calendar day (its time zone), never the UTC
 * **Waiting**: a draft or submitted record shows how many days it has waited since it was drafted (submitted, for a change order):
   "Waiting since today", "Waiting 1 day", "Waiting 3 days". Waiting alone is not urgent.
 * **Overdue bill**: overdue from the day after its due date (a bill due today is not overdue). Always urgent.
-* **Late delivery**: an order expected yesterday or earlier is late and urgent; one expected today is not.
+* **Delivery**: listed once it is **due**, that is, expected today or earlier (the page counts only these, so the badge counts work whose day has
+  come); an order expected later, or with no expected date, is not listed. It is **late** and urgent when expected yesterday or earlier; one
+  expected today is due ("Due today"), not late. The receiving screen itself still lists every open order.
 * **Bond**: listed when it has 30 days or fewer left, the last day included (30 days left is listed, 31 is not); urgent from the day after
   its valid-until date (Expired).
 * **Progress**: listed when the latest progress is **more than 14 days** old (14 days is not listed, 15 is); a project with no progress at
   all is listed once it started more than 14 days ago ("No progress recorded yet"). Planning, on hold, completed and archived projects are
-  not listed.
-* **Attendance**: for **yesterday**, unless yesterday is a company holiday: each Active project that recorded attendance on at least one of
-  the six days before yesterday and has posted workers (active, posted to it yesterday, and yesterday is not their rest day) with no
-  attendance entry for yesterday. One row per project: "4 workers have no attendance recorded for 1 Nov".
+  not listed, and neither is an Active project with no active budget line (there is nothing to record progress against).
+* **Attendance**: an absence cannot be recorded (hours must be above zero), so the rule never asks for one entry per worker. An Active project
+  is listed when it has **no recorded attendance entry at all** for **yesterday** while it **did** record some on the same weekday a week
+  earlier (yesterday minus 7 days), yesterday is not a company holiday, and it has at least one active worker posted to it yesterday who is
+  not on their rest day that day. A project that recorded any entry yesterday is up to date (a sick worker never keeps it listed); a voided
+  entry does not count as recorded; a project that recorded nothing a week ago (a Monday-to-Saturday site on a Sunday) is not listed. One
+  row per project: "No attendance recorded for Sun 1 Nov"; the number of posted workers only puts the biggest crews first.
 
 ### 16.3 What else holds
 
 * **Archived projects' records never appear**, in any group; and another company's records never appear.
-* Each group shows at most its **8 most urgent rows** and carries its true count; the page links to the nearest list with the same filter
-  when there is one (the purchase order list with the Draft status; the receiving list), and otherwise says "N in total".
+* Each group shows at most its **8 most urgent rows** and carries its true count; the page links to a list only when that list shows exactly
+  the same records as the count (none does today: the purchase order list also holds drafts of archived projects, and the receiving list
+  holds every open order, not only the due ones), and otherwise says "N in total".
 * Groups with an urgent row come first, then the order of the table above. A row opens the record's own page; nothing is approved or
   issued from this page.
 * The badge's number is the sum of the group counts, read once when the app opens, again when the page is opened and when the browser tab
-  becomes visible again; nothing polls.
+  becomes visible again (at most once every 30 seconds); with the page open the same event reloads the page, so the page and the badge
+  never disagree. Nothing polls.
 * Every read is a fixed number of SQL statements whatever the number of records (asserted by a test): see
   [docs/api/needs-action.md](api/needs-action.md).

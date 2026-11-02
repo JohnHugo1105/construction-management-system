@@ -134,6 +134,41 @@ describe('NeedsActionState', () => {
     vi.useRealTimers();
   });
 
+  it('reloads the open page instead of reading the number alone, under the same 30 seconds, and goes back to the number once the page is gone', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-02T08:00:00Z'));
+    const { state, http } = await setup();
+    const shell = fakeDestroyRef();
+    const page = fakeDestroyRef();
+    const reload = vi.fn();
+    state.refreshWhenVisible(shell.ref);
+    state.reloadPageWhenVisible(reload, page.ref);
+
+    // The page is open: the tab coming back reloads the page, and the badge waits for the page's answer.
+    becomeVisible('visible');
+    expect(reload).toHaveBeenCalledTimes(1);
+    http.expectNone(COUNT);
+
+    // The reload started the clock, so coming back straight away neither reloads nor asks.
+    becomeVisible('visible');
+    expect(reload).toHaveBeenCalledTimes(1);
+    http.expectNone(COUNT);
+
+    vi.setSystemTime(Date.now() + 31_000);
+    becomeVisible('visible');
+    expect(reload).toHaveBeenCalledTimes(2);
+
+    // With the page gone, the badge reads its own number again.
+    page.destroy();
+    vi.setSystemTime(Date.now() + 31_000);
+    becomeVisible('visible');
+    expect(reload).toHaveBeenCalledTimes(2);
+    http.expectOne(COUNT).flush({ total: 7 });
+    expect(state.count()).toBe(7);
+    shell.destroy();
+    vi.useRealTimers();
+  });
+
   it('shows nobody else the previous person’s number', async () => {
     const { state, http } = await setup();
     state.refresh();
