@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.row-card__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.results--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}

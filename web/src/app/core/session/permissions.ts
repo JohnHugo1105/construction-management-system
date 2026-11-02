@@ -39,6 +39,7 @@ export const Permission = {
   bondsRead: 'bonds.read',
   bondsManage: 'bonds.manage',
   payrollRulesManage: 'payrollrules.manage',
+  receivingRecord: 'receiving.record',
 } as const;
 
 export type PermissionName = (typeof Permission)[keyof typeof Permission];

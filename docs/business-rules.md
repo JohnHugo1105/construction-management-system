@@ -51,6 +51,7 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | Raise and change purchase orders | yes | | yes | yes | | | |
 | Approve, cancel or close purchase orders | yes | yes | | yes | | | |
 | Record or void a delivery against a purchase order | yes | yes | yes | yes | | | |
+| Record or void a delivery on the quantity-only receiving screen (no prices) | yes | | | | yes | | |
 | Record progress | yes | yes | yes | | | | |
 | Draft and submit change orders; draft subcontracts and claims | yes | yes | yes | | | | |
 | Approve, reject or void change orders; lock the budget | yes | yes | | | | | |
@@ -64,7 +65,9 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | Keep the pay rules and the holiday calendar | yes | | | yes | | yes | |
 
 Everyone who may see purchase orders sees the deliveries on them. Everyone who can see payroll reads the pay rules and the holiday
-calendar (sections 6.8 and 6.9). A **warehouse keeper cannot record deliveries** under this matrix (section 10.1).
+calendar (sections 6.8 and 6.9). A **warehouse keeper records deliveries on the receiving screen** (section 12.5), which shows items,
+units and quantities and never a price; they still hold neither the permission to see purchase orders nor to receive against them,
+because those screens carry the company's amounts.
 
 Sign-in: five wrong passwords lock the account for 15 minutes; an unknown username, a wrong password and a locked account all get the
 same message, so the sign-in page can't be used to find out which accounts exist.
@@ -682,10 +685,12 @@ the recommended defaults below. None is confirmed yet; each is reversible, so co
    orders.
 5. **Fully received** means every line has arrived in full; an order cut short is closed by a person, not by the system.
 6. **No stock movement:** receiving into stock stays a separate, manual stock movement.
-7. **Open point, to be decided: warehouse keepers cannot record deliveries.** Under the current role matrix the permission to receive is
-   held by Administrator, Project Manager, Cost Engineer and Accountant, and the Warehouse Keeper has no purchasing access, although in
-   practice the store keeper receives the goods. The builder suggested giving that role the permissions to receive and to read purchase
-   orders, which would also let them read order prices. Left as is until decided.
+7. **Decided: warehouse keepers record deliveries on a quantity-only screen.** The store keeper physically receives the goods, but the
+   purchase order read model and the delivery response carry unit costs, VAT, totals, invoiced and committed amounts, which a warehouse
+   keeper must never see. So the Warehouse Keeper was **not** given the permissions to read or to receive against purchase orders; a
+   separate permission, `receiving.record` (Administrator and Warehouse Keeper), opens four routes under `/api/receiving` whose answers
+   contain quantities only (section 12.5). The rules, refusals, idempotency and audit lines are the same code as the purchasing ones.
+   Voiding a delivery is open to the warehouse keeper as well, so a mistake can be put right on site.
 
 *Bonds register* (section 15)
 
@@ -820,7 +825,8 @@ so ordered, received and invoiced are three honest numbers.
 * **What a delivery is.** A record against one **approved** order: the day it arrived (not in the future, in the company's business
   day), the number on the supplier's own delivery receipt (up to 60 characters, optional), a note (up to 300) and a quantity for each
   order line that arrived. It names the person who recorded it. Administrators, project managers, cost engineers and accountants record
-  and void deliveries; everyone who may see purchase orders sees them.
+  and void deliveries from the purchase order; warehouse keepers record and void them on the receiving screen (below); everyone who may
+  see purchase orders sees them.
 * **Append-only.** A delivery is never edited or deleted. A mistake is **voided with a reason** and the delivery is entered again. A
   voided delivery stays on record with who voided it and why, counts for nothing, and frees its delivery receipt number. A void is
   refused on an archived project ("Restore it first"). A delivery can still be voided after its order was closed.
@@ -861,6 +867,16 @@ so ordered, received and invoiced are three honest numbers.
   reason; each line shows "Ordered 10 pc · Received 4 pc · Invoiced ₱2,000.00" once anything has arrived. The orders list (and the
   project's Purchases tab) carries a delivery chip only for an approved order that has had something arrive or has an expected date
   ("Partly delivered", "Delivered in full", "Expected 10 Nov 2026"); a draft, closed or cancelled order shows none.
+* **Receiving screen (quantity only).** Warehouse Keepers record deliveries on a quantity-only screen: they see items, units and
+  quantities, never a price; voiding a delivery is open to them as well. The **Receiving** entry lists the approved orders that still
+  have something to come, soonest expected first (an order with no expected date last; an order of an archived project, a fully received
+  one, a draft, a closed or a cancelled one is not listed). Opening one shows who it is from, which project it is for, each item with
+  "Ordered", "Received" and "still to come", and the deliveries so far; its one primary action is **Record delivery**, a form with the
+  day (today unless changed), the supplier's delivery receipt number, a note and a quantity per item that starts at what is left. A
+  draft, closed or cancelled order can still be opened to read what was received, but takes no delivery (the same refusals as above). The
+  screen and its four routes carry **no** unit cost, VAT, line or order total, invoiced or committed amount, invoice or cost data, and a
+  test walks every property name of every answer to keep it so. A void reason is **not** shown there (a typed reason may mention people
+  or amounts); only the fact of the void, who and when. The delivery note is shown as typed.
 * **Not built, deliberately:** delivery photos or a scanned delivery receipt; receiving into stock; partial returns or rejected goods;
   a tolerance for over-receipt; an overdue-delivery alert (the list shows the expected date only); automatic closing of a fully
   received and fully invoiced order.

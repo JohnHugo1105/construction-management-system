@@ -83,6 +83,19 @@ public sealed class PermissionsTests
     }
 
     [Fact]
+    public void Receiving_is_for_administrators_and_warehouse_keepers_and_gives_no_purchasing_access()
+    {
+        Assert.True(Permissions.IsAllowed(AccessRole.Administrator, Permissions.ReceivingRecord));
+        Assert.True(Permissions.IsAllowed(AccessRole.WarehouseKeeper, Permissions.ReceivingRecord));
+        foreach (var role in new[] { AccessRole.ProjectManager, AccessRole.CostEngineer, AccessRole.Accountant, AccessRole.HrOfficer, AccessRole.Viewer, AccessRole.None })
+            Assert.False(Permissions.IsAllowed(role, Permissions.ReceivingRecord), role.ToString());
+
+        // The keeper records deliveries on the quantity-only screen; the screens that carry prices stay closed to them.
+        foreach (var money in new[] { Permissions.PurchasingRead, Permissions.PurchasingReceive, Permissions.PurchasingManage, Permissions.PurchasingApprove })
+            Assert.False(Permissions.IsAllowed(AccessRole.WarehouseKeeper, money), money);
+    }
+
+    [Fact]
     public void An_unknown_permission_is_an_error_not_a_silent_denial() =>
         Assert.Throws<ArgumentException>(() => Permissions.IsAllowed(AccessRole.Administrator, "projects.delete-everything"));
 }

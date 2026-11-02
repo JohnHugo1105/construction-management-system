@@ -24,7 +24,8 @@ header, like every other write.
 Roles: Administrator, Cost Engineer and Accountant draft and edit (`purchasing.manage`); Administrator, Project Manager and Accountant
 approve, cancel and close (`purchasing.approve`); Administrator, Project Manager, Cost Engineer and Accountant record and void deliveries
 (`purchasing.receive`); Administrator, Project Manager, Cost Engineer, Accountant and Viewer read. HR Officer and
-Warehouse Keeper have no access. An order, project or firm of another company is `404`, never an empty list. Matching an invoice to an
+Warehouse Keeper have no access to these routes: the Warehouse Keeper records and voids deliveries through the quantity-only
+[Receiving API](receiving.md) instead, which shares the same rules and carries no prices. An order, project or firm of another company is `404`, never an empty list. Matching an invoice to an
 order line uses the existing cost entry routes (`costs.write`); the optional `purchaseOrderLineId` is described below.
 
 ## The order

@@ -1,0 +1,81 @@
+:host {
+  display: block;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.lines {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line {
+  padding-block: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.line:first-child {
+  border-top: 0;
+}
+
+.line__main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.line__number {
+  flex: none;
+  min-width: 1.5rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.line__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.line__description {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+// An item that has all arrived reads as settled (muted); one still to come keeps the normal text colour.
+.line__done {
+  color: var(--color-text-muted);
+}
+
+.line--void .line__description,
+.line--void .line__text > p {
+  color: var(--color-text-muted);
+}
+
+.line__void {
+  margin-left: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}

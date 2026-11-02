@@ -89,6 +89,7 @@ describe('Shell on a wide screen', () => {
       'Workers',
       'Payroll',
       'Stock',
+      'Receiving',
       'Purchasing',
       'Subcontracts',
       'Billing',
@@ -174,6 +175,7 @@ describe('Shell on a phone', () => {
     expect(sheet.hasAttribute('open')).toBe(true);
     expect(texts(sheet, '.more-list__link')).toEqual([
       'Stock',
+      'Receiving',
       'Purchasing',
       'Subcontracts',
       'Billing',

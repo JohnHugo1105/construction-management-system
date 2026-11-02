@@ -49,6 +49,9 @@ public static class Permissions
     public const string BondsManage = "bonds.manage";
     public const string PayrollRulesManage = "payrollrules.manage";
 
+    // The quantity-only receiving screen: the warehouse keeper records and voids deliveries without any purchasing permission, so never a price.
+    public const string ReceivingRecord = "receiving.record";
+
     private const AccessRole Admin = AccessRole.Administrator;
     private const AccessRole Pm = AccessRole.ProjectManager;
     private const AccessRole Cost = AccessRole.CostEngineer;
@@ -104,7 +107,10 @@ public static class Permissions
         [BondsRead] = Admin | Pm | Cost | Acct | View,
         [BondsManage] = Admin | Pm | Acct,
         // Premium factors and holidays change by law and proclamation; the people who run payroll keep them, every change is audited.
-        [PayrollRulesManage] = Admin | Acct | Hr
+        [PayrollRulesManage] = Admin | Acct | Hr,
+        // Receiving says what physically arrived. Its screens carry quantities only (no unit cost, VAT, total or invoice), which is why the
+        // warehouse keeper may hold it while purchasing.read and purchasing.receive stay with the people who see the company's amounts.
+        [ReceivingRecord] = Admin | Wh
     };
 
     public static IReadOnlyCollection<string> All => Matrix.Keys;

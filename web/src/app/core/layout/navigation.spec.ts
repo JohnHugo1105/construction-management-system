@@ -17,6 +17,7 @@ describe('navigation', () => {
         Permission.workforceRead,
         Permission.payrollRead,
         Permission.inventoryRead,
+        Permission.receivingRecord,
         Permission.usersManage,
       ),
     );
@@ -27,6 +28,7 @@ describe('navigation', () => {
       'Workers',
       'Payroll',
       'Stock',
+      'Receiving',
       'Admin',
     ]);
   });
@@ -38,6 +40,21 @@ describe('navigation', () => {
     );
 
     expect(labels(warehouse)).toEqual(['Projects', 'Stock']);
+  });
+
+  it('shows a warehouse keeper Receiving, and shows it to nobody who lacks the permission to record deliveries', () => {
+    const keeper = visibleNavItems(
+      NAV_ITEMS,
+      allowing(Permission.projectsRead, Permission.inventoryRead, Permission.receivingRecord),
+    );
+    const purchaser = visibleNavItems(
+      NAV_ITEMS,
+      allowing(Permission.projectsRead, Permission.purchasingRead, Permission.purchasingReceive),
+    );
+
+    expect(labels(keeper)).toEqual(['Projects', 'Stock', 'Receiving']);
+    expect(labels(purchaser)).toEqual(['Projects', 'Purchasing']);
+    expect(NAV_ITEMS.find((item) => item.label === 'Receiving')?.link).toBe('/receiving');
   });
 
   it('shows Admin to someone who can only read the activity log', () => {
@@ -60,7 +77,14 @@ describe('navigation', () => {
     const { primary, overflow } = splitForBottomBar(NAV_ITEMS);
 
     expect(labels(primary)).toEqual(['Dashboard', 'Projects', 'Workers', 'Payroll']);
-    expect(labels(overflow)).toEqual(['Stock', 'Purchasing', 'Subcontracts', 'Billing', 'Admin']);
+    expect(labels(overflow)).toEqual([
+      'Stock',
+      'Receiving',
+      'Purchasing',
+      'Subcontracts',
+      'Billing',
+      'Admin',
+    ]);
     expect(primary.length + 1).toBeLessThanOrEqual(5);
   });
 });

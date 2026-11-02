@@ -1,0 +1,159 @@
+<app-page-header
+  [title]="order()?.number || 'Delivery'"
+  [description]="order() ? order()!.supplierName : ''"
+  backLabel="Receiving"
+  [backLink]="['/receiving']"
+/>
+
+@if (loading() && !order()) {
+  <app-skeleton [lines]="5" label="Loading order" />
+} @else if (loadError(); as problem) {
+  <div class="stack">
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="!problem.isNotFound"
+      reloadLabel="Try again"
+      (reload)="load()"
+    />
+    <p><a appButton routerLink="/receiving">Back to receiving</a></p>
+  </div>
+} @else if (view(); as v) {
+  @if (order(); as o) {
+    <div class="stack">
+      @if (v.notOpen) {
+        <app-alert tone="info" title="This order is not open for deliveries">
+          {{ v.notOpen }}
+        </app-alert>
+      }
+      @if (v.archived) {
+        <app-alert tone="warning" title="This project is archived">
+          Ask the office to restore the project before recording a delivery.
+        </app-alert>
+      }
+
+      <div class="summary">
+        <div class="summary__info">
+          @if (v.showDelivery) {
+            <app-status-chip
+              [label]="v.delivery.label"
+              [tone]="v.delivery.tone"
+              [icon]="v.delivery.icon"
+            />
+          }
+          <p class="text-muted">{{ v.expected }}</p>
+        </div>
+        @if (o.canRecord) {
+          <div class="summary__actions">
+            <button appButton variant="primary" type="button" (click)="open('receive')">
+              Record delivery
+            </button>
+          </div>
+        }
+      </div>
+
+      <section class="card" aria-labelledby="order-where">
+        <h2 id="order-where" class="card__title">Where it is going</h2>
+        <dl class="def-list">
+          <div>
+            <dt>Project</dt>
+            <dd>{{ v.place }}</dd>
+          </div>
+          @if (v.supplierReference) {
+            <div>
+              <dt>Supplier’s reference</dt>
+              <dd>{{ v.supplierReference }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <section class="card" aria-labelledby="order-items">
+        <h2 id="order-items" class="card__title">Items</h2>
+        <ol class="lines">
+          @for (line of v.lines; track line.id) {
+            <li class="line">
+              <div class="line__main">
+                <span class="line__number">{{ line.number }}</span>
+                <div class="line__text">
+                  <p class="line__description">{{ line.description }}</p>
+                  <p class="text-muted text-small">{{ line.standing }} · {{ line.received }}</p>
+                  <p class="text-small" [class.line__done]="line.complete">{{ line.left }}</p>
+                </div>
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+
+      @if (v.deliveries.length > 0) {
+        <section class="card" aria-labelledby="order-deliveries">
+          <h2 id="order-deliveries" class="card__title">Deliveries so far</h2>
+          <ul class="lines">
+            @for (delivery of v.deliveries; track delivery.id) {
+              <li class="line" [class.line--void]="delivery.void">
+                <div class="line__main">
+                  <div class="line__text">
+                    <p class="line__description">
+                      {{ delivery.title }}
+                      @if (delivery.void) {
+                        <span class="line__void">Voided</span>
+                      }
+                    </p>
+                    <p class="text-small">{{ delivery.items }}</p>
+                    @if (delivery.note) {
+                      <p class="text-muted text-small">{{ delivery.note }}</p>
+                    }
+                    <p class="text-muted text-small">{{ delivery.recorded }}</p>
+                    @if (delivery.voided) {
+                      <p class="text-muted text-small">{{ delivery.voided }}</p>
+                    }
+                  </div>
+                  @if (delivery.canVoid) {
+                    <button
+                      appButton
+                      variant="ghost"
+                      type="button"
+                      (click)="openVoid(delivery.id)"
+                    >
+                      Void delivery
+                    </button>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+          @if (v.moreDeliveries > 0) {
+            <p class="text-muted text-small">
+              Showing the newest {{ v.deliveries.length }}. {{ v.moreDeliveries }} older deliveries
+              are on record.
+            </p>
+          }
+        </section>
+      }
+    </div>
+
+    @switch (dialog()) {
+      @case ('receive') {
+        <app-receive-delivery-dialog
+          [order]="o"
+          (saved)="delivered($event)"
+          (dismissed)="closeDialog()"
+          (reloaded)="reloadAfterConflict()"
+        />
+      }
+      @case ('voidDelivery') {
+        <app-reason-dialog
+          title="Void this delivery?"
+          message="It stays on record and no longer counts as received, so the quantities can be entered again. Nothing else changes."
+          reasonLabel="Reason"
+          requiredMessage="Say why the delivery is being voided."
+          confirmLabel="Void delivery"
+          [perform]="voidDelivery"
+          (done)="voided()"
+          (dismissed)="closeDialog()"
+          (reloadRequested)="reloadAfterConflict()"
+        />
+      }
+    }
+  }
+}

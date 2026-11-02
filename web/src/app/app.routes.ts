@@ -71,6 +71,12 @@ export const routes: Routes = [
           import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
       },
       {
+        path: 'receiving',
+        canActivate: [permissionGuard(Permission.receivingRecord)],
+        loadChildren: () =>
+          import('./features/receiving/receiving.routes').then((m) => m.RECEIVING_ROUTES),
+      },
+      {
         path: 'purchasing',
         canActivate: [permissionGuard(Permission.purchasingRead)],
         loadChildren: () =>
