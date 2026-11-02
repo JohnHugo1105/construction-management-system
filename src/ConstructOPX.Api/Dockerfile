@@ -26,8 +26,9 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
 LABEL org.opencontainers.image.revision=${CONSTRUCTOPX_RELEASE_SHA} org.opencontainers.image.title="constructopx-api"
 WORKDIR /app
 COPY --from=build /app .
-# Where the session keys are kept (DataProtection__KeysPath). Owned by the app user so a named volume mounted here inherits it.
-RUN mkdir -p /var/lib/constructopx/keys && chown $APP_UID /var/lib/constructopx/keys
+# Where the session keys (DataProtection__KeysPath) and the document files (FileStorage__RootPath) are kept. Owned by the app user so a
+# named volume mounted here inherits it.
+RUN mkdir -p /var/lib/constructopx/keys /var/lib/constructopx/files && chown $APP_UID /var/lib/constructopx/keys /var/lib/constructopx/files
 USER $APP_UID
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --start-period=30s --retries=5 CMD curl -fsS http://localhost:8080/health/ready || exit 1

@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+// The one primary action first; the kind filter, when there is one, takes the rest of the row and wraps under it on a phone.
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.toolbar__filter {
+  flex: 1 1 12rem;
+  max-width: 20rem;
+}
+
+.groups {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.groups--refreshing {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.group__title {
+  font-size: var(--text-base);
+  font-weight: 650;
+}
+
+.voided {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.voided__summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.voided[open] .voided__summary {
+  margin-bottom: var(--space-3);
+}
+
+.voided__summary:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 64rem) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

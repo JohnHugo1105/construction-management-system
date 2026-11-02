@@ -7,6 +7,7 @@ using ConstructOPX.Application.Features.Bonds;
 using ConstructOPX.Application.Features.ChangeOrders;
 using ConstructOPX.Application.Common;
 using ConstructOPX.Application.Features.Costing;
+using ConstructOPX.Application.Features.Documents;
 using ConstructOPX.Application.Features.NeedsAction;
 using ConstructOPX.Application.Features.Projects;
 using ConstructOPX.Application.Features.Payroll;
@@ -37,7 +38,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
     private static readonly string[] EveryGroup =
     [
         "purchase-orders-to-approve", "change-orders-to-approve", "bills-to-issue", "claims-to-certify", "payroll-to-approve", "bills-to-chase",
-        "deliveries-expected", "bonds-to-attend", "progress-not-updated", "attendance-not-recorded", "time-clock-to-review", "diary-not-written", "activities-behind", "statutory-needs-setup"
+        "deliveries-expected", "bonds-to-attend", "progress-not-updated", "attendance-not-recorded", "time-clock-to-review", "diary-not-written", "activities-behind", "documents-expiring", "statutory-needs-setup"
     ];
 
     private readonly ConstructOpxApiFactory _factory;
@@ -58,14 +59,14 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             [AccessRole.ProjectManager] =
             [
                 "purchase-orders-to-approve", "change-orders-to-approve", "bills-to-chase", "deliveries-expected", "bonds-to-attend",
-                "progress-not-updated", "attendance-not-recorded", "time-clock-to-review", "diary-not-written", "activities-behind"
+                "progress-not-updated", "attendance-not-recorded", "time-clock-to-review", "diary-not-written", "activities-behind", "documents-expiring"
             ],
             [AccessRole.Accountant] =
             [
                 "purchase-orders-to-approve", "bills-to-issue", "claims-to-certify", "payroll-to-approve", "bills-to-chase", "deliveries-expected",
-                "bonds-to-attend", "statutory-needs-setup"
+                "bonds-to-attend", "documents-expiring", "statutory-needs-setup"
             ],
-            [AccessRole.CostEngineer] = ["deliveries-expected", "progress-not-updated", "diary-not-written", "activities-behind"],
+            [AccessRole.CostEngineer] = ["deliveries-expected", "progress-not-updated", "diary-not-written", "activities-behind", "documents-expiring"],
             [AccessRole.HrOfficer] = ["attendance-not-recorded", "time-clock-to-review"],
             [AccessRole.WarehouseKeeper] = ["deliveries-expected"],
             [AccessRole.Viewer] = []
@@ -97,7 +98,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         var groups = result.Groups.ToDictionary(group => group.Key);
 
         // Urgent groups first (overdue bills, a late delivery, an expired bond), then the page order.
-        Assert.Equal(["bills-to-chase", "deliveries-expected", "bonds-to-attend", "time-clock-to-review", "activities-behind",
+        Assert.Equal(["bills-to-chase", "deliveries-expected", "bonds-to-attend", "time-clock-to-review", "activities-behind", "documents-expiring",
             "purchase-orders-to-approve", "change-orders-to-approve", "bills-to-issue", "claims-to-certify", "payroll-to-approve", "progress-not-updated", "attendance-not-recorded", "statutory-needs-setup", "diary-not-written"],
             result.Groups.Select(group => group.Key));
 
@@ -155,6 +156,9 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
 
         var behind = Single(groups, "activities-behind");
         Assert.Equal(((long?)null, true, "1 activity is past its planned finish"), (behind.AmountMinor, behind.IsUrgent, behind.Detail));
+
+        var permit = Single(groups, "documents-expiring");
+        Assert.Equal(((long?)null, true, $"Expired 3 days ago, on {Day(today.AddDays(-3))}"), (permit.AmountMinor, permit.IsUrgent, permit.Detail));
 
         var tables = Single(groups, "statutory-needs-setup");
         Assert.Equal("No table in force for SSS, PhilHealth, Pag-IBIG and withholding tax, so payroll can't work them out.", tables.Detail);
@@ -564,10 +568,10 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             Assert.Equal(NeedsActionRules.RowsShown, group.Rows.Count);
         });
         Assert.Equal(small, large);
-        // The organization (for today's date), then a count and the rows for each of the thirteen record groups (the time clock, diary and schedule groups are
+        // The organization (for today's date), then a count and the rows for each of the fourteen record groups (the time clock, diary and schedule groups are
         // one per project, so they also read rows), and two statements for the statutory tables (the status, then whether the company has a worker or a
         // payroll, asked only while a table is missing); the count route is the organization, one count per group and the same two statements.
-        Assert.Equal((29, 16), large);
+        Assert.Equal((31, 17), large);
 
         // A role with no group costs nothing beyond signing in.
         using var viewer = await AsRoleAsync(world, AccessRole.Viewer);
@@ -621,6 +625,9 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             added.Drafts.Add(await PurchasingTestKit.DraftAsync(admin, buying, firm));
             added.Approved.Add(await LateOrderAsync(admin, buying, firm, today));
             added.Bonds.Add(await BondTestKit.CreateAsync(admin, buying.Id, validUntil: BondTestKit.DaysFromToday(-3)));
+            // A permit whose validity ended three days ago.
+            await admin.PostAsync<DocumentDto>($"/api/projects/{buying.Id}/documents",
+                DocumentTestKit.Link($"Building permit {index}", "Permit", "https://files.example.com/permit", BondTestKit.DaysFromToday(-3)));
 
             var subcontract = await SubcontractTestKit.DraftAsync(admin, await SubcontractTestKit.AwardedAsync(admin, buying.Id), 100_000_00);
             var claim = SubcontractTestKit.OpenDraft(subcontract);

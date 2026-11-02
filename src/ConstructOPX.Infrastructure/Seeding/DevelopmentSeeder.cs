@@ -156,6 +156,7 @@ public sealed class DevelopmentSeeder(ConstructOpxDbContext db, IPasswordHasher 
         await ProgressDemo.SeedAsync(db, tenant, today, now, cancellationToken);
         await BillingDemo.SeedAsync(db, organization, riverside, harbor, users["accounts"].Id, users["manager"].Id, today, now, cancellationToken);
         await BondDemo.SeedAsync(db, organization, riverside, users["accounts"].Id, today, now, cancellationToken);
+        await DocumentsDemo.SeedAsync(db, organization, riverside, users["manager"].Id, today, now, cancellationToken);
         await ScheduleDemo.SeedAsync(db, tenant, riverside, users["admin"].Id, today, now, cancellationToken);
         await SiteDiaryDemo.SeedAsync(db, tenant, riverside, users["manager"].Id, today, now, cancellationToken);
         await TimeClockDemo.SeedAsync(db, organization, riverside, crew, users["hrofficer"].Id, today, now, cancellationToken);

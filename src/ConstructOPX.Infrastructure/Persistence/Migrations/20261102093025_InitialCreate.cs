@@ -494,6 +494,39 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProjectDocuments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ValidUntil = table.Column<DateOnly>(type: "date", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CurrentVersionNumber = table.Column<int>(type: "int", nullable: false),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectDocuments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProjectDocuments_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ScheduleActivities",
                 columns: table => new
                 {
@@ -891,6 +924,36 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                         name: "FK_ClientPayments_ClientInvoices_ClientInvoiceId",
                         column: x => x.ClientInvoiceId,
                         principalTable: "ClientInvoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentVersions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Number = table.Column<int>(type: "int", nullable: false),
+                    Kind = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    FileName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    SizeBytes = table.Column<long>(type: "bigint", nullable: true),
+                    Sha256 = table.Column<string>(type: "char(64)", unicode: false, fixedLength: true, maxLength: 64, nullable: true),
+                    StoreKey = table.Column<string>(type: "varchar(120)", unicode: false, maxLength: 120, nullable: true),
+                    Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    AddedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentVersions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DocumentVersions_ProjectDocuments_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "ProjectDocuments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -2028,6 +2091,17 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 .Annotation("SqlServer:Include", new[] { "Status", "NetMinor", "GrossMinor" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_DocumentVersions_DocumentId_Number",
+                table: "DocumentVersions",
+                columns: new[] { "DocumentId", "Number" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentVersions_TenantId",
+                table: "DocumentVersions",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GoodsReceiptLines_GoodsReceiptId",
                 table: "GoodsReceiptLines",
                 column: "GoodsReceiptId");
@@ -2254,6 +2328,28 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 table: "ProjectBillingTerms",
                 columns: new[] { "TenantId", "ProjectId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectDocuments_ProjectId",
+                table: "ProjectDocuments",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectDocuments_TenantId_ClientRequestId",
+                table: "ProjectDocuments",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectDocuments_TenantId_ProjectId_Status_Category",
+                table: "ProjectDocuments",
+                columns: new[] { "TenantId", "ProjectId", "Status", "Category" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectDocuments_TenantId_Status_ValidUntil",
+                table: "ProjectDocuments",
+                columns: new[] { "TenantId", "Status", "ValidUntil" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_TenantId_NormalizedName",
@@ -2757,6 +2853,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "CompanyHolidays");
 
             migrationBuilder.DropTable(
+                name: "DocumentVersions");
+
+            migrationBuilder.DropTable(
                 name: "GoodsReceiptLines");
 
             migrationBuilder.DropTable(
@@ -2827,6 +2926,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "ClientInvoices");
+
+            migrationBuilder.DropTable(
+                name: "ProjectDocuments");
 
             migrationBuilder.DropTable(
                 name: "GoodsReceipts");

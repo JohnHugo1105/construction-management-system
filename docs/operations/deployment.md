@@ -62,6 +62,11 @@ Everything comes from environment variables (see `.env.example`); nothing secret
 `PasswordHashing__Iterations`, `RateLimiting__SignInPerMinute`, `Security__RequireSecureCookies` (leave true outside local HTTP),
 `DataProtection__KeysPath` (a persistent private folder for the session keys: compose mounts the `api-keys` volume there; without
 it, every restart signs everyone out and the API logs a warning. With more than one API instance, point them all at one shared folder).
+`FileStorage__RootPath` (a persistent private folder for uploaded project documents: compose mounts the `api-files` volume at
+`/var/lib/constructopx/files`; empty means file storage is not set up, uploads are refused in plain words and people add links instead.
+With more than one API instance, point them all at one shared folder), `FileStorage__MaxFileMegabytes` (default 25),
+`FileStorage__AllowedExtensions` (optional, narrows the built-in list) and `FileStorage__UploadsEnabled` (default true; set false to stop
+uploads in an emergency, files already stored still download). The Administration > System readiness page shows whether file storage works.
 First-time setup: set `CONSTRUCTOPX_BOOTSTRAP_ENABLED=true`, start, open the site, create the company and first administrator, then set it back
 to `false` and restart.
 

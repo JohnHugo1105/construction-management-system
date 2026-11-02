@@ -107,8 +107,6 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
     {
         Permissions.TasksUse,
         Permissions.NotificationsRead,
-        Permissions.DocumentsRead,
-        Permissions.DocumentsManage,
     };
 
     private IEnumerable<EndpointInfo> ApiEndpoints() =>

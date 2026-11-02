@@ -58,11 +58,14 @@ services:
       CONSTRUCTOPX_DATABASE_CONNECTION: Server=sql,1433;Database=ConstructOpx;User Id=constructopx_app;Password=${CONSTRUCTOPX_APP_DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
       # Session keys survive a restart in this volume, so a new release doesn't sign everyone out.
       DataProtection__KeysPath: /var/lib/constructopx/keys
+      # Project document files live in this volume; back it up with the database (docs/operations/backup-and-restore.md).
+      FileStorage__RootPath: /var/lib/constructopx/files
       CONSTRUCTOPX_RELEASE_SHA: ${CONSTRUCTOPX_RELEASE_SHA:-local}
       Bootstrap__Enabled: ${CONSTRUCTOPX_BOOTSTRAP_ENABLED:-false}
       Database__MigrateOnStartup: "false"
     volumes:
       - api-keys:/var/lib/constructopx/keys
+      - api-files:/var/lib/constructopx/files
     expose:
       - "8080"
 
@@ -83,3 +86,4 @@ services:
 volumes:
   sql-data:
   api-keys:
+  api-files:

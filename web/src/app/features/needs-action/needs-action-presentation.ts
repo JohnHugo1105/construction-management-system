@@ -102,6 +102,7 @@ export interface UrgentChip {
 export function urgentChip(key: NeedsActionGroupKey): UrgentChip {
   switch (key) {
     case 'bonds-to-attend':
+    case 'documents-expiring':
       return { label: 'Expired', tone: 'danger', icon: 'warning' };
     case 'deliveries-expected':
       return { label: 'Late', tone: 'danger', icon: 'clock' };
