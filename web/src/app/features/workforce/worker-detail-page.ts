@@ -21,6 +21,7 @@ import { Skeleton } from '../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../shared/ui/status-chip/status-chip';
 import { ChangeStatusDialog } from './change-status-dialog';
 import { ReinstateDialog } from './reinstate-dialog';
+import { WorkerBadgePanel } from '../timeclock/worker-badge-panel';
 import { WorkerAttendancePanel } from './worker-attendance-panel';
 import { WorkerCasesPanel } from './worker-cases-panel';
 import { WorkerDetailState } from './worker-detail-state';
@@ -50,6 +51,7 @@ import { WorkerDetail } from './workforce.models';
     WorkerPayPanel,
     WorkerAttendancePanel,
     WorkerCasesPanel,
+    WorkerBadgePanel,
   ],
   providers: [WorkerDetailState],
   changeDetection: ChangeDetectionStrategy.OnPush,

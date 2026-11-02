@@ -20,6 +20,8 @@ internal sealed class AttendanceEntryConfiguration : IEntityTypeConfiguration<At
         builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(item => item.ClientRequestId).HasMaxLength(80);
         builder.Property(item => item.VoidReason).HasMaxLength(300);
+        // Typed, or confirmed from the time clock (which keeps the first in, last out and break for explanation).
+        builder.Property(item => item.Source).HasConversion<string>().HasMaxLength(20);
         builder.Ignore(item => item.IsVoided);
         builder.Ignore(item => item.IsLocked);
 

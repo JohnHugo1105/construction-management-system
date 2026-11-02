@@ -29,6 +29,9 @@ internal sealed class WorkerConfiguration : IEntityTypeConfiguration<Worker>
         builder.Property(item => item.StatusReason).HasMaxLength(300);
         // The weekly rest day as its name ("Sunday"); null means no fixed rest day.
         builder.Property(item => item.RestDay).HasConversion<string>().HasMaxLength(10);
+        // The time clock badge code: unique in the company while set (a reissued code replaces the old one, which then matches nobody).
+        builder.Property(item => item.PunchCode).HasMaxLength(ConstructOPX.Domain.Features.TimeClock.PunchCode.Length).IsUnicode(false);
+        builder.HasIndex(item => new { item.TenantId, item.PunchCode }).IsUnique().HasFilter("[PunchCode] IS NOT NULL");
         builder.Ignore(item => item.FullName);
         builder.Ignore(item => item.CurrentRate);
         builder.Ignore(item => item.CurrentAssignment);

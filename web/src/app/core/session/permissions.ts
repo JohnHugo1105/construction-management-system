@@ -77,4 +77,5 @@ export const NEEDS_ACTION_PERMISSIONS: readonly string[] = [
   Permission.diaryWrite,
   Permission.documentsManage,
   Permission.scheduleWrite,
+  Permission.timeClockReview,
 ];

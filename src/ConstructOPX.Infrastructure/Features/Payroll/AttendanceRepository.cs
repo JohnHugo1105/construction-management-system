@@ -160,6 +160,10 @@ internal sealed class AttendanceReader(ConstructOpxDbContext db) : IAttendanceRe
         public int Version { get; init; }
         public DayOfWeek? RestDay { get; init; }
         public HolidayType? Holiday { get; init; }
+        public AttendanceSource Source { get; init; }
+        public DateTimeOffset? ClockFirstInUtc { get; init; }
+        public DateTimeOffset? ClockLastOutUtc { get; init; }
+        public int? ClockBreakMinutes { get; init; }
     }
 
     private IQueryable<AttendanceRow> Rows(IQueryable<AttendanceEntry> entries) =>
@@ -190,6 +194,10 @@ internal sealed class AttendanceReader(ConstructOpxDbContext db) : IAttendanceRe
             VoidReason = entry.VoidReason,
             Version = entry.Version,
             RestDay = worker.RestDay,
+            Source = entry.Source,
+            ClockFirstInUtc = entry.ClockFirstInUtc,
+            ClockLastOutUtc = entry.ClockLastOutUtc,
+            ClockBreakMinutes = entry.ClockBreakMinutes,
             // At most one holiday per date: read in the same statement, never once per entry.
             Holiday = db.Set<CompanyHoliday>().Where(holiday => holiday.Date == entry.WorkDate).Select(holiday => (HolidayType?)holiday.Type).FirstOrDefault()
         };
@@ -197,5 +205,5 @@ internal sealed class AttendanceReader(ConstructOpxDbContext db) : IAttendanceRe
     private static AttendanceEntryDto ToDto(AttendanceRow row) => new(row.Id, row.WorkerId, WorkerNames.Full(row.FirstName, row.MiddleName, row.LastName),
         row.EmployeeNumber, row.ProjectId, row.ProjectName, row.SubProjectId, row.SubProjectName, row.WorkDate, row.RegularHours, row.OvertimeHours, row.Remarks,
         row.Status.ToString(), row.PayrollRunId is not null, row.PayrollRunId, row.VoidReason, row.Version, row.NightHours,
-        DayTypes.Of(row.WorkDate, row.Holiday, row.RestDay).ToString());
+        DayTypes.Of(row.WorkDate, row.Holiday, row.RestDay).ToString(), row.Source.ToString(), row.ClockFirstInUtc, row.ClockLastOutUtc, row.ClockBreakMinutes);
 }

@@ -57,6 +57,12 @@ public sealed class Worker : AggregateRoot
     /// </summary>
     public DayOfWeek? RestDay { get; private set; }
 
+    /// <summary>
+    /// The code on the worker's time clock badge (see <c>PunchCode</c>), or null until HR issues one. It identifies the worker to a time clock
+    /// and nothing else. Reissuing replaces it, so a lost badge stops working at once.
+    /// </summary>
+    public string? PunchCode { get; private set; }
+
     public WorkerStatus Status { get; private set; } = WorkerStatus.Active;
     public DateOnly? StatusChangedOn { get; private set; }
     public string? StatusReason { get; private set; }
@@ -168,6 +174,21 @@ public sealed class Worker : AggregateRoot
         if (RestDay == restDay) return;
         RestDay = restDay;
         Touch(now);
+    }
+
+    /// <summary>
+    /// Gives the worker a new badge code, replacing any earlier one (which stops working when this is saved). Only an active worker gets one.
+    /// Returns true when a code was replaced.
+    /// </summary>
+    public bool IssuePunchCode(string code, DateTimeOffset now)
+    {
+        if (Status != WorkerStatus.Active)
+            throw new DomainRuleException($"{FullName} is {WorkerStatusRules.Label(Status).ToLowerInvariant()}. Only an active worker gets a badge code.");
+        if (TimeClock.PunchCode.Normalize(code) != code) throw new ArgumentException("A badge code is 12 characters from the badge alphabet.", nameof(code));
+        var replaced = PunchCode is not null;
+        PunchCode = code;
+        Touch(now);
+        return replaced;
     }
 
     private static void ValidateRestDay(ValidationErrors errors, DayOfWeek? restDay)

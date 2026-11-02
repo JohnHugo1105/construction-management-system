@@ -24,6 +24,7 @@ import { Skeleton } from '../../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../../shared/ui/status-chip/status-chip';
 import { Viewport } from '../../../shared/ui/viewport/viewport';
 import { ProjectContext } from '../../projects/project-context';
+import { TeamTimeClockNotice } from '../../timeclock/team-time-clock-notice';
 import { AttendanceSheetState } from '../attendance-sheet-state';
 import { dayTypeChip, holidayLine, hoursWords } from '../attendance-sheet';
 import { HoursField } from '../hours-field';
@@ -50,6 +51,7 @@ import { AttendanceEntry } from '../workforce.models';
     Skeleton,
     StatusChip,
     VoidAttendanceDialog,
+    TeamTimeClockNotice,
   ],
   providers: [AttendanceSheetState],
   changeDetection: ChangeDetectionStrategy.OnPush,

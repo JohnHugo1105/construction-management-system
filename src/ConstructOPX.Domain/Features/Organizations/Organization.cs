@@ -1,5 +1,6 @@
 using ConstructOPX.Domain.Common;
 using ConstructOPX.Domain.Features.Costing;
+using ConstructOPX.Domain.Features.TimeClock;
 
 namespace ConstructOPX.Domain.Features.Organizations;
 
@@ -49,6 +50,18 @@ public sealed class Organization : AggregateRoot
     /// </summary>
     public int PayrollRunsPerMonth { get; private set; } = DefaultPayrollRunsPerMonth;
 
+    /// <summary>When a work day starts for the time clock, in minutes after midnight (240 is 04:00): a scan before it belongs to the previous date.</summary>
+    public int TimeClockDayStartMinutes { get; private set; } = TimeClockRules.DefaultDayStartMinutes;
+
+    /// <summary>The unpaid break taken off a single time-clock span of 5 hours or more, in minutes (0 turns it off).</summary>
+    public int UnpaidBreakMinutes { get; private set; } = TimeClockRules.DefaultUnpaidBreakMinutes;
+
+    /// <summary>A time-clock day's worked minutes are rounded to the nearest this many minutes, once, on the total (0 turns it off).</summary>
+    public int PunchRoundingMinutes { get; private set; } = TimeClockRules.DefaultRoundingMinutes;
+
+    /// <summary>The settings a day of time-clock scans is worked out with.</summary>
+    public TimeClockSettings TimeClock => new(TimeZoneId, TimeClockDayStartMinutes, UnpaidBreakMinutes, PunchRoundingMinutes, HoursPerDay);
+
     public static Organization Create(Guid id, string name, DateTimeOffset now)
     {
         var organization = new Organization { Name = Guard.RequiredText(name, "name", "the company name", 120) };
@@ -57,9 +70,14 @@ public sealed class Organization : AggregateRoot
     }
 
     public void UpdateSettings(string name, string currencyCode, int vatRateBps, string timeZoneId, decimal hoursPerDay,
-        int overtimeMultiplierBps, VarianceBasis varianceBasis, DateTimeOffset now, int? payrollRunsPerMonth = null)
+        int overtimeMultiplierBps, VarianceBasis varianceBasis, DateTimeOffset now, int? payrollRunsPerMonth = null, int? timeClockDayStartMinutes = null,
+        int? unpaidBreakMinutes = null, int? punchRoundingMinutes = null)
     {
         var runsPerMonth = payrollRunsPerMonth ?? PayrollRunsPerMonth;
+        // Left out, a time clock setting stays as it is, so a client that doesn't know about it never resets it.
+        var dayStart = timeClockDayStartMinutes ?? TimeClockDayStartMinutes;
+        var breakMinutes = unpaidBreakMinutes ?? UnpaidBreakMinutes;
+        var rounding = punchRoundingMinutes ?? PunchRoundingMinutes;
         var errors = new ValidationErrors();
         var cleanName = (name ?? "").Trim();
         if (cleanName.Length is 0 or > 120) errors.Add("name", "Enter the company name (up to 120 characters).");
@@ -71,6 +89,12 @@ public sealed class Organization : AggregateRoot
         if (!Enum.IsDefined(varianceBasis)) errors.Add("varianceBasis", "Choose whether to compare amounts with or without VAT.");
         if (!IsKnownTimeZone(timeZoneId)) errors.Add("timeZoneId", "Choose a valid time zone.");
         if (runsPerMonth is < 1 or > 4) errors.Add("payrollRunsPerMonth", "Enter how many pay runs you make in a month, from 1 to 4.");
+        if (dayStart is < 0 or > TimeClockRules.MaximumDayStartMinutes)
+            errors.Add("timeClockDayStartMinutes", "Choose a day start between midnight and noon.");
+        if (breakMinutes is < 0 or > TimeClockRules.MaximumUnpaidBreakMinutes)
+            errors.Add("unpaidBreakMinutes", "Enter an unpaid break from 0 to 180 minutes. Use 0 to take no break off.");
+        if (rounding is < 0 or > TimeClockRules.MaximumRoundingMinutes)
+            errors.Add("punchRoundingMinutes", "Enter rounding from 0 to 60 minutes. Use 0 to keep the exact minutes.");
         errors.ThrowIfAny();
 
         Name = cleanName;
@@ -81,6 +105,9 @@ public sealed class Organization : AggregateRoot
         OvertimeMultiplierBps = overtimeMultiplierBps;
         VarianceBasis = varianceBasis;
         PayrollRunsPerMonth = runsPerMonth;
+        TimeClockDayStartMinutes = dayStart;
+        UnpaidBreakMinutes = breakMinutes;
+        PunchRoundingMinutes = rounding;
         Touch(now);
     }
 

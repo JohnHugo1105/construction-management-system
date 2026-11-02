@@ -23,6 +23,9 @@ const company: Organization = {
   overtimeMultiplierBps: 12500,
   varianceBasis: 'IncludingVat',
   payrollRunsPerMonth: 2,
+  timeClockDayStartMinutes: 240,
+  unpaidBreakMinutes: 60,
+  punchRoundingMinutes: 15,
   version: 3,
 };
 
@@ -90,6 +93,9 @@ describe('CompanySettingsPage', () => {
       overtimeMultiplierBps: 12500,
       varianceBasis: 'ExcludingVat',
       payrollRunsPerMonth: 2,
+      timeClockDayStartMinutes: 240,
+      unpaidBreakMinutes: 60,
+      punchRoundingMinutes: 15,
       version: 3,
     });
     // The session is read again so the new currency, time zone and VAT rate apply at once.
@@ -157,6 +163,49 @@ describe('CompanySettingsPage', () => {
     expect(update.mock.calls[0]![0]).toMatchObject({ payrollRunsPerMonth: 4 });
     await flushMicrotasks(6);
     backend.expectOne('/api/identity/session').flush(sessionFixture());
+  });
+
+  it('shows the time clock day start as a time and sends it, the break and the rounding in minutes', async () => {
+    const { harness, root, update, backend } = await open();
+    const dayStart = root.querySelector<HTMLInputElement>('[formControlName="timeClockDayStart"]')!;
+    expect(dayStart.value).toBe('04:00');
+    expect(
+      root.querySelector<HTMLInputElement>('[formControlName="unpaidBreakMinutes"] input')!.value,
+    ).toBe('60');
+    expect(
+      root.querySelector<HTMLInputElement>('[formControlName="punchRoundingMinutes"] input')!.value,
+    ).toBe('15');
+
+    type(root, '[formControlName="timeClockDayStart"]', '05:30');
+    type(root, '[formControlName="unpaidBreakMinutes"] input', '30');
+    type(root, '[formControlName="punchRoundingMinutes"] input', '0');
+    save(root).click();
+    await settle(harness.fixture);
+
+    expect(update.mock.calls[0]![0]).toMatchObject({
+      timeClockDayStartMinutes: 330,
+      unpaidBreakMinutes: 30,
+      punchRoundingMinutes: 0,
+    });
+    await flushMicrotasks(6);
+    backend.expectOne('/api/identity/session').flush(sessionFixture());
+  });
+
+  it('refuses a day start after noon and a break or rounding out of range, in plain words', async () => {
+    const { harness, root, update } = await open();
+
+    type(root, '[formControlName="timeClockDayStart"]', '13:00');
+    type(root, '[formControlName="unpaidBreakMinutes"] input', '200');
+    type(root, '[formControlName="punchRoundingMinutes"] input', '61');
+    save(root).click();
+    await settle(harness.fixture);
+
+    expect(texts(root, '.field__error')).toEqual([
+      'Choose a day start between midnight and noon.',
+      'Enter an unpaid break from 0 to 180 minutes. Use 0 to take no break off.',
+      'Enter rounding from 0 to 60 minutes. Use 0 to keep the exact minutes.',
+    ]);
+    expect(update).not.toHaveBeenCalled();
   });
 
   it('puts the API message for the VAT rate under the VAT field, whatever unit the API uses', async () => {

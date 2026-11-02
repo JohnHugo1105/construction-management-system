@@ -10,6 +10,19 @@ public enum AttendanceStatus
     Voided = 1
 }
 
+/// <summary>Where an entry's hours came from. Pay is worked out the same way whatever the source.</summary>
+public enum AttendanceSource
+{
+    /// <summary>Typed by a person (the day sheet or the attendance form).</summary>
+    Manual = 0,
+
+    /// <summary>A day of time-clock scans that a reviewer confirmed.</summary>
+    TimeClock = 1
+}
+
+/// <summary>What a confirmed time-clock day keeps on its attendance entry to explain the hours: the first in, the last out and the break taken.</summary>
+public sealed record TimeClockEvidence(DateTimeOffset? FirstInUtc, DateTimeOffset? LastOutUtc, int BreakMinutes);
+
 /// <summary>
 /// The hours one worker put in on one project on one day. Attendance is the input to payroll (the desktop app had no attendance and no
 /// payroll at all). Once a payroll run has taken an entry it is locked: it can't be edited or voided until the run is voided, so
@@ -35,6 +48,16 @@ public sealed class AttendanceEntry : AggregateRoot
     public decimal NightHours { get; private set; }
 
     public string? Remarks { get; private set; }
+
+    /// <summary>Typed by a person, or confirmed from the time clock. It explains the hours; it never changes how they are paid.</summary>
+    public AttendanceSource Source { get; private set; } = AttendanceSource.Manual;
+
+    /// <summary>For a time-clock day: the first scan in, the last scan out and the minutes of break taken, kept for explanation.</summary>
+    public DateTimeOffset? ClockFirstInUtc { get; private set; }
+
+    public DateTimeOffset? ClockLastOutUtc { get; private set; }
+    public int? ClockBreakMinutes { get; private set; }
+
     public AttendanceStatus Status { get; private set; } = AttendanceStatus.Recorded;
 
     /// <summary>The payroll run that took this entry. While set, the entry is locked.</summary>
@@ -50,7 +73,7 @@ public sealed class AttendanceEntry : AggregateRoot
 
     public static AttendanceEntry Record(Guid id, Guid tenantId, Worker worker, Project project, Guid? subProjectId, DateOnly workDate,
         decimal regularHours, decimal overtimeHours, string? remarks, decimal hoursPerDay, Guid recordedByUserId, string? clientRequestId,
-        DateOnly today, DateTimeOffset now, decimal nightHours = 0m)
+        DateOnly today, DateTimeOffset now, decimal nightHours = 0m, TimeClockEvidence? timeClock = null)
     {
         project.EnsureCanReceiveRecordsFor(subProjectId);
         Validate(worker, workDate, regularHours, overtimeHours, nightHours, hoursPerDay, today);
@@ -66,7 +89,11 @@ public sealed class AttendanceEntry : AggregateRoot
             NightHours = nightHours,
             Remarks = Guard.OptionalText(remarks, "remarks", "the remarks", 300),
             RecordedByUserId = recordedByUserId,
-            ClientRequestId = Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80)
+            ClientRequestId = Guard.OptionalText(clientRequestId, "clientRequestId", "the request id", 80),
+            Source = timeClock is null ? AttendanceSource.Manual : AttendanceSource.TimeClock,
+            ClockFirstInUtc = timeClock?.FirstInUtc,
+            ClockLastOutUtc = timeClock?.LastOutUtc,
+            ClockBreakMinutes = timeClock?.BreakMinutes
         };
         entry.Initialize(id, tenantId, now);
         return entry;

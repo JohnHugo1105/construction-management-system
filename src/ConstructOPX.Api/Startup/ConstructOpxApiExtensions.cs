@@ -8,6 +8,7 @@ using ConstructOPX.Application.Common;
 using ConstructOPX.Domain.Features.Identity;
 using ConstructOPX.Infrastructure;
 using ConstructOPX.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -49,7 +50,9 @@ public static class ConstructOpxApiExtensions
             // An API answers 401 or 403, never a redirect to a login page.
             options.Events.OnRedirectToLogin = context => { context.Response.StatusCode = StatusCodes.Status401Unauthorized; return Task.CompletedTask; };
             options.Events.OnRedirectToAccessDenied = context => { context.Response.StatusCode = StatusCodes.Status403Forbidden; return Task.CompletedTask; };
-        });
+        })
+        // Time clock machines: a device key, never a cookie (see DeviceKeyAuthentication). Only the machine route uses this scheme.
+        .AddScheme<AuthenticationSchemeOptions, DeviceKeyAuthenticationHandler>(DeviceKeyAuthentication.Scheme, _ => { });
 
         services.AddAuthorization(options =>
         {
@@ -58,6 +61,9 @@ public static class ConstructOpxApiExtensions
                 options.AddPolicy(permission, policy => policy.RequireAuthenticatedUser().RequireAssertion(context =>
                     int.TryParse(context.User.FindFirst(ClaimNames.Roles)?.Value, out var roles) &&
                     Permissions.IsAllowed((AccessRole)roles, permission)));
+            // The machine route alone: authenticated by the device scheme only, so a person's cookie never reaches it and a device key reaches nothing else.
+            options.AddPolicy(DeviceKeyAuthentication.Policy, policy => policy.AddAuthenticationSchemes(DeviceKeyAuthentication.Scheme)
+                .RequireAuthenticatedUser().RequireClaim(DeviceKeyAuthentication.DeviceClaim));
         });
 
         services.AddAntiforgery(options =>
@@ -85,6 +91,10 @@ public static class ConstructOpxApiExtensions
             options.AddPolicy("sign-in", context => RateLimitPartition.GetFixedWindowLimiter(
                 context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = permits, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+            var devicePermits = configuration.GetValue("RateLimiting:DeviceRequestsPerMinute", DeviceKeyAuthentication.DefaultRequestsPerMinute);
+            options.AddPolicy(DeviceKeyAuthentication.RateLimitPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
+                DeviceKeyAuthentication.PartitionOf(context),
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = devicePermits, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
             options.OnRejected = (context, _) => new ValueTask(ApiProblems.WriteAsync(context.HttpContext, StatusCodes.Status429TooManyRequests,
                 "Too many attempts", "Wait a minute, then try again.", "rate_limited"));
         });
@@ -160,6 +170,9 @@ public static class ConstructOpxApiExtensions
         var modules = typeof(Program).Assembly.GetTypes()
             .Where(type => type is { IsClass: true, IsAbstract: false } && typeof(IEndpointModule).IsAssignableFrom(type));
         foreach (var module in modules) ((IEndpointModule)Activator.CreateInstance(module)!).Map(api);
+
+        // Time clock machines post scans with a device key, not a browser session, so this one route has no anti-forgery token to check.
+        TimeClockMachineEndpoints.Map(app.MapGroup("/api").AddEndpointFilter<PrivateResponseFilter>());
 
         if (app.Environment.IsDevelopment()) app.MapOpenApi().AllowAnonymous();
         return app;

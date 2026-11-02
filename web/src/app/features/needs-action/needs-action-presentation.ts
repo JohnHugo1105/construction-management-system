@@ -22,6 +22,7 @@ export const GROUP_HEADINGS: Readonly<Record<NeedsActionGroupKey, string>> = {
   'diary-not-written': 'Site diary not written yesterday',
   'documents-expiring': 'Documents that have expired or expire soon',
   'activities-behind': 'Schedule activities past their planned finish',
+  'time-clock-to-review': 'Time clock scans to review',
 };
 
 /** What the person can do, as far as the links go: it decides which page a delivery opens and whether "See all" exists. */
@@ -66,6 +67,9 @@ export function rowLink(key: NeedsActionGroupKey, row: NeedsActionRow, context: 
       return ['/projects', row.projectId ?? '', 'documents'];
     case 'activities-behind':
       return ['/projects', row.id, 'progress'];
+    case 'time-clock-to-review':
+      // The row is a project: its earliest day waiting opens by default.
+      return ['/time-clock', row.id];
   }
 }
 
@@ -101,6 +105,9 @@ export function urgentChip(key: NeedsActionGroupKey): UrgentChip {
       return { label: 'Expired', tone: 'danger', icon: 'warning' };
     case 'deliveries-expected':
       return { label: 'Late', tone: 'danger', icon: 'clock' };
+    case 'time-clock-to-review':
+      // Urgent here means a day whose scans don't pair up or a worker not posted there: it needs a look, it isn't late.
+      return { label: 'Check scans', tone: 'warning', icon: 'warning' };
     default:
       return { label: 'Overdue', tone: 'danger', icon: 'clock' };
   }

@@ -18,6 +18,11 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
     // Endpoints that any signed-in person may call, or that must work before sign-in. Everything else needs a permission.
     private static readonly string[] OpenToSignedInPeople = ["/api/identity/", "/api/organization"];
 
+    // The one route no person uses: time clock machines post scans with a device key (DeviceKeyAuthentication), so it names the device policy instead of
+    // a permission. Only this route and this method, with exactly that policy, are allowed; any other endpoint naming the device policy fails below.
+    private static readonly (string Route, string Method, string Policy) MachineRoute =
+        ("/api/timeclock/punches", "POST", ConstructOPX.Api.Security.DeviceKeyAuthentication.Policy);
+
     private readonly WebApplicationFactory<Program> _factory;
 
     public EndpointSecurityTests(WebApplicationFactory<Program> factory) =>
@@ -38,12 +43,29 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
         var offenders = endpoints
             .Where(endpoint => !OpenToSignedInPeople.Any(prefix => endpoint.Route.StartsWith(prefix, StringComparison.Ordinal)) ||
                 (endpoint.Route == "/api/organization" && endpoint.Methods.Any(method => method != "GET")))
+            .Where(endpoint => !IsMachineRoute(endpoint))
             .Where(endpoint => endpoint.Policies.Count == 0 || endpoint.Policies.Any(policy => !Permissions.All.Contains(policy)))
             .Select(endpoint => $"{string.Join(",", endpoint.Methods)} {endpoint.Route}")
             .ToArray();
 
         Assert.Empty(offenders);
     }
+
+    [Fact]
+    public void Only_the_machine_route_uses_the_device_policy_and_it_uses_nothing_else()
+    {
+        var endpoints = ApiEndpoints().ToArray();
+
+        var machine = Assert.Single(endpoints, endpoint => endpoint.Route == MachineRoute.Route && endpoint.Methods.Contains(MachineRoute.Method));
+        Assert.Equal([MachineRoute.Method], machine.Methods);
+        Assert.Equal([MachineRoute.Policy], machine.Policies);
+        Assert.False(machine.AllowsAnonymous);
+        Assert.DoesNotContain(endpoints, endpoint => endpoint != machine && endpoint.Policies.Contains(MachineRoute.Policy));
+        Assert.DoesNotContain(MachineRoute.Policy, Permissions.All);
+    }
+
+    private static bool IsMachineRoute(EndpointInfo endpoint) =>
+        endpoint.Route == MachineRoute.Route && endpoint.Methods.SequenceEqual([MachineRoute.Method]) && endpoint.Policies.SequenceEqual([MachineRoute.Policy]);
 
     [Fact]
     public void Nothing_outside_identity_allows_anonymous_access()
@@ -91,8 +113,6 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
         Permissions.DocumentsManage,
         Permissions.ScheduleRead,
         Permissions.ScheduleWrite,
-        Permissions.TimeClockReview,
-        Permissions.TimeClockManage,
     };
 
     private IEnumerable<EndpointInfo> ApiEndpoints() =>

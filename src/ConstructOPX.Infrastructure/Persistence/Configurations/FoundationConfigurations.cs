@@ -18,6 +18,7 @@ internal sealed class OrganizationConfiguration : IEntityTypeConfiguration<Organ
         builder.Property(item => item.TimeZoneId).HasMaxLength(64).IsRequired();
         builder.Property(item => item.HoursPerDay).HasPrecision(5, 2);
         builder.Property(item => item.VarianceBasis).HasConversion<string>().HasMaxLength(20);
+        builder.Ignore(item => item.TimeClock);
     }
 }
 

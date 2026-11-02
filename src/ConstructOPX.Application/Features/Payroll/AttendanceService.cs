@@ -143,6 +143,78 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
         return await reader.GetManyAsync(entries.Select(item => item.Entry.Id).ToArray(), cancellationToken);
     }
 
+    /// <summary>
+    /// Records confirmed time-clock days on one project and date through the same rules as a typed entry (an active worker on the day, the project
+    /// open, one entry per worker, project and day, 24 hours across projects, a holiday already paid as not worked). A worker who already has
+    /// attendance on the project that day, on any sub-project, is never overwritten. Each worker is decided on their own: those that pass are saved
+    /// together, the rest come back with the reason. Each entry carries the first in, the last out and the break taken, for explanation.
+    /// </summary>
+    public async Task<TimeClockAttendanceOutcome> RecordFromTimeClockAsync(Guid projectId, DateOnly workDate, IReadOnlyList<TimeClockAttendanceLine> lines,
+        CancellationToken cancellationToken)
+    {
+        var refused = new Dictionary<Guid, string>();
+        if (lines.Count == 0) return new TimeClockAttendanceOutcome([], refused);
+
+        var organization = await organizations.GetCurrentAsync(cancellationToken);
+        var today = organization.TodayLocal(clock.UtcNow);
+        var project = await LoadProjectAsync(projectId, cancellationToken);
+        project.EnsureCanReceiveRecordsFor(null);
+
+        var ids = lines.Select(line => line.WorkerId).Distinct().ToArray();
+        var found = (await workers.GetManyAsync(ids, includeHistory: false, cancellationToken)).ToDictionary(worker => worker.Id);
+        var day = await LoadDayAsync(project.Id, workDate, ids, excludeEntryId: null, cancellationToken);
+        var now = clock.UtcNow;
+        var recorded = new List<Guid>(lines.Count);
+        foreach (var line in lines)
+        {
+            if (!found.TryGetValue(line.WorkerId, out var worker))
+            {
+                refused[line.WorkerId] = "This worker couldn't be found.";
+                continue;
+            }
+            if (day.Existing.Any(item => item.WorkerId == worker.Id))
+            {
+                refused[worker.Id] = "Already recorded.";
+                continue;
+            }
+
+            try
+            {
+                // The request id ties the entry to the worker, project and day, so a second confirmation saved at the same moment is refused by the database.
+                var entry = AttendanceEntry.Record(Guid.NewGuid(), currentUser.TenantId, worker, project, null, workDate, line.RegularHours, line.OvertimeHours,
+                    null, organization.HoursPerDay, currentUser.UserId, $"tc:{worker.Id:N}{project.Id:N}{workDate:yyyyMMdd}", today, now, line.NightHours,
+                    line.Evidence);
+                if (CheckDay(worker, project, entry, day, excludeEntryId: null) is { } problem)
+                {
+                    refused[worker.Id] = problem.Message;
+                    continue;
+                }
+
+                attendance.Add(entry);
+                audit.Record("Attendance.Recorded", nameof(AttendanceEntry), entry.Id, RecordedSummary(worker, project, entry) + " Confirmed from the time clock.");
+                recorded.Add(worker.Id);
+            }
+            catch (ValidationFailedException ex)
+            {
+                refused[worker.Id] = string.Join(' ', ex.Errors.Values.SelectMany(messages => messages));
+            }
+        }
+
+        if (recorded.Count > 0)
+        {
+            try
+            {
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+            catch (DomainRuleException)
+            {
+                throw new DomainRuleException("Someone confirmed some of these workers at the same moment. Reload the day to see what is recorded.");
+            }
+        }
+
+        return new TimeClockAttendanceOutcome(recorded, refused);
+    }
+
     public async Task<AttendanceEntryDto> ReviseAsync(Guid id, ReviseAttendanceRequest request, CancellationToken cancellationToken)
     {
         var entry = await LoadAsync(id, cancellationToken);

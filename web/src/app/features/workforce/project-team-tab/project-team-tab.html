@@ -34,6 +34,10 @@
     </app-alert>
   }
 
+  @if (context.project(); as project) {
+    <app-team-time-clock-notice [projectId]="project.id" />
+  }
+
   @if (state.futureDate()) {
     <app-alert tone="warning" title="That day hasn't happened yet">
       Attendance can only be recorded for today or an earlier day.
@@ -351,6 +355,9 @@
                   <div class="line__summary">
                     <p class="line__hours">
                       {{ item.hours }}
+                      @if (item.entry.source === 'TimeClock') {
+                        <span class="text-muted text-small"> · From the time clock</span>
+                      }
                       @if (item.entry.remarks) {
                         <span class="text-muted text-small"> · {{ item.entry.remarks }}</span>
                       }

@@ -54,11 +54,14 @@ public sealed record AttendanceListQuery(Guid? WorkerId, Guid? ProjectId, DateOn
 /// <summary>
 /// Hours only: attendance never carries pay. <c>IsLocked</c> means a payroll run has taken the entry. <c>DayType</c> is what the day is
 /// for this worker (Ordinary, RestDay, Special, SpecialRestDay, RegularHoliday, RegularHolidayRestDay), decided by the server from the
-/// holiday calendar and the worker's rest day as they are now; <c>NightHours</c> are the hours that fell in the night.
+/// holiday calendar and the worker's rest day as they are now; <c>NightHours</c> are the hours that fell in the night. <c>Source</c> is Manual
+/// (typed) or TimeClock (a confirmed day of scans); for the latter <c>ClockFirstIn</c>, <c>ClockLastOut</c> and <c>ClockBreakMinutes</c> explain
+/// the hours. Pay is worked out the same way whatever the source.
 /// </summary>
 public sealed record AttendanceEntryDto(Guid Id, Guid WorkerId, string WorkerName, string EmployeeNumber, Guid ProjectId, string ProjectName,
     Guid? SubProjectId, string? SubProjectName, DateOnly WorkDate, decimal RegularHours, decimal OvertimeHours, string? Remarks, string Status,
-    bool IsLocked, Guid? PayrollRunId, string? VoidReason, int Version, decimal NightHours = 0m, string DayType = "Ordinary");
+    bool IsLocked, Guid? PayrollRunId, string? VoidReason, int Version, decimal NightHours = 0m, string DayType = "Ordinary", string Source = "Manual",
+    DateTimeOffset? ClockFirstIn = null, DateTimeOffset? ClockLastOut = null, int? ClockBreakMinutes = null);
 
 /// <summary>
 /// A project's day: the hours recorded, and the crew posted to the project that day who have no entry yet, so a foreman can fill in
@@ -76,6 +79,12 @@ public sealed record AttendanceBatchLine(Guid WorkerId, decimal RegularHours, de
 /// <summary>A crew's day on one project. All lines are recorded or none are; <c>ClientRequestId</c> covers the whole submission.</summary>
 public sealed record RecordAttendanceBatchRequest(Guid ProjectId, Guid? SubProjectId, DateOnly WorkDate, IReadOnlyList<AttendanceBatchLine>? Entries,
     string? ClientRequestId);
+
+/// <summary>A confirmed time-clock day for one worker: the hours to record and the scans' first in, last out and break, kept for explanation.</summary>
+public sealed record TimeClockAttendanceLine(Guid WorkerId, decimal RegularHours, decimal OvertimeHours, decimal NightHours, TimeClockEvidence Evidence);
+
+/// <summary>The workers whose attendance was recorded, and those refused with the reason in plain words.</summary>
+public sealed record TimeClockAttendanceOutcome(IReadOnlyList<Guid> Recorded, IReadOnlyDictionary<Guid, string> Refused);
 
 public sealed record ReviseAttendanceRequest(Guid? SubProjectId, decimal RegularHours, decimal OvertimeHours, string? Remarks, int Version,
     decimal NightHours = 0m);

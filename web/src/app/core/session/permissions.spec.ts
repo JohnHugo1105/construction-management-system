@@ -22,6 +22,7 @@ describe('NEEDS_ACTION_PERMISSIONS', () => {
     'diary.write',
     'documents.manage',
     'schedule.write',
+    'timeclock.review',
   ];
 
   it('is the permissions that put work on the Needs your action page, in the server’s order', () => {

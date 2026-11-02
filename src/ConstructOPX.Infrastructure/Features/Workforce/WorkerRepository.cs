@@ -152,7 +152,7 @@ internal sealed class WorkerReader(ConstructOpxDbContext db) : IWorkerReader
             worker.ProvincialAddress, worker.ContactNumber, worker.Reference, worker.Status.ToString(), worker.StatusChangedOn, worker.StatusReason,
             designation, currentRateMinor, currentRateUnit, assignments.FirstOrDefault(item => item.IsCurrent), assignments, rates, cases, worker.Version,
             includePay ? new WorkerStatutoryDto(worker.IsSssMember, worker.IsPhilHealthMember, worker.IsPagIbigMember, worker.IsTaxExempt) : null,
-            RestDayText.Format(worker.RestDay));
+            RestDayText.Format(worker.RestDay), worker.PunchCode is not null);
     }
 
     private static IQueryable<Worker> Search(IQueryable<Worker> workers, string? search)

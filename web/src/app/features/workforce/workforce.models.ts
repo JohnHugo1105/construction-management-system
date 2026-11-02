@@ -100,6 +100,8 @@ export interface WorkerDetail {
   readonly statutory: WorkerStatutory | null;
   /** The weekly rest day; null when the worker has no fixed rest day (every day is then an ordinary day for pay). */
   readonly restDay?: RestDay | null;
+  /** The worker has a time clock badge code (the code itself is only on the badge pages). */
+  readonly hasPunchCode?: boolean;
 }
 
 export type RestDay =
@@ -244,6 +246,8 @@ export interface AttendanceEntry {
   readonly nightHours?: number;
   /** What the day is for this worker, decided by the server: Ordinary, RestDay, Special, RegularHoliday and the rest-day mixes. */
   readonly dayType?: string;
+  /** Manual (typed) or TimeClock (a confirmed day of scans, which keeps its first in, last out and break). */
+  readonly source?: 'Manual' | 'TimeClock';
 }
 
 /** A project's day: the hours recorded and the crew posted there with no entry yet, and the company holiday on it if any. */

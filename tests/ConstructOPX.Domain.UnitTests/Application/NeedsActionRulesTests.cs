@@ -189,7 +189,7 @@ public sealed class NeedsActionRulesTests
     [
         "purchasing.approve", "changeorders.approve", "billing.approve", "billing.manage", "subcontracts.approve", "payroll.approve", "purchasing.receive",
         "receiving.record", "bonds.manage", "progress.write", "attendance.write", "statutory.manage", "tasks.use", "diary.write", "documents.manage",
-        "schedule.write"
+        "schedule.write", "timeclock.review"
     ];
 
     [Fact]
@@ -202,7 +202,7 @@ public sealed class NeedsActionRulesTests
     [Fact]
     public void A_built_in_group_is_acted_on_exactly_through_the_first_twelve_listed_permissions()
     {
-        // The eleven built-in groups act on the first twelve permissions (deliveries on two, bills to issue and to chase on one each); the last four belong to
+        // The eleven built-in groups act on the first twelve permissions (deliveries on two, bills to issue and to chase on one each); the last five belong to
         // groups other features contribute, which the API tests check against the registered sources.
         var builtIn = NeedsActionGroups.ActingPermissions.Take(12).ToArray();
         foreach (var role in AccessRoles.Split(AccessRoles.All).Append(AccessRole.None))

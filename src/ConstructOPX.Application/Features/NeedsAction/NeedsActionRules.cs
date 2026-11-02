@@ -28,7 +28,7 @@ public static class NeedsActionGroups
     /// <summary>
     /// Every permission that can put work on the page, in the order the page's navigation entry checks them: the permission each built-in group
     /// acts on (<see cref="CanActOn"/>), then those of the groups other features contribute through <see cref="INeedsActionSource"/> (tasks, the
-    /// site diary, documents, the schedule). The web client keeps the same list (<c>NEEDS_ACTION_PERMISSIONS</c>) to decide whether to show the
+    /// site diary, documents, the schedule, the time clock). The web client keeps the same list (<c>NEEDS_ACTION_PERMISSIONS</c>) to decide whether to show the
     /// entry; a test on each side pins the same array so the two cannot drift apart.
     /// </summary>
     public static readonly IReadOnlyList<string> ActingPermissions =
@@ -36,7 +36,7 @@ public static class NeedsActionGroups
         Permissions.PurchasingApprove, Permissions.ChangeOrdersApprove, Permissions.BillingApprove, Permissions.BillingManage,
         Permissions.SubcontractsApprove, Permissions.PayrollApprove, Permissions.PurchasingReceive, Permissions.ReceivingRecord, Permissions.BondsManage,
         Permissions.ProgressWrite, Permissions.AttendanceWrite, Permissions.StatutoryManage,
-        Permissions.TasksUse, Permissions.DiaryWrite, Permissions.DocumentsManage, Permissions.ScheduleWrite
+        Permissions.TasksUse, Permissions.DiaryWrite, Permissions.DocumentsManage, Permissions.ScheduleWrite, Permissions.TimeClockReview
     ];
 
     /// <summary>True when the roles hold the permission that acts on the group (the approval, issue, certify or record step).</summary>

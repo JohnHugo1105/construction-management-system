@@ -29,6 +29,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/setup-page').then((m) => m.SetupPage),
   },
   {
+    // The time clock kiosk at the site gate: no signed-in person and no menu. It proves itself with the device key kept on the tablet.
+    path: 'kiosk',
+    title: 'Time clock',
+    loadComponent: () => import('./features/timeclock/kiosk-page').then((m) => m.KioskPage),
+  },
+  {
     path: '',
     component: Shell,
     canActivate: [authGuard],
@@ -63,6 +69,12 @@ export const routes: Routes = [
         canActivate: [permissionGuard(Permission.workforceRead)],
         loadChildren: () =>
           import('./features/workforce/workforce.routes').then((m) => m.WORKFORCE_ROUTES),
+      },
+      {
+        path: 'time-clock',
+        canActivate: [permissionGuard(Permission.timeClockReview, Permission.timeClockManage)],
+        loadChildren: () =>
+          import('./features/timeclock/timeclock.routes').then((m) => m.TIME_CLOCK_ROUTES),
       },
       {
         path: 'payroll',
@@ -110,7 +122,9 @@ export const routes: Routes = [
         path: 'notifications',
         canActivate: [permissionGuard(Permission.notificationsRead)],
         loadChildren: () =>
-          import('./features/collaboration/notifications.routes').then((m) => m.NOTIFICATION_ROUTES),
+          import('./features/collaboration/notifications.routes').then(
+            (m) => m.NOTIFICATION_ROUTES,
+          ),
       },
       {
         path: 'bonds',

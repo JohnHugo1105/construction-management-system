@@ -57,14 +57,15 @@ public sealed record WorkerCaseDto(Guid Id, DateOnly CaseDate, string Title, str
 
 /// <summary>
 /// A worker's profile. <c>CurrentRateMinor</c>, <c>CurrentRateUnit</c> and <c>Rates</c> are null, null and empty unless the caller may
-/// see pay (the payroll.read permission).
+/// see pay (the payroll.read permission). <c>HasPunchCode</c> says whether the worker has a time clock badge code; the code itself is only on the
+/// badge (the time clock's badge pages).
 /// </summary>
 public sealed record WorkerDetailDto(Guid Id, string EmployeeNumber, string FirstName, string? MiddleName, string LastName, string FullName,
     DateOnly? DateOfBirth, DateOnly DateHired, string? MaritalStatus, string? SpouseName, string? Religion, string? EducationalAttainment,
     string? PresentAddress, string? ProvincialAddress, string? ContactNumber, string? Reference, string Status, DateOnly? StatusChangedOn,
     string? StatusReason, string? Designation, long? CurrentRateMinor, string? CurrentRateUnit, WorkerAssignmentDto? CurrentAssignment,
     IReadOnlyList<WorkerAssignmentDto> Assignments, IReadOnlyList<WorkerRateDto> Rates, IReadOnlyList<WorkerCaseDto> Cases, int Version,
-    WorkerStatutoryDto? Statutory = null, string? RestDay = null);
+    WorkerStatutoryDto? Statutory = null, string? RestDay = null, bool HasPunchCode = false);
 
 /// <summary>Which contributions the worker pays and whether tax is withheld. Only returned to people who may see pay.</summary>
 public sealed record WorkerStatutoryDto(bool SssMember, bool PhilHealthMember, bool PagIbigMember, bool TaxExempt);

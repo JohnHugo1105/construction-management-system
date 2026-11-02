@@ -14,6 +14,7 @@ using ConstructOPX.Application.Features.Purchasing;
 using ConstructOPX.Application.Features.Receiving;
 using ConstructOPX.Application.Features.Subcontracts;
 using ConstructOPX.Application.Features.Suppliers;
+using ConstructOPX.Application.Features.TimeClock;
 using ConstructOPX.Application.Features.Workforce;
 using ConstructOPX.Domain.Features.Identity;
 using ConstructOPX.TestSupport;
@@ -36,7 +37,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
     private static readonly string[] EveryGroup =
     [
         "purchase-orders-to-approve", "change-orders-to-approve", "bills-to-issue", "claims-to-certify", "payroll-to-approve", "bills-to-chase",
-        "deliveries-expected", "bonds-to-attend", "progress-not-updated", "attendance-not-recorded", "statutory-needs-setup"
+        "deliveries-expected", "bonds-to-attend", "progress-not-updated", "attendance-not-recorded", "time-clock-to-review", "statutory-needs-setup"
     ];
 
     private readonly ConstructOpxApiFactory _factory;
@@ -57,7 +58,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             [AccessRole.ProjectManager] =
             [
                 "purchase-orders-to-approve", "change-orders-to-approve", "bills-to-chase", "deliveries-expected", "bonds-to-attend",
-                "progress-not-updated", "attendance-not-recorded"
+                "progress-not-updated", "attendance-not-recorded", "time-clock-to-review"
             ],
             [AccessRole.Accountant] =
             [
@@ -65,7 +66,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
                 "bonds-to-attend", "statutory-needs-setup"
             ],
             [AccessRole.CostEngineer] = ["deliveries-expected", "progress-not-updated"],
-            [AccessRole.HrOfficer] = ["attendance-not-recorded"],
+            [AccessRole.HrOfficer] = ["attendance-not-recorded", "time-clock-to-review"],
             [AccessRole.WarehouseKeeper] = ["deliveries-expected"],
             [AccessRole.Viewer] = []
         };
@@ -96,8 +97,8 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         var groups = result.Groups.ToDictionary(group => group.Key);
 
         // Urgent groups first (overdue bills, a late delivery, an expired bond), then the page order.
-        Assert.Equal(["bills-to-chase", "deliveries-expected", "bonds-to-attend", "purchase-orders-to-approve", "change-orders-to-approve",
-            "bills-to-issue", "claims-to-certify", "payroll-to-approve", "progress-not-updated", "attendance-not-recorded", "statutory-needs-setup"],
+        Assert.Equal(["bills-to-chase", "deliveries-expected", "bonds-to-attend", "time-clock-to-review", "purchase-orders-to-approve",
+            "change-orders-to-approve", "bills-to-issue", "claims-to-certify", "payroll-to-approve", "progress-not-updated", "attendance-not-recorded", "statutory-needs-setup"],
             result.Groups.Select(group => group.Key));
 
         var order = Single(groups, "purchase-orders-to-approve");
@@ -147,6 +148,10 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         var attendance = Single(groups, "attendance-not-recorded");
         Assert.Equal((world.Sites[0].Id, (long?)null), (attendance.Id, attendance.AmountMinor));
         Assert.Equal($"No attendance recorded for {today.AddDays(-1).ToString("ddd d MMM", CultureInfo.InvariantCulture)}", attendance.Detail);
+
+        var clock = Single(groups, "time-clock-to-review");
+        Assert.Equal((world.Sites[0].Id, (long?)null, true), (clock.Id, clock.AmountMinor, clock.IsUrgent));
+        Assert.Equal($"1 worker to review for {TimeClockTestKit.Today.AddDays(-2).ToString("ddd d MMM", CultureInfo.InvariantCulture)}; 1 needs a closer look", clock.Detail);
 
         var tables = Single(groups, "statutory-needs-setup");
         Assert.Equal("No table in force for SSS, PhilHealth, Pag-IBIG and withholding tax, so payroll can't work them out.", tables.Detail);
@@ -484,7 +489,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
         // The HR Officer can: its true count is in both totals, and its urgent row puts it above the attendance group, which comes first on page order.
         using var hr = await SignInAsync(AccessRole.HrOfficer);
         var result = await hr.GetAsync<NeedsActionDto>(Full);
-        Assert.Equal([FakeSource.GroupKey, "attendance-not-recorded"], result.Groups.Select(group => group.Key));
+        Assert.Equal([FakeSource.GroupKey, "attendance-not-recorded", "time-clock-to-review"], result.Groups.Select(group => group.Key));
         Assert.Equal(FakeSource.Rows, result.Groups[0].Count);
         Assert.Equal(FakeSource.Rows, result.Groups.Sum(group => group.Count));
         Assert.Equal(FakeSource.Rows, (await hr.GetAsync<NeedsActionCountDto>(Count)).Total);
@@ -546,7 +551,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             await StatementsAsync(_factory, async () => Assert.Equal(HttpStatusCode.OK, (await world.Admin.GetAsync(Count)).StatusCode)));
 
         var small = await MeasureAsync();
-        await AddRecordsAsync(world.Admin, world.Firm, 9, firstPeriod: 1);
+        await AddRecordsAsync(_factory, world.Admin, world.Firm, 9, firstPeriod: 1);
         var large = await MeasureAsync();
 
         var result = await world.Admin.GetAsync<NeedsActionDto>(Full);
@@ -556,10 +561,10 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             Assert.Equal(NeedsActionRules.RowsShown, group.Rows.Count);
         });
         Assert.Equal(small, large);
-        // The organization (for today's date), then a count and the rows for each of the ten record groups, and two statements for the
-        // statutory tables (the status, then whether the company has a worker or a payroll, asked only while a table is missing); the count
-        // route is the organization, one count per group and the same two statements.
-        Assert.Equal((23, 13), large);
+        // The organization (for today's date), then a count and the rows for each of the eleven record groups (the time clock group is one per
+        // project, so it also reads rows), and two statements for the statutory tables (the status, then whether the company has a worker or a
+        // payroll, asked only while a table is missing); the count route is the organization, one count per group and the same two statements.
+        Assert.Equal((25, 14), large);
 
         // A role with no group costs nothing beyond signing in.
         using var viewer = await AsRoleAsync(world, AccessRole.Viewer);
@@ -589,7 +594,7 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
     {
         var (admin, user) = await SignedInAsync(_factory);
         var firm = await PurchasingTestKit.CreateFirmAsync(admin);
-        var added = await AddRecordsAsync(admin, firm, 1, firstPeriod: 0);
+        var added = await AddRecordsAsync(_factory, admin, firm, 1, firstPeriod: 0);
         var (subcontract, claimId, gross) = added.Claims[0];
         return new World(admin, user, firm, added.Drafts[0], added.Approved[0], added.ChangeOrders[0], added.DraftBills[0], added.IssuedBills[0],
             subcontract, claimId, gross, added.Bonds[0], added.Sites, added.PayrollRuns);
@@ -598,10 +603,11 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
     /// <summary>
     /// Adds <paramref name="count"/> waiting records to every group: draft and late approved orders, an expired bond and a subcontract with a draft
     /// claim on a buying project; submitted change orders on a project with a locked budget; per billed project an overdue issued bill and a
-    /// second, draft bill; per active site (with a budget line) a posted worker with attendance a week before yesterday and none yesterday (and no progress); and draft
+    /// second, draft bill; per active site (with a budget line) a posted worker with attendance a week before yesterday and none yesterday (and no progress) and
+    /// one scan two days ago with no time-out, waiting for review; and draft
     /// payroll for a half-month period of 2026 paying that worker.
     /// </summary>
-    private static async Task<Added> AddRecordsAsync(ApiClient admin, SupplierDto firm, int count, int firstPeriod)
+    private static async Task<Added> AddRecordsAsync(ConstructOpxApiFactory factory, ApiClient admin, SupplierDto firm, int count, int firstPeriod)
     {
         var today = BondTestKit.Today();
         var added = new Added([], [], [], [], [], [], [], [], []);
@@ -629,6 +635,12 @@ public sealed class NeedsActionApiTests : IClassFixture<ConstructOpxApiFactory>
             // The same weekday a week before yesterday: this site recorded then and nothing yesterday.
             await WorkforceTestKit.RecordAsync(admin, worker.Id, site.Id, BondTestKit.Date(NeedsActionRules.AttendanceCompareDay(today)), 8m);
             added.Sites.Add(site);
+
+            // A scan two days ago with no time-out: the worker's day waits for a person to review it.
+            var issued = await admin.PostAsync<PunchCodeIssuedDto>($"/api/workers/{worker.Id}/punch-code",
+                new { version = (await admin.GetAsync<WorkerDetailDto>($"/api/workers/{worker.Id}")).Version });
+            var device = await TimeClockTestKit.RegisterAsync(admin, site.Id);
+            await TimeClockTestKit.PushAsync(factory, device.Key, TimeClockTestKit.Scan(Guid.NewGuid().ToString("N"), issued.Code, TimeClockTestKit.At(2, 7, 30)));
 
             // Half-month periods from 1 Feb 2026: attendance on the second day of each, then the payroll for it.
             var period = firstPeriod + index;
