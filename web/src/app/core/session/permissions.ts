@@ -71,4 +71,8 @@ export const NEEDS_ACTION_PERMISSIONS: readonly string[] = [
   Permission.progressWrite,
   Permission.attendanceWrite,
   Permission.statutoryManage,
+  Permission.tasksUse,
+  Permission.diaryWrite,
+  Permission.documentsManage,
+  Permission.scheduleWrite,
 ];

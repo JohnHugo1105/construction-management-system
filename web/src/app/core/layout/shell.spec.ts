@@ -261,7 +261,9 @@ describe('Shell Needs action badge', () => {
     expect(mainNav(root)!.querySelector('a[href="/needs-action"]')).toBeNull();
   });
 
-  it('reads the count again when the browser tab becomes visible', async () => {
+  it('reads the count again when the browser tab becomes visible, but not within 30 seconds of the last read', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-02T08:00:00Z'));
     const { harness, backend, root } = await open();
     backend.expectOne(COUNT).flush({ total: 1 });
 
@@ -270,10 +272,15 @@ describe('Shell Needs action badge', () => {
       get: () => 'visible',
     });
     document.dispatchEvent(new Event('visibilitychange'));
+    backend.expectNone(COUNT);
+
+    vi.setSystemTime(Date.now() + 31_000);
+    document.dispatchEvent(new Event('visibilitychange'));
     backend.expectOne(COUNT).flush({ total: 4 });
     await settle(harness.fixture);
 
     expect(text(needsActionLink(root), '.nav-badge')).toBe('4');
+    vi.useRealTimers();
   });
 });
 

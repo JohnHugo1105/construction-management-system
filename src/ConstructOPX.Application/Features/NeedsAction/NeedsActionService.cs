@@ -14,33 +14,40 @@ namespace ConstructOPX.Application.Features.NeedsAction;
 /// the organization plus one statement per group. A caller with no group costs nothing.
 /// </summary>
 public sealed class NeedsActionService(INeedsActionReader reader, IReceivingReader receiving, StatutoryService statutory,
-    IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock)
+    IOrganizationRepository organizations, ICurrentUser currentUser, IClock clock, IEnumerable<INeedsActionSource> sources)
 {
     private static readonly ReceivingOrderFilter EveryOrder = new(null, null);
 
     public async Task<NeedsActionDto> GetAsync(CancellationToken cancellationToken)
     {
         var groups = NeedsActionGroups.For(currentUser.Roles);
-        if (groups.Count == 0) return new NeedsActionDto([]);
+        var contributed = ContributedGroups();
+        if (groups.Count == 0 && contributed.Count == 0) return new NeedsActionDto([]);
 
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         var dates = new NeedsActionDates(organization.TodayLocal(clock.UtcNow));
         // One context answers every group, so the groups are read one after another.
-        var read = new List<NeedsActionGroupDto>(groups.Count);
+        var read = new List<NeedsActionGroupDto>(groups.Count + contributed.Count);
         foreach (var group in groups) read.Add(await ReadAsync(group, dates, organization, cancellationToken));
+        foreach (var source in contributed) read.Add(await source.ReadAsync(dates, NeedsActionRules.RowsShown, cancellationToken));
         return new NeedsActionDto(NeedsActionGroups.Ordered(read));
     }
 
     public async Task<NeedsActionCountDto> CountAsync(CancellationToken cancellationToken)
     {
         var groups = NeedsActionGroups.For(currentUser.Roles);
-        if (groups.Count == 0) return new NeedsActionCountDto(0);
+        var contributed = ContributedGroups();
+        if (groups.Count == 0 && contributed.Count == 0) return new NeedsActionCountDto(0);
 
         var dates = new NeedsActionDates((await organizations.GetCurrentAsync(cancellationToken)).TodayLocal(clock.UtcNow));
         var total = 0;
         foreach (var group in groups) total += await CountAsync(group, dates, cancellationToken);
+        foreach (var source in contributed) total += await source.CountAsync(dates, cancellationToken);
         return new NeedsActionCountDto(total);
     }
+
+    /// <summary>The groups other features contribute that the caller may act on, decided from the caller's own roles.</summary>
+    private IReadOnlyList<INeedsActionSource> ContributedGroups() => sources.Where(source => source.CanActOn(currentUser.Roles)).ToArray();
 
     private async Task<int> CountAsync(NeedsActionGroup group, NeedsActionDates dates, CancellationToken cancellationToken) => group switch
     {

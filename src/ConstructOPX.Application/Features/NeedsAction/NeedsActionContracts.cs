@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ConstructOPX.Domain.Features.Identity;
 
 namespace ConstructOPX.Application.Features.NeedsAction;
 
@@ -54,6 +55,28 @@ public interface INeedsActionReader
 /// <param name="Quantity">A count: the workers of a payroll, the workers without attendance.</param>
 public sealed record NeedsActionRecord(Guid Id, Guid? ParentId, string? Number, string? Party, string? Kind, Guid? ProjectId, string? ProjectName,
     DateTimeOffset? SinceUtc, DateOnly? Date, DateOnly? OtherDate, long? AmountMinor, int? Quantity);
+
+/// <summary>
+/// A group of waiting work contributed by another feature (tasks, the site diary, documents, the schedule), so that feature owns its rule and
+/// this page owns only the shape. Implementations are classes named <c>*NeedsActionSource</c> in Infrastructure and are registered
+/// automatically. A source says who may act on its group, counts it, and reads its most urgent rows. It must be set-based (at most two SQL
+/// statements: the count, and the rows only when the count is above zero), must stay inside the company filter, and must never put an amount in
+/// a row for someone who may not see it (leave <see cref="NeedsActionRowDto.AmountMinor"/> null). Its key must also be added to the web page
+/// (<c>needs-action.models.ts</c> and <c>needs-action-presentation.ts</c>).
+/// </summary>
+public interface INeedsActionSource
+{
+    /// <summary>The group's key, for example "tasks-assigned".</summary>
+    string Key { get; }
+
+    /// <summary>True when the roles hold the permission that acts on the group. A group a person cannot act on is not read and not returned.</summary>
+    bool CanActOn(AccessRole roles);
+
+    Task<int> CountAsync(NeedsActionDates dates, CancellationToken cancellationToken);
+
+    /// <summary>The group with its true count and at most <paramref name="take"/> of its most urgent rows.</summary>
+    Task<NeedsActionGroupDto> ReadAsync(NeedsActionDates dates, int take, CancellationToken cancellationToken);
+}
 
 // ---- DTOs -------------------------------------------------------------------------------------------------------------------
 

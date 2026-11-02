@@ -14,7 +14,11 @@ export type NeedsActionGroupKey =
   | 'bonds-to-attend'
   | 'progress-not-updated'
   | 'attendance-not-recorded'
-  | 'statutory-needs-setup';
+  | 'statutory-needs-setup'
+  | 'tasks-assigned'
+  | 'diary-not-written'
+  | 'documents-expiring'
+  | 'activities-behind';
 
 export interface NeedsActionRow {
   /** The record the row opens (a project for progress and attendance rows; empty for the statutory tables). */

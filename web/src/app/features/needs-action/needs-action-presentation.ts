@@ -18,6 +18,10 @@ export const GROUP_HEADINGS: Readonly<Record<NeedsActionGroupKey, string>> = {
   'progress-not-updated': 'Progress not updated for 14 days',
   'attendance-not-recorded': 'Attendance not recorded yesterday',
   'statutory-needs-setup': 'Contribution and tax tables need setup',
+  'tasks-assigned': 'Tasks assigned to you',
+  'diary-not-written': 'Site diary not written yesterday',
+  'documents-expiring': 'Documents that have expired or expire soon',
+  'activities-behind': 'Schedule activities past their planned finish',
 };
 
 /** What the person can do, as far as the links go: it decides which page a delivery opens and whether "See all" exists. */
@@ -54,6 +58,14 @@ export function rowLink(key: NeedsActionGroupKey, row: NeedsActionRow, context: 
       return ['/projects', row.id, 'team'];
     case 'statutory-needs-setup':
       return ['/payroll/statutory'];
+    case 'tasks-assigned':
+      return ['/tasks', row.id];
+    case 'diary-not-written':
+      return ['/projects', row.id, 'diary'];
+    case 'documents-expiring':
+      return ['/projects', row.projectId ?? '', 'documents'];
+    case 'activities-behind':
+      return ['/projects', row.id, 'progress'];
   }
 }
 
