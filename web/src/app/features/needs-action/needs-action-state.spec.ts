@@ -106,6 +106,8 @@ describe('NeedsActionState', () => {
   });
 
   it('refreshes when the browser tab becomes visible again, and stops once the shell is gone', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-02T08:00:00Z'));
     const { state, http } = await setup();
     const { ref, destroy } = fakeDestroyRef();
     state.refreshWhenVisible(ref);
@@ -117,9 +119,19 @@ describe('NeedsActionState', () => {
     http.expectOne(COUNT).flush({ total: 2 });
     expect(state.count()).toBe(2);
 
-    destroy();
+    // Coming back again straight away does not ask again; after 30 seconds it does.
     becomeVisible('visible');
     http.expectNone(COUNT);
+    vi.setSystemTime(Date.now() + 31_000);
+    becomeVisible('visible');
+    http.expectOne(COUNT).flush({ total: 3 });
+    expect(state.count()).toBe(3);
+
+    destroy();
+    vi.setSystemTime(Date.now() + 31_000);
+    becomeVisible('visible');
+    http.expectNone(COUNT);
+    vi.useRealTimers();
   });
 
   it('shows nobody else the previous person’s number', async () => {

@@ -105,6 +105,24 @@ public sealed class PermissionsTests
     }
 
     [Fact]
+    public void The_roles_that_act_on_a_waiting_item_can_also_read_it_and_see_costs_so_an_amount_on_the_queue_never_reaches_anyone_else()
+    {
+        // "Needs your action" picks a group by the permission that acts on it and shows that group's amount. That is only safe while every
+        // role holding the acting permission also holds the permission that reads the record and costs.read. This test is that invariant.
+        var costs = Permissions.RolesFor(Permissions.CostsRead);
+        foreach (var (act, read) in new[]
+                 {
+                     (Permissions.PurchasingApprove, Permissions.PurchasingRead), (Permissions.ChangeOrdersApprove, Permissions.ChangeOrdersRead),
+                     (Permissions.BillingApprove, Permissions.BillingRead), (Permissions.BillingManage, Permissions.BillingRead),
+                     (Permissions.SubcontractsApprove, Permissions.SubcontractsRead), (Permissions.BondsManage, Permissions.BondsRead)
+                 })
+        {
+            Assert.Equal(default, Permissions.RolesFor(act) & ~Permissions.RolesFor(read));
+            Assert.Equal(default, Permissions.RolesFor(act) & ~costs);
+        }
+    }
+
+    [Fact]
     public void An_unknown_permission_is_an_error_not_a_silent_denial() =>
         Assert.Throws<ArgumentException>(() => Permissions.IsAllowed(AccessRole.Administrator, "projects.delete-everything"));
 }

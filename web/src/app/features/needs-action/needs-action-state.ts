@@ -10,6 +10,9 @@ export function badgeText(total: number): string {
   return total > 99 ? '99+' : String(total);
 }
 
+/** The shortest time between two refreshes caused by the tab coming back to the front. */
+const MIN_FOCUS_REFRESH_MS = 30_000;
+
 /**
  * How many things wait on the signed-in person, for the navigation badge. It is loaded once when the shell starts, again when the
  * browser tab becomes visible, and taken from the page whenever the page reads the full queue, so the badge and the page never
@@ -26,6 +29,8 @@ export class NeedsActionState {
     null,
   );
   private request: Subscription | null = null;
+  /** When the number was last asked for or set, so switching tabs back and forth does not ask again each time. */
+  private lastReadAtMs = 0;
 
   /** True when the person holds a permission that can put something on the page. */
   readonly applies = computed(() => this.session.hasAnyPermission(...NEEDS_ACTION_PERMISSIONS));
@@ -44,6 +49,7 @@ export class NeedsActionState {
   refresh(): void {
     const userId = this.session.session()?.userId;
     if (!userId || !this.applies()) return;
+    this.lastReadAtMs = Date.now();
     this.request?.unsubscribe();
     this.request = this.api.count().subscribe({
       next: (result) => this.latest.set({ userId, total: result.total }),
@@ -55,6 +61,7 @@ export class NeedsActionState {
   setTotal(total: number): void {
     const userId = this.session.session()?.userId;
     if (!userId) return;
+    this.lastReadAtMs = Date.now();
     this.request?.unsubscribe();
     this.request = null;
     this.latest.set({ userId, total });
@@ -63,7 +70,12 @@ export class NeedsActionState {
   /** Called once by the shell: refreshes whenever the browser tab becomes visible again, until the shell goes away. */
   refreshWhenVisible(destroyRef: DestroyRef): void {
     const listener = () => {
-      if (this.document.visibilityState === 'visible') this.refresh();
+      // A tab that comes back to the front re-reads the number, but not more often than every 30 seconds: the badge is a hint.
+      if (
+        this.document.visibilityState === 'visible' &&
+        Date.now() - this.lastReadAtMs >= MIN_FOCUS_REFRESH_MS
+      )
+        this.refresh();
     };
     this.document.addEventListener('visibilitychange', listener);
     destroyRef.onDestroy(() => {
