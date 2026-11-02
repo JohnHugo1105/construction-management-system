@@ -103,6 +103,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                     OvertimeMultiplierBps = table.Column<int>(type: "int", nullable: false),
                     VarianceBasis = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     PayrollRunsPerMonth = table.Column<int>(type: "int", nullable: false),
+                    TimeClockDayStartMinutes = table.Column<int>(type: "int", nullable: false),
+                    UnpaidBreakMinutes = table.Column<int>(type: "int", nullable: false),
+                    PunchRoundingMinutes = table.Column<int>(type: "int", nullable: false),
                     TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Version = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -310,6 +313,7 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                     IsPagIbigMember = table.Column<bool>(type: "bit", nullable: false),
                     IsTaxExempt = table.Column<bool>(type: "bit", nullable: false),
                     RestDay = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    PunchCode = table.Column<string>(type: "varchar(12)", unicode: false, maxLength: 12, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     StatusChangedOn = table.Column<DateOnly>(type: "date", nullable: true),
                     StatusReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
@@ -587,6 +591,37 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TimeClockDevices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Kind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    KeyHash = table.Column<byte[]>(type: "binary(32)", fixedLength: true, maxLength: 32, nullable: false),
+                    LastSeenAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    KeyRotatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    RevokedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TimeClockDevices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TimeClockDevices_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StatutoryScheduleRows",
                 columns: table => new
                 {
@@ -802,6 +837,10 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                     OvertimeHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     NightHours = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     Remarks = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    Source = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ClockFirstInUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ClockLastOutUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ClockBreakMinutes = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     PayrollRunId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     RecordedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -1053,6 +1092,56 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WorkerAssignments_Workers_WorkerId",
+                        column: x => x.WorkerId,
+                        principalTable: "Workers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TimePunches",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DeviceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PunchedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ReceivedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    WorkDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Direction = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    DirectionWasAutomatic = table.Column<bool>(type: "bit", nullable: false),
+                    Source = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ClientPunchId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    NotPostedHere = table.Column<bool>(type: "bit", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    RecordedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TimePunches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TimePunches_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TimePunches_TimeClockDevices_DeviceId",
+                        column: x => x.DeviceId,
+                        principalTable: "TimeClockDevices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TimePunches_Workers_WorkerId",
                         column: x => x.WorkerId,
                         principalTable: "Workers",
                         principalColumn: "Id",
@@ -2333,6 +2422,61 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_TimeClockDevices_KeyHash",
+                table: "TimeClockDevices",
+                column: "KeyHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeClockDevices_ProjectId",
+                table: "TimeClockDevices",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeClockDevices_TenantId_ClientRequestId",
+                table: "TimeClockDevices",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeClockDevices_TenantId_Status_Name",
+                table: "TimeClockDevices",
+                columns: new[] { "TenantId", "Status", "Name" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimePunches_DeviceId",
+                table: "TimePunches",
+                column: "DeviceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimePunches_ProjectId",
+                table: "TimePunches",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimePunches_TenantId_DeviceId_ClientPunchId",
+                table: "TimePunches",
+                columns: new[] { "TenantId", "DeviceId", "ClientPunchId" },
+                unique: true,
+                filter: "[ClientPunchId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimePunches_TenantId_ProjectId_WorkDate_Status",
+                table: "TimePunches",
+                columns: new[] { "TenantId", "ProjectId", "WorkDate", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimePunches_TenantId_WorkerId_WorkDate",
+                table: "TimePunches",
+                columns: new[] { "TenantId", "WorkerId", "WorkDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimePunches_WorkerId",
+                table: "TimePunches",
+                column: "WorkerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_TenantId",
                 table: "Users",
                 column: "TenantId");
@@ -2415,6 +2559,13 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Workers_TenantId_PunchCode",
+                table: "Workers",
+                columns: new[] { "TenantId", "PunchCode" },
+                unique: true,
+                filter: "[PunchCode] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Workers_TenantId_Status",
                 table: "Workers",
                 columns: new[] { "TenantId", "Status" });
@@ -2494,6 +2645,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "SubcontractVariations");
 
             migrationBuilder.DropTable(
+                name: "TimePunches");
+
+            migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
@@ -2531,6 +2685,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "SubcontractClaims");
+
+            migrationBuilder.DropTable(
+                name: "TimeClockDevices");
 
             migrationBuilder.DropTable(
                 name: "PayrollRuns");
