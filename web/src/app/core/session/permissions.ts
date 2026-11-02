@@ -47,6 +47,8 @@ export const Permission = {
   documentsManage: 'documents.manage',
   scheduleRead: 'schedule.read',
   scheduleWrite: 'schedule.write',
+  timeClockReview: 'timeclock.review',
+  timeClockManage: 'timeclock.manage',
   receivingRecord: 'receiving.record',
   actionsRead: 'actions.read',
 } as const;

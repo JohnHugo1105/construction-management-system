@@ -59,6 +59,10 @@ public static class Permissions
     public const string ScheduleRead = "schedule.read";
     public const string ScheduleWrite = "schedule.write";
 
+    // Time clock: workers scan their badge at a machine; a supervisor reviews and confirms the day; HR keeps badges and imports.
+    public const string TimeClockReview = "timeclock.review";
+    public const string TimeClockManage = "timeclock.manage";
+
     // The quantity-only receiving screen: the warehouse keeper records and voids deliveries without any purchasing permission, so never a price.
     public const string ReceivingRecord = "receiving.record";
 
@@ -133,6 +137,9 @@ public static class Permissions
         [DocumentsManage] = Admin | Pm | Cost | Acct,
         [ScheduleRead] = Admin | Pm | Cost | Acct | View,
         [ScheduleWrite] = Admin | Pm | Cost,
+        // Confirming a day of scans creates attendance, so it is held by the same people who record attendance; badges and imports are HR's.
+        [TimeClockReview] = Admin | Pm | Hr,
+        [TimeClockManage] = Admin | Hr,
 
         // Receiving says what physically arrived. Its screens carry quantities only (no unit cost, VAT, total or invoice), which is why the
         // warehouse keeper may hold it while purchasing.read and purchasing.receive stay with the people who see the company's amounts.

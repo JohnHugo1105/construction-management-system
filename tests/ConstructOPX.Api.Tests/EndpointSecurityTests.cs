@@ -91,6 +91,8 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
         Permissions.DocumentsManage,
         Permissions.ScheduleRead,
         Permissions.ScheduleWrite,
+        Permissions.TimeClockReview,
+        Permissions.TimeClockManage,
     };
 
     private IEnumerable<EndpointInfo> ApiEndpoints() =>
