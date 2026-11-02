@@ -1,9 +1,11 @@
 using ConstructOPX.Application.Common;
+using ConstructOPX.Application.Features.Collaboration;
 using ConstructOPX.Application.Features.Costing;
 using ConstructOPX.Application.Features.Organizations;
 using ConstructOPX.Application.Features.Projects;
 using ConstructOPX.Application.Features.Suppliers;
 using ConstructOPX.Domain.Common;
+using ConstructOPX.Domain.Features.Collaboration;
 using ConstructOPX.Domain.Features.Costing;
 using ConstructOPX.Domain.Features.Projects;
 using ConstructOPX.Domain.Features.Subcontracts;
@@ -19,7 +21,7 @@ namespace ConstructOPX.Application.Features.Subcontracts;
 /// </summary>
 public sealed class SubcontractService(ISubcontractRepository subcontracts, ISubcontractReader reader, ISupplierRepository suppliers,
     IProjectRepository projects, ICostEntryRepository costs, IOrganizationRepository organizations, INumberSequence numbers,
-    ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit)
+    ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit, INotificationWriter notifications)
 {
     public const string SequenceKey = "subcontract";
 
@@ -219,6 +221,7 @@ public sealed class SubcontractService(ISubcontractRepository subcontracts, ISub
         audit.Record("Subcontract.ClaimCertified", nameof(Subcontract), subcontract.Id,
             $"Certified claim {claim.ClaimNumber} on subcontract {subcontract.Number} for {supplier.Name} and posted " +
             $"{Money(claim.GrossMinor, organization.CurrencyCode)} with VAT to {project.Name}.");
+        notifications.Notify(claim.CreatedByUserId, NotificationKind.DraftDecided, NotificationMessages.Decided(currentUser.DisplayName, "certified", NotificationMessages.Claim(claim.ClaimNumber ?? 0, subcontract.Number)), RecordKind.Subcontract, subcontract.Id, subcontract.ProjectId);
         return await SaveAndReadAsync(subcontract, cancellationToken);
     }
 

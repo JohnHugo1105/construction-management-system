@@ -27,6 +27,7 @@ import {
 } from './purchasing-presentation';
 import { RecordDeliveryDialog } from './record-delivery-dialog';
 import { GoodsReceipt, PurchaseOrder } from './purchasing.models';
+import { Discussion } from '../collaboration/discussion';
 
 type Dialog = 'approve' | 'cancel' | 'close' | 'receive' | 'voidDelivery';
 
@@ -50,6 +51,7 @@ type Dialog = 'approve' | 'cancel' | 'close' | 'receive' | 'voidDelivery';
     ReasonDialog,
     CloseOrderDialog,
     RecordDeliveryDialog,
+    Discussion,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './order-page.html',

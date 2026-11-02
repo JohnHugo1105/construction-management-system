@@ -85,8 +85,7 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
         var used = ApiEndpoints().SelectMany(endpoint => endpoint.Policies).ToHashSet();
         var unused = Permissions.All.Where(permission => !used.Contains(permission)).Order().ToArray();
 
-        // Features add their endpoints over time; this list shrinks to empty and must stay empty.
-        Assert.True(unused.Length == 0 || ExpectedUnusedWhileBuilding.IsSupersetOf(unused), $"Unenforced permissions: {string.Join(", ", unused)}");
+        Assert.True(unused.Length == 0, $"Unenforced permissions: {string.Join(", ", unused)}");
     }
 
     [Fact]
@@ -101,13 +100,6 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
             Assert.Equal([Permissions.ActionsRead], endpoint.Policies);
         });
     }
-
-    // Permissions whose feature's endpoints are added in a later slice. Remove entries as the endpoints land; the final test run has none.
-    private static readonly HashSet<string> ExpectedUnusedWhileBuilding = new(StringComparer.Ordinal)
-    {
-        Permissions.TasksUse,
-        Permissions.NotificationsRead,
-    };
 
     private IEnumerable<EndpointInfo> ApiEndpoints() =>
         _factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()

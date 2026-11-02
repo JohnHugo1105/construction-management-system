@@ -1,9 +1,11 @@
 using ConstructOPX.Application.Common;
+using ConstructOPX.Application.Features.Collaboration;
 using ConstructOPX.Application.Features.Costing;
 using ConstructOPX.Application.Features.Organizations;
 using ConstructOPX.Application.Features.Projects;
 using ConstructOPX.Application.Features.Suppliers;
 using ConstructOPX.Domain.Common;
+using ConstructOPX.Domain.Features.Collaboration;
 using ConstructOPX.Domain.Features.Costing;
 using ConstructOPX.Domain.Features.Projects;
 using ConstructOPX.Domain.Features.Purchasing;
@@ -19,7 +21,7 @@ namespace ConstructOPX.Application.Features.Purchasing;
 /// </summary>
 public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IGoodsReceiptRepository receipts, IPurchaseOrderReader reader, ISupplierRepository suppliers,
     IProjectRepository projects, IOrganizationRepository organizations, INumberSequence numbers, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork,
-    IAuditTrail audit)
+    IAuditTrail audit, INotificationWriter notifications)
 {
     public const string NumberSequenceKey = "purchase-order";
 
@@ -92,6 +94,7 @@ public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IGoods
 
         audit.Record("PurchaseOrder.Approved", nameof(PurchaseOrder), order.Id,
             $"Approved purchase order {order.Number} to {supplier.Name} for {project.Name}, {CostingInput.MoneyText(order.GrossMinor, organization.CurrencyCode)} with VAT.");
+        notifications.Notify(order.CreatedByUserId, NotificationKind.DraftDecided, NotificationMessages.Decided(currentUser.DisplayName, "approved", NotificationMessages.PurchaseOrder(order.Number)), RecordKind.PurchaseOrder, order.Id, order.ProjectId);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(order.Id, cancellationToken);
     }
@@ -107,6 +110,7 @@ public sealed class PurchaseOrderService(IPurchaseOrderRepository orders, IGoods
         order.Cancel(project, request.Reason, hasInvoices, hasDeliveries, currentUser.UserId, clock.UtcNow);
 
         audit.Record("PurchaseOrder.Cancelled", nameof(PurchaseOrder), order.Id, $"Cancelled purchase order {order.Number} of {project.Name}.");
+        notifications.Notify(order.CreatedByUserId, NotificationKind.DraftDecided, NotificationMessages.Decided(currentUser.DisplayName, "cancelled", NotificationMessages.PurchaseOrder(order.Number)), RecordKind.PurchaseOrder, order.Id, order.ProjectId);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(order.Id, cancellationToken);
     }

@@ -1,8 +1,10 @@
 using ConstructOPX.Application.Common;
+using ConstructOPX.Application.Features.Collaboration;
 using ConstructOPX.Application.Features.Organizations;
 using ConstructOPX.Application.Features.Projects;
 using ConstructOPX.Domain.Common;
 using ConstructOPX.Domain.Features.Billing;
+using ConstructOPX.Domain.Features.Collaboration;
 using ConstructOPX.Domain.Features.Projects;
 
 namespace ConstructOPX.Application.Features.Billing;
@@ -14,7 +16,7 @@ namespace ConstructOPX.Application.Features.Billing;
 /// </summary>
 public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBillingReader reader, IProjectBillingTermsRepository termsRepository,
     IProjectRepository projects, IOrganizationRepository organizations, INumberSequence numbers, ICurrentUser currentUser, IClock clock,
-    IUnitOfWork unitOfWork, IAuditTrail audit)
+    IUnitOfWork unitOfWork, IAuditTrail audit, INotificationWriter notifications)
 {
     public const string NumberSequenceKey = "client-invoice";
 
@@ -126,6 +128,7 @@ public sealed class ClientInvoiceService(IClientInvoiceRepository invoices, IBil
         BillingChain.Issue(invoice, project, head, ledger, terms, sequence, currentUser.UserId, now);
 
         audit.Record("Billing.Issued", nameof(ClientInvoice), invoice.Id, $"Issued {invoice.Number}, a {KindWords(invoice.Kind)} for {project.Name}.");
+        notifications.Notify(invoice.CreatedByUserId, NotificationKind.DraftDecided, NotificationMessages.Decided(currentUser.DisplayName, "issued", NotificationMessages.Bill(invoice.Number, project.Name)), RecordKind.ClientBill, invoice.Id, invoice.ProjectId);
         await SaveChainChangeAsync(cancellationToken);
         return await ReadAsync(invoice.Id, await TodayAsync(cancellationToken), cancellationToken);
     }

@@ -1,4 +1,5 @@
 using ConstructOPX.Application.Common;
+using ConstructOPX.Application.Features.Collaboration;
 using ConstructOPX.Application.Features.Billing;
 using ConstructOPX.Application.Features.Costing;
 using ConstructOPX.Application.Features.Organizations;
@@ -6,6 +7,7 @@ using ConstructOPX.Application.Features.Projects;
 using ConstructOPX.Domain.Common;
 using ConstructOPX.Domain.Features.Billing;
 using ConstructOPX.Domain.Features.ChangeOrders;
+using ConstructOPX.Domain.Features.Collaboration;
 using ConstructOPX.Domain.Features.Costing;
 using ConstructOPX.Domain.Features.Projects;
 
@@ -17,7 +19,8 @@ namespace ConstructOPX.Application.Features.ChangeOrders;
 /// </summary>
 public sealed class ChangeOrderService(IChangeOrderRepository orders, IChangeOrderReader reader, IChangeOrderBudgetLineRepository targets,
     IBudgetLineRepository budgetLines, IProjectRepository projects, IOrganizationRepository organizations, INumberSequence numbers,
-    ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit, IGovernmentLimitReader governmentLimits)
+    ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork, IAuditTrail audit, IGovernmentLimitReader governmentLimits,
+    INotificationWriter notifications)
 {
     public async Task<PagedResult<ChangeOrderListItemDto>> ListAsync(Guid projectId, string? status, PageRequest page, CancellationToken cancellationToken)
     {
@@ -130,6 +133,7 @@ public sealed class ChangeOrderService(IChangeOrderRepository orders, IChangeOrd
         audit.Record("ChangeOrder.Approved", nameof(ChangeOrder), order.Id,
             $"Approved change order {order.Number} on {project.Name}: budget {Signed(order.BudgetEffectGrossMinor, organization.CurrencyCode)} with VAT" +
             (order.ContractPriceDeltaMinor == 0 ? "." : $", contract price {Signed(order.ContractPriceDeltaMinor, organization.CurrencyCode)}."));
+        notifications.Notify(order.CreatedByUserId, NotificationKind.DraftDecided, NotificationMessages.Decided(currentUser.DisplayName, "approved", NotificationMessages.ChangeOrder(order.Number, project.Name)), RecordKind.ChangeOrder, order.Id, order.ProjectId);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(order.Id, cancellationToken);
     }
@@ -139,6 +143,7 @@ public sealed class ChangeOrderService(IChangeOrderRepository orders, IChangeOrd
         var (order, project) = await LoadForChangeAsync(id, request.Version, cancellationToken);
         order.Reject(project, currentUser.UserId, request.Reason, clock.UtcNow);
         audit.Record("ChangeOrder.Rejected", nameof(ChangeOrder), order.Id, $"Rejected change order {order.Number} on {project.Name}.");
+        notifications.Notify(order.CreatedByUserId, NotificationKind.DraftDecided, NotificationMessages.Decided(currentUser.DisplayName, "rejected", NotificationMessages.ChangeOrder(order.Number, project.Name)), RecordKind.ChangeOrder, order.Id, order.ProjectId);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await ReadAsync(order.Id, cancellationToken);
     }

@@ -39,6 +39,7 @@ import {
 } from './change-order-presentation';
 import { ChangeOrdersApi } from './change-orders-api';
 import { ChangeOrder, ChangeOrderLine } from './change-orders.models';
+import { Discussion } from '../collaboration/discussion';
 
 type ReasonAction = 'reject' | 'void' | 'discard';
 
@@ -96,6 +97,7 @@ const REASON_DIALOGS: Record<
     ReasonDialog,
     ChangeOrderFormDialog,
     ChangeOrderLineDialog,
+    Discussion,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './change-order-page.scss',

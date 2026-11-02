@@ -18,6 +18,7 @@ import { Icon } from '../../shared/ui/icon/icon';
 import { Viewport } from '../../shared/ui/viewport/viewport';
 import { ToastHost } from '../../shared/ui/toast-host/toast-host';
 import { NeedsActionState } from '../../features/needs-action/needs-action-state';
+import { NotificationBell } from '../../features/collaboration/notification-bell';
 import { SessionState } from '../session/session-state';
 import { NAV_ITEMS, NavItem, splitForBottomBar, visibleNavItems } from './navigation';
 import { PageTitleState } from './page-title-state';
@@ -31,7 +32,16 @@ import { UserMenu } from './user-menu';
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Dialog, UserMenu, ToastHost],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    Icon,
+    Dialog,
+    UserMenu,
+    ToastHost,
+    NotificationBell,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.html',
   styleUrl: './shell.scss',

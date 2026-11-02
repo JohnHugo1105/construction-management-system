@@ -29,6 +29,7 @@ import { BILL_KIND, billActions, billName, billStatus, paymentMethodLabel } from
 import { Bill, BillPayment } from './billing.models';
 import { PaymentDialog } from './payment-dialog';
 import { ReasonDialog } from './reason-dialog';
+import { Discussion } from '../collaboration/discussion';
 
 type ReasonAction = 'void' | 'discard' | { readonly payment: BillPayment };
 
@@ -60,6 +61,7 @@ interface ReasonPrompt {
     BillFormDialog,
     PaymentDialog,
     ReasonDialog,
+    Discussion,
   ],
   providers: [BillState],
   changeDetection: ChangeDetectionStrategy.OnPush,

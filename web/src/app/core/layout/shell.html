@@ -36,6 +36,9 @@
   <div class="shell__column">
     <header class="header">
       <h1 class="header__title">{{ pageTitle.title() || session.organizationName() }}</h1>
+      @if (!minimal()) {
+        <app-notification-bell />
+      }
       <app-user-menu [minimal]="minimal()" />
     </header>
 

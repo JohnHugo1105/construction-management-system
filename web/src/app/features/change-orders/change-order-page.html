@@ -181,6 +181,8 @@
       }
     </section>
 
+    <app-discussion class="card" kind="ChangeOrder" [targetId]="orderId()" />
+
     @if (editingDetails()) {
       <app-change-order-form-dialog
         [order]="page.order"

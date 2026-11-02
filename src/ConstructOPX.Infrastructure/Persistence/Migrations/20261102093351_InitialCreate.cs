@@ -78,6 +78,26 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Kind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    TargetKind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TargetId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ReadAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "NumberSequences",
                 columns: table => new
                 {
@@ -466,6 +486,37 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TargetKind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TargetId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Text = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    AuthorUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsVoided = table.Column<bool>(type: "bit", nullable: false),
+                    VoidReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    VoidedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VoidedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProjectBillingTerms",
                 columns: table => new
                 {
@@ -726,6 +777,42 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WorkTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    DueDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    AssigneeUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LinkKind = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    LinkId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CompletedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    CompletedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CancelledAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    CancelledByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CancelReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    ClientRequestId = table.Column<string>(type: "nvarchar(80)", maxLength: 80, nullable: true),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkTasks_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StatutoryScheduleRows",
                 columns: table => new
                 {
@@ -924,6 +1011,26 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                         name: "FK_ClientPayments_ClientInvoices_ClientInvoiceId",
                         column: x => x.ClientInvoiceId,
                         principalTable: "ClientInvoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CommentMentions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommentMentions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommentMentions_Comments_CommentId",
+                        column: x => x.CommentId,
+                        principalTable: "Comments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -2034,6 +2141,34 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 filter: "[ClientRequestId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CommentMentions_CommentId_UserId",
+                table: "CommentMentions",
+                columns: new[] { "CommentId", "UserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommentMentions_TenantId",
+                table: "CommentMentions",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_ProjectId",
+                table: "Comments",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_TenantId_ClientRequestId",
+                table: "Comments",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_TenantId_TargetKind_TargetId_CreatedAtUtc",
+                table: "Comments",
+                columns: new[] { "TenantId", "TargetKind", "TargetId", "CreatedAtUtc" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CompanyHolidays_TenantId_Date",
                 table: "CompanyHolidays",
                 columns: new[] { "TenantId", "Date" },
@@ -2166,6 +2301,16 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "IX_InventoryItems_TenantId_Status",
                 table: "InventoryItems",
                 columns: new[] { "TenantId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_TenantId_UserId_CreatedAtUtc",
+                table: "Notifications",
+                columns: new[] { "TenantId", "UserId", "CreatedAtUtc" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_TenantId_UserId_ReadAtUtc_CreatedAtUtc",
+                table: "Notifications",
+                columns: new[] { "TenantId", "UserId", "ReadAtUtc", "CreatedAtUtc" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_PayrollAllocations_PayrollLineId",
@@ -2829,6 +2974,28 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "IX_WorkerStatusChanges_WorkerId_EffectiveOn",
                 table: "WorkerStatusChanges",
                 columns: new[] { "WorkerId", "EffectiveOn" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkTasks_ProjectId",
+                table: "WorkTasks",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkTasks_TenantId_AssigneeUserId_Status_DueDate",
+                table: "WorkTasks",
+                columns: new[] { "TenantId", "AssigneeUserId", "Status", "DueDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkTasks_TenantId_ClientRequestId",
+                table: "WorkTasks",
+                columns: new[] { "TenantId", "ClientRequestId" },
+                unique: true,
+                filter: "[ClientRequestId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkTasks_TenantId_CreatedByUserId_Status",
+                table: "WorkTasks",
+                columns: new[] { "TenantId", "CreatedByUserId", "Status" });
         }
 
         /// <inheritdoc />
@@ -2850,6 +3017,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "ClientPayments");
 
             migrationBuilder.DropTable(
+                name: "CommentMentions");
+
+            migrationBuilder.DropTable(
                 name: "CompanyHolidays");
 
             migrationBuilder.DropTable(
@@ -2857,6 +3027,9 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "GoodsReceiptLines");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "NumberSequences");
@@ -2922,10 +3095,16 @@ namespace ConstructOPX.Infrastructure.Persistence.Migrations
                 name: "WorkerStatusChanges");
 
             migrationBuilder.DropTable(
+                name: "WorkTasks");
+
+            migrationBuilder.DropTable(
                 name: "Bonds");
 
             migrationBuilder.DropTable(
                 name: "ClientInvoices");
+
+            migrationBuilder.DropTable(
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "ProjectDocuments");

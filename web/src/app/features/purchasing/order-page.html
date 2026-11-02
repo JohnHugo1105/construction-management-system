@@ -245,6 +245,8 @@
           <li>{{ entry }}</li>
         }
       </ul>
+
+      <app-discussion class="card" kind="PurchaseOrder" [targetId]="o.id" />
     </div>
 
     @switch (dialog()) {
