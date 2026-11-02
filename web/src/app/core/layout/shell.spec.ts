@@ -89,6 +89,7 @@ describe('Shell on a wide screen', () => {
     expect(texts(mainNav(root)!, 'a')).toEqual([
       'Dashboard',
       'Needs action',
+      'Tasks',
       'Projects',
       'Workers',
       'Payroll',
@@ -163,8 +164,8 @@ describe('Shell on a phone', () => {
     expect(texts(mainNav(root)!, 'a, button')).toEqual([
       'Dashboard',
       'Needs action',
+      'Tasks',
       'Projects',
-      'Workers',
       'More',
     ]);
     expect(mainNav(root)!.querySelectorAll('li')).toHaveLength(5);
@@ -178,6 +179,7 @@ describe('Shell on a phone', () => {
     const sheet = root.querySelector<HTMLDialogElement>('dialog')!;
     expect(sheet.hasAttribute('open')).toBe(true);
     expect(texts(sheet, '.more-list__link')).toEqual([
+      'Workers',
       'Payroll',
       'Stock',
       'Receiving',

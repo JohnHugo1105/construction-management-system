@@ -49,6 +49,16 @@ public static class Permissions
     public const string BondsManage = "bonds.manage";
     public const string PayrollRulesManage = "payrollrules.manage";
 
+    // Coordination: tasks, discussion and notifications, the site diary, project documents and the schedule.
+    public const string TasksUse = "tasks.use";
+    public const string NotificationsRead = "notifications.read";
+    public const string DiaryRead = "diary.read";
+    public const string DiaryWrite = "diary.write";
+    public const string DocumentsRead = "documents.read";
+    public const string DocumentsManage = "documents.manage";
+    public const string ScheduleRead = "schedule.read";
+    public const string ScheduleWrite = "schedule.write";
+
     // The quantity-only receiving screen: the warehouse keeper records and voids deliveries without any purchasing permission, so never a price.
     public const string ReceivingRecord = "receiving.record";
 
@@ -111,6 +121,19 @@ public static class Permissions
         [BondsManage] = Admin | Pm | Acct,
         // Premium factors and holidays change by law and proclamation; the people who run payroll keep them, every change is audited.
         [PayrollRulesManage] = Admin | Acct | Hr,
+
+        // Coordination. Tasks are for people who do the work (a Viewer reads only). A report on the site holds no money, so more roles read it; a
+        // contract or an insurance policy in the documents reveals prices, so those categories also need costs.read (checked where it is served).
+        // The schedule is built from budget amounts, so reading it stays within the people who see costs.
+        [TasksUse] = Admin | Pm | Cost | Acct | Hr | Wh,
+        [NotificationsRead] = AccessRoles.All,
+        [DiaryRead] = Admin | Pm | Cost | Acct | Wh | View,
+        [DiaryWrite] = Admin | Pm | Cost,
+        [DocumentsRead] = Admin | Pm | Cost | Acct | Wh | View,
+        [DocumentsManage] = Admin | Pm | Cost | Acct,
+        [ScheduleRead] = Admin | Pm | Cost | Acct | View,
+        [ScheduleWrite] = Admin | Pm | Cost,
+
         // Receiving says what physically arrived. Its screens carry quantities only (no unit cost, VAT, total or invoice), which is why the
         // warehouse keeper may hold it while purchasing.read and purchasing.receive stay with the people who see the company's amounts.
         [ReceivingRecord] = Admin | Wh,

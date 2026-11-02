@@ -98,6 +98,20 @@ export const PROJECT_ROUTES: Routes = [
         loadComponent: () =>
           import('../inventory/project-stock-tab/project-stock-tab').then((m) => m.ProjectStockTab),
       },
+      {
+        path: 'diary',
+        canActivate: [permissionGuard(Permission.diaryRead)],
+        loadComponent: () =>
+          import('../site-diary/project-diary-tab/project-diary-tab').then((m) => m.ProjectDiaryTab),
+      },
+      {
+        path: 'documents',
+        canActivate: [permissionGuard(Permission.documentsRead)],
+        loadComponent: () =>
+          import('../documents/project-documents-tab/project-documents-tab').then(
+            (m) => m.ProjectDocumentsTab,
+          ),
+      },
     ],
   },
 ];

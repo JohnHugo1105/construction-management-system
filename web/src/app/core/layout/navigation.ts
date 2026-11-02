@@ -30,6 +30,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permissions: NEEDS_ACTION_PERMISSIONS,
     showsWaitingCount: true,
   },
+  { label: 'Tasks', link: '/tasks', icon: 'check', permissions: [Permission.tasksUse] },
   {
     label: 'Projects',
     link: '/projects',

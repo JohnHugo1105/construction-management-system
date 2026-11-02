@@ -101,6 +101,18 @@ export const routes: Routes = [
           import('./features/billing/billing.routes').then((m) => m.BILLING_ROUTES),
       },
       {
+        path: 'tasks',
+        canActivate: [permissionGuard(Permission.tasksUse)],
+        loadChildren: () =>
+          import('./features/collaboration/tasks.routes').then((m) => m.TASK_ROUTES),
+      },
+      {
+        path: 'notifications',
+        canActivate: [permissionGuard(Permission.notificationsRead)],
+        loadChildren: () =>
+          import('./features/collaboration/notifications.routes').then((m) => m.NOTIFICATION_ROUTES),
+      },
+      {
         path: 'bonds',
         canActivate: [permissionGuard(Permission.bondsRead)],
         loadChildren: () => import('./features/bonds/bonds.routes').then((m) => m.BONDS_ROUTES),

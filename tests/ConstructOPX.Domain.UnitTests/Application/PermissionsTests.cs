@@ -78,7 +78,7 @@ public sealed class PermissionsTests
         // the contract price. Widening one of these permissions beyond costs.read would leak them, so the test fails first.
         var costs = Permissions.RolesFor(Permissions.CostsRead);
         foreach (var permission in new[] { Permissions.ChangeOrdersRead, Permissions.BillingRead, Permissions.BondsRead, Permissions.PurchasingRead,
-                     Permissions.SubcontractsRead, Permissions.ProgressRead })
+                     Permissions.SubcontractsRead, Permissions.ProgressRead, Permissions.ScheduleRead })
             Assert.Equal(default, Permissions.RolesFor(permission) & ~costs);
     }
 

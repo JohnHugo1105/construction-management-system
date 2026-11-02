@@ -188,6 +188,8 @@ describe('ProjectDetailPage tabs', () => {
       'Billing',
       'Team',
       'Stock',
+      'Diary',
+      'Documents',
     ]);
     TestBed.resetTestingModule();
 

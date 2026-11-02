@@ -77,8 +77,9 @@ describe('navigation', () => {
   it('turns the fifth slot into "More" when there are more than five, so no destination is lost', () => {
     const { primary, overflow } = splitForBottomBar(NAV_ITEMS);
 
-    expect(labels(primary)).toEqual(['Dashboard', 'Needs action', 'Projects', 'Workers']);
+    expect(labels(primary)).toEqual(['Dashboard', 'Needs action', 'Tasks', 'Projects']);
     expect(labels(overflow)).toEqual([
+      'Workers',
       'Payroll',
       'Stock',
       'Receiving',

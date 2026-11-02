@@ -83,6 +83,14 @@ public sealed class EndpointSecurityTests : IClassFixture<WebApplicationFactory<
     // Permissions whose feature's endpoints are added in a later slice. Remove entries as the endpoints land; the final test run has none.
     private static readonly HashSet<string> ExpectedUnusedWhileBuilding = new(StringComparer.Ordinal)
     {
+        Permissions.TasksUse,
+        Permissions.NotificationsRead,
+        Permissions.DiaryRead,
+        Permissions.DiaryWrite,
+        Permissions.DocumentsRead,
+        Permissions.DocumentsManage,
+        Permissions.ScheduleRead,
+        Permissions.ScheduleWrite,
     };
 
     private IEnumerable<EndpointInfo> ApiEndpoints() =>
