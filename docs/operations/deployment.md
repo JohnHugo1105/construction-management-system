@@ -67,6 +67,10 @@ it, every restart signs everyone out and the API logs a warning. With more than 
 With more than one API instance, point them all at one shared folder), `FileStorage__MaxFileMegabytes` (default 25),
 `FileStorage__AllowedExtensions` (optional, narrows the built-in list) and `FileStorage__UploadsEnabled` (default true; set false to stop
 uploads in an emergency, files already stored still download). The Administration > System readiness page shows whether file storage works.
+The bundled web container (`deploy/web/nginx.conf`) accepts requests up to 2 MB everywhere except the two upload routes (a new document
+and a new version), which accept up to 26 MB so that the default 25 MB file fits. **If you raise `FileStorage__MaxFileMegabytes`, raise
+`client_max_body_size` on that upload location to the new limit plus 1 MB**, or nginx refuses a large file with its own error page before the
+API can explain. A load balancer in front of the web container may have its own request-size limit that needs the same change.
 First-time setup: set `CONSTRUCTOPX_BOOTSTRAP_ENABLED=true`, start, open the site, create the company and first administrator, then set it back
 to `false` and restart.
 

@@ -152,7 +152,8 @@ public sealed class DocumentService(IDocumentRepository documents, IDocumentRead
         {
             var version = document.AddVersion(project, stored, null, fields.Note, currentUser.UserId, clock.UtcNow, validUntil);
             RecordVersion(document, project, version.Number);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            // The file is already stored: finish the save even if the client has gone, so a dropped connection cannot leave a row whose file was deleted.
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
         }
         catch
         {
@@ -266,7 +267,9 @@ public sealed class DocumentService(IDocumentRepository documents, IDocumentRead
             $"Added document \"{document.Title}\" ({document.Category}) to {project.Name}.");
         try
         {
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            // A stored file is already on disk: finish the save even if the client has gone, rather than leave a file with no row (or a row whose
+            // file the cleanup removed). A link has no file, so it keeps the client's token.
+            await unitOfWork.SaveChangesAsync(storeKey is not null ? CancellationToken.None : cancellationToken);
         }
         catch (DomainRuleException) when (requestId is not null)
         {

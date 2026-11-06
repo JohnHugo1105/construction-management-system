@@ -41,6 +41,8 @@ export interface TimeClockDayRow {
   /** No exception and no overtime waiting: "Confirm all clean rows" takes it. */
   readonly isClean: boolean;
   readonly punches: readonly TimeClockPunch[];
+  /** A stamp of the scans this row was worked out from; sent back on confirm so a row whose scans changed meanwhile is skipped. */
+  readonly scanStamp: string;
 }
 
 export interface TimeClockSummary {
@@ -66,6 +68,8 @@ export interface TimeClockDayList {
 export interface ConfirmRow {
   readonly workerId: string;
   readonly approveOvertime: boolean;
+  /** The row's scan stamp as the person read it. */
+  readonly scanStamp?: string;
 }
 
 export interface ConfirmRequest {

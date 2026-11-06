@@ -180,10 +180,10 @@ public sealed class AttendanceService(IAttendanceRepository attendance, IAttenda
 
             try
             {
-                // The request id ties the entry to the worker, project and day, so a second confirmation saved at the same moment is refused by the database.
+                // No request id: a second confirmation saved at the same moment is refused by the one-live-entry-per-posting-and-day index (the clock
+                // always records against the whole project), and that index steps aside for a voided entry, so a voided day can be confirmed again.
                 var entry = AttendanceEntry.Record(Guid.NewGuid(), currentUser.TenantId, worker, project, null, workDate, line.RegularHours, line.OvertimeHours,
-                    null, organization.HoursPerDay, currentUser.UserId, $"tc:{worker.Id:N}{project.Id:N}{workDate:yyyyMMdd}", today, now, line.NightHours,
-                    line.Evidence);
+                    null, organization.HoursPerDay, currentUser.UserId, null, today, now, line.NightHours, line.Evidence);
                 if (CheckDay(worker, project, entry, day, excludeEntryId: null) is { } problem)
                 {
                     refused[worker.Id] = problem.Message;

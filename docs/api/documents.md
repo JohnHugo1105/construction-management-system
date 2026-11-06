@@ -75,7 +75,7 @@ lines carry the title and the category, never the file name, the link or the not
   reaches a path; it is cleaned (folders, control and reserved characters and right-to-left marks removed, at most 200 characters) and used
   only as the download name. A save that fails partway leaves no file and no row.
 * **Downloads** (`GET .../versions/{number}/file`) stream the file with `Content-Disposition: attachment` and the cleaned name,
-  `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store` and the site-wide `Content-Security-Policy: default-src 'none'`. A
+  `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store` and the API's own `Content-Security-Policy: default-src 'none'` (behind the bundled web container, nginx replaces it with the site's policy; a download is an attachment either way). A
   link version has no file (`404`). A file missing from storage is `404` with a plain message to restore it from the backup.
 * **Not scanned**: files are not scanned for viruses. They are offered only as downloads, never shown in the browser.
 

@@ -6,7 +6,7 @@ namespace ConstructOPX.Application.Features.TimeClock;
 
 // The time clock: workers scan their own badge at a machine when they arrive and leave; a person reviews the day and confirms it, which
 // creates the attendance entry through the attendance rules. A scan never reaches pay by itself. See docs/api/timeclock.md and
-// docs/development/notes/timeclock-rules.md.
+// docs/business-rules.md section 17.
 
 // ---- Ports ------------------------------------------------------------------------------------------------------------------
 
@@ -159,11 +159,12 @@ public sealed record TimeClockDayListDto(Guid ProjectId, string ProjectName, boo
 /// the overtime that waits for approval, the night hours and the exceptions (MissingTimeOut, MissingTimeIn, NotPostedHere, TooLong).
 /// <c>AlreadyRecorded</c>: the worker already has attendance on this project that day; the row is never confirmed over it.
 /// <c>CanConfirm</c>: no missing scan, hours above zero, not already recorded and the project open. <c>IsClean</c>: no exception and no overtime
-/// waiting, so "Confirm all clean rows" takes it. Hours only: never a pay figure.
+/// waiting, so "Confirm all clean rows" takes it. <c>ScanStamp</c>: a short stamp of the scans the row was worked out from; sent back when
+/// confirming so a row whose scans changed meanwhile is skipped rather than confirmed. Hours only: never a pay figure.
 /// </summary>
 public sealed record TimeClockDayRowDto(Guid WorkerId, string WorkerName, DateTimeOffset? FirstIn, string? FirstInLocal, DateTimeOffset? LastOut,
     string? LastOutLocal, int BreakMinutes, decimal RegularHours, decimal ProposedOvertimeHours, decimal NightHours, IReadOnlyList<string> Exceptions,
-    bool AlreadyRecorded, bool CanConfirm, bool IsClean, IReadOnlyList<TimeClockPunchDto> Punches);
+    bool AlreadyRecorded, bool CanConfirm, bool IsClean, IReadOnlyList<TimeClockPunchDto> Punches, string ScanStamp);
 
 /// <summary>One scan on the review page. <c>Source</c> is Kiosk, Terminal, Import or Manual; <c>Reason</c> is a supervisor's reason for a manual scan.</summary>
 public sealed record TimeClockPunchDto(Guid Id, DateTimeOffset PunchedAtUtc, string LocalTime, string Direction, string Source, string? DeviceName,
@@ -176,10 +177,11 @@ public sealed record TimeClockPunchDto(Guid Id, DateTimeOffset PunchedAtUtc, str
 /// <param name="EarliestDate">The first of them, or null when nothing waits.</param>
 public sealed record TimeClockSummaryDto(Guid ProjectId, int DaysWaiting, int RowsWaiting, int RowsWithExceptions, DateOnly? EarliestDate);
 
-public sealed record ConfirmTimeClockRow(Guid WorkerId, bool ApproveOvertime);
+/// <summary>One row to confirm. <c>ScanStamp</c> is the stamp the review row carried when the person read it; when it is sent and the scans have changed since, the row is skipped.</summary>
+public sealed record ConfirmTimeClockRow(Guid WorkerId, bool ApproveOvertime, string? ScanStamp = null);
 
 /// <summary>
-/// Confirms rows of one project's day. With <c>AllClean</c> every row with no exception and no unapproved overtime is confirmed (overtime approvals
+/// Confirms rows of one project's day. With <c>AllClean</c> every row of the whole day (not only a page) with no exception and no unapproved overtime is confirmed (overtime approvals
 /// in <c>Rows</c> count); without it, exactly the rows listed are confirmed, and a row's overtime is recorded only when approved.
 /// </summary>
 public sealed record ConfirmTimeClockDaysRequest(Guid ProjectId, DateOnly WorkDate, IReadOnlyList<ConfirmTimeClockRow>? Rows, bool AllClean = false);

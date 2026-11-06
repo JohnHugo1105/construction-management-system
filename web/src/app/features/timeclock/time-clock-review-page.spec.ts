@@ -30,6 +30,7 @@ const row = (overrides: Partial<TimeClockDayRow> = {}): TimeClockDayRow => ({
   alreadyRecorded: false,
   canConfirm: true,
   isClean: true,
+  scanStamp: 'fp1',
   punches: [
     {
       id: 's1',
@@ -87,6 +88,7 @@ const crew = [
     proposedOvertimeHours: 2,
     regularHours: 8,
     isClean: false,
+    scanStamp: 'fp2',
   }),
   row({
     workerId: 'w3',
@@ -196,7 +198,7 @@ describe('TimeClockReviewPage', () => {
     expect(confirm).toHaveBeenLastCalledWith({
       projectId: 'p1',
       workDate: '2026-11-01',
-      rows: [{ workerId: 'w2', approveOvertime: false }],
+      rows: [{ workerId: 'w2', approveOvertime: false, scanStamp: 'fp2' }],
       allClean: false,
     });
 
@@ -206,7 +208,7 @@ describe('TimeClockReviewPage', () => {
     expect(confirm).toHaveBeenLastCalledWith({
       projectId: 'p1',
       workDate: '2026-11-01',
-      rows: [{ workerId: 'w2', approveOvertime: true }],
+      rows: [{ workerId: 'w2', approveOvertime: true, scanStamp: 'fp2' }],
       allClean: false,
     });
   });
@@ -225,8 +227,12 @@ describe('TimeClockReviewPage', () => {
     expect(confirm).toHaveBeenLastCalledWith({
       projectId: 'p1',
       workDate: '2026-11-01',
-      rows: [{ workerId: 'w2', approveOvertime: true }],
-      allClean: true,
+      // Exactly the clean rows on the screen, each with the stamp of the scans that were read: never rows the person did not see.
+      rows: [
+        { workerId: 'w1', approveOvertime: false, scanStamp: 'fp1' },
+        { workerId: 'w2', approveOvertime: true, scanStamp: 'fp2' },
+      ],
+      allClean: false,
     });
   });
 

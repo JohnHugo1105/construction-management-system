@@ -137,12 +137,15 @@ and `summary`. Each item is one worker's day:
 | `canConfirm` | No missing scan, hours above zero, not recorded, project open. |
 | `isClean` | No exception and no overtime waiting: "Confirm all clean rows" takes it. |
 | `punches` | The scans (`localTime`, `direction`, `source` Kiosk/Terminal/Import/Manual, `deviceName`, a manual scan's `reason`, `version`). |
+| `scanStamp` | A short stamp of the scans the row was worked out from; send it back when confirming (below). |
 
 `summary`: `daysWaiting`, `rowsWaiting` (worker-days), `rowsWithExceptions` (a day whose In and Out counts differ, or a scan of a worker not
 posted there) and `earliestDate`, counting days before today with scans not yet recorded as attendance.
 
-`POST /api/timeclock/days/confirm` takes `{ "projectId", "workDate", "rows": [{ "workerId", "approveOvertime" }], "allClean": false }`.
-Without `allClean`, exactly the listed rows are confirmed; a row's overtime is recorded only when `approveOvertime` is true. With
+`POST /api/timeclock/days/confirm` takes `{ "projectId", "workDate", "rows": [{ "workerId", "approveOvertime", "scanStamp" }], "allClean": false }`.
+Without `allClean`, exactly the listed rows are confirmed; a row's overtime is recorded only when `approveOvertime` is true. When a row
+carries the `scanStamp` it was read with and the worker's scans have changed since, the row is skipped ("The scans changed after you opened
+this day", nothing recorded); the review page always sends it, and sends only the clean rows it shows rather than `allClean`. With
 `allClean: true`, every row with no exception and no unapproved overtime is confirmed (approvals in `rows` count). A row with a missing scan
 is never confirmed; a row already recorded is left as it is. Each confirmed row becomes an attendance entry (whole project, no sub-project)
 through the attendance rules, marked `source: "TimeClock"` with `clockFirstIn`, `clockLastOut` and `clockBreakMinutes`. The answer is

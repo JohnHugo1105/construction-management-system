@@ -80,7 +80,24 @@ public static class TimeClockRules
         _ => "This scan couldn't be read. Scan again."
     };
 
-    /// <summary>The direction a scan is taken as: an explicit In or Out stays; an automatic one is the opposite of the worker's last scan that day.</summary>
+    /// <summary>The direction a scan is taken as: an explicit In or Out stays; an automatic one is the opposite of the worker's last scan.</summary>
     public static PunchDirection Resolve(PunchDirection? requested, PunchDirection? lastThatDay) =>
         requested ?? (lastThatDay == PunchDirection.In ? PunchDirection.Out : PunchDirection.In);
+
+    /// <summary>
+    /// Where a scan belongs, given the worker's latest earlier scan on the project. An In that is still open (no more than <see cref="TooLong"/>
+    /// before this scan) is closed by this scan, whatever the clock says: the scan is an Out when it is automatic, and an Out takes the work date of
+    /// the In it closes, so a night shift from 22:00 to 06:00 is one day, the day it began, however the company's day-start is set. An In older
+    /// than that was forgotten (the day shows the missing time out) and does not pair with this scan, which then starts a new shift on its own date.
+    /// </summary>
+    public static (PunchDirection Direction, DateOnly WorkDate) Place(PunchDirection? requested, DateTimeOffset at, DateOnly ownWorkDate,
+        EarlierPunch? latestEarlier)
+    {
+        var open = latestEarlier is { Direction: PunchDirection.In } shift && at - shift.At <= TooLong ? shift : (EarlierPunch?)null;
+        var direction = Resolve(requested, open is null ? null : PunchDirection.In);
+        return (direction, direction == PunchDirection.Out && open is { } closing ? closing.WorkDate : ownWorkDate);
+    }
 }
+
+/// <summary>A worker's latest scan before the one being placed: when, which way, and the work date it was given.</summary>
+public readonly record struct EarlierPunch(DateTimeOffset At, PunchDirection Direction, DateOnly WorkDate);

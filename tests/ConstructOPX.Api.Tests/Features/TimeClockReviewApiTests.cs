@@ -90,6 +90,61 @@ public sealed class TimeClockReviewApiTests(ConstructOpxApiFactory factory, ITes
     }
 
     [SqlServerFact]
+    public async Task A_day_voided_after_it_was_confirmed_can_be_confirmed_again_and_a_double_confirm_still_records_one_entry()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        var (project, crew) = await CrewAsync(admin, 1);
+        var key = (await RegisterAsync(admin, project.Id)).Key;
+        var date = Today.AddDays(-1);
+        await PushAsync(_factory, key, Scan("v-1", crew[0].Code, At(1, 7, 0)), Scan("v-2", crew[0].Code, At(1, 16, 0)));
+
+        Assert.Single((await ConfirmAsync(admin, project.Id, date, false, (crew[0].Worker.Id, false))).Confirmed);
+        var entry = Assert.Single((await admin.GetAsync<AttendanceSheetDto>($"/api/projects/{project.Id}/attendance?date={Iso(date)}")).Entries);
+        await admin.PostAsync<AttendanceEntryDto>($"/api/attendance/{entry.Id}/void", new { reason = "Wrong day", version = entry.Version });
+
+        // The day waits again, and confirming it works: the voided entry no longer blocks it.
+        Assert.True(Assert.Single((await DayAsync(admin, project.Id, date)).Items).CanConfirm);
+        var again = await ConfirmAsync(admin, project.Id, date, false, (crew[0].Worker.Id, false));
+        Assert.Equal([crew[0].Worker.Id], again.Confirmed);
+        Assert.Empty(again.Skipped);
+        Assert.Single((await admin.GetAsync<AttendanceSheetDto>($"/api/projects/{project.Id}/attendance?date={Iso(date)}")).Entries);
+
+        // Confirming a third time records nothing more.
+        var third = await ConfirmAsync(admin, project.Id, date, false, (crew[0].Worker.Id, false));
+        Assert.Empty(third.Confirmed);
+        Assert.Single((await admin.GetAsync<AttendanceSheetDto>($"/api/projects/{project.Id}/attendance?date={Iso(date)}")).Entries);
+    }
+
+    [SqlServerFact]
+    public async Task A_row_is_confirmed_only_if_its_scans_are_the_ones_the_reviewer_read()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        var (project, crew) = await CrewAsync(admin, 2);
+        var key = (await RegisterAsync(admin, project.Id)).Key;
+        var date = Today.AddDays(-1);
+        await PushAsync(_factory, key, Scan("f-1", crew[0].Code, At(1, 7, 0)), Scan("f-2", crew[0].Code, At(1, 16, 0)),
+            Scan("g-1", crew[1].Code, At(1, 7, 0)), Scan("g-2", crew[1].Code, At(1, 16, 0)));
+        var read = (await DayAsync(admin, project.Id, date)).Items.ToDictionary(row => row.WorkerId, row => row.ScanStamp);
+        Assert.All(read.Values, stamp => Assert.False(string.IsNullOrEmpty(stamp)));
+        Assert.NotEqual(read[crew[0].Worker.Id], read[crew[1].Worker.Id]);
+
+        // A scan arrives for the first worker after the day was read: the stamp no longer matches, so that row waits for another look.
+        await PushAsync(_factory, key, Scan("f-3", crew[0].Code, At(1, 18, 0)));
+        var result = await ConfirmSeenAsync(admin, project.Id, date,
+            (crew[0].Worker.Id, true, read[crew[0].Worker.Id]), (crew[1].Worker.Id, false, read[crew[1].Worker.Id]));
+        Assert.Equal([crew[1].Worker.Id], result.Confirmed);
+        var skipped = Assert.Single(result.Skipped);
+        Assert.Equal(crew[0].Worker.Id, skipped.WorkerId);
+        Assert.Contains("scans changed after you opened this day", skipped.Reason);
+
+        // Only the worker whose scans were unchanged has attendance.
+        var entry = Assert.Single((await admin.GetAsync<AttendanceSheetDto>($"/api/projects/{project.Id}/attendance?date={Iso(date)}")).Entries);
+        Assert.Equal(crew[1].Worker.Id, entry.WorkerId);
+    }
+
+    [SqlServerFact]
     public async Task Confirm_all_clean_rows_skips_rows_with_an_exception_or_overtime_not_approved_and_never_overwrites_typed_attendance()
     {
         var (admin, _) = await SignedInAsync(_factory);

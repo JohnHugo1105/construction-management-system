@@ -200,6 +200,57 @@ public sealed class TimeClockPunchApiTests(ConstructOpxApiFactory factory, ITest
     }
 
     [SqlServerFact]
+    public async Task A_night_shift_that_ends_after_the_day_start_is_one_day_and_its_second_scan_is_a_time_out()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        var (project, crew) = await CrewAsync(admin, 1);
+        var key = (await RegisterAsync(admin, project.Id)).Key;
+        var code = crew[0].Code;
+
+        // Two nights of 22:00 to 06:00. 06:00 is after the 04:00 day-start, so by the clock alone it would open a new day as a time in.
+        var result = await PushAsync(_factory, key, Scan("a-1", code, At(3, 22, 0)), Scan("a-2", code, At(2, 6, 0)),
+            Scan("a-3", code, At(2, 22, 0)), Scan("a-4", code, At(1, 6, 0)));
+        Assert.Equal(["In", "Out", "In", "Out"], result.Results.Select(item => item.Direction));
+
+        // Each night is one day, dated when the shift began: 8 hours between the scans, the break once, seven paid hours all worked at night.
+        foreach (var night in new[] { Today.AddDays(-3), Today.AddDays(-2) })
+        {
+            var row = Assert.Single((await DayAsync(admin, project.Id, night)).Items);
+            Assert.Equal((7m, 0m, 7m), (row.RegularHours, row.ProposedOvertimeHours, row.NightHours));
+            Assert.Empty(row.Exceptions);
+            Assert.True(row.IsClean);
+        }
+        Assert.Empty((await DayAsync(admin, project.Id, Today.AddDays(-1))).Items);
+    }
+
+    [SqlServerFact]
+    public async Task A_supervisors_time_out_that_closes_a_night_shift_is_dated_when_the_shift_began()
+    {
+        var (admin, _) = await SignedInAsync(_factory);
+        using var _a = admin;
+        var (project, crew) = await CrewAsync(admin, 1);
+        var key = (await RegisterAsync(admin, project.Id)).Key;
+        await PushAsync(_factory, key, Scan("m-1", crew[0].Code, At(2, 22, 0)));
+        Assert.Equal(["MissingTimeOut"], Assert.Single((await DayAsync(admin, project.Id, Today.AddDays(-2))).Items).Exceptions);
+
+        var added = await admin.PostAsync<TimeClockPunchDto>("/api/timeclock/punches/manual", new
+        {
+            projectId = project.Id,
+            workerId = crew[0].Worker.Id,
+            at = $"{Iso(Today.AddDays(-1))}T06:00",
+            direction = "Out",
+            reason = "Badge left in the site office"
+        });
+        Assert.Equal(("06:00", "Out"), (added.LocalTime, added.Direction));
+
+        var row = Assert.Single((await DayAsync(admin, project.Id, Today.AddDays(-2))).Items);
+        Assert.Empty(row.Exceptions);
+        Assert.Equal((7m, 7m), (row.RegularHours, row.NightHours));
+        Assert.Empty((await DayAsync(admin, project.Id, Today.AddDays(-1))).Items);
+    }
+
+    [SqlServerFact]
     public async Task A_batch_is_bounded_unreadable_scans_are_refused_one_by_one_and_an_archived_project_takes_none()
     {
         var (admin, user) = await SignedInAsync(_factory);

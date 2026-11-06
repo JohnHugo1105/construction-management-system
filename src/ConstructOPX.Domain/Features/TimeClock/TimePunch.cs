@@ -102,7 +102,8 @@ public sealed class TimePunch : AggregateRoot
     /// be in the future, and the reason is required.
     /// </summary>
     public static TimePunch AddManual(Guid id, Guid tenantId, Worker worker, Project project, DateTimeOffset punchedAt, PunchDirection? direction,
-        string? reason, TimeClockSettings settings, bool notPostedHere, Guid recordedByUserId, string? clientRequestId, DateTimeOffset now)
+        string? reason, TimeClockSettings settings, bool notPostedHere, Guid recordedByUserId, string? clientRequestId, DateTimeOffset now,
+        DateOnly? shiftWorkDate = null)
     {
         project.EnsureCanReceiveRecordsFor(null);
         var errors = new ValidationErrors();
@@ -117,7 +118,8 @@ public sealed class TimePunch : AggregateRoot
         catch (ValidationFailedException ex) { errors.Add("clientRequestId", ex.Errors["clientRequestId"][0]); }
         errors.ThrowIfAny();
 
-        var workDate = TimeClockRules.WorkDateOf(punchedAt, settings);
+        // An Out that closes a shift still open belongs to the day that shift began (TimeClockRules.Place); otherwise the scan's own work date.
+        var workDate = shiftWorkDate ?? TimeClockRules.WorkDateOf(punchedAt, settings);
         if (!worker.CanBeRecordedOn(workDate))
             throw new ValidationFailedException("at", $"{worker.FullName} can't be recorded for that date (not hired yet, on leave, suspended, or already left).");
 

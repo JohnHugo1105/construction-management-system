@@ -212,6 +212,78 @@ public sealed class TimeClockTests
         Assert.Equal(PunchDirection.In, TimeClockRules.Resolve(PunchDirection.In, PunchDirection.In));
     }
 
+    // ---- Where a scan belongs (a shift that ends after the day-start) -------------------------------------------------------------
+
+    private static EarlierPunch Earlier(DateTimeOffset at, PunchDirection direction, int day) => new(at, direction, new DateOnly(2026, 11, day));
+
+    [Fact]
+    public void A_time_out_closes_the_shift_still_open_and_takes_its_work_date_even_after_the_day_start()
+    {
+        var openIn = Earlier(Local(11, 2, 22, 0), PunchDirection.In, 2);
+        var at = Local(11, 3, 6, 0);
+        var own = TimeClockRules.WorkDateOf(at, Manila);
+        Assert.Equal(new DateOnly(2026, 11, 3), own);
+
+        // 06:00 is after the 04:00 day-start, so by the clock alone it would start 3 Nov as a time in. It is the time out of the shift that began on 2 Nov.
+        Assert.Equal((PunchDirection.Out, new DateOnly(2026, 11, 2)), TimeClockRules.Place(null, at, own, openIn));
+        Assert.Equal((PunchDirection.Out, new DateOnly(2026, 11, 2)), TimeClockRules.Place(PunchDirection.Out, at, own, openIn));
+        Assert.Equal((PunchDirection.In, own), TimeClockRules.Place(PunchDirection.In, at, own, openIn));
+    }
+
+    [Fact]
+    public void A_time_in_that_is_over_sixteen_hours_old_was_forgotten_and_does_not_pair_with_the_next_scan()
+    {
+        var openIn = Earlier(Local(11, 2, 7, 0), PunchDirection.In, 2);
+
+        var sixteenHours = Local(11, 2, 23, 0);
+        Assert.Equal((PunchDirection.Out, new DateOnly(2026, 11, 2)), TimeClockRules.Place(null, sixteenHours, new DateOnly(2026, 11, 2), openIn));
+
+        var justOver = sixteenHours.AddSeconds(1);
+        Assert.Equal((PunchDirection.In, new DateOnly(2026, 11, 2)), TimeClockRules.Place(null, justOver, new DateOnly(2026, 11, 2), openIn));
+
+        var nextMorning = Local(11, 3, 7, 0);
+        Assert.Equal((PunchDirection.In, new DateOnly(2026, 11, 3)), TimeClockRules.Place(null, nextMorning, new DateOnly(2026, 11, 3), openIn));
+    }
+
+    [Fact]
+    public void A_scan_with_no_open_shift_is_a_time_in_on_its_own_date_and_an_explicit_time_out_keeps_its_own_date()
+    {
+        var at = Local(11, 3, 17, 0);
+        var own = new DateOnly(2026, 11, 3);
+        var closed = Earlier(Local(11, 3, 12, 0), PunchDirection.Out, 3);
+
+        Assert.Equal((PunchDirection.In, own), TimeClockRules.Place(null, at, own, null));
+        Assert.Equal((PunchDirection.In, own), TimeClockRules.Place(null, at, own, closed));
+        Assert.Equal((PunchDirection.Out, own), TimeClockRules.Place(PunchDirection.Out, at, own, null));
+        Assert.Equal((PunchDirection.Out, own), TimeClockRules.Place(PunchDirection.Out, at, own, closed));
+    }
+
+    [Fact]
+    public void Three_nights_of_ten_pm_to_six_am_are_three_days_of_one_span_each_dated_when_the_shift_began()
+    {
+        var placed = new List<(DateTimeOffset At, PunchDirection Direction, DateOnly Date)>();
+        foreach (var at in new[]
+                 {
+                     Local(11, 2, 22, 0), Local(11, 3, 6, 0), Local(11, 3, 22, 0), Local(11, 4, 6, 0), Local(11, 4, 22, 0), Local(11, 5, 6, 0)
+                 })
+        {
+            var latest = placed.Count == 0 ? (EarlierPunch?)null : new EarlierPunch(placed[^1].At, placed[^1].Direction, placed[^1].Date);
+            var (direction, date) = TimeClockRules.Place(null, at, TimeClockRules.WorkDateOf(at, Manila), latest);
+            placed.Add((at, direction, date));
+        }
+
+        Assert.Equal([PunchDirection.In, PunchDirection.Out, PunchDirection.In, PunchDirection.Out, PunchDirection.In, PunchDirection.Out],
+            placed.Select(item => item.Direction));
+        Assert.Equal([2, 2, 3, 3, 4, 4], placed.Select(item => item.Date.Day));
+
+        foreach (var night in placed.GroupBy(item => item.Date))
+        {
+            var day = Work(night.Select(item => new PunchMoment(item.At, item.Direction)).ToArray());
+            // 8 hours between the scans, the 60-minute break once: 7 hours, all of them at night, and nothing missing.
+            Assert.Equal((7m, 0m, 7m, TimeClockException.None), (day.RegularHours, day.ProposedOvertimeHours, day.NightHours, day.Exceptions));
+        }
+    }
+
     // ---- A day's hours -------------------------------------------------------------------------------------------------------------
 
     [Fact]

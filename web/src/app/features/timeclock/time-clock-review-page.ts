@@ -38,6 +38,7 @@ import {
 } from './timeclock-presentation';
 import {
   ConfirmResult,
+  ConfirmRow,
   PunchDirection,
   TimeClockDayList,
   TimeClockDayRow,
@@ -441,16 +442,16 @@ export class TimeClockReviewPage {
   protected readonly removing = signal<{ punch: TimeClockPunch; name: string } | null>(null);
   protected readonly importing = signal(false);
 
-  /** Rows "Confirm all clean rows" will take: no exception, and any overtime approved. The server decides again when it confirms. */
-  protected readonly cleanCount = computed(
-    () =>
-      (this.day()?.items ?? []).filter(
-        (row) =>
-          row.canConfirm &&
-          row.exceptions.length === 0 &&
-          (row.proposedOvertimeHours === 0 || this.approved()[row.workerId] === true),
-      ).length,
+  /** The rows on the page that "Confirm all clean rows" takes: no exception, and any overtime approved. The server decides again when it confirms. */
+  private readonly cleanRows = computed(() =>
+    (this.day()?.items ?? []).filter(
+      (row) =>
+        row.canConfirm &&
+        row.exceptions.length === 0 &&
+        (row.proposedOvertimeHours === 0 || this.approved()[row.workerId] === true),
+    ),
   );
+  protected readonly cleanCount = computed(() => this.cleanRows().length);
 
   /** The earliest day still waiting, when it isn't the one shown. */
   protected readonly waitingElsewhere = computed(() => {
@@ -528,16 +529,25 @@ export class TimeClockReviewPage {
   protected async confirmRow(row: TimeClockDayRow): Promise<void> {
     await this.confirm(
       row.workerId,
-      [{ workerId: row.workerId, approveOvertime: this.approved()[row.workerId] === true }],
+      [
+        {
+          workerId: row.workerId,
+          approveOvertime: this.approved()[row.workerId] === true,
+          scanStamp: row.scanStamp,
+        },
+      ],
       false,
     );
   }
 
+  /** Confirms exactly the clean rows on the screen, each with the stamp of the scans the person read, never rows they did not see. */
   protected async confirmAll(): Promise<void> {
-    const approvals = Object.entries(this.approved())
-      .filter(([, approved]) => approved)
-      .map(([workerId]) => ({ workerId, approveOvertime: true }));
-    await this.confirm('all', approvals, true);
+    const rows = this.cleanRows().map((row) => ({
+      workerId: row.workerId,
+      approveOvertime: this.approved()[row.workerId] === true,
+      scanStamp: row.scanStamp,
+    }));
+    await this.confirm('all', rows, false);
   }
 
   protected changed(message: string, dialog: 'adding' | 'removing'): void {
@@ -549,7 +559,7 @@ export class TimeClockReviewPage {
 
   private async confirm(
     busy: string,
-    rows: { workerId: string; approveOvertime: boolean }[],
+    rows: readonly ConfirmRow[],
     allClean: boolean,
   ): Promise<void> {
     const list = this.day();

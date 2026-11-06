@@ -186,14 +186,22 @@ public sealed class TimeClockPunchService(ITimePunchRepository punches, ITimeClo
         if (nearby.FirstOrDefault(item => Math.Abs((item.PunchedAtUtc - punch.PunchedAtUtc).TotalSeconds) <= TimeClockRules.DuplicateWindow.TotalSeconds) is { } clash)
             throw new ValidationFailedException("at",
                 $"There's already a scan at {LocalTime(clash.PunchedAtUtc, settings.TimeZone)}. Remove that one first, or choose another time.");
-        var posted = await punches.PostedAsync(project.Id, [worker.Id], workDate, workDate, cancellationToken);
-        if (!posted.Contains((worker.Id, workDate)))
-            punch = TimePunch.AddManual(punch.Id, currentUser.TenantId, worker, project, at, direction, request.Reason, settings, notPostedHere: true,
-                currentUser.UserId, requestId, now);
+
+        // A time out that closes a shift still open belongs to the day that shift began (a night shift from 22:00 to 06:00 is one day).
+        var latest = nearby.Where(item => item.PunchedAtUtc < punch.PunchedAtUtc).OrderByDescending(item => item.PunchedAtUtc)
+            .Select(item => (EarlierPunch?)new EarlierPunch(item.PunchedAtUtc, item.Direction, item.WorkDate)).FirstOrDefault();
+        var shiftDate = TimeClockRules.Place(direction, punch.PunchedAtUtc, workDate, latest).WorkDate;
+        if (shiftDate != workDate) await EnsureDayOpenAsync(worker, project.Name, project.Id, shiftDate, cancellationToken);
+
+        var posted = await punches.PostedAsync(project.Id, [worker.Id], shiftDate, shiftDate, cancellationToken);
+        var notPosted = !posted.Contains((worker.Id, shiftDate));
+        if (notPosted || shiftDate != workDate)
+            punch = TimePunch.AddManual(punch.Id, currentUser.TenantId, worker, project, at, direction, request.Reason, settings, notPosted,
+                currentUser.UserId, requestId, now, shiftDate);
 
         punches.Add(punch);
         audit.Record("TimeClock.PunchAdded", nameof(TimePunch), punch.Id,
-            $"Added a missing {DirectionWords(punch.Direction)} scan for {worker.FullName} on {project.Name} at {LocalTime(punch.PunchedAtUtc, settings.TimeZone)}, {Format(workDate)}.");
+            $"Added a missing {DirectionWords(punch.Direction)} scan for {worker.FullName} on {project.Name} at {LocalTime(punch.PunchedAtUtc, settings.TimeZone)}, {Format(punch.WorkDate)}.");
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return ToDto(punch, settings.TimeZone);
     }
@@ -264,13 +272,17 @@ public sealed class TimeClockPunchService(ITimePunchRepository punches, ITimeClo
                 continue;
             }
 
-            var last = day.Where(fact => fact.WorkerId == worker.Id && fact.WorkDate == workDate && fact.PunchedAtUtc < item.At)
-                .OrderByDescending(fact => fact.PunchedAtUtc).Select(fact => (PunchDirection?)fact.Direction).FirstOrDefault();
-            var direction = TimeClockRules.Resolve(item.Direction, last);
-            var punch = TimePunch.Receive(Guid.NewGuid(), organization.Id, worker.Id, projectId, deviceId, item.At, workDate, direction,
+            // The worker's latest earlier scan decides the direction of an automatic one and the day of an Out, even across the day-start (a night
+            // shift that ends after it is still one day, the day it began).
+            var latest = day.Where(fact => fact.WorkerId == worker.Id && fact.PunchedAtUtc < item.At)
+                .OrderByDescending(fact => fact.PunchedAtUtc).Select(fact => (EarlierPunch?)new EarlierPunch(fact.PunchedAtUtc, fact.Direction, fact.WorkDate))
+                .FirstOrDefault();
+            var (direction, shiftDate) = TimeClockRules.Place(item.Direction, item.At, workDate, latest);
+            if (shiftDate != workDate) notPosted = !posted.Contains((worker.Id, shiftDate));
+            var punch = TimePunch.Receive(Guid.NewGuid(), organization.Id, worker.Id, projectId, deviceId, item.At, shiftDate, direction,
                 item.Direction is null, source, item.ClientPunchId, notPosted, recordedBy, now);
             punches.Add(punch);
-            day.Add((worker.Id, deviceId, punch.PunchedAtUtc, workDate, direction, punch.Id));
+            day.Add((worker.Id, deviceId, punch.PunchedAtUtc, shiftDate, direction, punch.Id));
             answers.Add((item.Index, Answer(item.ClientPunchId, PunchOutcome.Accepted, worker.FirstName, worker.LastName, direction, punch.PunchedAtUtc,
                 notPosted, organization)));
         }

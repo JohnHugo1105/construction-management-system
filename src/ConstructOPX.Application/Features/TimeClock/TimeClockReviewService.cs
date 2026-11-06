@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using ConstructOPX.Application.Common;
 using ConstructOPX.Application.Features.Organizations;
 using ConstructOPX.Application.Features.Payroll;
@@ -67,6 +69,7 @@ public sealed class TimeClockReviewService(ITimeClockReader reader, IOrganizatio
 
         var (_, workers) = await reader.WorkersAsync(project.Id, request.WorkDate, null, cancellationToken);
         var approvals = chosen.ToDictionary(row => row.WorkerId, row => row.ApproveOvertime);
+        var seen = chosen.Where(row => !string.IsNullOrEmpty(row.ScanStamp)).ToDictionary(row => row.WorkerId, row => row.ScanStamp!);
         var wanted = request.AllClean ? workers : workers.Where(worker => approvals.ContainsKey(worker.WorkerId)).ToArray();
         var skipped = new List<ConfirmSkipDto>();
         if (!request.AllClean)
@@ -81,6 +84,8 @@ public sealed class TimeClockReviewService(ITimeClockReader reader, IOrganizatio
             names[dto.WorkerId] = dto.WorkerName;
             var approved = approvals.GetValueOrDefault(dto.WorkerId);
             var reason = dto.AlreadyRecorded ? "Already recorded."
+                : seen.TryGetValue(dto.WorkerId, out var stamp) && stamp != dto.ScanStamp
+                    ? "The scans changed after you opened this day. Reload it and look at this worker again."
                 : row.Day.HasMissingScan ? "A scan is missing. Add it, or remove the extra one, then confirm."
                 : row.Day.TotalHours <= 0m ? "The scans add up to no time worked."
                 : request.AllClean && row.Day.Exceptions != TimeClockException.None ? "Needs a look before confirming: " + ExceptionWords(row.Day.Exceptions) + "."
@@ -125,10 +130,23 @@ public sealed class TimeClockReviewService(ITimeClockReader reader, IOrganizatio
                 ExceptionOrder.Where(flag => day.Exceptions.HasFlag(flag)).Select(flag => flag.ToString()).ToArray(),
                 worker.AlreadyRecorded, canConfirm, canConfirm && day.IsCleanWithout(false),
                 scans.Select(punch => new TimeClockPunchDto(punch.Id, punch.PunchedAtUtc, TimeClockPunchService.LocalTime(punch.PunchedAtUtc, zone),
-                    punch.Direction.ToString(), punch.Source.ToString(), punch.DeviceName, punch.NotPostedHere, punch.Reason, punch.Version)).ToArray());
+                    punch.Direction.ToString(), punch.Source.ToString(), punch.DeviceName, punch.NotPostedHere, punch.Reason, punch.Version)).ToArray(),
+                ScanStamp(scans));
             rows.Add(new WorkedRow(dto, day));
         }
         return rows;
+    }
+
+    /// <summary>
+    /// A short stamp of the scans a row was worked out from (their ids, times and directions). The review page sends it back when confirming, so a
+    /// scan added, removed or sent late between reading the day and confirming it makes the row wait for another look instead of being confirmed
+    /// with hours the reviewer never saw.
+    /// </summary>
+    private static string ScanStamp(IEnumerable<ReviewPunch> scans)
+    {
+        var text = string.Join(';', scans.OrderBy(punch => punch.PunchedAtUtc).ThenBy(punch => punch.Id)
+            .Select(punch => $"{punch.Id:N}.{punch.PunchedAtUtc.UtcTicks}.{(int)punch.Direction}"));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)))[..16];
     }
 
     private static string ExceptionWords(TimeClockException exceptions) =>

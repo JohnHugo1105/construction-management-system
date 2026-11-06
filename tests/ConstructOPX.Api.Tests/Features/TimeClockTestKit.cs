@@ -90,6 +90,17 @@ internal static class TimeClockTestKit
             rows = rows.Select(row => new { workerId = row.WorkerId, approveOvertime = row.ApproveOvertime }).ToArray()
         });
 
+    /// <summary>Confirms rows the way the review page does: each row carries the stamp of the scans the person read.</summary>
+    public static Task<ConfirmTimeClockResultDto> ConfirmSeenAsync(ApiClient client, Guid projectId, DateOnly date,
+        params (Guid WorkerId, bool ApproveOvertime, string ScanStamp)[] rows) =>
+        client.PostAsync<ConfirmTimeClockResultDto>("/api/timeclock/days/confirm", new
+        {
+            projectId,
+            workDate = Iso(date),
+            allClean = false,
+            rows = rows.Select(row => new { workerId = row.WorkerId, approveOvertime = row.ApproveOvertime, scanStamp = row.ScanStamp }).ToArray()
+        });
+
     /// <summary>How many scans a tenant has stored, read straight from the database.</summary>
     public static int StoredPunches(ConstructOpxApiFactory factory, Guid tenantId)
     {
