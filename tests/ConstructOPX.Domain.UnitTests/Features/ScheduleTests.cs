@@ -9,7 +9,7 @@ using ConstructOPX.Domain.Features.Schedule;
 namespace ConstructOPX.Domain.UnitTests.Features;
 
 /// <summary>
-/// The schedule rules (docs/development/notes/schedule-rules.md): planned value per activity and per project, percent complete, behind, slip,
+/// The schedule rules (docs/business-rules.md section 11.3): planned value per activity and per project, percent complete, behind, slip,
 /// the activity's checks, and where the schedule's planned value lands on the Progress tab. Amounts are awkward on purpose so every rounding is
 /// visible: multiply first, divide last, round once half away from zero, then add the rounded figures.
 /// </summary>

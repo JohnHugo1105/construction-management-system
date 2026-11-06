@@ -22,7 +22,7 @@ business choices the owner has not confirmed; each slice lists them in its rules
   arrives: no empty tiles, no zero chips. One primary action per screen. Phone first (375 x 812), no horizontal page scroll.
 * **Do not edit a file you do not own** (section 2). If you need a change in one, say so in your report.
 * **Rules note.** Do not edit `docs/business-rules.md`. Write your slice's rules, in the style of that document (plain, exact, with the
-  figures), to `docs/development/notes/<slice>-rules.md` (new file). The lead merges it and deletes the note.
+  figures), to `docs/development/notes/<slice>-rules.md` (new file). The lead merged each note into `docs/business-rules.md` and deleted it.
 * **Tests.** Cover every business rule with a domain unit test and the API round trip with an API test (real SQL Server). Add Angular
   specs for the logic and the screens you build. Run the minimum affected tests, once, then fix and re-run only what failed. Run no
   background or wide test commands; never the whole solution test run.

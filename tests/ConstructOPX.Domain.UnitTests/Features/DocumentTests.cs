@@ -4,7 +4,7 @@ using ConstructOPX.Domain.Features.Projects;
 
 namespace ConstructOPX.Domain.UnitTests.Features;
 
-/// <summary>The project document rules: details, versions, links, files, voiding and the valid-until boundaries (docs/development/notes/documents-rules.md).</summary>
+/// <summary>The project document rules: details, versions, links, files, voiding and the valid-until boundaries (docs/business-rules.md section 19).</summary>
 public sealed class DocumentTests
 {
     private static readonly DateOnly Today = TestData.Today; // 2 Nov 2026

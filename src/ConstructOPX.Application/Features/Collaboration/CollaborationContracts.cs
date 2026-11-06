@@ -6,7 +6,7 @@ namespace ConstructOPX.Application.Features.Collaboration;
 
 // Tasks, the discussion on records, in-app notifications and the colleague lookup. Who may read or write a comment is the rule of the record
 // it is on (see CollaborationAccess); tasks are seen by their creator, their assignee and Administrators; notifications only by their owner.
-// Nothing here carries an amount. See docs/development/notes/collaboration-rules.md and docs/api/collaboration.md.
+// Nothing here carries an amount. See docs/business-rules.md section 20 and docs/api/collaboration.md.
 
 // ---- Ports ------------------------------------------------------------------------------------------------------------------
 

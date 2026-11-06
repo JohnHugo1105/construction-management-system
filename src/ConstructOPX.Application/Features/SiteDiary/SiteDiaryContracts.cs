@@ -6,7 +6,7 @@ namespace ConstructOPX.Application.Features.SiteDiary;
 
 // The site diary: one structured report per project per day. A report carries no money anywhere, and what is filled in beside it (the workers
 // with attendance that day, the deliveries received that day) is read from what is already recorded and selects no pay figure and no price:
-// see docs/development/notes/site-diary-rules.md and docs/api/site-diary.md. A test walks the property names of every response.
+// see docs/business-rules.md section 18 and docs/api/site-diary.md. A test walks the property names of every response.
 
 // ---- Ports ------------------------------------------------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@ using static ConstructOPX.Api.Tests.Features.SiteDiaryTestKit;
 
 namespace ConstructOPX.Api.Tests.Features;
 
-/// <summary>The site diary over the real API and SQL Server: the round trip, every refusal, the filled-in panels and the fixed statement counts (docs/development/notes/site-diary-rules.md).</summary>
+/// <summary>The site diary over the real API and SQL Server: the round trip, every refusal, the filled-in panels and the fixed statement counts (docs/business-rules.md section 18).</summary>
 public sealed class SiteDiaryApiTests : IClassFixture<ConstructOpxApiFactory>
 {
     private readonly ConstructOpxApiFactory _factory;

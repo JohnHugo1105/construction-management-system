@@ -9,7 +9,7 @@ using static ConstructOPX.Api.Tests.Features.SiteDiaryTestKit;
 
 namespace ConstructOPX.Api.Tests.Features;
 
-/// <summary>Who may read and who may write the site diary, route by route: every role, and a person who is not signed in (docs/development/notes/site-diary-rules.md).</summary>
+/// <summary>Who may read and who may write the site diary, route by route: every role, and a person who is not signed in (docs/business-rules.md section 18).</summary>
 public sealed class SiteDiaryAccessApiTests : IClassFixture<ConstructOpxApiFactory>
 {
     private readonly ConstructOpxApiFactory _factory;

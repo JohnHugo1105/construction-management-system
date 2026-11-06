@@ -15,7 +15,7 @@ something changed, to write the day's site report, to keep drawings and permits,
 Read first: `AGENTS.md`, `docs/development/philippine-practice-spec.md` section 1 (ground rules, environment, report format), and
 `docs/development/commercial-control-spec.md` sections 1, 3 and 4 (conventions: money, records, tenant, audit, idempotency, voiding, paging,
 statement counts). **They apply to every slice here unchanged.** Rules marked **Default** are choices the owner has not confirmed; each
-slice lists them in `docs/development/notes/<slice>-rules.md` for the lead to merge.
+slice listed them in a rules note for the lead to merge; they are now in the Defaults subsections of `docs/business-rules.md` (11.6, 17.9, 18.8, 19.4, 20.5).
 
 ## 1. What is deliberately not built (state it in the docs and on the screens where it matters)
 

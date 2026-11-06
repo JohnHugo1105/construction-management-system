@@ -10,7 +10,7 @@ using static ConstructOPX.Api.Tests.Features.CostingTestKit;
 
 namespace ConstructOPX.Api.Tests.Features;
 
-/// <summary>The bonds register over the real API and SQL Server: the round trip, every refusal and the filters (docs/development/notes/bonds-rules.md).</summary>
+/// <summary>The bonds register over the real API and SQL Server: the round trip, every refusal and the filters (docs/business-rules.md section 15).</summary>
 public sealed class BondApiTests : IClassFixture<ConstructOpxApiFactory>
 {
     private readonly ConstructOpxApiFactory _factory;

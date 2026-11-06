@@ -6,7 +6,7 @@ using ConstructOPX.Domain.Features.SiteDiary;
 
 namespace ConstructOPX.Domain.UnitTests.Features;
 
-/// <summary>The site diary rules: the date, every refusal, the author window and its company-zone boundary, corrections, void and archived projects (docs/development/notes/site-diary-rules.md).</summary>
+/// <summary>The site diary rules: the date, every refusal, the author window and its company-zone boundary, corrections, void and archived projects (docs/business-rules.md section 18).</summary>
 public sealed class SiteDiaryTests
 {
     private static readonly DateOnly Today = TestData.Today; // Mon 2 Nov 2026

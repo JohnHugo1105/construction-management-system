@@ -5,7 +5,7 @@ using ConstructOPX.Domain.Features.Projects;
 
 namespace ConstructOPX.Domain.UnitTests.Features;
 
-/// <summary>The bonds register rules: the dates, every refusal, extend, the final states and the expiry boundaries (docs/development/notes/bonds-rules.md).</summary>
+/// <summary>The bonds register rules: the dates, every refusal, extend, the final states and the expiry boundaries (docs/business-rules.md section 15).</summary>
 public sealed class BondTests
 {
     private static readonly DateOnly Today = TestData.Today; // 2 Nov 2026

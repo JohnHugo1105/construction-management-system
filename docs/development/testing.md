@@ -30,3 +30,34 @@ second company trying to reach the first company's data.
 
 Not covered by automated tests, by design: real-phone behaviour, SQL Server failover, load. See `docs/operations/` for the manual
 checks that stand in for them.
+
+## Time clock: what is proven and what is not (rules: business-rules.md section 17)
+
+Proven by tests (domain unit tests, API tests on a real SQL Server, Angular specs):
+
+* The device scheme: a hashed key compared in constant time, the tenant taken only from the device, identical 401s for unknown, revoked,
+  rotated-out and malformed keys, 429 over 120 requests a minute per key, the machine route refusing a person's cookie, and a device key
+  refused (401) on a sample of 16 other routes. The endpoint security test allows exactly one route with the device policy.
+* Idempotency and offline replay, the clock bounds, identical answers for unknown, replaced and inactive badges, the kiosk answer carrying only
+  name, direction and time (a name walk of the JSON for pay, money, code, key, photo and place words), the 60-second rule, automatic
+  directions, the Manila date differing from the UTC date and the 04:00 day-start, pairing, the break, rounding with awkward minutes, the cap
+  at paid hours, overtime proposed and never recorded until approved, night hours, each exception, a worker not posted.
+* Confirmation through the attendance rules, never overwriting typed attendance, idempotent, "Confirm all clean rows" skipping exceptions and
+  unapproved overtime, and **the same pay for the same hours typed by hand and confirmed from the clock** (a payroll run over both).
+* Tenant isolation for devices, scans, workers, projects, badges and the import; role refusals for every permission boundary.
+* A fixed number of SQL statements: the device push costs 10 statements for 1 scan and for 10 (the device's key, the device, its last-seen
+  mark, the company, the project, the scan ids, the workers, the day's scans, the postings, one insert); the review list costs 6 for 1
+  worker and for 10. EF Core batches inserts 42 rows to a command, so a push of 200 new scans adds a few insert commands (per 42 scans, not
+  per scan).
+* The Code 128 drawing matches an independent implementation (JsBarcode 3.11.6) for three codes, and every symbol in its table was checked
+  against that implementation's table; the QR code comes from the bundled library.
+
+Not proven:
+
+* **No real time clock machine or scanner was ever connected.** The keyboard-style USB or Bluetooth scanner is simulated in the kiosk spec by
+  key events (each character, then Enter). A physical scanner's speed, its suffix key (some send Tab, not Enter) and its handling of the QR
+  code were not tested; nor was a printed badge scanned. Scanners are commonly configured to send Enter; check it when one is set up.
+* The kiosk's beep, the A4 print layout and the badge size on paper were not checked on a printer or a tablet (browser specs only, not
+  Android).
+* No vendor protocol, no load test beyond the fixed statement counts, and the rate limit is per server process (several servers would each
+  allow 120 a minute).

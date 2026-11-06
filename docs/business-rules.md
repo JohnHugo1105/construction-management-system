@@ -63,12 +63,31 @@ Pay amounts are visible only to those who can run payroll (section 6).
 | See bonds | yes | yes | yes | yes | | | yes |
 | Record, change, extend, release, mark as called or void bonds | yes | yes | | yes | | | |
 | Keep the pay rules and the holiday calendar | yes | | | yes | | yes | |
+| Review, confirm, add or remove time clock scans (section 17) | yes | yes | | | | yes | |
+| Issue badge codes, print badges, import a machine's file | yes | | | | | yes | |
+| Register, rotate and revoke time clock machines; time clock settings | yes | | | | | | |
+| See the site diary (it carries no money) | yes | yes | yes | yes | yes | | yes |
+| Write, correct and void site reports (section 18) | yes | yes | yes | | | | |
+| See project documents and download them (contracts and insurance policies only with "See budget and costs") | yes | yes | yes | yes | yes | | yes |
+| Add, replace, change and void project documents | yes | yes | yes | yes | | | |
+| See system readiness (file storage, virus scanning, email) | yes | | | | | | |
+| See the schedule and the S-curve (they show budget amounts) | yes | yes | yes | yes | | | yes |
+| Plan the schedule: add, change and remove activities, set the baseline | yes | yes | yes | | | | |
+| Give, take, complete and discuss tasks; write comments; look up colleagues' names (section 20) | yes | yes | yes | yes | yes | yes | |
+| See every task in the company | yes | | | | | | |
+| See your own notifications | yes | yes | yes | yes | yes | yes | yes |
 | See what needs your action (only the kinds of work your role acts on, section 16) | yes | yes | yes | yes | yes | yes | yes |
 
 Everyone who may see purchase orders sees the deliveries on them. Everyone who can see payroll reads the pay rules and the holiday
 calendar (sections 6.8 and 6.9). A **warehouse keeper records deliveries on the receiving screen** (section 12.5), which shows items,
 units and quantities and never a price; they still hold neither the permission to see purchase orders nor to receive against them,
 because those screens carry the company's amounts.
+
+A Warehouse Keeper sees drawings, permits, certificates, photos, reports and other documents, and never a contract or an insurance
+policy (they reveal prices); a Viewer sees all of them but changes nothing; an HR Officer sees none. The schedule's readers are exactly
+the people who see budget and costs. Reading a record's discussion follows the record: whoever may see the record sees its discussion
+(a Viewer reads and does not write), and a task is seen only by the person who gave it, the person it is for and Administrators
+(section 20).
 
 Sign-in: five wrong passwords lock the account for 15 minutes; an unknown username, a wrong password and a locked account all get the
 same message, so the sign-in page can't be used to find out which accounts exist.
@@ -542,6 +561,9 @@ per-project count of problem parts on the dashboard is not built, because the pr
 budget; (c) rotating the credentials that remain in the desktop program's git history is deferred by the owner, and the risk is
 still listed in `docs/operations/secrets-and-access.md`.
 
+The defaults of the features added after that call are **not yet confirmed by the owner**; each is listed at the end of its own section:
+the schedule (11.6), the time clock (17.9), the site diary (18.8), documents (19.4) and tasks, discussion and notifications (20.5).
+
 1. **Payroll scope.** The retired app had no payroll, so the calculation (section 6) is new. It covers regular and overtime pay, the
    rest-day, holiday and night premiums, a regular holiday not worked, and the 13th-month pay (sections 6.8 to 6.14; their defaults are
    in 10.1). Confirm the overtime multiple (125%), the paid hours per day (8), and who enters statutory contributions.
@@ -773,7 +795,7 @@ adds the rounded figures, so a roll-up always equals the sum of what is shown.
 | Budget at completion (BAC) | What the work was planned to cost | The sum of the active budget lines |
 | Earned value (EV) | What the work done is worth | Per line: budget x percent complete. The sum over lines |
 | Actual cost (AC) | What was spent | Posted cost dated on or before the date: the same figure as the dashboard when the date is today |
-| Planned value (PV) | What should be done by the date | BAC x the share of time from the project's start date to its target end date that has passed (0 before the start, 100% on or after the end). None without a target end date |
+| Planned value (PV) | What should be done by the date | From the schedule when an activity covers budget lines (11.3); otherwise BAC x the share of time from the project's start date to its target end date that has passed (0 before the start, 100% on or after the end). None without either |
 | Cost variance (CV) | Work done minus money spent | EV - AC. Negative: the work cost more than it was worth |
 | Schedule variance (SV) | Work done minus work planned | EV - PV. Negative: behind. None without PV |
 | Cost index (CPI) | Work earned for each peso spent | EV / AC. None while nothing is spent |
@@ -792,6 +814,77 @@ adds the rounded figures, so a roll-up always equals the sum of what is shown.
   instead of failing the report; an index above the largest whole number is shown as that number.
 * The Progress tab says it in words: "Spent ₱x for work worth ₱y", "Each peso spent is earning 93 centavos of work", "Behind schedule:
   the work done is 79% of what was planned by today". The server sends the figures; the screen only words them.
+
+### 11.3 The schedule
+
+Until now the planned value on the Progress tab assumed the work is spread evenly between the project's start date and its target end
+date. Real work is not even: foundations take money early, finishes late. The schedule lets planners say when each part of the work is
+planned to happen, and the planned value follows it. It is activities with dates, not a network: **there are no dependencies between
+activities, no critical path and no resource levelling.**
+
+* **An activity** belongs to one project and has a name (up to 120 characters), a planned start and a planned finish (business dates,
+  the finish not before the start, both between 2000 and 2100), and the budget lines whose work it covers (up to 500).
+* **Weight.** An activity's weight is the sum of its linked active lines' budgets on the company's comparison basis (section 4.7), the
+  same line amounts the Progress tab uses. An activity with no line is listed and marked "Link budget lines to include it in the plan";
+  it weighs nothing and plans nothing.
+* **A budget line belongs to at most one activity (Default).** Linking a line that another active activity holds is refused, naming that
+  activity ("\"CHB walls\" is already in the activity \"Masonry walls\"."). To split a line's work across activities, split the budget
+  line. A removed activity frees its lines. A removed budget line drops out of every figure.
+* **Days.** Both the start and the finish are working days of the activity: 1 Mar to 10 Mar is 10 days; a one-day activity starts and
+  finishes on the same day. "By a date" means by the end of that day.
+* **Planned value at a date** = for each activity, weight x (planned days passed by the end of the date / planned days), the share clamped
+  to 0 before the start and 1 from the finish on, multiplied first, divided last and rounded once (half away from zero); the project adds
+  the rounded activity figures. Example: an activity of ₱1,000,000.00 over 10 days has ₱300,000.00 planned by the end of its third day,
+  ₱1,000,000.00 from its finish on.
+* **Percent complete** of an activity = the budget-weighted average of its linked lines' current percent (rounded once); a plain average
+  when every linked line has a zero budget. It reads 100% only when every linked line is at 100%: an average that would round up to 100%
+  while a line is still open shows as 99.99%. Read-only: progress is still recorded per line on the Progress tab.
+* **Behind.** An activity is behind when its planned finish is before today (company time zone) and it is below 100%. An activity with no
+  line is never "behind"; it is flagged to have lines linked instead. The screen says "Behind", "On track", "Done" or "No budget lines"
+  in words with an icon, never colour alone.
+* **Baseline.** "Set baseline" copies every active activity's planned dates to its baseline dates. It asks first (it says what freezing
+  means: later date changes show as days later or earlier than the baseline), and it can be set again; each time replaces the baseline
+  and writes an audit line. It is refused when the schedule changed since the person read it (an activity added, changed or removed), so
+  they reload and confirm. An activity added after the baseline has no baseline dates and plans nothing in the baseline planned value.
+* **Slip** = planned finish minus baseline finish, in days: positive is later than the baseline ("Finishes 7 days later than the
+  baseline"), negative earlier.
+* **Baseline planned value** is the planned value worked out from the baseline dates (same rule, same weights).
+* **Removing an activity** needs a reason (up to 300 characters) that stays on its record, and is audited. A schedule is planning data, not
+  a financial record, so the activity is removed rather than voided; it can't be changed or put back.
+* **Archived projects.** The schedule can be read but not changed (restore the project first).
+* **Changes** carry the version the person opened (a stale one is refused and they reload), and an add carries a request id so a double
+  click adds one activity.
+* **Audit lines** name the activity, its dates and how many lines, never an amount.
+
+### 11.4 Where the numbers land
+
+When at least one activity has weight, the Progress tab's planned value is the schedule's planned value, and the schedule variance
+(EV - PV), the schedule index (EV / PV, none while nothing is planned) and the planned percent (PV / BAC) follow it; the summary then says
+"of what the schedule planned by today". With no activity with weight, the straight line over the project's dates stays. Forecasts use
+the cost index (section 11.2) and never the planned value, so a schedule changes no forecast, no margin and nothing on the dashboard.
+
+### 11.5 The S-curve
+
+The Schedule view of the Progress tab draws cumulative planned value, baseline planned value, earned value and actual cost (posted cost)
+over time, from the earliest start (planned or baseline) to the latest finish. Points are weekly, or every 2, 3 or more weeks when weekly
+points would be more than 119, so there are never more than 120 (a two-year plan has about 107). Earned value and actual cost stop at
+today. **The point for today equals the Progress tab's planned value, earned value and spent amount**, because both are worked out from the
+same line amounts (an automated test pins it). The chart is drawn in the app with a sentence that says what it shows and the same figures
+as a table.
+
+### 11.6 Schedule defaults (not confirmed by the owner)
+
+* A budget line belongs to at most one activity (the spec's default).
+* Removing an activity, not voiding it, with a reason kept on the record (the spec's wording).
+* Activities with no budget line are kept and flagged, not refused.
+* At most 500 budget lines per activity; names up to 120 characters; removal reasons up to 300 characters; dates between 2000 and 2100.
+* The baseline request names the activities and versions the person saw; any difference is a conflict rather than a silent baseline of
+  a schedule they did not see.
+* The S-curve's first point counts progress and cost dated before the plan began (so the curve starts where the project stands).
+* On screen: the Schedule view lives on the Progress tab behind an "Update progress / Schedule" switch kept in the address
+  (`?view=schedule`); the timeline bars appear only when the view is at least 40rem wide, phones get the plain list with the same facts in
+  words; the first 30 activities are drawn, then "Show more activities".
+
 
 ## 12. Purchasing and committed cost
 
@@ -1188,8 +1281,9 @@ bond of another company is "not found".
 ## 16. Needs your action
 
 A page (and a number on the navigation entry "Needs action") that lists the work **waiting on the signed-in person**, read from the
-statuses records already have. **Nothing is stored, sent or scheduled**: no new record, no notification, no task and no message. When
-someone acts on a record on its own page (approves, issues, certifies, records), it simply stops waiting and leaves the list.
+statuses records already have. **The page itself stores, sends and schedules nothing**: no new record and no message. (Tasks and the
+notification bell are separate features, section 20; one group on this page lists a person's own open tasks.) When someone acts on a
+record on its own page (approves, issues, certifies, records), it simply stops waiting and leaves the list.
 
 ### 16.1 Who sees which group
 
@@ -1210,12 +1304,20 @@ entry is shown only to someone who holds at least one permission that yields a g
 | Progress not updated for 14 days | Record progress: Administrator, Project Manager, Cost Engineer | Active projects with at least one active budget line (progress is recorded against one) whose latest progress is more than 14 days old, or that have none and started more than 14 days ago | None |
 | Attendance not recorded yesterday | Record attendance: Administrator, Project Manager, HR Officer | See 16.2 | None |
 | Contribution and tax tables need setup | Enter the statutory tables: Administrator, Accountant | One row while the statutory status (section 6.4) reports a table needing setup today **and** the company has at least one active worker or one draft payroll; a company that has neither shows 0 (tables only matter once payroll is in use) | None |
+| Time clock scans to review | Review the time clock: Administrator, Project Manager, HR Officer | One row per project that is not archived, with work days before today whose scans are not yet recorded as attendance (section 17.6) | None |
+| Site diary not written yesterday | Write the site diary: Administrator, Project Manager, Cost Engineer | One row per Active project with no report for yesterday that has a posted report in the seven days before (section 18.6) | None |
+| Documents that have expired or expire soon | Manage documents: Administrator, Project Manager, Cost Engineer, Accountant | Active documents on projects that are not archived whose valid-until date has passed or is within 30 days (the bond rule), expired first, then the soonest; contract and insurance documents are left out for anyone who cannot see costs | **None** |
+| Schedule activities past their planned finish | Plan the schedule: Administrator, Project Manager, Cost Engineer | Active projects with at least one activity whose planned finish is before today while a linked active budget line is below 100%; one row per project, the most activities first, then the earliest finish (section 11.3) | None |
+| Tasks assigned to you | Work on tasks: Administrator, Project Manager, Cost Engineer, Accountant, Warehouse Keeper, HR Officer | The signed-in person's own Open tasks that are not on an archived project, overdue first (urgent), then the soonest due, then those with no due date (section 20.4) | **None, ever** (a task never carries an amount) |
 
-So, for example, a Project Manager receives purchase orders and change orders to approve, bills to chase, deliveries, bonds, progress
-and attendance, and never bills to issue, claims or payroll; an HR Officer receives only attendance (HR prepares payroll but cannot approve
-it); a Warehouse Keeper receives only deliveries, and **neither route ever sends them an amount or any property named for one** (a row of
-a group without an amount has no amount property at all); a Viewer receives no group and a count of 0. **Amounts appear only where the
-person can already see them** on the record's own page.
+The last five groups are contributed by their own features and follow the built-in groups in the order above.
+
+So, for example, a Project Manager receives purchase orders and change orders to approve, bills to chase, deliveries, bonds, progress,
+attendance, time clock scans, the site diary, documents, schedule activities and tasks, and never bills to issue, claims or payroll; an
+HR Officer receives attendance, time clock scans and tasks (HR prepares payroll but cannot approve it); a Warehouse Keeper receives
+deliveries and tasks, and **neither route ever sends them an amount or any property named for one** (a row of a group without an amount has
+no amount property at all); a Viewer receives no group and a count of 0. **Amounts appear only where the person can already see them** on
+the record's own page.
 
 ### 16.2 Thresholds
 
@@ -1238,6 +1340,15 @@ All days are judged on the company's calendar day (its time zone), never the UTC
   not on their rest day that day. A project that recorded any entry yesterday is up to date (a sick worker never keeps it listed); a voided
   entry does not count as recorded; a project that recorded nothing a week ago (a Monday-to-Saturday site on a Sunday) is not listed. One
   row per project: "No attendance recorded for Sun 1 Nov"; the number of posted workers only puts the biggest crews first.
+* **Time clock**: a project is listed while work days before today have scans that are not yet recorded as attendance ("12 workers to review for
+  Sun 1 Nov"); a project with a day that needs a closer look (scans that do not pair up, or a worker who was not posted there) comes first and is
+  urgent ("Check scans").
+* **Site diary**: yesterday is judged on the company's calendar and a Sunday is not skipped; nothing is listed when yesterday is a company
+  holiday ("No report for Sun 1 Nov").
+* **Documents**: the row reads "Expired 3 days ago, on 3 Dec 2026", "Expires today", "Expires tomorrow" or "Expires in 12 days, on 15 Dec 2026"; an
+  expired one is urgent and says "Expired". It opens the project's Documents tab.
+* **Schedule**: "3 activities are past their planned finish"; always urgent; the row opens the project's Progress tab.
+* **Tasks**: an Open task is overdue when its due date is before today; each row shows the title, the project and the due date in words.
 
 ### 16.3 What else holds
 
@@ -1252,3 +1363,368 @@ All days are judged on the company's calendar day (its time zone), never the UTC
   never disagree. Nothing polls.
 * Every read is a fixed number of SQL statements whatever the number of records (asserted by a test): see
   [docs/api/needs-action.md](api/needs-action.md).
+
+## 17. Time clock
+
+Workers scan their own badge at a machine when they arrive and when they leave. A person reviews each project's day and confirms it, which
+records the attendance. **A scan never reaches pay by itself**: payroll reads confirmed attendance only, so an hour confirmed from the time
+clock is paid exactly like the same hour typed by hand. Typing attendance on the Team tab still works and is the fallback when a machine is down.
+
+### 17.1 Badges
+
+* A worker's badge code is 12 characters from an alphabet without look-alikes (digits 2 to 9 and the letters A to Z without I, L and O), random,
+  and unique in the company. It is not derived from the employee number or anything else about the worker. The badge prints it as a Code 128
+  barcode, a QR code and in groups of four (ABCD-EFGH-JKMN), with the company, the worker's name, employee number and job title for people to
+  read; the symbols encode only the code.
+* HR officers and administrators issue a code from the worker's page or for every active worker without one (100 at a time), and print badges
+  ten to an A4 sheet at card size (85.6 x 54 mm). Only an active worker gets a code.
+* **Reissuing replaces the code, and the old badge stops working at once** (a lost badge). Issuing and reissuing are in the activity log; the
+  code itself never is.
+* A scanned or typed code is read without regard to case, spaces or dashes.
+
+### 17.2 Machines
+
+* A machine (a kiosk tablet with a scanner, or a time clock that sends its scans) is registered by an administrator for one project. Its key
+  (256 random bits) is shown once, when it is registered or given a new key, and stored only as a hash. A new key stops the old one at once;
+  revoking stops the machine for good. Scans a machine already sent are kept.
+* A machine's scans belong to the company that registered it and count for its project. A machine can send scans and do nothing else.
+* Each machine may send 120 requests a minute. A batch holds at most 200 scans.
+
+### 17.3 Scans
+
+* A scan is the worker, the project, the machine (none for an import or a supervisor's scan), the time the machine says, the time it arrived,
+  and the direction. Scans are never changed or deleted; a wrong one is removed with a reason and stays on record.
+* **Work date.** A scan's work date is its date in the company's time zone, except that a scan before the company's day-start (**04:00 by
+  default**) belongs to the previous date, so a night shift that ends at 2 am is one day. **A time out that closes a shift still open takes the
+  work date of the time in it closes**, whatever the clock says, so a night shift from 22:00 to 06:00 is one day, the day it began, and the
+  day-start never has to be moved. A time in is still open when it is no more than **16 hours** before the scan; an older one was forgotten (the
+  day shows the missing time out) and does not pair with the next scan. The work date is fixed when the scan arrives.
+* **Direction.** A machine may say In or Out; otherwise the scan is a time out when the worker's latest earlier scan on the project is a time in
+  that is still open (above), and a time in in every other case (the first is In). A supervisor's time out follows the same pairing.
+* **Sent twice.** The same scan id from the same machine is stored once; a second scan by the same worker on the same machine within **60
+  seconds** is "already recorded" and not stored.
+* **Clock.** A scan stamped more than **5 minutes** ahead of the server, or more than **7 days** old, is refused ("The time on this machine
+  is wrong"). A machine that was offline sends its queued scans with their original times.
+* **Codes.** An unknown code, a replaced badge and a worker who is not active are refused with the same words ("This badge isn't active. See
+  your supervisor."), so the answers can't be used to find out which codes exist.
+* **Not posted.** A worker not posted to the machine's project that day is told so in words; the scan is kept and the day is flagged.
+* **Import.** A machine's exported file (`code,timestamp[,direction]`, at most 5,000 rows) is read under the same rules for one project; a
+  time without a time zone is the company's local time. Every row is answered with its number and a reason; the file is not kept.
+* **Supervisor's scan.** A person who confirms days may add a missing scan (time in or out, not in the future, with a reason) or remove a
+  wrong one (with a reason). Neither is possible once the day is recorded as attendance: the attendance entry is what changes then.
+
+### 17.4 A day's hours
+
+For each worker, project and work date:
+
+1. The scans are taken in time order as In, Out, In, Out. Worked time is the sum of the In-to-Out spans. Two Ins in a row, an Out with no In,
+   or a last In with no Out is an **exception** (no time out / no time in), never a guess: only the complete spans count.
+2. **Break.** A single span of 5 hours or more has the company's unpaid break taken off once (**60 minutes by default**; 0 turns it off). When
+   the worker scanned out and back in, that gap was the break and nothing more is taken off.
+3. **Rounding.** The worked time is rounded to the nearest **15 minutes by default** (half a step rounds up; 0 keeps the nearest whole
+   minute), once, on the day's total, never on each scan. Hours keep two decimals (247 minutes is 4.12 h).
+4. **Regular hours** are the rounded time up to the company's paid hours per day. **Overtime is the rest and is only proposed**: it is recorded
+   as overtime only when the reviewer approves it for that row (overtime needs the employer's authorization).
+5. **Night hours** are the worked time between 22:00 and 06:00, rounded the same way, never more than the hours worked (and, when overtime is
+   not approved, never more than the regular hours recorded).
+6. **Exceptions:** no time out, no time in, not posted here, and more than 16 hours worked in the day. Day types, premiums and holidays are
+   payroll's (section 6) and are not worked out here.
+
+Example: 07:02 to 17:03 is 10 h 01 min; less the 60-minute break, 9 h 01 min; rounded, 9 h: 8 h regular and 1 h overtime proposed. A
+13:00 to midnight shift is 11 h, less the break 10 h: 8 regular, 2 overtime proposed, 2 night hours.
+
+### 17.5 Confirming
+
+* A person who may confirm (Administrator, Project Manager, HR Officer) confirms rows of a project's day, approving overtime row by row.
+  Confirming creates the attendance entry **through the attendance rules** (an active worker that day, the project open, one entry per worker,
+  project and day, 24 hours a day across projects, a holiday already paid as not worked), for the whole project (no sub-project), marked as
+  coming from the time clock with the first in, the last out and the break kept for explanation.
+* **A day that already has attendance is shown as "Already recorded" and is never overwritten**, whether it was typed or confirmed.
+  Confirming again records nothing new.
+* A row with a missing scan is never confirmed. "Confirm all clean rows" confirms the clean rows **on the page the reviewer is looking at**
+  (no exception, and any overtime approved), never rows they did not see; the others are listed with the reason. (The API's `allClean`
+  option takes every clean row of the day.)
+* **A row is confirmed only if its scans are the ones the reviewer read.** Each review row carries a stamp of its scans (`scanStamp`) and
+  the page sends it back; if a scan was added, removed or sent late in between, the row is skipped with "The scans changed after you opened
+  this day" and waits for another look, so overtime approved for one figure is never recorded for another.
+* **A day whose attendance was voided can be confirmed again**: the voided entry no longer stands in the way, and a double confirm is still
+  stopped by the one-live-entry-per-posting-and-day rule.
+* **Never automatic.** No scan, import or push creates attendance or pay on its own; a person confirms.
+
+### 17.6 Needs your action
+
+"Time clock scans to review" (people who confirm days: Administrator, Project Manager, HR Officer): one row per project, not archived, with
+work days before today whose scans are not yet recorded as attendance: "12 workers to review for Sun 1 Nov", or across several days "15
+workers' days to review, Sun 1 Nov to Tue 3 Nov", and "; 2 need a closer look" when a day's In and Out scans don't pair up or a worker wasn't
+posted there. Such projects come first and are urgent ("Check scans"). No amounts. Confirming the days (or removing the stray scans) takes the
+project off the list.
+
+### 17.7 Who sees what
+
+| | Administrator | Project Manager | HR Officer | Others |
+| --- | :-: | :-: | :-: | :-: |
+| Review, confirm, add or remove scans | yes | yes | yes | |
+| Issue codes, print badges, import a machine's file | yes | | yes | |
+| Register, rotate and revoke machines; time clock settings | yes | | | |
+
+The review shows hours only, never pay. A badge shows the name, employee number and job title, never pay. The kiosk shows one worker's first
+and last name, the direction and the time, and nothing else.
+
+### 17.8 Company settings
+
+Day-start (default 04:00, midnight to noon), unpaid break (default 60 minutes, 0 to 180) and rounding (default 15 minutes, 0 to 60), on the
+company settings page. A change applies to days worked out afterwards; a scan keeps the work date it was given when it arrived, and confirmed
+attendance keeps its hours.
+
+### 17.9 Defaults (not confirmed by the owner)
+
+* The day-start (04:00), break (60 minutes, taken only from a single span of 5 hours or more) and rounding (nearest 15 minutes, half up) are
+  the spec's defaults, settable per company.
+* Rounding to the nearest step (not down) can add up to 7 minutes 29 seconds a day in the worker's favour, or take as much off. Late and
+  undertime deductions are not worked out (a company decision); the scans are kept so they can be added.
+* A confirmed day is recorded against the whole project, not the worker's sub-project posting.
+* A machine's scans count for the project it was registered for; a machine moved to another site is registered again.
+* A rejected scan in a queue the kiosk resends is dropped from the tablet once the server has answered it (the worker has left the gate).
+* The kiosk keeps at most 2,000 unsent scans; beyond that the oldest give way.
+* An import uses the same 7-day bound as a machine: an older file is refused row by row.
+* The "needs a closer look" count in Needs your action and the summary uses the scans' In/Out counts and the not-posted flag recorded when
+  the scan arrived; the review page checks postings as they are now and also flags a day over 16 hours.
+* The kiosk shows the worker's first and last name (not the middle name, never the employee number).
+* The demo kiosk key in `TimeClockDemo` is fixed for development only.
+
+### 17.10 Not built
+
+Biometrics (no fingerprints, face data or photos are collected or stored: they are sensitive personal data under the Data Privacy Act), GPS
+or geofencing, camera scanning on the kiosk, shift rosters, late and undertime deductions, a native app, and vendor-specific time clock
+protocols (no driver for any brand: a machine that can't call the HTTP route needs a gateway, or its export file is imported).
+
+## 18. Site diary
+
+A **site report** is the day's record of one project: one structured report per project per day, replacing the chat group where site
+engineers used to post "what we did today". **A report carries no money.** It also cannot reveal any: the workers with attendance that day and
+the deliveries received that day are read next to it, and neither read selects a pay figure, an hours figure, a rate, a price or an amount.
+A test walks the name of every property of every response and fails on a money word.
+
+### 18.1 What a report records
+
+| Field | Rule |
+| --- | --- |
+| Project | Required. The project must not be archived. Fixed once written. |
+| Day (`reportDate`) | Required. A business date on the company's calendar (`Asia/Manila` by default), **never in the future**, never before 1 Jan 2000. Fixed once written: a report written for the wrong day is voided and written again. A report may be written for any earlier day (a late report is still better than none). |
+| Weather | Required: Fair, Cloudy, Rain, Heavy rain or Storm. |
+| Weather note | Optional, up to 200 characters. |
+| Work done | **Required** (Default: a report with nothing in it is not a report; on a day with no work, say why), up to 2,000 characters. |
+| Issues and delays | Optional, up to 1,000 characters. |
+| Visitors and inspections | Optional, up to 500 characters. |
+| Safety notes | Optional, up to 1,000 characters. |
+| Subcontractor workers | A typed whole number, 0 to 2,000: those crews are not on the company's payroll, so they cannot be read from attendance. |
+| Author | The signed-in person who wrote it. Fixed. |
+| State | Posted, or Void. |
+
+Text is trimmed; optional text left empty is not stored. Every problem with what was typed comes back at once.
+
+### 18.2 One live report per day
+
+A project has **at most one live (not voided) report for a day**, enforced by a unique index filtered to reports that are not void, so two
+people writing the same day at the same moment cannot both succeed: the second is told, in plain words, that the day already has a report and
+how to open it. A voided report frees its day. A repeated create with the same request id returns the first report; a request id reused for a
+different project or day is refused.
+
+### 18.3 Who may write, correct and void
+
+* **Reading** needs `diary.read` (Administrator, Project Manager, Cost Engineer, Accountant, Warehouse Keeper, Viewer). **Writing, correcting
+  and voiding** need `diary.write` (Administrator, Project Manager, Cost Engineer). The HR Officer has no access.
+* **The author window.** The author of a report may correct or void it until **the end of the next day after the report date** on the company's
+  calendar (a report for Monday can be changed by its author until midnight at the end of Tuesday, Manila time; the day changes at midnight in the
+  company's zone, not in UTC). **Default: the window runs from the report's day, not from when it was typed**, so a late report for an earlier day
+  may already be closed to its author when it is written.
+* **A person who manages projects** (holds `projects.manage`: Project Manager, Administrator) may correct or void any report at any time.
+* Anyone else who writes reports (a Cost Engineer who is not the author) is refused with a message that says who can.
+* A **void** needs a reason (up to 300 characters) and the same who-and-when. The report stays on record with the reason, who and when, leaves the
+  project's list and frees its day.
+* An **archived** project's diary is read-only: no new report, correction or void ("Restore it first"). It can still be read.
+* A stale version is refused (the person is asked to reload); another company's project or report is "not found".
+
+### 18.4 Corrections and the audit line
+
+Saving a correction that changes nothing records nothing and does not change the version. A correction that changes something bumps the version and
+writes one audit line that names **the fields that changed** ("changed weather, work done") and **never the text a person typed**. A void's reason
+stays on the report, not in the audit line.
+
+### 18.5 Filled in, not typed
+
+The read of a report (and `GET .../diary/{date}/filled-in`, for a day with no report yet, used by the form) returns:
+
+* **On site**: the workers with attendance recorded that day on this project (a worker counts once; a voided attendance entry does not count; another
+  project's or another day's attendance does not). **Every reader gets the count. The names (sorted by last name, at most 300) come only for a reader
+  who holds `workforce.read`** (Administrator, Project Manager, HR Officer, Accountant, Viewer), so a Warehouse Keeper or a Cost Engineer sees the
+  headcount and never a worker's name. Hours, rates and pay are never read.
+* **Delivered**: what posted deliveries received that day on this project's purchase orders, grouped by supplier, item and unit with the quantity
+  summed: the supplier name, the item as ordered, its unit and the quantity, and nothing else (the same columns as the receiving screen; a voided
+  delivery does not count). It carries no unit cost, VAT or total.
+* A panel for the documents added that day is **not built**, though project documents now exist (section 19): the read has no such port, so there is
+  nothing to fall back from.
+
+### 18.6 Needs your action: "Site diary not written yesterday"
+
+Key `diary-not-written`, for people who hold `diary.write` (Administrator, Project Manager, Cost Engineer). One row per **Active** project whose
+report for **yesterday** (on the company's calendar) is missing while **a Posted report exists for the project within the seven days before
+yesterday**, so a project that has never kept a diary is never nagged. **Default: yesterday is judged simply; a Sunday is not skipped** (a
+project that never works Sundays will be listed on Mondays, until the company's holiday list says so); **nothing is listed when yesterday is a
+company holiday.** A voided report does not count as written, nor as proof the project keeps a diary. The row is the project's name, with the
+detail "No report for Sun 1 Nov"; it never carries an amount. The page shows the group's true count and at most eight rows.
+
+### 18.7 Reads and statement counts
+
+The project's list (newest first, paged) is 3 SQL statements (the project, the count, the page, with each day's headcount counted inside the
+page statement); one report is 6 (the project, the company's calendar day, the report, the workers' count, their names, the deliveries; 5 for a
+reader who may not see the names); the filled-in read is 4, however many reports, workers or deliveries exist. The needs-action group is its
+count plus its rows when the count is above zero.
+
+### 18.8 Decisions that rest on assumptions
+
+1. A report's **work done is required**.
+2. The author window is anchored on **the report's day** (the end of the next day), not on when it was written.
+3. A report may be written for **any earlier day**, not only for today and yesterday.
+4. **Void** is open to the author inside the window and to Project Managers and Administrators, not to every writer.
+5. **A Sunday is not skipped** by the "not written yesterday" rule; only a company holiday is.
+6. The lookback that shows a project keeps a diary is **seven days before yesterday**.
+7. A voided report is **not listed** anywhere in the product; it stays in the database and the audit trail.
+8. The worker names are shown to anyone who holds `workforce.read`, and only to them.
+
+## 19. Project documents and system readiness
+
+Drawings, contracts, permits and other papers kept per project, with versions, expiry dates and safe file storage. Who may see them is in
+section 2; the documents that need attention are a group on the Needs your action page (section 16).
+
+### 19.1 Documents
+
+* **What a document is.** A document belongs to one project and has a title (up to 120 characters), an optional description (up to 300), a
+  kind (Contract, Drawing, Permit, Insurance, Certificate, Photo, Report or Other) and one or more versions. A version is either a stored
+  file or an `https://` link (up to 500 characters; any other scheme, spaces, or a user name or password in the address is refused), with
+  an optional note (up to 300), who added it and when.
+* **Versions are kept.** Adding a version makes it the current one (numbered 1, 2, 3, ...); every older version stays and can still be
+  downloaded or opened. A version is never changed or removed. Two people adding a version at the same moment cannot both make the same
+  number: the second is asked to reload.
+* **Valid-until date.** Only a permit, an insurance policy or a certificate has one (optional). It is judged on the company's calendar day,
+  exactly like a bond: **expiring soon** when 30 days or fewer are left (the last valid day counts: "Expires today"), **expired** once the
+  date has passed. The state is worked out when read and never stored, and a voided document has none. A new version of a dated document
+  can carry the renewed date in the same change; leaving it empty keeps the old date.
+* **Contracts and insurance reveal prices.** They are shown, downloaded, added or changed only by people who can see budget and costs. To
+  anyone else they do not exist: not in lists, not by id, not by download, not in "Needs your action".
+* **Voiding, never deleting.** A document added by mistake or no longer in use is voided with a reason (required, up to 300). It stays on
+  the list under "Voided", with who and when, and its versions stay downloadable. A voided document takes no new version and no change.
+* **Archived projects.** Their documents can be read and downloaded; nothing can be added or changed until the project is restored.
+* **Idempotent add.** Adding a document carries a request id: sending the same form twice (a double tap, a retry after a dropped connection)
+  returns the first document and keeps one file.
+* **Concurrency.** Every change carries the version the person opened; a stale one is refused and the person reloads.
+* **Audit.** Adding, a new version, changing details and voiding are recorded with the title and kind only, never the file name, the link,
+  the note or the reason.
+
+### 19.2 Files
+
+* **Allowed types**: PDF, JPG/JPEG, PNG, WebP, Word (doc, docx), Excel (xls, xlsx), PowerPoint (ppt, pptx), CSV, text and CAD drawings (dwg,
+  dxf). Anything else (web pages, SVG, scripts, programs, a name without a type) is refused before anything is stored.
+* **The server looks inside.** A PDF and the image types must really start like one; a file that does not ("This file isn't a real PDF")
+  is removed and refused. The type the file is sent back as is decided by the server from its type, never from what the browser said.
+* **Size**: up to 25 MB per file (configurable). A larger file is refused while it arrives, and nothing is kept.
+* **Safe storage**: a file is kept under a name the server makes (the company, the project and a random name). The name a person chose
+  is cleaned and used only as the download name; it never reaches the server's disk.
+* **Safe downloads**: files are only ever offered as downloads (never opened in the browser), not cached, with the browser told not to
+  guess the type.
+* **Not scanned for viruses** (deliberately not built): the System readiness page says so.
+* **When file storage is not ready** (not set up, switched off, or failing), uploading is turned off with the reason in plain words at the
+  point of use, and "Add a link instead" still works, so nothing typed is lost. A failed upload leaves no file and no record.
+
+### 19.3 System readiness (Administration)
+
+One check per capability decides what can be used now and says it in plain words, with what still works meanwhile:
+
+| Capability | State | What people see |
+| --- | --- | --- |
+| File storage | Working when a storage folder is set and can be written; Not set up when none is set; Switched off when an administrator turned uploads off; Not working when the folder can't be written | Upload a file, or add a link instead |
+| Virus scanning | Always Not set up | Files are stored and offered only as downloads; they are not scanned |
+| Email delivery | Always Not set up | Notifications appear in the app; email is not set up |
+
+### 19.4 Defaults (not confirmed by the owner)
+
+* **Default**: expiring soon at 30 days, the same figure as bonds.
+* **Default**: 25 MB per file; the type list above; no virus scanning.
+* **Default**: documents are grouped by kind on the project's Documents tab, with voided ones folded under "Voided".
+* **Default**: a new version may carry a renewed valid-until date (one change instead of two).
+* **Default**: an emergency switch (`FileStorage:UploadsEnabled`, on by default) stops new uploads without hiding stored files.
+* **Default**: the System readiness page is for administrators only (`settings.manage`).
+
+## 20. Tasks, discussion and notifications
+
+Tasks one person gives another, the discussion on the records people already work on, and in-app notifications. Who may do what is in
+section 2. Rules marked **Default** are choices the owner has not confirmed (listed again at the end). The API is in
+[docs/api/collaboration.md](api/collaboration.md).
+
+### 20.1 Tasks
+
+* A task is a piece of work one person gives another, or themselves: a title (up to 120 characters), an optional description (up to
+  1,000), an optional due date, optionally a project and optionally one record it is about (a project, a purchase order, a change order, a
+  bill, a subcontract or a bond). **A task never carries an amount**: it points at the record that does.
+* The person it is for must be an active colleague who can work on tasks. **Giving a task to yourself is allowed.** A task about a record
+  can only be given to someone who can see that record, and only by someone who can see it; it takes the record's project.
+* The due date cannot be in the past when the task is created (the company's calendar day, Asia/Manila unless configured). **Overdue** is
+  worked out, never stored: an Open task whose due date is before today. A reopened task keeps its due date, so it may be overdue at once.
+* **Only the person who created it, the person it is for and Administrators see a task.** Anyone else is told it does not exist, even
+  with its link.
+* The person it is for, the person who created it or an Administrator marks it done. The person who created it or an Administrator
+  cancels it (an optional reason stays on it), reassigns it to someone else, or reopens a done or cancelled task.
+* On an archived project a task can be read but not changed.
+* Each step checks the version the person opened; if someone changed the task meanwhile, the step is refused and the person reloads. A
+  repeated "Save task" (double tap, retry) makes one task.
+
+### 20.2 The discussion on a record
+
+* Comments sit on a project, a task, a purchase order, a change order, a bill or a subcontract. There are no direct messages, channels or
+  free chat. A bond has no discussion.
+* **Who may read a record's discussion is the record's own rule**: a project's needs "See projects", a purchase order's, change order's,
+  subcontract's or bill's needs "See purchase orders, progress, change orders, subcontracts and bills", and a task's is for the people in
+  the task and Administrators. So a Warehouse Keeper or an HR Officer never reads the discussion on a purchase order, a bill, a change order
+  or a subcontract (those records carry the company's amounts). Writing also needs the task permission.
+* A comment is up to 1,000 characters. **It is never edited or deleted**: its author or an Administrator removes it with a reason (up to
+  300 characters); the words stay in the database and the discussion shows "Removed by <name>, <when>" in their place.
+* A comment can mention up to 10 people. **Someone can be mentioned only if they are an active colleague of the same company who could
+  see the record** ("Pia Santos can't see this record, so they can't be mentioned here."). Each person mentioned is told in the app.
+* An archived project's discussion, and the discussion on its records, is read-only and says so.
+* A repeated "Post comment" makes one comment.
+
+### 20.3 Notifications
+
+* A notification tells one person, in the app only, that something happened: a task was given (or reassigned) to them, a task they created
+  was marked done, they were mentioned, or a draft they prepared was decided (a purchase order approved or cancelled, a change order approved
+  or rejected, a bill issued, a subcontract claim certified).
+* **Nobody is told about what they did themselves** (marking your own task done, approving your own draft, mentioning yourself).
+* The message is at most 200 characters and is built only from a person's name, what they did and the record's kind and number ("Ana Reyes
+  approved purchase order PO-0012."). **It never carries an amount, a rate, a pay figure or words someone typed** (not a task title, not a
+  comment). A long name is cut with "…" rather than refused, because the action already happened.
+* A notification is written in the same save as the action that causes it, so the two exist together or not at all.
+* A person sees, counts and marks read **only their own** notifications. Marking one read twice changes nothing; "Mark all as read" marks
+  them all at once.
+* **Email, text message and push delivery are not built.** The capability check reports "Email delivery: not set up".
+* The bell in the header shows the unread count: nothing at 0, "99+" above 99. It is read when the app opens, when the Notifications page
+  opens and when the browser tab comes back to the front; there is no timer.
+
+### 20.4 Tasks on the Needs your action page
+
+* Group `tasks-assigned` ("Tasks assigned to you"), for people who can work on tasks: your own Open tasks, not on an archived project,
+  overdue first (marked urgent), then the soonest due, then those with no due date. Each row shows the title, the project and the due date
+  in words; never an amount. The bell says what happened; "Needs your action" says what waits on you.
+
+### 20.5 Defaults chosen (confirm with the owner)
+
+1. **Default:** Administrators see and may change every task (spec: "Visible to the creator, the assignee and Administrators").
+2. **Default:** a reopened task keeps its old due date even when it is now in the past.
+3. **Default:** cancelling a task does not notify the person it was for; reopening does not notify anyone. Only the four triggers above notify.
+4. **Default:** at most 10 people per comment; a comment's mentions are hidden once it is removed.
+5. **Default:** the mention picker and the assignee picker show at most 20 names per search; the signed-in person is not offered in the
+   mention picker (mentioning yourself tells nobody).
+6. **Default:** the Tasks page opens on "Assigned to me", Open tasks; "Created by me", the state and the project are one tap away, and
+   Administrators also get "Every task". The task list can be filtered by project (`projectId`), an addition to the spec's list filters.
+7. **Default:** the discussion shows the newest 20 comments first, with "Show older comments" for the rest.
+8. **Default:** a project's discussion is open to everyone who can see the project (all roles), including Warehouse Keepers and HR
+   Officers. People are trusted not to type amounts into a comment on a project; amounts in the record itself stay behind its own permission.
