@@ -56,11 +56,17 @@ activities, lines and entries exist (project, company, activities with their lin
   budget-weighted percent of its lines (null with none linked; never 10000 while a line is open). `isBehind` is true when the planned
   finish is before today and the activity is below 100%. `needsLines` is true when no line is linked: the activity is listed but counts
   for nothing in the plan. `slipDays` is planned finish minus baseline finish (positive is later); null without a baseline.
-* `plannedMinor` is the schedule's planned value by the end of today; `baselinePlannedMinor` is the same from the baseline dates, null
-  until a baseline is set (an activity added after the baseline has no baseline dates and plans nothing there).
-* `planWeightMinor` is the sum of the weights: the planned value reaches it at the last finish. `unplannedLineCount` and
-  `unplannedBudgetMinor` are the active budget lines in no activity: their budget has no planned value.
-* `usesSchedule` is true when at least one activity has weight; the Progress tab then takes its planned value from this schedule.
+* `plannedMinor` is the schedule's planned value by the end of today: the activities' planned value plus the budget lines in no activity on
+  the straight line over the project's start and target end dates. It is 0 while `usesSchedule` is false. `baselinePlannedMinor` is the
+  same from the baseline dates, null until a baseline is set (the lines of an activity added after the baseline have no baseline dates
+  and are on the straight line, like lines in no activity, so linking a line does not move the baseline); it is also null when a
+  project with no end date has such a line.
+* `planWeightMinor` is the sum of the weights of the activities alone. `unplannedLineCount` and `unplannedBudgetMinor` are the active
+  budget lines in no activity: they are planned evenly over the project's dates, so the planned value reaches the whole budget at the
+  later of the last finish and the project's end date.
+* `usesSchedule` is true when at least one activity has weight and every budget line can be planned: a project with no target end date
+  has no straight line, so while a line is in no activity it is false (with `planWeightMinor` above 0, which is how the screen tells this
+  from "no activity has lines yet"). The Progress tab takes its planned value from the schedule only while it is true.
 * `budgetLines` are the project's active lines for the line picker (grouped by `division`), with the activity that links each.
 
 ## The S-curve
@@ -83,7 +89,8 @@ activities):
 }
 ```
 
-* Points run from the earliest start (planned or baseline) every `stepDays` days to the first point on or after the latest finish, plus
+* Points run from the earliest start (planned or baseline; or the project's start date when budget lines are planned on the straight line
+  and it is earlier) every `stepDays` days to the first point on or after the latest finish (or the project's end date, when later), plus
   a point for today when today falls between two of them. `stepDays` is 7, or a multiple of 7 when weekly points would be more than 119:
   there are **at most 120 points**. A two-year plan (731 days) has 106 weekly points and today: about 107 points, roughly 15 KB.
 * All amounts are cumulative. `plannedMinor` and `baselinePlannedMinor` run to the end; `earnedMinor` and `actualMinor` (posted cost)

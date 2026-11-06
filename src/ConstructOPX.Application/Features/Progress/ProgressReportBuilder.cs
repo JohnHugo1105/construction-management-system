@@ -14,8 +14,10 @@ namespace ConstructOPX.Application.Features.Progress;
 /// shown.
 /// <para>
 /// The planned value follows the project's schedule when it has one: when at least one activity has budget lines linked (weight above zero),
-/// the planned value is the schedule's (each activity's weight times the share of its planned days gone, see <see cref="SchedulePlan"/>), and the
-/// schedule index and variance are worked out from it. Otherwise it stays the straight line over the project's start and target end dates.
+/// the planned value is the schedule's (each activity's weight times the share of its planned days gone, see <see cref="SchedulePlan"/>, plus the
+/// budget lines in no activity on the straight line over the project's dates, so planned and earned value cover the same lines), and the
+/// schedule index and variance are worked out from it. Otherwise (no weight, or no target end date while a line is in no activity) it stays the
+/// straight line over the project's start and target end dates, which is none without an end date.
 /// Forecasts use the cost index and never the planned value, so a schedule changes none of them.
 /// </para>
 /// </summary>
@@ -47,9 +49,9 @@ public static class ProgressReportBuilder
         var earnedTotal = lines.Sum(line => line.EarnedMinor);
         var figures = EarnedValueCalculator.Calculate(budgetTotal, earnedTotal, actual.On(basis), planned);
         var plannedFrom = planned is null ? null : PlannedFromProjectDates;
-        if (schedule is { Count: > 0 } && ScheduleWeights.From(schedule, rows, basis) is { UsesSchedule: true } weights)
+        if (schedule is { Count: > 0 } && ScheduleWeights.From(schedule, rows, basis, project) is { UsesSchedule: true } weights)
         {
-            figures = WithSchedule(figures, SchedulePlan.PlannedValue(weights.Planned, asOf));
+            figures = WithSchedule(figures, weights.PlannedAt(asOf));
             plannedFrom = PlannedFromSchedule;
         }
 

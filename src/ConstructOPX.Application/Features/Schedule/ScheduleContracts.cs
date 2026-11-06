@@ -70,12 +70,15 @@ public sealed record CostStepRow(int Step, long NetMinor, long GrossMinor);
 /// A project's schedule on today's date. Amounts are on the company's comparison basis, the same line amounts the Progress tab uses; only people
 /// who read the Progress tab can read this.
 /// </summary>
-/// <param name="PlannedMinor">The schedule's planned value today: what the activities should have earned by the end of today.</param>
-/// <param name="BaselinePlannedMinor">The same from the baseline dates; null until a baseline is set.</param>
-/// <param name="PlanWeightMinor">The budget the activities cover (the sum of their weights): the planned value reaches it at the last finish.</param>
+/// <param name="PlannedMinor">The schedule's planned value today: what the activities should have earned by the end of today, plus the budget
+/// lines in no activity on the straight line over the project's dates. Zero while <paramref name="UsesSchedule"/> is false.</param>
+/// <param name="BaselinePlannedMinor">The same from the baseline dates; null until a baseline is set (or when it cannot be planned: no end date
+/// and a line outside the baseline's activities).</param>
+/// <param name="PlanWeightMinor">The budget the activities cover (the sum of their weights).</param>
 /// <param name="BudgetMinor">The whole budget of the project (every active line).</param>
-/// <param name="UnplannedLineCount">Active budget lines not in any activity; their budget has no planned value.</param>
-/// <param name="UsesSchedule">True when at least one activity has weight: the Progress tab's planned value then comes from this schedule.</param>
+/// <param name="UnplannedLineCount">Active budget lines not in any activity; they are planned evenly over the project's dates.</param>
+/// <param name="UsesSchedule">True when at least one activity has weight and every budget line can be planned (a project with no end date cannot
+/// plan a line in no activity): the Progress tab's planned value then comes from this schedule.</param>
 /// <param name="BaselineSetAtUtc">When the baseline was last set; null before.</param>
 public sealed record ScheduleDto(Guid ProjectId, DateOnly Today, string Basis, bool ProjectArchived, bool UsesSchedule, long PlannedMinor,
     long? BaselinePlannedMinor, long PlanWeightMinor, long BudgetMinor, long UnplannedBudgetMinor, int UnplannedLineCount, DateTimeOffset? BaselineSetAtUtc,

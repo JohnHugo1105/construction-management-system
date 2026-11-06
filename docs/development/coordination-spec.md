@@ -144,7 +144,8 @@ include it in the plan"), baseline start and finish (null until the baseline is 
 linked lines' budget on the company's comparison basis (the same basis the Progress tab uses); a line may belong to more than one activity
 only if you split it: **Default: a budget line belongs to at most one activity** (refuse a second link with the activity's name).
 **Planned value at date d** = for each activity, weight times the share of its planned days elapsed by d (linear within the activity,
-clamped to 0 and 1, both ends counted as days), summed; **baseline planned value** uses the baseline dates. An activity's percent complete is
+clamped to 0 and 1, both ends counted as days), summed, **plus the budget lines in no activity on the straight line over the project's dates**
+(so planned and earned value cover the same lines); **baseline planned value** uses the baseline dates. An activity's percent complete is
 the weighted average of its linked lines' current progress (read-only, from the existing progress data). An activity is **behind** when its
 planned finish is before today and it is below 100%. **Set baseline** (`schedule.write`, a confirmation, repeatable with an audit entry) copies the planned
 dates to the baseline; after it, the timeline shows the baseline and the slip in days.

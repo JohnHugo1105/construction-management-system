@@ -595,8 +595,9 @@ These rest on defaults chosen where the owner had not yet decided. Each is rever
 1. **The date can't go backwards for a line** (an update can't be dated before the line's latest entry). The alternative, allowing
    backfilled history, makes "the latest entry" ambiguous. Entering history for a project that started before the system is done in date
    order.
-2. **Planned value is linear in time** from the start date to the target end date. Real plans are rarely linear (concrete before finishes);
-   there is no schedule or baseline in the system to measure against. Confirm before using the schedule figures for decisions.
+2. **Planned value is linear in time** from the start date to the target end date, for every budget line that no schedule activity covers
+   (section 11.3). Real plans are rarely linear (concrete before finishes); link budget lines to activities to plan them as they happen.
+   Confirm before using the schedule figures for decisions.
 3. **The forecast uses the cost index method** (EAC = BAC x AC / EV), which assumes the rest of the work costs what the work so far did.
    Other methods (the budget for the rest, or a combined cost and schedule index) give different forecasts; the choice is one function.
 4. **Spending is not matched to lines.** Actual cost is the project's posted cost, not the cost of each line, so earned value is judged
@@ -795,7 +796,7 @@ adds the rounded figures, so a roll-up always equals the sum of what is shown.
 | Budget at completion (BAC) | What the work was planned to cost | The sum of the active budget lines |
 | Earned value (EV) | What the work done is worth | Per line: budget x percent complete. The sum over lines |
 | Actual cost (AC) | What was spent | Posted cost dated on or before the date: the same figure as the dashboard when the date is today |
-| Planned value (PV) | What should be done by the date | From the schedule when an activity covers budget lines (11.3); otherwise BAC x the share of time from the project's start date to its target end date that has passed (0 before the start, 100% on or after the end). None without either |
+| Planned value (PV) | What should be done by the date | From the schedule when an activity covers budget lines (11.3), with the budget lines no activity covers planned on the straight line described in 11.3; otherwise BAC x the share of time from the project's start date to its target end date that has passed (0 before the start, 100% on or after the end). None without either |
 | Cost variance (CV) | Work done minus money spent | EV - AC. Negative: the work cost more than it was worth |
 | Schedule variance (SV) | Work done minus work planned | EV - PV. Negative: behind. None without PV |
 | Cost index (CPI) | Work earned for each peso spent | EV / AC. None while nothing is spent |
@@ -836,6 +837,14 @@ activities, no critical path and no resource levelling.**
   to 0 before the start and 1 from the finish on, multiplied first, divided last and rounded once (half away from zero); the project adds
   the rounded activity figures. Example: an activity of ₱1,000,000.00 over 10 days has ₱300,000.00 planned by the end of its third day,
   ₱1,000,000.00 from its finish on.
+* **Budget lines in no activity** are planned on the straight line (the one of section 11.2): weight x (days gone since the project's start
+  date / days from the start date to the target end date), 0 before the start and all of it on or after the end, rounded once. The
+  weight is the budget of the active lines that no activity covers. This keeps planned and earned value over the same lines: earned value
+  counts every line, so a plan that left the unlinked lines out would read as ahead of schedule the moment one line was linked. The
+  project's planned value is the activities' rounded figures plus this rounded figure. **A project with no target end date has no
+  straight line**, so while any budget line is in no activity the schedule is not used for the planned value: the Progress tab shows
+  none, as for a project with no schedule, and the Schedule view says to set the end date or put every line in an activity. Once every
+  line is in an activity the schedule stands without an end date.
 * **Percent complete** of an activity = the budget-weighted average of its linked lines' current percent (rounded once); a plain average
   when every linked line has a zero budget. It reads 100% only when every linked line is at 100%: an average that would round up to 100%
   while a line is still open shows as 99.99%. Read-only: progress is still recorded per line on the Progress tab.
@@ -845,10 +854,14 @@ activities, no critical path and no resource levelling.**
 * **Baseline.** "Set baseline" copies every active activity's planned dates to its baseline dates. It asks first (it says what freezing
   means: later date changes show as days later or earlier than the baseline), and it can be set again; each time replaces the baseline
   and writes an audit line. It is refused when the schedule changed since the person read it (an activity added, changed or removed), so
-  they reload and confirm. An activity added after the baseline has no baseline dates and plans nothing in the baseline planned value.
+  they reload and confirm. An activity added after the baseline has no baseline dates, so its lines are planned in the baseline on the
+  straight line, like lines in no activity (linking a line to a new activity does not move the baseline).
 * **Slip** = planned finish minus baseline finish, in days: positive is later than the baseline ("Finishes 7 days later than the
   baseline"), negative earlier.
-* **Baseline planned value** is the planned value worked out from the baseline dates (same rule, same weights).
+* **Baseline planned value** is the planned value worked out from the baseline dates (same rule, same weights), plus the same straight line
+  for the lines no baseline activity covers (lines in no activity, and lines of an activity added after the baseline): the straight line
+  runs on the project's dates, which the baseline does not freeze. With no target end date and such a line there is no baseline figure
+  (none is shown rather than one that stops short of the budget).
 * **Removing an activity** needs a reason (up to 300 characters) that stays on its record, and is audited. A schedule is planning data, not
   a financial record, so the activity is removed rather than voided; it can't be changed or put back.
 * **Archived projects.** The schedule can be read but not changed (restore the project first).
@@ -858,15 +871,21 @@ activities, no critical path and no resource levelling.**
 
 ### 11.4 Where the numbers land
 
-When at least one activity has weight, the Progress tab's planned value is the schedule's planned value, and the schedule variance
+When at least one activity has weight, the Progress tab's planned value is the schedule's planned value (the activities plus the straight
+line for the lines no activity covers), and the schedule variance
 (EV - PV), the schedule index (EV / PV, none while nothing is planned) and the planned percent (PV / BAC) follow it; the summary then says
-"of what the schedule planned by today". With no activity with weight, the straight line over the project's dates stays. Forecasts use
+"of what the schedule planned by today". Example: ₱1M of a ₱100M budget is linked to an activity that finished and ₱30M is earned; with
+the project 30% through its dates the planned value is ₱1M + ₱29.7M = ₱30.7M and the schedule index 0.98 (it would read 30.00 if the
+₱99M left out of the plan were ignored). With no activity with weight, the straight line over the project's dates stays; so it does when
+the project has no end date and some budget line is in no activity (section 11.3). Forecasts use
 the cost index (section 11.2) and never the planned value, so a schedule changes no forecast, no margin and nothing on the dashboard.
 
 ### 11.5 The S-curve
 
 The Schedule view of the Progress tab draws cumulative planned value, baseline planned value, earned value and actual cost (posted cost)
-over time, from the earliest start (planned or baseline) to the latest finish. Points are weekly, or every 2, 3 or more weeks when weekly
+over time, from the earliest start (planned or baseline) to the latest finish, widened to the project's start date and target end date when
+budget lines are planned on the straight line, so the planned curve reaches the whole budget (project dates outside the years 2000 to 2100
+are held to those years). Points are weekly, or every 2, 3 or more weeks when weekly
 points would be more than 119, so there are never more than 120 (a two-year plan has about 107). Earned value and actual cost stop at
 today. **The point for today equals the Progress tab's planned value, earned value and spent amount**, because both are worked out from the
 same line amounts (an automated test pins it). The chart is drawn in the app with a sentence that says what it shows and the same figures
@@ -877,6 +896,11 @@ as a table.
 * A budget line belongs to at most one activity (the spec's default).
 * Removing an activity, not voiding it, with a reason kept on the record (the spec's wording).
 * Activities with no budget line are kept and flagged, not refused.
+* Budget lines no activity covers are planned on the straight line over the project's dates (chosen on 6 Nov 2026, after a review found the
+  schedule index reading 30.00 when they were left out of the plan). With no target end date there is no such line, so the schedule is not
+  used for the planned value until the end date is set or every line is in an activity (the alternative, ending the line at the last
+  activity, made a partly scheduled project read as far behind).
+* Lines of an activity added after the baseline are on the straight line in the baseline, so linking a line does not move the baseline.
 * At most 500 budget lines per activity; names up to 120 characters; removal reasons up to 300 characters; dates between 2000 and 2100.
 * The baseline request names the activities and versions the person saw; any difference is a conflict rather than a silent baseline of
   a schedule they did not see.

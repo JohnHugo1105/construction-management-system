@@ -49,8 +49,8 @@ public sealed record ProgressLineRow(Guid BudgetLineId, string Description, int?
 /// <param name="BudgetMinor">The budget at completion: every active line.</param>
 /// <param name="EarnedMinor">What the work done so far is worth: each line's budget times its percent complete.</param>
 /// <param name="SpentMinor">Posted cost on the date.</param>
-/// <param name="PlannedMinor">What should be done by the date: from the schedule's activities when the project has a schedule, otherwise the work
-/// spread evenly over the planned time; null without either.</param>
+/// <param name="PlannedMinor">What should be done by the date: from the schedule's activities when the project has a schedule (the budget lines
+/// in no activity are spread evenly over the planned time), otherwise all the work spread evenly over the planned time; null without either.</param>
 /// <param name="CostVarianceMinor">Earned minus spent; negative means the work cost more than it was worth.</param>
 /// <param name="ScheduleVarianceMinor">Earned minus planned; negative means behind schedule. Null without a planned value.</param>
 /// <param name="CpiBps">Earned per unit spent; null when nothing is spent.</param>

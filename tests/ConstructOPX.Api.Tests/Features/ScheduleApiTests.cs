@@ -27,11 +27,11 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
 
     internal static string Day(int fromToday) => BondTestKit.DaysFromToday(fromToday);
 
-    internal static Task<ProjectDto> NewProjectAsync(ApiClient client, int startDays = -60, int endDays = 40) =>
+    internal static Task<ProjectDto> NewProjectAsync(ApiClient client, int startDays = -60, int? endDays = 40) =>
         client.PostAsync<ProjectDto>("/api/projects", new
         {
             name = TenantSeeder.Unique("Schedule"), client = "ACME Realty", location = "Cebu City", contractPriceMinor = 3_000_000L,
-            startDate = Day(startDays), targetEndDate = Day(endDays)
+            startDate = Day(startDays), targetEndDate = endDays is { } end ? Day(end) : null
         });
 
     internal static Task<BudgetLineDto> AddLine(ApiClient client, Guid projectId, string description, long amount, string? wbsCode = "3100") =>
@@ -113,8 +113,9 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
             sub.NeedsLines, sub.SortOrder));
         Assert.Equal([footings.Id], sub.BudgetLineIds);
         Assert.Equal((250_001L, 0, 1), (schedule.Activities[1].WeightMinor, schedule.Activities[1].PercentCompleteBps!.Value, schedule.Activities[1].SortOrder));
-        // 11 of Substructure's 20 days are gone by the end of today: 1,000,003 x 11 / 20 = 550,001.65.
-        Assert.Equal(550_002, schedule.PlannedMinor);
+        // 11 of Substructure's 20 days are gone by the end of today: 1,000,003 x 11 / 20 = 550,001.65. The site office is in no activity, so it is
+        // planned on the project's own straight line (60 of its 100 days are gone): 200,000 x 60 / 100 = 120,000.
+        Assert.Equal(550_002 + 120_000, schedule.PlannedMinor);
         Assert.Null(schedule.BaselinePlannedMinor);
         Assert.Equal((1_250_004L, 1_450_004L, 200_000L, 1), (schedule.PlanWeightMinor, schedule.BudgetMinor, schedule.UnplannedBudgetMinor,
             schedule.UnplannedLineCount));
@@ -126,7 +127,7 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
         var flagged = await CreateOkAsync(client, project.Id, Activity("Mobilisation", -60, -55, []));
         var mobilisation = flagged.Activities.Single(activity => activity.Name == "Mobilisation");
         Assert.Equal((true, 0L, (int?)null, false), (mobilisation.NeedsLines, mobilisation.WeightMinor, mobilisation.PercentCompleteBps, mobilisation.IsBehind));
-        Assert.Equal(550_002, flagged.PlannedMinor);
+        Assert.Equal(550_002 + 120_000, flagged.PlannedMinor);
     }
 
     [SqlServerFact]
@@ -201,11 +202,12 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
         Assert.Equal(based.PlannedMinor, based.BaselinePlannedMinor);
         Assert.All(based.Activities, activity => Assert.Equal((0, activity.PlannedFinish), (activity.SlipDays!.Value, activity.BaselineFinish!.Value)));
 
-        // Substructure slips five days later: 11 of its 25 days are gone (440,001.32), against 550,001.65 in the baseline.
+        // Substructure slips five days later: 11 of its 25 days are gone (440,001.32), against 550,001.65 in the baseline. The site office, in no
+        // activity, is on the project's straight line (120,000) in both: the project's dates are not what slipped.
         var sub = based.Activities[0];
         var slipped = await client.ReadAsync<ScheduleDto>(await UpdateAsync(client, project.Id, sub, -10, 14));
         Assert.Equal((5, Today.AddDays(9)), (slipped.Activities[0].SlipDays!.Value, slipped.Activities[0].BaselineFinish!.Value));
-        Assert.Equal((440_001L, 550_002L), (slipped.PlannedMinor, slipped.BaselinePlannedMinor!.Value));
+        Assert.Equal((440_001L + 120_000, 550_002L + 120_000), (slipped.PlannedMinor, slipped.BaselinePlannedMinor!.Value));
 
         // The baseline as first seen is stale now (Substructure has a newer version): refused, nothing changes.
         var stale = await BaselineAsync(client, project.Id, based);
@@ -342,7 +344,8 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
         var ev = after.EarnedValue;
         Assert.Equal("Schedule", after.PlannedFrom);
         Assert.Equal(schedule.PlannedMinor, ev.PlannedMinor);
-        Assert.Equal((550_002L, -50_000L, 9_091, 3_793), (ev.PlannedMinor!.Value, ev.ScheduleVarianceMinor!.Value, ev.SpiBps!.Value,
+        // The schedule's 550,002 plus the site office (in no activity) on the straight line, 120,000, over the same 1,450,004 the work is earned on.
+        Assert.Equal((670_002L, -170_000L, 7_463, 4_621), (ev.PlannedMinor!.Value, ev.ScheduleVarianceMinor!.Value, ev.SpiBps!.Value,
             ev.PlannedPercentBps!.Value));
         // The forecast uses the cost index, never the planned value: nothing about cost or the forecast changed.
         Assert.Equal(before.EarnedValue with
@@ -354,11 +357,40 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
     }
 
     [SqlServerFact]
+    public async Task A_project_with_no_end_date_has_no_planned_value_until_every_budget_line_is_in_an_activity()
+    {
+        var (client, _) = await SignedInAsync(_factory);
+        using var _c = client;
+        var project = await NewProjectAsync(client, endDays: null);
+        var footings = await AddLine(client, project.Id, "Footings", 1_000_003);
+        var columns = await AddLine(client, project.Id, "Columns", 250_001);
+        await RecordProgressAsync(client, project.Id, -1, (footings.Id, 5_000));
+        var url = $"/api/projects/{project.Id}/progress";
+
+        // Footings is in an activity; Columns is in none and there is no end date to plan it to: the schedule is not used and nothing is guessed.
+        var partial = await CreateOkAsync(client, project.Id, Activity("Substructure", -10, 9, [footings.Id]));
+        Assert.False(partial.UsesSchedule);
+        Assert.Equal(1_000_003L, partial.PlanWeightMinor);
+        var progress = await client.GetAsync<ProgressDto>(url);
+        Assert.Null(progress.PlannedFrom);
+        Assert.Equal((null, null, null), (progress.EarnedValue.PlannedMinor, progress.EarnedValue.ScheduleVarianceMinor, progress.EarnedValue.SpiBps));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/projects/{project.Id}/schedule/s-curve")).StatusCode);
+
+        // With every line in an activity nothing is left over, so the schedule stands without an end date.
+        var whole = await CreateOkAsync(client, project.Id, Activity("Superstructure", 10, 29, [columns.Id]));
+        Assert.True(whole.UsesSchedule);
+        var after = await client.GetAsync<ProgressDto>(url);
+        Assert.Equal(("Schedule", 550_002L), (after.PlannedFrom, after.EarnedValue.PlannedMinor!.Value));
+        Assert.Equal(whole.PlannedMinor, after.EarnedValue.PlannedMinor);
+    }
+
+    [SqlServerFact]
     public async Task The_s_curves_point_for_today_equals_the_progress_tab()
     {
         var (client, _) = await SignedInAsync(_factory);
         using var _c = client;
         var (project, footings, columns, _) = await WorkedProjectAsync(client);
+        await RecordProgressAsync(client, project.Id, -65, (columns.Id, 500));
         await RecordProgressAsync(client, project.Id, -12, (columns.Id, 1_000));
         await client.PostAsync<CostEntryDto>($"/api/projects/{project.Id}/cost-entries", Cost("Spent later", unitCostMinor: 33_333, entryDate: Day(-3)));
         var seen = await AddWorkedScheduleAsync(client, project.Id, footings, columns);
@@ -368,18 +400,21 @@ public sealed class ScheduleApiTests : IClassFixture<ConstructOpxApiFactory>
         var progress = await client.GetAsync<ProgressDto>($"/api/projects/{project.Id}/progress");
 
         Assert.Equal((7, true, "IncludingVat"), (curve.StepDays, curve.HasBaseline, curve.Basis));
-        Assert.Equal(Today.AddDays(-10), curve.Points[0].Date);
-        Assert.True(curve.Points[^1].Date >= Today.AddDays(29));
+        // The site office is in no activity, so the curve also covers the project's dates (60 days ago to 40 days ahead) and plans all of it.
+        Assert.Equal(Today.AddDays(-60), curve.Points[0].Date);
+        Assert.True(curve.Points[^1].Date >= Today.AddDays(40));
         var today = curve.Points.Single(point => point.IsToday);
         Assert.Equal(Today, today.Date);
         Assert.Equal((progress.EarnedValue.PlannedMinor!.Value, (long?)progress.EarnedValue.EarnedMinor, (long?)progress.EarnedValue.SpentMinor),
             (today.PlannedMinor, today.EarnedMinor, today.ActualMinor));
         Assert.Equal(today.PlannedMinor, today.BaselinePlannedMinor);
-        Assert.Equal(1_250_004, curve.Points[^1].PlannedMinor);
+        Assert.Equal(1_450_004, curve.Points[^1].PlannedMinor);
         Assert.All(curve.Points.Where(point => point.Date > Today), point => Assert.Null(point.EarnedMinor));
         Assert.All(curve.Points.Where(point => point.Date <= Today), point => Assert.NotNull(point.ActualMinor));
-        // The first point already counts the cost and progress dated before the plan began.
-        Assert.Equal((400_000L, 25_000L), (curve.Points[0].ActualMinor!.Value, curve.Points[0].EarnedMinor!.Value));
+        // The first point already counts the cost and progress dated before the plan began (Columns was at 5%: 250,001 x 5% = 12,500.05) ...
+        Assert.Equal((400_000L, 12_500L), (curve.Points[0].ActualMinor!.Value, curve.Points[0].EarnedMinor!.Value));
+        // ... and the point on or after 12 days ago picks up the 10% recorded then (25,000.1).
+        Assert.Equal(25_000L, curve.Points.Single(point => point.Date == Today.AddDays(-11)).EarnedMinor);
     }
 
     // ---- Performance --------------------------------------------------------------------------------------------------------

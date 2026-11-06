@@ -38,8 +38,9 @@ public sealed class ScheduleActivity : AggregateRoot
     public const int MaximumReasonLength = 300;
     public const int MaximumLinesPerActivity = 500;
 
-    private static readonly DateOnly EarliestDate = new(2000, 1, 1);
-    private static readonly DateOnly LatestDate = new(2100, 12, 31);
+    /// <summary>The planned dates of an activity lie in these years.</summary>
+    public static readonly DateOnly EarliestDate = new(2000, 1, 1);
+    public static readonly DateOnly LatestDate = new(2100, 12, 31);
 
     private readonly List<ScheduleActivityLine> _lines = [];
 

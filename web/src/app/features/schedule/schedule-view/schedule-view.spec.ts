@@ -82,9 +82,9 @@ describe('ScheduleView: the plan', () => {
     const { root } = await open();
 
     expect(texts(root, '.facts__item')).toEqual([
-      '₱1,300,000.00 of work planned by today, of ₱2,000,000.00 in the schedule',
+      '₱1,300,000.00 of work planned by today, of ₱2,200,000.00 budgeted',
       '1 of 3 activities is behind',
-      '1 budget line (₱200,000.00) is not in any activity, so it is left out of the plan.',
+      "1 budget line (₱200,000.00) is not in any activity, so it is planned evenly over the project's dates.",
     ]);
   });
 
@@ -106,6 +106,7 @@ describe('ScheduleView: the plan', () => {
       schedule: {
         ...base,
         usesSchedule: false,
+        planWeightMinor: 0,
         activities: [
           {
             ...base.activities[0]!,
@@ -124,6 +125,17 @@ describe('ScheduleView: the plan', () => {
     );
     expect(root.querySelector('app-s-curve-chart')).toBeNull();
     expect(api.curve).toHaveBeenCalledTimes(1);
+  });
+
+  it('says why the plan is not used when budget lines are outside the activities and the project has no end date', async () => {
+    const { root } = await open({
+      schedule: scheduleFixture({ usesSchedule: false }),
+    });
+
+    const facts = texts(root, '.facts__item').join(' ');
+    expect(facts).toContain("the project has no end date, so they can't be planned yet");
+    expect(facts).not.toContain('Link budget lines to an activity');
+    expect(root.querySelector('app-s-curve-chart')).toBeNull();
   });
 });
 

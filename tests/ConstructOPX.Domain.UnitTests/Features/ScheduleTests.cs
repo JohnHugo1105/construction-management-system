@@ -3,6 +3,7 @@ using ConstructOPX.Application.Features.Progress;
 using ConstructOPX.Application.Features.Schedule;
 using ConstructOPX.Domain.Common;
 using ConstructOPX.Domain.Features.Organizations;
+using ConstructOPX.Domain.Features.Progress;
 using ConstructOPX.Domain.Features.Projects;
 using ConstructOPX.Domain.Features.Schedule;
 
@@ -89,17 +90,84 @@ public sealed class ScheduleTests
     }
 
     [Fact]
+    public void Budget_in_no_activity_is_planned_on_the_straight_line_between_the_project_dates()
+    {
+        var start = new DateOnly(2026, 1, 1);
+        var end = new DateOnly(2026, 4, 11); // 100 days
+
+        Assert.Equal(0, SchedulePlan.StraightLineValue(1_250_004, start, end, start.AddDays(-1)));
+        Assert.Equal(0, SchedulePlan.StraightLineValue(1_250_004, start, end, start));              // nothing has passed on the start date itself
+        Assert.Equal(812_503, SchedulePlan.StraightLineValue(1_250_004, start, end, AsOf));         // 1,250,004 x 65 / 100 = 812,502.6
+        Assert.Equal(1_250_004, SchedulePlan.StraightLineValue(1_250_004, start, end, end));
+        Assert.Equal(1_250_004, SchedulePlan.StraightLineValue(1_250_004, start, end, end.AddDays(30)));
+        Assert.Equal(0, SchedulePlan.StraightLineValue(0, start, end, AsOf));
+        // The very figure the Progress tab's straight line gives.
+        Assert.Equal(EarnedValueCalculator.Calculate(1_250_004, 0, 0, PlannedProgress.From(start, end, AsOf)).PlannedMinor,
+            SchedulePlan.StraightLineValue(1_250_004, start, end, AsOf));
+        // A project that ends the day it starts plans everything on that day.
+        Assert.Equal((0L, 100L), (SchedulePlan.StraightLineValue(100, start, start, start.AddDays(-1)), SchedulePlan.StraightLineValue(100, start, start, start)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => SchedulePlan.StraightLineValue(-1, start, end, AsOf));
+    }
+
+    [Fact]
+    public void The_planned_value_adds_the_straight_line_for_the_lines_no_activity_covers()
+    {
+        var lines = Rows();
+        var footings = Activity("Footings", March1, March10, lines[0].BudgetLineId);
+        var weights = ScheduleWeights.From([footings], lines, VarianceBasis.ExcludingVat, WorkedProject()); // the project runs 1 Jan to 11 Apr
+
+        Assert.Equal(250_001, weights.UnlinkedWeight);                 // Columns is in no activity
+        Assert.Equal((new DateOnly(2026, 1, 1), new DateOnly(2026, 4, 11)), weights.StraightLine!.Value);
+        Assert.Equal(1_000_003, weights.TotalWeight);                  // the activities alone
+        // 7 Mar: 7 of 10 days of Footings = 700,002.1 -> 700,002, and Columns 250,001 x 65 / 100 = 162,500.65 -> 162,501.
+        Assert.Equal(700_002 + 162_501, weights.PlannedAt(AsOf));
+        Assert.Equal(0, weights.PlannedAt(new DateOnly(2025, 12, 31)));
+        // The whole budget is planned at the project's end, not only the activities' part.
+        Assert.Equal(1_000_003 + 250_001, weights.PlannedAt(new DateOnly(2026, 4, 11)));
+        // Footings finished on 10 Mar, long before the project ends: only the straight line is still moving.
+        Assert.Equal(1_000_003 + 200_001, weights.PlannedAt(new DateOnly(2026, 3, 22))); // 80 of 100 days: 200,000.8
+    }
+
+    [Fact]
+    public void Without_a_target_end_date_budget_outside_the_activities_cannot_be_planned_so_the_schedule_gives_no_planned_value_until_all_is_linked()
+    {
+        var lines = Rows();
+        var open = Project.Create(Guid.NewGuid(), TestData.Tenant, "Tower B", null, null, 5_000_000, new DateOnly(2026, 1, 1), null, TestData.Now);
+        var footings = Activity("Footings", March1, March10, lines[0].BudgetLineId);
+
+        // Columns is in no activity and there is no end date to plan it to: no planned value, rather than all of it due when the activities end.
+        var partial = ScheduleWeights.From([footings], lines, VarianceBasis.ExcludingVat, open);
+        Assert.False(partial.UsesSchedule);
+        Assert.Null(partial.StraightLine);
+        var report = ProgressReportBuilder.Build(open, VarianceBasis.ExcludingVat, AsOf, lines, Spent, [footings]);
+        Assert.Null(report.PlannedFrom);
+        Assert.Equal((null, null, null), (report.EarnedValue.PlannedMinor, report.EarnedValue.ScheduleVarianceMinor, report.EarnedValue.SpiBps));
+
+        // With every line in an activity nothing is left over, so the schedule stands without an end date.
+        var whole = ScheduleWeights.From([footings, Activity("Columns", March1, March10, lines[1].BudgetLineId)], lines, VarianceBasis.ExcludingVat, open);
+        Assert.True(whole.UsesSchedule);
+        Assert.Null(whole.StraightLine);
+        Assert.Equal(1_000_003 + 250_001, whole.PlannedAt(March10));
+
+        // No activity with weight is not a schedule: there is nothing to add the straight line to.
+        var empty = ScheduleWeights.From([Activity("Mobilisation", March1, March10)], lines, VarianceBasis.ExcludingVat, WorkedProject());
+        Assert.False(empty.UsesSchedule);
+        Assert.Null(empty.StraightLine);
+        Assert.Equal((0L, 0L), (empty.PlannedAt(AsOf), empty.BaselineAt(AsOf)));
+    }
+
+    [Fact]
     public void An_activity_with_no_linked_lines_weighs_nothing_and_alone_does_not_make_a_schedule()
     {
         var lines = Rows();
         var unlinked = Activity("Mobilisation", March1, March10);
         var linked = Activity("Footings", March1, March10, lines[0].BudgetLineId);
 
-        var alone = ScheduleWeights.From([unlinked], lines, VarianceBasis.IncludingVat);
+        var alone = ScheduleWeights.From([unlinked], lines, VarianceBasis.IncludingVat, WorkedProject());
         Assert.False(alone.UsesSchedule);
         Assert.Equal(0, alone.TotalWeight);
 
-        var both = ScheduleWeights.From([unlinked, linked], lines, VarianceBasis.IncludingVat);
+        var both = ScheduleWeights.From([unlinked, linked], lines, VarianceBasis.IncludingVat, WorkedProject());
         Assert.True(both.UsesSchedule);
         Assert.Equal([0L, 1_120_003L], both.Activities.Select(item => item.Weight));
         Assert.Equal(1_120_003, SchedulePlan.PlannedValue(both.Planned, March10));
@@ -112,8 +180,8 @@ public sealed class ScheduleTests
         var removedLine = Guid.NewGuid(); // linked once, no longer an active line: not in the Progress tab's rows
         var activity = Activity("Concrete", March1, March10, lines[0].BudgetLineId, lines[1].BudgetLineId, removedLine);
 
-        Assert.Equal(1_000_003 + 250_001, ScheduleWeights.From([activity], lines, VarianceBasis.ExcludingVat).TotalWeight);
-        Assert.Equal(1_120_003 + 280_001, ScheduleWeights.From([activity], lines, VarianceBasis.IncludingVat).TotalWeight);
+        Assert.Equal(1_000_003 + 250_001, ScheduleWeights.From([activity], lines, VarianceBasis.ExcludingVat, WorkedProject()).TotalWeight);
+        Assert.Equal(1_120_003 + 280_001, ScheduleWeights.From([activity], lines, VarianceBasis.IncludingVat, WorkedProject()).TotalWeight);
     }
 
     [Fact]
@@ -126,7 +194,7 @@ public sealed class ScheduleTests
             BaselineStart = March1, BaselineFinish = March10
         };
         var added = Activity("Columns", March1, March10, lines[1].BudgetLineId);
-        var weights = ScheduleWeights.From([slipped, added], lines, VarianceBasis.ExcludingVat);
+        var weights = ScheduleWeights.From([slipped, added], lines, VarianceBasis.ExcludingVat, WorkedProject());
         var day = new DateOnly(2026, 3, 7);
 
         Assert.True(weights.HasBaseline);
@@ -137,6 +205,32 @@ public sealed class ScheduleTests
         Assert.Equal(5, SchedulePlan.SlipDays(slipped.PlannedFinish, slipped.BaselineFinish));
         Assert.Null(SchedulePlan.SlipDays(added.PlannedFinish, added.BaselineFinish));
         Assert.Equal(-3, SchedulePlan.SlipDays(new DateOnly(2026, 3, 7), March10));
+    }
+
+    [Fact]
+    public void The_baseline_plans_the_lines_no_activity_covers_on_the_same_straight_line()
+    {
+        var lines = Rows();
+        var footings = Activity("Footings", March1, March10, lines[0].BudgetLineId) with { BaselineStart = March1, BaselineFinish = March10 };
+
+        // Columns is in no activity, so it is on the straight line in the baseline as well: the project's dates are not frozen by it.
+        var weights = ScheduleWeights.From([footings], lines, VarianceBasis.ExcludingVat, WorkedProject());
+        Assert.Equal(700_002 + 162_501, weights.BaselineAt(AsOf));
+        Assert.Equal(weights.PlannedAt(AsOf), weights.BaselineAt(AsOf));
+
+        // Columns later joins an activity added after the baseline. That activity has no baseline dates, so its line stays on the straight line in
+        // the baseline: linking it does not move the baseline, which still reaches the whole budget at the project's end.
+        var added = Activity("Columns", March1, March10, lines[1].BudgetLineId);
+        var later = ScheduleWeights.From([footings, added], lines, VarianceBasis.ExcludingVat, WorkedProject());
+        Assert.Equal(weights.BaselineAt(AsOf), later.BaselineAt(AsOf));
+        Assert.Equal(1_000_003 + 250_001, later.BaselineAt(new DateOnly(2026, 4, 11)));
+        Assert.Equal(700_002, SchedulePlan.PlannedValue(later.Baseline, AsOf));   // the baseline activities alone
+
+        // With no end date to plan that line to, there is no baseline figure rather than one that stops short of the budget.
+        var open = Project.Create(Guid.NewGuid(), TestData.Tenant, "Tower B", null, null, 5_000_000, new DateOnly(2026, 1, 1), null, TestData.Now);
+        var noEnd = ScheduleWeights.From([footings, added], lines, VarianceBasis.ExcludingVat, open);
+        Assert.True(noEnd.UsesSchedule);
+        Assert.False(noEnd.PlansBaseline);
     }
 
     // ---- Percent complete and behind ------------------------------------------------------------------------------------------
@@ -335,6 +429,25 @@ public sealed class ScheduleTests
         Assert.Equal((0L, (int?)null), (early.PlannedMinor!.Value, early.SpiBps));
     }
 
+    [Fact]
+    public void One_linked_line_does_not_make_the_whole_project_read_as_ahead_of_its_plan()
+    {
+        // ₱1M of a ₱100M budget is in an activity that has finished; ₱29.9971M of the whole is earned; 30 of the project's 100 days are gone.
+        var project = WorkedProject();
+        var mobilisation = new ProgressLineRow(Guid.NewGuid(), "Mobilisation", 1, "1100", 100_000_000, 100_000_000, 10_000, new DateOnly(2026, 1, 20));
+        var structure = new ProgressLineRow(Guid.NewGuid(), "Structure", 3, "3300", 9_900_000_000, 9_900_000_000, 2_929, new DateOnly(2026, 1, 30));
+        var schedule = new[] { Activity("Mobilisation", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 10), mobilisation.BudgetLineId) };
+        var asOf = new DateOnly(2026, 1, 31);
+
+        var ev = ProgressReportBuilder.Build(project, VarianceBasis.ExcludingVat, asOf, [mobilisation, structure], Spent, schedule).EarnedValue;
+
+        Assert.Equal(2_999_710_000, ev.EarnedMinor);
+        Assert.Equal(100_000_000 + 2_970_000_000, ev.PlannedMinor);   // the activity, and 30% of the ₱99M it leaves out
+        Assert.Equal(-70_290_000, ev.ScheduleVarianceMinor);
+        Assert.Equal(9_771, ev.SpiBps);                              // 0.98: slightly behind, not 30.00 (299,971) "ahead"
+        Assert.Equal(3_070, ev.PlannedPercentBps);
+    }
+
     // ---- The S-curve ------------------------------------------------------------------------------------------------------
 
     [Fact]
@@ -356,6 +469,18 @@ public sealed class ScheduleTests
     }
 
     [Fact]
+    public void A_project_date_far_outside_the_planning_years_cannot_stretch_the_curve_past_what_a_date_can_hold()
+    {
+        // Project dates are not range-checked like an activity's (2000 to 2100): a typo such as 9999 or year 206 is held to those years.
+        var steps = ScheduleFigures.Steps([Activity("A", March1, March10)], (new DateOnly(206, 1, 1), DateOnly.MaxValue))!;
+
+        Assert.Equal(ScheduleActivity.EarliestDate, steps.First);
+        Assert.True(steps.Last >= ScheduleActivity.LatestDate);
+        Assert.True(steps.Count <= 119);
+        Assert.True(steps.Last < new DateOnly(2200, 1, 1)); // reading the last point does not run past the end of the calendar
+    }
+
+    [Fact]
     public void The_curve_point_for_today_equals_the_progress_report_and_stops_earned_and_actual_at_today()
     {
         var project = WorkedProject();
@@ -367,7 +492,7 @@ public sealed class ScheduleTests
         ProgressStepRow[] history = [new(rows[0].BudgetLineId, 0, 3_000), new(rows[0].BudgetLineId, 1, 5_000), new(rows[1].BudgetLineId, 1, 2_000)];
         CostStepRow[] costs = [new(0, 100_000, 112_000), new(1, 80_000, 89_600)];
 
-        var curve = ScheduleFigures.Curve(project.Id, VarianceBasis.ExcludingVat, AsOf, schedule, rows, steps, history, costs);
+        var curve = ScheduleFigures.Curve(project, VarianceBasis.ExcludingVat, AsOf, schedule, rows, steps, history, costs);
         var report = ProgressReportBuilder.Build(project, VarianceBasis.ExcludingVat, AsOf, rows, new MeasuredAmounts(180_000, 201_600), schedule);
 
         Assert.Equal([new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 7), new DateOnly(2026, 3, 8), new DateOnly(2026, 3, 15), new DateOnly(2026, 3, 22)],
@@ -383,6 +508,28 @@ public sealed class ScheduleTests
         Assert.Equal(1_250_004, curve.Points[^1].PlannedMinor);
         Assert.False(curve.HasBaseline);
         Assert.All(curve.Points, point => Assert.Null(point.BaselinePlannedMinor));
+    }
+
+    [Fact]
+    public void The_curve_spans_the_project_dates_when_lines_are_on_the_straight_line_and_reaches_the_whole_budget()
+    {
+        var project = WorkedProject();                                 // 1 Jan to 11 Apr 2026
+        var rows = Rows();
+        var schedule = new[] { Activity("Footings", March1, March10, rows[0].BudgetLineId) };  // Columns is in no activity
+        var straightLine = ScheduleWeights.From(schedule, rows, VarianceBasis.ExcludingVat, project).StraightLine;
+
+        var steps = ScheduleFigures.Steps(schedule, straightLine)!;
+        Assert.Equal((new DateOnly(2026, 1, 1), 7), (steps.First, steps.StepDays));
+        Assert.True(steps.Last >= new DateOnly(2026, 4, 11));
+        Assert.True(ScheduleFigures.Steps(schedule)!.Last < new DateOnly(2026, 4, 11));      // the activity alone ends in March
+
+        var curve = ScheduleFigures.Curve(project, VarianceBasis.ExcludingVat, AsOf, schedule, rows, steps, [], []);
+        var report = ProgressReportBuilder.Build(project, VarianceBasis.ExcludingVat, AsOf, rows, Spent, schedule);
+
+        Assert.Equal(0, curve.Points[0].PlannedMinor);
+        Assert.Equal(1_250_004, curve.Points[^1].PlannedMinor);
+        Assert.Equal(report.EarnedValue.PlannedMinor, curve.Points.Single(point => point.IsToday).PlannedMinor);
+        Assert.Equal(862_503, report.EarnedValue.PlannedMinor);
     }
 
     // ---- Helpers ----------------------------------------------------------------------------------------------------------

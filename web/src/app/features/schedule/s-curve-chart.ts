@@ -103,7 +103,7 @@ import { ScheduleCurve, ScheduleCurvePoint } from './schedule.models';
         <app-scroll-region label="S-curve figures">
           <table class="data-table">
             <caption class="visually-hidden">
-              Planned, earned and actual cost by week
+              Planned, earned and actual cost over time
             </caption>
             <thead>
               <tr>

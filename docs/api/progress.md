@@ -47,12 +47,14 @@ entries the project has (project, company, lines with their current percent, act
   lines are absent. A line that was never updated is at `percentBps: 0` with `lastUpdatedOn: null`.
 * `hasProgress` is false until any line has an entry on or before the date.
 * **Planned value.** `plannedFrom` says where `plannedMinor` comes from: `"Schedule"` when an activity of the project's
-  [schedule](schedule.md) covers budget lines (the planned value is then the schedule's planned value on the date, and
+  [schedule](schedule.md) covers budget lines and `usesSchedule` there is true (the planned value is then the schedule's planned value on
+  the date, with the budget lines in no activity planned on the straight line between the project's dates so it covers the same lines as
+  `earnedMinor`; a project with no end date and a line in no activity falls back to the line below, which is null; and
   `scheduleVarianceMinor`, `spiBps` and `plannedPercentBps`, the planned value as a share of the budget, follow it), `"ProjectDates"` for
   the straight line between the project's start and target end dates, or null without either. Forecasts use the cost index and never
   the planned value, so a schedule changes none of them.
-* Nulls: `plannedMinor`, `scheduleVarianceMinor`, `spiBps` and `plannedPercentBps` are null without a target end date (`spiBps` also
-  while nothing is planned yet); `cpiBps` is null while nothing is spent; `percentCompleteBps` is null when nothing is budgeted;
+* Nulls: `plannedMinor`, `scheduleVarianceMinor`, `spiBps` and `plannedPercentBps` are null without a target end date, unless every
+  budget line is in a schedule activity (`spiBps` also while nothing is planned yet); `cpiBps` is null while nothing is spent; `percentCompleteBps` is null when nothing is budgeted;
   `contractPriceMinor` and `forecastMarginMinor` are null without a contract price.
 * **On the dashboard.** With no `asOf` (today), `forecastMinor`, `forecastVarianceMinor` (negated) and `percentCompleteBps` are the figures
   the dashboard rows and the cost summary carry as `progressForecast { estimateAtCompletionMinor, overBudgetMinor, percentCompleteBps }`

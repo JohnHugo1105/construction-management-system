@@ -38,17 +38,18 @@ public sealed class ScheduleService(IScheduleRepository activities, IScheduleRea
     /// </summary>
     public async Task<ScheduleCurveDto> CurveAsync(Guid projectId, CancellationToken cancellationToken)
     {
-        await LoadProjectAsync(projectId, cancellationToken);
+        var project = await LoadProjectAsync(projectId, cancellationToken);
         var organization = await organizations.GetCurrentAsync(cancellationToken);
         var today = organization.TodayLocal(clock.UtcNow);
         var rows = await reader.ListAsync(projectId, cancellationToken);
-        var steps = ScheduleFigures.Steps(rows);
-        if (steps is null) return ScheduleFigures.Curve(projectId, organization.VarianceBasis, today, rows, [], null, [], []);
+        if (rows.Count == 0) return ScheduleFigures.Curve(project, organization.VarianceBasis, today, rows, [], null, [], []);
 
+        // The lines come first: budget that no activity covers is planned on the project's dates, which the curve then has to span.
         var lines = await progress.ListLinesAsync(projectId, today, cancellationToken);
+        var steps = ScheduleFigures.Steps(rows, ScheduleWeights.From(rows, lines, organization.VarianceBasis, project).StraightLine)!;
         var progressSteps = await reader.ProgressStepsAsync(projectId, steps, today, cancellationToken);
         var costSteps = await reader.CostStepsAsync(projectId, steps, today, cancellationToken);
-        return ScheduleFigures.Curve(projectId, organization.VarianceBasis, today, rows, lines, steps, progressSteps, costSteps);
+        return ScheduleFigures.Curve(project, organization.VarianceBasis, today, rows, lines, steps, progressSteps, costSteps);
     }
 
     // ---- Changes ----------------------------------------------------------------------------------------------------------------

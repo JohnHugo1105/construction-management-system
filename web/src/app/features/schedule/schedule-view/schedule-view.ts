@@ -92,7 +92,7 @@ export class ScheduleView {
     const lines = schedule.unplannedLineCount;
     return {
       planned: schedule.usesSchedule
-        ? `${formatMoney(schedule.plannedMinor, currency)} of work planned by today, of ${formatMoney(schedule.planWeightMinor, currency)} in the schedule`
+        ? `${formatMoney(schedule.plannedMinor, currency)} of work planned by today, of ${formatMoney(schedule.budgetMinor, currency)} budgeted`
         : '',
       behind: behindText(schedule.activities),
       baseline: schedule.baselineSetAtUtc
@@ -100,11 +100,13 @@ export class ScheduleView {
         : '',
       unplanned:
         schedule.usesSchedule && lines > 0
-          ? `${lines} budget ${lines === 1 ? 'line' : 'lines'} (${formatMoney(schedule.unplannedBudgetMinor, currency)}) ${lines === 1 ? 'is' : 'are'} not in any activity, so ${lines === 1 ? 'it is' : 'they are'} left out of the plan.`
+          ? `${lines} budget ${lines === 1 ? 'line' : 'lines'} (${formatMoney(schedule.unplannedBudgetMinor, currency)}) ${lines === 1 ? 'is' : 'are'} not in any activity, so ${lines === 1 ? 'it is' : 'they are'} planned evenly over the project's dates.`
           : '',
-      notInUse: !schedule.usesSchedule
-        ? "No activity has budget lines yet, so the Progress tab still plans the work in a straight line between the project's start and end dates. Link budget lines to an activity to plan with this schedule."
-        : '',
+      notInUse: schedule.usesSchedule
+        ? ''
+        : schedule.planWeightMinor > 0
+          ? "Some budget lines are in no activity and the project has no end date, so they can't be planned yet. Set the project's end date or put every budget line in an activity, and the Progress tab will plan with this schedule."
+          : "No activity has budget lines yet, so the Progress tab still plans the work in a straight line between the project's start and end dates. Link budget lines to an activity to plan with this schedule.",
     };
   });
 

@@ -18,6 +18,7 @@ public readonly record struct LinkedLineProgress(long BudgetMinor, int PercentBp
 /// finishes on the same day.</item>
 /// <item>"By a date" means by the end of that day: on the start day one day of the activity is planned to be done, on the finish day all of it.
 /// Before the start nothing is planned and after the finish all of it, so the share is clamped to 0 and 1.</item>
+/// <item>Budget lines in no activity are planned on the straight line over the project's dates (<see cref="StraightLineValue"/>).</item>
 /// </list>
 /// </summary>
 public static class SchedulePlan
@@ -49,6 +50,18 @@ public static class SchedulePlan
         long total = 0;
         foreach (var item in work) total = checked(total + ActivityPlannedValue(item, asOf));
         return total;
+    }
+
+    /// <summary>
+    /// What budget lines that no activity covers should have done by the date: the Progress tab's straight line, <c>round(weight x days gone /
+    /// days between start and end)</c>. Nothing before the start, all of it on or after the end. It keeps the planned value and the earned value
+    /// over the same lines, so a schedule that covers only some of the budget does not make the rest look finished.
+    /// </summary>
+    public static long StraightLineValue(long weightMinor, DateOnly start, DateOnly end, DateOnly asOf)
+    {
+        if (weightMinor < 0) throw new ArgumentOutOfRangeException(nameof(weightMinor), "A weight can't be negative.");
+        var share = PlannedProgress.From(start, end, asOf)!.Value;
+        return share.ElapsedDays == share.TotalDays ? weightMinor : RoundedShare(weightMinor, share.ElapsedDays, share.TotalDays);
     }
 
     /// <summary>
