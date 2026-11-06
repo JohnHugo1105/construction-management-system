@@ -101,6 +101,7 @@ async function open(options: Options = {}) {
         { path: 'dashboard', component: DashboardPage },
         { path: 'projects/new', component: Blank },
         { path: 'projects/:id/budget', component: Blank },
+        { path: 'projects/:id/progress', component: Blank },
       ]),
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -368,5 +369,110 @@ describe('DashboardPage committed cost', () => {
     const { root } = await open();
 
     expect(root.querySelector('app-commitment-line .commitments')).toBeNull();
+  });
+});
+
+describe('DashboardPage forecast over budget', () => {
+  // Riverside Residences in the demo: money spent says on track, the work done says it finishes ₱11,040,912.96 over.
+  const forecast = {
+    estimateAtCompletionMinor: 2948491296,
+    overBudgetMinor: 1104091296,
+    percentCompleteBps: 3318,
+  };
+  const flagged = row('p-river', 'Riverside Residences', 'OnTrack', { progressForecast: forecast });
+  const within = row('p-within', 'Annex', 'OnTrack', {
+    progressForecast: { ...forecast, overBudgetMinor: -500000 },
+  });
+
+  function withCount(projects: DashboardRow[], count: number): Dashboard {
+    return dashboard(projects, {
+      totals: { ...dashboard(projects).totals, forecastOverBudgetCount: count },
+    });
+  }
+
+  it('flags a project forecast over budget with one amber chip next to its health, and says so in words', async () => {
+    const { root } = await open({ data: withCount([flagged, fine], 1) });
+
+    const tableRow = Array.from(root.querySelectorAll('tbody tr')).find((item) =>
+      item.textContent?.includes('Riverside Residences'),
+    )!;
+    expect(text(tableRow, 'app-status-chip')).toBe('On track');
+    const chip = tableRow.querySelector<HTMLAnchorElement>('app-forecast-chip a')!;
+    expect(chip.textContent?.replace(/\s+/g, ' ').trim()).toBe('Forecast ₱11,040,912.96 over');
+    expect(chip.querySelector('.chip--warning app-icon')).not.toBeNull();
+    expect(chip.getAttribute('aria-label')).toContain(
+      'Forecast to finish over budget: see progress',
+    );
+    // Only the one project is flagged.
+    expect(root.querySelectorAll('app-forecast-chip')).toHaveLength(1);
+  });
+
+  it("links the chip to that project's Progress tab", async () => {
+    const { harness, root, router } = await open({ data: withCount([flagged, fine], 1) });
+
+    const chip = root.querySelector<HTMLAnchorElement>('app-forecast-chip a')!;
+    expect(chip.getAttribute('href')).toBe('/projects/p-river/progress');
+    chip.click();
+    await settle(harness.fixture);
+    expect(router.url).toBe('/projects/p-river/progress');
+  });
+
+  it('shows the chip on a phone card too, with the same link', async () => {
+    const { root } = await open({ data: withCount([flagged, fine], 1), tablet: false });
+
+    const card = Array.from(root.querySelectorAll('.row-card')).find((item) =>
+      item.textContent?.includes('Riverside Residences'),
+    )!;
+    expect(text(card, 'app-forecast-chip')).toBe('Forecast ₱11,040,912.96 over');
+    expect(card.querySelector('app-forecast-chip a')!.getAttribute('href')).toBe(
+      '/projects/p-river/progress',
+    );
+    expect(root.querySelectorAll('app-forecast-chip')).toHaveLength(1);
+  });
+
+  it('turns the headline amber when nothing is over budget but a project is forecast over, and sorts it first', async () => {
+    const { root } = await open({ data: withCount([fine, flagged, within], 1) });
+
+    expect(text(root, '.lead__headline')).toBe('1 project forecast to finish over budget');
+    expect(text(root, '.lead__detail')).toBe(
+      "Spending is running ahead of the work done. Open the project's Progress tab to see why.",
+    );
+    expect(root.querySelector('.lead__icon--warning')).not.toBeNull();
+    expect(texts(root, 'tbody th a')[0]).toBe('Riverside Residences');
+  });
+
+  it('says how many when several are forecast over', async () => {
+    const second = row('p-second', 'Pier', 'OnTrack', { progressForecast: forecast });
+    const { root } = await open({ data: withCount([flagged, second], 2) });
+
+    expect(text(root, '.lead__headline')).toBe('2 projects forecast to finish over budget');
+  });
+
+  it('keeps the over budget headline and adds the forecast count to its second line', async () => {
+    const { root } = await open({ data: withCount([over, flagged, fine], 1) });
+
+    expect(text(root, '.lead__headline')).toBe('1 project needs attention');
+    expect(text(root, '.lead__detail')).toBe('1 over budget, 1 forecast to finish over budget');
+    // Over budget is still first, then the forecast one.
+    expect(texts(root, 'tbody th a').slice(0, 2)).toEqual([
+      'Bridge Repair',
+      'Riverside Residences',
+    ]);
+  });
+
+  it('stays green and shows no chip, banner words or count when nothing is forecast over', async () => {
+    const { root } = await open({ data: withCount([within, fine], 0) });
+
+    expect(text(root, '.lead__headline')).toBe('No project is over its total budget');
+    expect(root.querySelector('.lead__icon--success')).not.toBeNull();
+    expect(root.querySelector('app-forecast-chip')).toBeNull();
+    expect(root.querySelector('.lead')?.textContent).not.toContain('forecast');
+  });
+
+  it('shows nothing about a forecast when the server sends none (an older answer)', async () => {
+    const { root } = await open();
+
+    expect(root.querySelector('app-forecast-chip')).toBeNull();
+    expect(root.textContent).not.toContain('Forecast');
   });
 });

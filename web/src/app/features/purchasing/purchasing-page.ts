@@ -18,7 +18,7 @@ import { StatusChip } from '../../shared/ui/status-chip/status-chip';
 import { Viewport } from '../../shared/ui/viewport/viewport';
 import { OrderListState } from './order-list-state';
 import { PurchasingApi } from './purchasing-api';
-import { STATUS_FILTERS, presentStatus } from './purchasing-presentation';
+import { STATUS_FILTERS, listDeliveryChip, presentStatus } from './purchasing-presentation';
 import { PurchasingTabs } from './purchasing-tabs';
 
 /**
@@ -79,6 +79,7 @@ export class PurchasingPage {
       supplier: order.supplierName,
       project: order.projectName,
       status: presentStatus(order.status),
+      delivery: listDeliveryChip(order),
       orderDate: formatDate(order.orderDate),
       total: formatMoney(order.grossMinor, this.currency()),
       lines: order.lineCount === 1 ? '1 line' : `${order.lineCount} lines`,

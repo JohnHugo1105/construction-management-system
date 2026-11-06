@@ -17,6 +17,7 @@ import { Permission } from '../../core/session/permissions';
 import { SessionState } from '../../core/session/session-state';
 import { formatDate, formatDateTime } from '../../shared/presentation/business-time';
 import { formatMoney } from '../../shared/presentation/money';
+import { Alert } from '../../shared/ui/alert/alert';
 import { ApiErrorAlert } from '../../shared/ui/api-error-alert/api-error-alert';
 import { Button } from '../../shared/ui/button/button';
 import { ConfirmDialog } from '../../shared/ui/dialog/confirm-dialog';
@@ -32,11 +33,13 @@ import {
   REASON_LABELS,
   allowedActions,
   effectSummary,
+  governmentLimitNotice,
   signedMoney,
   statusLook,
 } from './change-order-presentation';
 import { ChangeOrdersApi } from './change-orders-api';
 import { ChangeOrder, ChangeOrderLine } from './change-orders.models';
+import { Discussion } from '../collaboration/discussion';
 
 type ReasonAction = 'reject' | 'void' | 'discard';
 
@@ -84,6 +87,7 @@ const REASON_DIALOGS: Record<
   selector: 'app-change-order-page',
   imports: [
     RouterLink,
+    Alert,
     ApiErrorAlert,
     Button,
     ConfirmDialog,
@@ -93,6 +97,7 @@ const REASON_DIALOGS: Record<
     ReasonDialog,
     ChangeOrderFormDialog,
     ChangeOrderLineDialog,
+    Discussion,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './change-order-page.scss',
@@ -166,6 +171,7 @@ export class ChangeOrderPage {
         void: actions.void && order.voidBlockedBy === null,
       },
       blockedBy: order.status === 'Approved' ? order.voidBlockedBy : null,
+      governmentNotice: governmentLimitNotice(order.governmentLimit),
       approveMessage: `The lines are applied to the budget now: ${effectSummary(
         order.budgetEffectGrossMinor,
         order.contractPriceDeltaMinor,

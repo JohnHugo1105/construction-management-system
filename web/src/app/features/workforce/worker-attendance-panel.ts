@@ -3,7 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { formatDate } from '../../shared/presentation/business-time';
 import { StatusChip } from '../../shared/ui/status-chip/status-chip';
-import { hoursWords } from './attendance-sheet';
+import { dayTypeChip, hoursWords } from './attendance-sheet';
 import { WorkerDetailState } from './worker-detail-state';
 import { WorkforceApi } from './workforce-api';
 
@@ -27,6 +27,9 @@ export const RECENT_ATTENDANCE_COUNT = 7;
                 row.project
               }}</a>
               <span class="days__hours">{{ row.hours }}</span>
+              @if (row.day; as day) {
+                <app-status-chip [label]="day.label" [tone]="day.tone" [icon]="day.icon" />
+              }
               @if (row.locked) {
                 <app-status-chip label="In a payroll run" tone="neutral" icon="lock" />
               }
@@ -91,6 +94,11 @@ export const RECENT_ATTENDANCE_COUNT = 7;
       justify-self: end;
     }
 
+    .days__row app-status-chip + app-status-chip {
+      grid-column: 1 / -1;
+      justify-self: end;
+    }
+
     @media (min-width: 48rem) {
       .days__row {
         grid-template-columns: 9rem minmax(0, 1fr) auto auto;
@@ -123,7 +131,8 @@ export class WorkerAttendancePanel {
         ? `${entry.projectName}, ${entry.subProjectName}`
         : entry.projectName,
       projectId: entry.projectId,
-      hours: hoursWords(entry.regularHours, entry.overtimeHours),
+      hours: hoursWords(entry.regularHours, entry.overtimeHours, entry.nightHours),
+      day: dayTypeChip(entry.dayType),
       locked: entry.isLocked,
     }));
   });

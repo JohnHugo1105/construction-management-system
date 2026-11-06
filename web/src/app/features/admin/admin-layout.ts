@@ -27,6 +27,10 @@ export class AdminLayout {
       tabs.push({ label: 'Users', link: ['/admin', 'users'] });
     if (this.session.can(Permission.settingsManage))
       tabs.push({ label: 'Company settings', link: ['/admin', 'settings'] });
+    if (this.session.can(Permission.settingsManage)) {
+      tabs.push({ label: 'Time clocks', link: ['/admin', 'time-clocks'] });
+      tabs.push({ label: 'System readiness', link: ['/admin', 'readiness'] });
+    }
     if (this.session.can(Permission.auditRead))
       tabs.push({ label: 'Activity log', link: ['/admin', 'audit'] });
     return tabs;

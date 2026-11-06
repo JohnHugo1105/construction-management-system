@@ -23,7 +23,7 @@ Allowed work:
 
 Forbidden work:
 - judging visual hierarchy, usability, or accessibility
-- exploring the CMS as a first-time user
+- exploring ConstructOPX as a first-time user
 - deciding severity except to copy a severity the Explorer already set
 - declaring a test, build, or review pass or fail, naming a root cause, or giving
   a correctness or security verdict; report what the text says and flag anything

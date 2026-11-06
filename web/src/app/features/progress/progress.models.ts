@@ -57,7 +57,15 @@ export interface Progress {
   readonly lastUpdatedOn: string | null;
   readonly earnedValue: EarnedValue;
   readonly divisions: readonly ProgressDivision[];
+  /**
+   * Where the planned value comes from: "Schedule" when an activity of the project's schedule covers budget lines (the planned
+   * value then follows the activities' dates), "ProjectDates" for the straight line between the project's start and end dates,
+   * or null without a planned value. Sent on every response; optional here for older stored shapes.
+   */
+  readonly plannedFrom?: PlannedFrom | null;
 }
+
+export type PlannedFrom = 'Schedule' | 'ProjectDates';
 
 export interface ProgressHistoryItem {
   readonly id: string;

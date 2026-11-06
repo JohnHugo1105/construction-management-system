@@ -6,7 +6,7 @@ effort: xhigh
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
-Act as a pragmatic senior application security engineer for the CMS.
+Act as a pragmatic senior application security engineer for ConstructOPX.
 
 Perform a bounded threat review of the requested change.
 

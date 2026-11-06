@@ -161,6 +161,45 @@ describe('ProjectBudgetTab: where the project stands', () => {
   });
 });
 
+describe('ProjectBudgetTab: forecast over budget', () => {
+  // The demo's Riverside Residences: the work done says it finishes ₱11,040,912.96 over a budget of ₱18,443,999.99.
+  const forecast = {
+    estimateAtCompletionMinor: 2948491296,
+    overBudgetMinor: 1104091296,
+    percentCompleteBps: 3318,
+  };
+
+  it('says where the work done says the project will finish, with a way to the Progress tab', async () => {
+    const { root } = await open({ summary: summaryFixture({ progressForecast: forecast }) });
+
+    const line = root.querySelector('app-cost-position .forecast-line')!;
+    expect(line.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Forecast to finish ₱29,484,912.96, which is ₱11,040,912.96 over the budget. See Progress.',
+    );
+    const link = line.querySelector<HTMLAnchorElement>('a')!;
+    expect(link.textContent?.trim()).toBe('See Progress');
+    expect(link.getAttribute('href')).toBe(`/projects/${PROJECT_ID}/progress`);
+    expect(line.querySelector('app-icon')).not.toBeNull();
+  });
+
+  it('shows nothing when the forecast is within the budget, or when there is none', async () => {
+    for (const progressForecast of [
+      { ...forecast, overBudgetMinor: 0 },
+      { ...forecast, overBudgetMinor: -250000 },
+      null,
+      undefined,
+    ]) {
+      TestBed.resetTestingModule();
+      const { root } = await open({ summary: summaryFixture({ progressForecast }) });
+
+      expect(root.querySelector('.forecast-line')).toBeNull();
+      expect(root.querySelector('app-cost-position')!.textContent).not.toContain(
+        'Forecast to finish',
+      );
+    }
+  });
+});
+
 describe('ProjectBudgetTab: where the money goes', () => {
   it('opens the divisions that have something over budget, unbudgeted or near the limit and folds the rest', async () => {
     const { root } = await open();

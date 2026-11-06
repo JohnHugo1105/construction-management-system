@@ -98,7 +98,14 @@ export interface WorkerDetail {
   readonly version: number;
   /** Which contributions the worker pays; null unless the person may see pay. */
   readonly statutory: WorkerStatutory | null;
+  /** The weekly rest day; null when the worker has no fixed rest day (every day is then an ordinary day for pay). */
+  readonly restDay?: RestDay | null;
+  /** The worker has a time clock badge code (the code itself is only on the badge pages). */
+  readonly hasPunchCode?: boolean;
 }
+
+export type RestDay =
+  'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
 
 /** Which contributions a worker pays and whether tax is withheld. */
 export interface WorkerStatutory {
@@ -132,6 +139,8 @@ export interface HireRequest {
   readonly philHealthMember?: boolean;
   readonly pagIbigMember?: boolean;
   readonly taxExempt?: boolean;
+  /** A day of the week, or "None" for no fixed rest day. */
+  readonly restDay?: string;
 }
 
 export interface ProfileRequest {
@@ -148,6 +157,8 @@ export interface ProfileRequest {
   readonly contactNumber: string | null;
   readonly reference: string | null;
   readonly version: number;
+  /** A day of the week, or "None"; left out, the rest day stays as it is. */
+  readonly restDay?: string;
 }
 
 export interface ChangeRateRequest {
@@ -231,9 +242,15 @@ export interface AttendanceEntry {
   readonly payrollRunId: string | null;
   readonly voidReason: string | null;
   readonly version: number;
+  /** The hours of the day that fell in the night (they earn the night differential). */
+  readonly nightHours?: number;
+  /** What the day is for this worker, decided by the server: Ordinary, RestDay, Special, RegularHoliday and the rest-day mixes. */
+  readonly dayType?: string;
+  /** Manual (typed) or TimeClock (a confirmed day of scans, which keeps its first in, last out and break). */
+  readonly source?: 'Manual' | 'TimeClock';
 }
 
-/** A project's day: the hours recorded and the crew posted there with no entry yet. */
+/** A project's day: the hours recorded and the crew posted there with no entry yet, and the company holiday on it if any. */
 export interface AttendanceSheet {
   readonly projectId: string;
   readonly projectName: string;
@@ -242,6 +259,8 @@ export interface AttendanceSheet {
   readonly totalRegularHours: number;
   readonly totalOvertimeHours: number;
   readonly crewWithoutEntry: readonly WorkerLookup[];
+  readonly holidayName?: string | null;
+  readonly holidayType?: 'Regular' | 'Special' | null;
 }
 
 export interface AttendanceBatchLine {
@@ -249,6 +268,7 @@ export interface AttendanceBatchLine {
   readonly regularHours: number;
   readonly overtimeHours: number;
   readonly remarks: string | null;
+  readonly nightHours?: number;
 }
 
 export interface AttendanceBatchRequest {
@@ -265,6 +285,7 @@ export interface ReviseAttendanceRequest {
   readonly overtimeHours: number;
   readonly remarks: string | null;
   readonly version: number;
+  readonly nightHours?: number;
 }
 
 export interface VoidAttendanceRequest {

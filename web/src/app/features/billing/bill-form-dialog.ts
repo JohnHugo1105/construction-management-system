@@ -39,6 +39,9 @@ export interface BillFormContext {
   readonly contractPriceMinor: number | null;
   readonly billedToDateMinor: number;
   readonly retentionHeldMinor: number;
+  /** The down payment rate in the terms, and what a down payment bill would ask for now (null while none can be prepared). */
+  readonly advanceBps: number;
+  readonly advanceToBillMinor: number | null;
 }
 
 export interface BreakdownRow {
@@ -64,8 +67,32 @@ export function breakdownRows(figures: BillPreview | Bill, currency: string): Br
       label: `Withholding tax ${formatBps(figures.withholdingBps)} of the amount before VAT`,
       amount: `-${money(figures.withholdingMinor)}`,
     });
+  if (figures.vatWithholdingMinor > 0)
+    rows.push({
+      label: `VAT withheld, ${formatBps(figures.vatWithholdingBps)} of the amount before VAT`,
+      amount: `-${money(figures.vatWithholdingMinor)}`,
+    });
+  if (figures.advanceRecoveryMinor > 0)
+    rows.push({
+      label: 'Down payment recovered',
+      amount: `-${money(figures.advanceRecoveryMinor)}`,
+    });
   rows.push({ label: 'The client pays', amount: money(figures.netReceivableMinor), total: true });
   return rows;
+}
+
+/** A down payment bill as rows: the share of the contract price, and what the client pays (the same: nothing is withheld). */
+export function advanceRows(
+  figures: Pick<Bill, 'advanceBps' | 'grossMinor' | 'netReceivableMinor'>,
+  currency: string,
+): BreakdownRow[] {
+  return [
+    {
+      label: `Down payment, ${formatBps(figures.advanceBps)} of the contract price`,
+      amount: formatMoney(figures.grossMinor, currency),
+    },
+    { label: 'The client pays', amount: formatMoney(figures.netReceivableMinor, currency), total: true },
+  ];
 }
 
 /**
@@ -104,7 +131,7 @@ export function breakdownRows(figures: BillPreview | Bill, currency: string): Br
             @if (suggestion(); as text) {
               <p class="suggestion text-small">{{ text }}</p>
             }
-          } @else {
+          } @else if (!isAdvance()) {
             <app-form-field
               label="Retention to release"
               [hint]="releaseHint()"
@@ -153,6 +180,24 @@ export function breakdownRows(figures: BillPreview | Bill, currency: string): Br
                 Enter the work completed to date to see what this bill comes to.
               </p>
             }
+          </section>
+        } @else if (isAdvance()) {
+          <section class="breakdown" aria-label="What this bill comes to">
+            @if (advanceRows().length > 0) {
+              <h3 class="breakdown__title">What this bill comes to</h3>
+              <dl class="breakdown__rows">
+                @for (row of advanceRows(); track row.label) {
+                  <div class="breakdown__row" [class.breakdown__row--total]="row.total">
+                    <dt>{{ row.label }}</dt>
+                    <dd class="money">{{ row.amount }}</dd>
+                  </div>
+                }
+              </dl>
+            }
+            <p class="text-muted text-small">
+              Worked out from the contract price and the billing terms when you save. Each
+              progress bill then recovers its share.
+            </p>
           </section>
         }
       </div>
@@ -268,9 +313,37 @@ export class BillFormDialog implements OnInit {
 
   protected readonly effectiveKind = computed<BillKind>(() => this.bill()?.kind ?? this.kind());
   protected readonly isProgress = computed(() => this.effectiveKind() === 'Progress');
+  protected readonly isAdvance = computed(() => this.effectiveKind() === 'Advance');
   protected readonly title = computed(() => {
     if (this.bill()) return 'Change draft bill';
-    return this.isProgress() ? 'New progress bill' : 'Release retention';
+    switch (this.effectiveKind()) {
+      case 'Progress':
+        return 'New progress bill';
+      case 'Advance':
+        return 'Bill the down payment';
+      default:
+        return 'Release retention';
+    }
+  });
+  /**
+   * The down payment: the draft's own figures when changing it (none while they are out of date: saving works them out again),
+   * otherwise what the server says a new one would ask for.
+   */
+  protected readonly advanceRows = computed(() => {
+    if (!this.isAdvance()) return [];
+    const draft = this.bill();
+    if (draft) return draft.isStale ? [] : advanceRows(draft, this.currency());
+    const context = this.context();
+    return context.advanceToBillMinor === null
+      ? []
+      : advanceRows(
+          {
+            advanceBps: context.advanceBps,
+            grossMinor: context.advanceToBillMinor,
+            netReceivableMinor: context.advanceToBillMinor,
+          },
+          this.currency(),
+        );
   });
 
   private readonly currency = computed(() => this.session.currencyCode());
@@ -313,10 +386,15 @@ export class BillFormDialog implements OnInit {
       });
       this.refreshPreview();
     } else {
-      this.form.controls.description.setValue(
-        this.isProgress() ? 'Progress billing' : 'Release of retention',
-      );
+      const descriptions: Record<BillKind, string> = {
+        Progress: 'Progress billing',
+        Advance: 'Down payment',
+        RetentionRelease: 'Release of retention',
+      };
+      this.form.controls.description.setValue(descriptions[this.effectiveKind()]);
     }
+    // The server works out a down payment from the contract price and the terms: there is no amount to type.
+    if (this.isAdvance()) this.form.controls.amount.disable();
     if (this.isProgress() && this.session.can(Permission.progressRead)) void this.loadSuggestion();
   }
 
@@ -337,6 +415,7 @@ export class BillFormDialog implements OnInit {
     }
     const value = this.form.getRawValue();
     const progress = this.isProgress();
+    const release = this.effectiveKind() === 'RetentionRelease';
     this.saving.set(true);
     this.error.set(null);
     this.extra.set([]);
@@ -348,7 +427,7 @@ export class BillFormDialog implements OnInit {
               billingDate: value.billingDate,
               description: value.description.trim(),
               cumulativeWorkMinor: progress ? value.amount : null,
-              amountMinor: progress ? null : value.amount,
+              amountMinor: release ? value.amount : null,
               version: bill.version,
             }),
           )
@@ -358,7 +437,7 @@ export class BillFormDialog implements OnInit {
               billingDate: value.billingDate,
               description: value.description.trim(),
               cumulativeWorkMinor: progress ? value.amount : null,
-              amountMinor: progress ? null : value.amount,
+              amountMinor: release ? value.amount : null,
               clientRequestId: this.requestId.current,
             }),
           );
@@ -401,7 +480,10 @@ export class BillFormDialog implements OnInit {
         this.preview.set(null);
         this.previewing.set(false);
         const problem = asApiError(failure);
-        const message = problem.firstError('cumulativeWorkMinor');
+        // A field error, or a rule the figures break (deductions more than the bill), shows under the field.
+        const message =
+          problem.firstError('cumulativeWorkMinor') ??
+          (problem.isRuleViolation ? problem.detail : null);
         if (message) {
           this.form.controls.amount.setErrors({ server: message });
           this.form.controls.amount.markAsTouched();

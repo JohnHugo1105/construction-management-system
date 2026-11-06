@@ -95,20 +95,30 @@ amounts when it is `ExcludingVat`. Removed budget lines and voided cost entries 
   `null` when the project has no contract price.
 
 **Dashboard** `{ basis, projects[], totals }`. A row is `{ id, name, status, contractPriceMinor, budgetMinor, actualMinor,
-remainingMinor, usedBps, health, marginAfterActualMinor, budgetMarginMinor }`, in name order. `totals` adds budget, actual and
-remaining over every listed project; `contractPriceMinor` and the two margins add up only projects that have a contract price (`null`
-when none has). Archived projects are listed only with `includeArchived=true`.
+remainingMinor, usedBps, health, marginAfterActualMinor, budgetMarginMinor, commitments, progressForecast }`, in name order. `totals`
+adds budget, actual and remaining over every listed project; `contractPriceMinor` and the two margins add up only projects that have a
+contract price (`null` when none has). `totals.forecastOverBudgetCount` is how many listed projects are forecast over budget (see below;
+`0` when none). Archived projects are listed only with `includeArchived=true`.
 
 **Cost summary** `{ projectId, projectName, projectStatus, basis, contractPriceMinor, position { budgetMinor, actualMinor,
-remainingMinor, usedBps, health }, marginAfterActualMinor, budgetMarginMinor, byDivision[], bySubProject[], byItemType[] }`.
+remainingMinor, usedBps, health }, marginAfterActualMinor, budgetMarginMinor, byDivision[], bySubProject[], byItemType[], commitments, progressForecast }`.
 `byDivision[]` rows are `{ division, name, <figures>, wbs[] { wbsCode, name, <figures> } }`; lines with no classification form one
 `Unclassified` row (`division: null`, no `wbs`). `bySubProject[]` rows are `{ subProjectId, name, <figures> }` (`null` and
 "Whole project" for the rest). `byItemType[]` rows are `{ itemType, label, <figures> }`. `<figures>` are `budgetMinor`, `actualMinor`,
 `remainingMinor`, `usedBps`, `health`. Inside every breakdown rows run from the biggest overrun (smallest `remainingMinor`) to the most
 money left; a row with actual cost and no budget is `Unbudgeted`.
 
-Statement counts (SQL Server, measured by the API tests): lists 3, dashboard 4, cost summary 8, whatever the number of projects or
-lines.
+**Forecast over budget** `progressForecast { estimateAtCompletionMinor, overBudgetMinor, percentCompleteBps }` is on every dashboard row
+and on the cost summary: the project's Progress tab forecast at completion (`docs/api/progress.md`), the same figure from the same
+calculation, on the company's comparison basis. `overBudgetMinor` is the forecast minus the budget (zero or negative: within budget);
+`percentCompleteBps` is the work done as a share of the budget. It is `null` until progress is recorded and some of the work done is worth
+money, and it carries no contract price. A project is *forecast over budget* when `overBudgetMinor > 0`; that is a signal separate from
+`health`, which is unchanged. The figure uses the progress as of today and the posted cost dated on or before today, exactly as the
+Progress tab does with no `asOf`. It needs the same `costs.read` as the rest of the report (everyone who has it also has `progress.read`).
+
+Statement counts (SQL Server, measured by the API tests), whatever the number of projects, lines or progress entries: lists 3; dashboard
+4 plus one per commitment source, plus 1 for the forecast (2 once any project has progress); cost summary 8 plus one per commitment source,
+plus 1 for the forecast (2 once the project has progress). The cost summary export does not read the forecast.
 
 ## CSV exports
 

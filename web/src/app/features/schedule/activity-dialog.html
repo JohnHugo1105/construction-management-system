@@ -1,0 +1,110 @@
+<app-dialog [title]="title()" [locked]="saving()" (closed)="dismissed.emit()">
+  <div class="stack">
+    @if (error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [extra]="unmatched()"
+        reloadLabel="Reload schedule"
+        (reload)="reload()"
+      />
+    }
+
+    <form id="activity-form" class="form" [formGroup]="form" (ngSubmit)="submit()" #formElement>
+      <app-form-field
+        label="Activity name"
+        hint="For example, Foundations or Roofing."
+        [control]="form.controls.name"
+        requiredMessage="Enter the activity name."
+      >
+        <input appControl formControlName="name" maxlength="120" autocomplete="off" />
+      </app-form-field>
+
+      <div class="dates">
+        <app-form-field
+          label="Planned start"
+          [control]="form.controls.plannedStart"
+          requiredMessage="Choose the planned start."
+        >
+          <input appControl type="date" formControlName="plannedStart" />
+        </app-form-field>
+        <app-form-field
+          label="Planned finish"
+          hint="The last working day of the activity."
+          [control]="form.controls.plannedFinish"
+          requiredMessage="Choose the planned finish."
+        >
+          <input appControl type="date" formControlName="plannedFinish" />
+        </app-form-field>
+      </div>
+
+      <app-field-group
+        label="Budget lines this activity covers"
+        hint="Their budget is the activity's weight in the plan. Without lines it is kept, but counts for nothing in the plan."
+        [optional]="true"
+        [error]="linesProblem()"
+      >
+        <p class="picker__count text-small" aria-live="polite">{{ chosenLabel() }}</p>
+        @if (divisions().length === 0) {
+          <p class="text-muted text-small">Every budget line is already in an activity.</p>
+        }
+        @for (division of divisions(); track division.key) {
+          <div class="picker__division">
+            <button
+              type="button"
+              class="picker__head"
+              [attr.aria-expanded]="isOpen(division)"
+              [attr.aria-controls]="'choices-' + division.key"
+              (click)="toggle(division)"
+            >
+              <app-icon
+                class="picker__chevron"
+                [class.picker__chevron--open]="isOpen(division)"
+                name="chevron-down"
+                [size]="20"
+              />
+              <span class="picker__name">{{ division.name }}</span>
+              <span class="text-muted text-small">
+                @if (chosenIn(division) > 0) {
+                  {{ chosenIn(division) }} of
+                }
+                {{ division.lines.length }} {{ division.lines.length === 1 ? 'line' : 'lines' }}
+              </span>
+            </button>
+            @if (isOpen(division)) {
+              <div class="choice-list" [id]="'choices-' + division.key">
+                @for (line of division.lines; track line.id) {
+                  <label class="choice">
+                    <input
+                      type="checkbox"
+                      [checked]="chosen().has(line.id)"
+                      (change)="choose(line, $event)"
+                    />
+                    <span class="choice__text">
+                      <span class="choice__label">{{ line.description }}</span>
+                      <span class="choice__hint">{{ lineHint(line) }}</span>
+                    </span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (takenCount() > 0) {
+          <p class="text-muted text-small">
+            {{ takenCount() }} {{ takenCount() === 1 ? 'line is' : 'lines are' }} already in other
+            activities and not listed. A budget line can be in one activity only.
+          </p>
+        }
+      </app-field-group>
+    </form>
+  </div>
+
+  <div dialogActions class="dialog-actions">
+    <button appButton type="button" [attr.disabled]="saving() ? '' : null" (click)="cancel()">
+      Cancel
+    </button>
+    <button appButton variant="primary" type="submit" form="activity-form" [busy]="saving()">
+      {{ saveLabel() }}
+    </button>
+  </div>
+</app-dialog>

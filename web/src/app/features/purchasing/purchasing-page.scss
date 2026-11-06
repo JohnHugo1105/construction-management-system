@@ -42,6 +42,12 @@
   min-width: 0;
 }
 
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
 .row-card__total {
   font-weight: 650;
   font-variant-numeric: tabular-nums;

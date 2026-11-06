@@ -1,4 +1,4 @@
-# Construction Management System: web client
+# ConstructOPX: web client
 
 The Angular 22 client: app shell, sign-in, the design system, Projects and Administration. Standalone components, signals,
 `inject()`, functional interceptors and guards, lazy routes, OnPush everywhere. No UI framework: a small set of accessible
@@ -17,7 +17,7 @@ components in `src/app/shared/ui`, SCSS design tokens in `src/styles`, inline SV
 | `npm run format --prefix web` | Prettier |
 
 **Against the real API.** Start SQL Server (`docker compose -f deploy/docker-compose.yml up -d sql`), then
-`ASPNETCORE_ENVIRONMENT=Development CMS_DATABASE_CONNECTION="<connection string>" dotnet run --project src/Cms.Api --urls http://127.0.0.1:5100`
+`ASPNETCORE_ENVIRONMENT=Development CONSTRUCTOPX_DATABASE_CONNECTION="<connection string>" dotnet run --project src/ConstructOPX.Api --urls http://127.0.0.1:5100`
 (Development creates the schema from the model on first start). Open the dev server: on an empty database `/sign-in` offers
 "Set up your company". Never put a password in a file you commit.
 

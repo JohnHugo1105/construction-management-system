@@ -1,7 +1,9 @@
 import {
   DraftRow,
   checkRows,
+  dayTypeChip,
   draftRowsFor,
+  holidayLine,
   hoursWords,
   isFutureDate,
   mapBatchErrors,
@@ -91,8 +93,8 @@ describe('the batch sent to the server', () => {
       workDate: '2026-11-01',
       clientRequestId: 'request-1',
       entries: [
-        { workerId: 'w2', regularHours: 8, overtimeHours: 2, remarks: 'left early' },
-        { workerId: 'w3', regularHours: 8, overtimeHours: 0, remarks: null },
+        { workerId: 'w2', regularHours: 8, overtimeHours: 2, nightHours: 0, remarks: 'left early' },
+        { workerId: 'w3', regularHours: 8, overtimeHours: 0, nightHours: 0, remarks: null },
       ],
     });
     expect(plan.order).toEqual(['w2', 'w3']);
@@ -174,6 +176,39 @@ describe('hours text', () => {
   it('words hours as recorded, never as pay', () => {
     expect(hoursWords(8, 0)).toBe('8 h');
     expect(hoursWords(8, 2.5)).toBe('8 h + 2.5 h overtime');
+    expect(hoursWords(8, 2, 3)).toBe('8 h + 2 h overtime, 3 h at night');
+    expect(hoursWords(8, 0, 0)).toBe('8 h');
+  });
+
+  it('shows a chip for a rest day or holiday as the server decided it, and none for an ordinary day', () => {
+    expect(dayTypeChip('Ordinary')).toBeNull();
+    expect(dayTypeChip(undefined)).toBeNull();
+    expect(dayTypeChip('RestDay')?.label).toBe('Rest day');
+    expect(dayTypeChip('RegularHolidayRestDay')).toEqual({
+      label: 'Regular holiday, rest day',
+      tone: 'warning',
+      icon: 'calendar',
+    });
+  });
+
+  it('names the company holiday on the sheet’s day in one line', () => {
+    expect(holidayLine({ holidayName: null, holidayType: null })).toBeNull();
+    expect(holidayLine({ holidayName: 'Founders day', holidayType: 'Regular' })).toBe(
+      'Regular holiday: Founders day',
+    );
+    expect(holidayLine({ holidayName: 'Foundation', holidayType: 'Special' })).toBe(
+      'Special day: Foundation',
+    );
+  });
+
+  it('puts the server’s night-hours message on the row it is about', () => {
+    const mapped = mapBatchErrors(
+      { 'entries[0].nightHours': ['Night hours can’t be more than the hours worked that day.'] },
+      ['w2'],
+    );
+    expect(mapped.rows.get('w2')).toEqual({
+      night: 'Night hours can’t be more than the hours worked that day.',
+    });
   });
 
   it('knows a day after today is in the future', () => {

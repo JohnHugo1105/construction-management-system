@@ -17,10 +17,19 @@ import { StatusChip } from '../../shared/ui/status-chip/status-chip';
 import { ReasonDialog } from '../costing/ui/reason-dialog';
 import { CloseOrderDialog } from './close-order-dialog';
 import { PurchasingApi } from './purchasing-api';
-import { invoicedSummary, presentStatus } from './purchasing-presentation';
-import { PurchaseOrder } from './purchasing.models';
+import {
+  aheadOfDeliveryNote,
+  formatQuantity,
+  invoicedSummary,
+  lineFlow,
+  presentDelivery,
+  presentStatus,
+} from './purchasing-presentation';
+import { RecordDeliveryDialog } from './record-delivery-dialog';
+import { GoodsReceipt, PurchaseOrder } from './purchasing.models';
+import { Discussion } from '../collaboration/discussion';
 
-type Dialog = 'approve' | 'cancel' | 'close';
+type Dialog = 'approve' | 'cancel' | 'close' | 'receive' | 'voidDelivery';
 
 /**
  * One purchase order: who it is to and what for, its lines with what has been invoiced against each, the invoices matched to it,
@@ -41,6 +50,8 @@ type Dialog = 'approve' | 'cancel' | 'close';
     ConfirmDialog,
     ReasonDialog,
     CloseOrderDialog,
+    RecordDeliveryDialog,
+    Discussion,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './order-page.html',
@@ -60,15 +71,21 @@ export class OrderPage {
   protected readonly dialog = signal<Dialog | null>(null);
   protected readonly busy = signal(false);
   protected readonly actionError = signal<ApiError | null>(null);
+  /** The delivery the person is voiding while the reason dialog is open. */
+  protected readonly voidTarget = signal<GoodsReceipt | null>(null);
 
   private readonly canManage = this.session.permit(Permission.purchasingManage);
   private readonly canApprove = this.session.permit(Permission.purchasingApprove);
+  private readonly canReceive = this.session.permit(Permission.purchasingReceive);
   protected readonly currency = this.session.currencyCode;
 
   protected readonly showEdit = computed(() => this.canManage() && (this.order()?.canEdit ?? false));
   protected readonly showApprove = computed(() => this.canApprove() && (this.order()?.canApprove ?? false));
   protected readonly showCancel = computed(() => this.canApprove() && (this.order()?.canCancel ?? false));
   protected readonly showClose = computed(() => this.canApprove() && (this.order()?.canClose ?? false));
+  /** The one primary action of an approved order that still has something to receive. */
+  protected readonly showReceive = computed(() => this.canReceive() && (this.order()?.canReceive ?? false));
+  protected readonly showVoidDelivery = this.canReceive;
 
   protected readonly view = computed(() => {
     const order = this.order();
@@ -82,6 +99,7 @@ export class OrderPage {
       order.cancelledAtUtc ? `Cancelled by ${order.cancelledByName} on ${formatDateTime(order.cancelledAtUtc, timeZone)}` : null,
     ].filter((line): line is string => line !== null);
     const started = order.status === 'Approved' || order.status === 'Closed';
+    const anyReceived = order.lines.some((line) => line.receivedQuantity > 0);
     return {
       status: presentStatus(order.status),
       orderDate: formatDate(order.orderDate),
@@ -95,6 +113,8 @@ export class OrderPage {
       showCommitted: order.status === 'Approved',
       history,
       reason: order.status === 'Cancelled' ? order.cancelReason : order.status === 'Closed' ? order.closeReason : null,
+      delivery: presentDelivery(order.deliveryState),
+      showDelivery: started && order.receiptCount > 0,
       lines: order.lines.map((line) => ({
         id: line.id,
         number: line.lineNumber,
@@ -103,7 +123,27 @@ export class OrderPage {
         total: money(line.grossMinor),
         standing: started ? invoicedSummary(line, this.currency(), order.status === 'Closed') : null,
         over: line.overByGrossMinor > 0,
+        // Ordered, received and invoiced side by side once anything has arrived; before that the order's own words are enough.
+        flow: started && anyReceived ? lineFlow(line, this.currency()) : null,
+        ahead: aheadOfDeliveryNote(line, this.currency()),
       })),
+      receipts: order.receipts.map((receipt) => ({
+        id: receipt.id,
+        void: receipt.status === 'Void',
+        title: receipt.deliveryReceiptNumber
+          ? `${formatDate(receipt.receivedDate)} · ${receipt.deliveryReceiptNumber}`
+          : formatDate(receipt.receivedDate),
+        items: receipt.lines
+          .map((line) => `${formatQuantity(line.quantity)} ${line.unit} ${line.description}`)
+          .join(', '),
+        note: receipt.note,
+        recorded: `Recorded by ${receipt.recordedByName} on ${formatDateTime(receipt.recordedAtUtc, timeZone)}`,
+        voided: receipt.voidedAtUtc
+          ? `Voided by ${receipt.voidedByName} on ${formatDateTime(receipt.voidedAtUtc, timeZone)}: ${receipt.voidReason}`
+          : null,
+        canVoid: receipt.canVoid,
+      })),
+      moreReceipts: order.receiptCount > order.receipts.length ? order.receiptCount - order.receipts.length : 0,
       invoices: order.invoices.map((invoice) => ({
         id: invoice.costEntryId,
         date: formatDate(invoice.entryDate),
@@ -142,6 +182,25 @@ export class OrderPage {
 
   protected closeDialog(): void {
     this.dialog.set(null);
+    this.voidTarget.set(null);
+  }
+
+  protected openVoid(receiptId: string): void {
+    this.voidTarget.set(this.order()?.receipts.find((receipt) => receipt.id === receiptId) ?? null);
+    this.open('voidDelivery');
+  }
+
+  protected readonly voidDelivery = (reason: string) => {
+    const order = this.order()!;
+    const receipt = this.voidTarget()!;
+    return this.api.voidDelivery(order.id, receipt.id, reason, receipt.version);
+  };
+
+  /** The delivery was recorded: the server sent the order back as it now stands, so there is nothing to refetch. */
+  protected delivered(order: PurchaseOrder): void {
+    this.order.set(order);
+    this.dialog.set(null);
+    this.toast.success('Delivery recorded.');
   }
 
   protected readonly cancelOrder = (reason: string) => {
@@ -168,12 +227,14 @@ export class OrderPage {
 
   protected async finished(message: string): Promise<void> {
     this.dialog.set(null);
+    this.voidTarget.set(null);
     await this.load();
     this.toast.success(message);
   }
 
   protected async reloadAfterConflict(): Promise<void> {
     this.dialog.set(null);
+    this.voidTarget.set(null);
     await this.load();
   }
 }

@@ -90,6 +90,20 @@
   gap: var(--space-2) var(--space-3);
 }
 
+.line__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.line__chips:empty {
+  display: none;
+}
+
+.holiday-line {
+  margin: 0;
+}
+
 .line__badge {
   display: inline-flex;
   align-items: center;

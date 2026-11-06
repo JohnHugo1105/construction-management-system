@@ -108,6 +108,10 @@ export class ProjectDetailPage {
       tabs.push({ label: 'Team', link: [...base, 'team'] });
     if (this.session.can(Permission.inventoryRead))
       tabs.push({ label: 'Stock', link: [...base, 'stock'] });
+    if (this.session.can(Permission.diaryRead))
+      tabs.push({ label: 'Diary', link: [...base, 'diary'] });
+    if (this.session.can(Permission.documentsRead))
+      tabs.push({ label: 'Documents', link: [...base, 'documents'] });
     return tabs;
   });
 

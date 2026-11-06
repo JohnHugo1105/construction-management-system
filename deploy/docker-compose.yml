@@ -3,8 +3,8 @@
 #   docker compose -f deploy/docker-compose.yml up -d --build      # database, API and web
 # Values come from a .env file next to the compose command (copy .env.example). Nothing secret is committed.
 # First installation, in order (docs/operations/deployment.md): up -d sql db-init, apply the migration script as the administrator,
-# then up -d --build. The API connects as the least-privilege cms_app login that db-init creates, never as the administrator.
-name: cms
+# then up -d --build. The API connects as the least-privilege constructopx_app login that db-init creates, never as the administrator.
+name: constructopx
 
 services:
   sql:
@@ -13,7 +13,7 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
-      MSSQL_SA_PASSWORD: ${CMS_DB_PASSWORD:?Set CMS_DB_PASSWORD in .env}
+      MSSQL_SA_PASSWORD: ${CONSTRUCTOPX_DB_PASSWORD:?Set CONSTRUCTOPX_DB_PASSWORD in .env}
     ports:
       - "127.0.0.1:1433:1433"   # loopback only; the database is never published to the network
     volumes:
@@ -27,8 +27,8 @@ services:
       retries: 12
       start_period: 20s
 
-  # One-shot: creates the database and the cms_app login (read and write, no schema changes). Safe to run again; running it again with
-  # a new CMS_APP_DB_PASSWORD rotates the password.
+  # One-shot: creates the database and the constructopx_app login (read and write, no schema changes). Safe to run again; running it again with
+  # a new CONSTRUCTOPX_APP_DB_PASSWORD rotates the password.
   db-init:
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: "no"
@@ -36,8 +36,8 @@ services:
       sql:
         condition: service_healthy
     environment:
-      SQLCMDPASSWORD: ${CMS_DB_PASSWORD}
-      CMS_APP_DB_PASSWORD: ${CMS_APP_DB_PASSWORD:?Set CMS_APP_DB_PASSWORD in .env}
+      SQLCMDPASSWORD: ${CONSTRUCTOPX_DB_PASSWORD}
+      CONSTRUCTOPX_APP_DB_PASSWORD: ${CONSTRUCTOPX_APP_DB_PASSWORD:?Set CONSTRUCTOPX_APP_DB_PASSWORD in .env}
     volumes:
       - ./sql:/sql:ro
     entrypoint: ["/opt/mssql-tools18/bin/sqlcmd", "-I", "-C", "-b", "-S", "sql", "-U", "sa", "-i", "/sql/create-app-login.sql"]
@@ -45,24 +45,27 @@ services:
   api:
     build:
       context: ..
-      dockerfile: src/Cms.Api/Dockerfile
+      dockerfile: src/ConstructOPX.Api/Dockerfile
       args:
-        CMS_RELEASE_SHA: ${CMS_RELEASE_SHA:-local}
-    image: cms-api:${CMS_RELEASE_SHA:-local}
+        CONSTRUCTOPX_RELEASE_SHA: ${CONSTRUCTOPX_RELEASE_SHA:-local}
+    image: constructopx-api:${CONSTRUCTOPX_RELEASE_SHA:-local}
     restart: unless-stopped
     depends_on:
       db-init:
         condition: service_completed_successfully
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      CMS_DATABASE_CONNECTION: Server=sql,1433;Database=Cms;User Id=cms_app;Password=${CMS_APP_DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
+      CONSTRUCTOPX_DATABASE_CONNECTION: Server=sql,1433;Database=ConstructOpx;User Id=constructopx_app;Password=${CONSTRUCTOPX_APP_DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
       # Session keys survive a restart in this volume, so a new release doesn't sign everyone out.
-      DataProtection__KeysPath: /var/lib/cms/keys
-      CMS_RELEASE_SHA: ${CMS_RELEASE_SHA:-local}
-      Bootstrap__Enabled: ${CMS_BOOTSTRAP_ENABLED:-false}
+      DataProtection__KeysPath: /var/lib/constructopx/keys
+      # Project document files live in this volume; back it up with the database (docs/operations/backup-and-restore.md).
+      FileStorage__RootPath: /var/lib/constructopx/files
+      CONSTRUCTOPX_RELEASE_SHA: ${CONSTRUCTOPX_RELEASE_SHA:-local}
+      Bootstrap__Enabled: ${CONSTRUCTOPX_BOOTSTRAP_ENABLED:-false}
       Database__MigrateOnStartup: "false"
     volumes:
-      - api-keys:/var/lib/cms/keys
+      - api-keys:/var/lib/constructopx/keys
+      - api-files:/var/lib/constructopx/files
     expose:
       - "8080"
 
@@ -71,8 +74,8 @@ services:
       context: ..
       dockerfile: deploy/web/Dockerfile
       args:
-        CMS_RELEASE_SHA: ${CMS_RELEASE_SHA:-local}
-    image: cms-web:${CMS_RELEASE_SHA:-local}
+        CONSTRUCTOPX_RELEASE_SHA: ${CONSTRUCTOPX_RELEASE_SHA:-local}
+    image: constructopx-web:${CONSTRUCTOPX_RELEASE_SHA:-local}
     restart: unless-stopped
     depends_on:
       api:
@@ -83,3 +86,4 @@ services:
 volumes:
   sql-data:
   api-keys:
+  api-files:

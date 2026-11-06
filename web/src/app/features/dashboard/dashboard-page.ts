@@ -14,12 +14,14 @@ import { Viewport } from '../../shared/ui/viewport/viewport';
 import { describeBasis, describeRemaining, describeUsed } from '../costing/figures';
 import { presentHealth } from '../costing/health';
 import { CommitmentLine } from '../costing/ui/commitment-line';
+import { isForecastOver } from '../costing/costing.models';
 import { CostPosition } from '../costing/ui/cost-position';
 import { injectMinWidth } from '../costing/ui/container-width';
 import { ScrollRegion } from '../costing/ui/scroll-region';
 import { UsedBar } from '../costing/ui/used-bar';
 import { PROJECT_STATUS } from '../projects/project-status';
 import { DashboardState } from './dashboard-state';
+import { ForecastChip } from './forecast-chip';
 import { leadFact, sortDashboardRows } from './dashboard-rows';
 
 /**
@@ -39,6 +41,7 @@ import { leadFact, sortDashboardRows } from './dashboard-rows';
     StatusChip,
     CostPosition,
     CommitmentLine,
+    ForecastChip,
     ScrollRegion,
     UsedBar,
   ],
@@ -58,7 +61,7 @@ export class DashboardPage {
 
   protected readonly lead = computed(() => {
     const data = this.state.dashboard();
-    return data ? leadFact(data.projects) : null;
+    return data ? leadFact(data.projects, data.totals.forecastOverBudgetCount ?? 0) : null;
   });
 
   protected readonly basisLine = computed(() => {
@@ -92,6 +95,10 @@ export class DashboardPage {
         status: PROJECT_STATUS[row.status].label,
         health,
         idle,
+        /** How far over the budget the work done says the project will finish; null when it is not forecast over. */
+        forecastOver: isForecastOver(row.progressForecast)
+          ? (row.progressForecast?.overBudgetMinor ?? null)
+          : null,
         budget: formatMoney(row.budgetMinor, currency),
         spent: formatMoney(row.actualMinor, currency),
         remaining: describeRemaining(row.remainingMinor, currency),

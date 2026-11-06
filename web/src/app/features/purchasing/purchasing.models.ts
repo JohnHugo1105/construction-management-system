@@ -5,6 +5,9 @@ import { ItemType, VatTreatment } from '../costing/costing.models';
 
 export type PurchaseOrderStatus = 'Draft' | 'Approved' | 'Closed' | 'Cancelled';
 
+/** How much of an order has arrived, as the server worked it out from the lines and the deliveries that stand. */
+export type DeliveryState = 'NotReceived' | 'PartlyReceived' | 'FullyReceived';
+
 export interface PurchaseOrderListItem {
   readonly id: string;
   readonly number: string;
@@ -19,6 +22,8 @@ export interface PurchaseOrderListItem {
   readonly netMinor: number;
   readonly vatMinor: number;
   readonly grossMinor: number;
+  /** Only for an approved order: the server's answer to "has it arrived?". Null for every other status. */
+  readonly deliveryState: DeliveryState | null;
 }
 
 export interface PurchaseOrderLine {
@@ -43,6 +48,14 @@ export interface PurchaseOrderLine {
   readonly remainingNetMinor: number;
   readonly remainingGrossMinor: number;
   readonly overByGrossMinor: number;
+  /** What deliveries that stand say arrived for this line, and what a new delivery may still name. */
+  readonly receivedQuantity: number;
+  readonly toReceiveQuantity: number;
+  /** The received quantity at the line's unit cost, on the line's own VAT basis. */
+  readonly receivedValueNetMinor: number;
+  readonly receivedValueGrossMinor: number;
+  /** Advisory: more was invoiced to this line than what has arrived is worth. The invoice is still valid. */
+  readonly invoicedAheadOfDelivery: boolean;
 }
 
 export interface MatchedInvoice {
@@ -55,6 +68,34 @@ export interface MatchedInvoice {
   readonly description: string;
   readonly netMinor: number;
   readonly grossMinor: number;
+}
+
+export type GoodsReceiptStatus = 'Posted' | 'Void';
+
+export interface GoodsReceiptLine {
+  readonly id: string;
+  readonly purchaseOrderLineId: string;
+  readonly lineNumber: number;
+  readonly description: string;
+  readonly unit: string;
+  readonly quantity: number;
+}
+
+/** One delivery against an order: what the supplier brought on a day, under their delivery receipt. Voided with a reason, never edited. */
+export interface GoodsReceipt {
+  readonly id: string;
+  readonly receivedDate: string;
+  readonly deliveryReceiptNumber: string | null;
+  readonly note: string | null;
+  readonly status: GoodsReceiptStatus;
+  readonly recordedByName: string;
+  readonly recordedAtUtc: string;
+  readonly voidedByName: string | null;
+  readonly voidedAtUtc: string | null;
+  readonly voidReason: string | null;
+  readonly canVoid: boolean;
+  readonly lines: readonly GoodsReceiptLine[];
+  readonly version: number;
 }
 
 export interface PurchaseOrder {
@@ -96,6 +137,12 @@ export interface PurchaseOrder {
   readonly canApprove: boolean;
   readonly canCancel: boolean;
   readonly canClose: boolean;
+  readonly deliveryState: DeliveryState;
+  /** The newest deliveries, voided ones too; `receiptCount` is the true number. */
+  readonly receipts: readonly GoodsReceipt[];
+  readonly receiptCount: number;
+  /** An approved order of an open project with something still to receive. */
+  readonly canReceive: boolean;
   readonly version: number;
 }
 
@@ -144,6 +191,19 @@ export interface PurchaseOrderFields {
   readonly supplierReference: string | null;
   readonly notes: string | null;
   readonly lines: readonly PurchaseOrderLineFields[];
+}
+
+/** One line of a delivery as the form sends it: which order line, and how much of it arrived. */
+export interface DeliveryLineFields {
+  readonly purchaseOrderLineId: string;
+  readonly quantity: number;
+}
+
+export interface RecordDeliveryFields {
+  readonly receivedDate: string;
+  readonly deliveryReceiptNumber: string | null;
+  readonly note: string | null;
+  readonly lines: readonly DeliveryLineFields[];
 }
 
 // ---- Firms ---------------------------------------------------------------------------------------------------------------

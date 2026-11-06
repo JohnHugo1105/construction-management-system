@@ -8,11 +8,12 @@ import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
 import { ProjectContext } from './project-context';
 import { SubProjectsPanel } from './sub-projects-panel';
+import { Discussion } from '../collaboration/discussion';
 
-/** The default tab of a project: its details, and its sub-projects. */
+/** The default tab of a project: its details, its sub-projects and the project's discussion. */
 @Component({
   selector: 'app-project-overview-tab',
-  imports: [RouterLink, Button, Icon, SubProjectsPanel],
+  imports: [RouterLink, Button, Icon, SubProjectsPanel, Discussion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="stack">
@@ -37,6 +38,8 @@ import { SubProjectsPanel } from './sub-projects-panel';
       </section>
 
       <app-sub-projects-panel />
+
+      <app-discussion class="card" kind="Project" [targetId]="context.project().id" />
     </div>
   `,
   styles: `

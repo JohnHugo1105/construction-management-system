@@ -45,6 +45,19 @@ export const ADMIN_ROUTES: Routes = [
           import('./settings/company-settings-page').then((m) => m.CompanySettingsPage),
       },
       {
+        path: 'time-clocks',
+        title: 'Time clocks',
+        canActivate: [permissionGuard(Permission.settingsManage)],
+        loadComponent: () =>
+          import('../timeclock/time-clock-devices-page').then((m) => m.TimeClockDevicesPage),
+      },
+      {
+        path: 'readiness',
+        canActivate: [permissionGuard(Permission.settingsManage)],
+        loadComponent: () =>
+          import('./readiness/system-readiness-page').then((m) => m.SystemReadinessPage),
+      },
+      {
         path: 'audit',
         canActivate: [permissionGuard(Permission.auditRead)],
         loadComponent: () => import('./audit/audit-log-page').then((m) => m.AuditLogPage),

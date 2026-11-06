@@ -120,6 +120,19 @@ export interface ChangeOrder {
   readonly voidBlockedBy: string | null;
   readonly lines: readonly ChangeOrderLine[];
   readonly version: number;
+  /** Added work on a government project against the agency's limit (a warning, never a block). */
+  readonly governmentLimit: GovernmentLimit;
+}
+
+/**
+ * `applies` only for a government client with a locked budget: `limitMinor` is 10% of the original contract price and `usedMinor`
+ * the approved price increases plus this order's own while it waits for approval. Worked out by the server.
+ */
+export interface GovernmentLimit {
+  readonly applies: boolean;
+  readonly limitMinor: number;
+  readonly usedMinor: number;
+  readonly exceeds: boolean;
 }
 
 /** The header a draft is created or edited with. */

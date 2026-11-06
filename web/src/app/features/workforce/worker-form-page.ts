@@ -27,6 +27,7 @@ import { MoneyInput } from '../../shared/ui/inputs/money-input';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { newRequestId } from './request-id';
 import { WorkforceApi } from './workforce-api';
+import { NO_REST_DAY, REST_DAY_CHOICES, REST_DAY_HINT, RestDayChoice } from './worker-rest-day';
 import { DEFAULT_STATUTORY, STATUTORY_CHOICES, statutoryWords } from './worker-statutory';
 import { RateUnit } from './workforce.models';
 
@@ -129,6 +130,13 @@ const SERVER_FIELD_NAMES = { rateMinor: 'rate' } as const;
                 <input appControl formControlName="designation" autocomplete="off" />
               </app-form-field>
             </div>
+            <app-form-field label="Rest day" [hint]="restDayHint" [control]="form.controls.restDay">
+              <select appControl formControlName="restDay">
+                @for (choice of restDayChoices; track choice.value) {
+                  <option [value]="choice.value">{{ choice.label }}</option>
+                }
+              </select>
+            </app-form-field>
           </div>
 
           <div class="form__section">
@@ -236,6 +244,8 @@ export class WorkerFormPage {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(80)],
     }),
+    // No rest day unless HR sets one: a rest day earns a premium, so it is never assumed.
+    restDay: new FormControl<RestDayChoice>(NO_REST_DAY, { nonNullable: true }),
     rate: new FormControl<number | null>(null, {
       validators: [Validators.required, Validators.min(1)],
     }),
@@ -249,6 +259,8 @@ export class WorkerFormPage {
   });
 
   protected readonly statutoryChoices = STATUTORY_CHOICES;
+  protected readonly restDayChoices = REST_DAY_CHOICES;
+  protected readonly restDayHint = REST_DAY_HINT;
   private readonly statutoryValue = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
   });
@@ -303,6 +315,7 @@ export class WorkerFormPage {
           philHealthMember: value.philHealthMember,
           pagIbigMember: value.pagIbigMember,
           taxExempt: value.taxExempt,
+          restDay: value.restDay,
         }),
       );
       this.toast.success('Worker hired.');

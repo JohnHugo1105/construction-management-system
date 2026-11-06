@@ -80,10 +80,14 @@
           </p>
         }
 
-        @if (state.bill().isStale && info.draft) {
+        @if (info.leftover) {
+          <p class="text-muted text-small">
+            A progress bill has been issued, so this down payment can no longer be billed. Discard
+            this draft.
+          </p>
+        } @else if (state.bill().isStale && info.draft) {
           <app-alert tone="warning" title="This draft is out of date">
-            Another bill was issued or voided after it was prepared. Change the draft and save it
-            again before it is issued.
+            {{ info.staleReason }} Change the draft and save it again before it is issued.
           </app-alert>
         }
 
@@ -184,6 +188,8 @@
             }
           </p>
         }
+
+        <app-discussion class="card" kind="ClientBill" [targetId]="state.bill().id" />
       </div>
     }
   }

@@ -18,7 +18,7 @@ unless the request says to skip it, for example "no performance check".
    page load or journey, decoded response bytes, rows, rendered DOM nodes, and
    behavior under a small concurrent run where locks or transactions are
    involved. Use the cheapest run that shows it: a count or timing assertion in
-   the one affected test class, the seeded volume fixture (`Cms.Infrastructure.IntegrationTests` data builders), or one local journey. Not a suite, not a load test.
+   the one affected test class, the seeded volume fixture (`ConstructOPX.Infrastructure.IntegrationTests` data builders), or one local journey. Not a suite, not a load test.
 3. **Keep the bound.** Turn a count or limit into a focused regression
    assertion (for example, constant SQL count as rows grow) instead of a
    one-off number.

@@ -22,13 +22,14 @@ import { Button } from '../../shared/ui/button/button';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Skeleton } from '../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../shared/ui/status-chip/status-chip';
-import { BillFormDialog, BillFormContext, breakdownRows } from './bill-form-dialog';
+import { BillFormDialog, BillFormContext, advanceRows, breakdownRows } from './bill-form-dialog';
 import { BillState } from './bill-state';
 import { BillingApi } from './billing-api';
 import { BILL_KIND, billActions, billName, billStatus, paymentMethodLabel } from './billing-rules';
 import { Bill, BillPayment } from './billing.models';
 import { PaymentDialog } from './payment-dialog';
 import { ReasonDialog } from './reason-dialog';
+import { Discussion } from '../collaboration/discussion';
 
 type ReasonAction = 'void' | 'discard' | { readonly payment: BillPayment };
 
@@ -60,6 +61,7 @@ interface ReasonPrompt {
     BillFormDialog,
     PaymentDialog,
     ReasonDialog,
+    Discussion,
   ],
   providers: [BillState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -120,11 +122,18 @@ export class BillPage {
         `${bill.number ? 'Voided' : 'Discarded'}${bill.voidedByName ? ` by ${bill.voidedByName}` : ''} on ${formatDateTime(bill.voidedAtUtc, zone)}`,
       );
     const progress = bill.kind === 'Progress';
+    const draft = bill.status === 'Draft';
     return {
       status: billStatus(bill),
       kind: BILL_KIND[bill.kind],
       issued: bill.status === 'Issued',
-      draft: bill.status === 'Draft',
+      draft,
+      // A down payment draft follows the contract price and the terms; any other draft follows the bills issued before it.
+      staleReason:
+        bill.kind === 'Advance'
+          ? 'The contract price or the down payment in the billing terms changed after it was prepared.'
+          : 'Another bill was issued or voided after it was prepared.',
+      leftover: draft && bill.canOnlyBeDiscarded,
       archived: bill.projectStatus === 'Archived',
       description: bill.description,
       billingDate: formatDate(bill.billingDate),
@@ -140,10 +149,12 @@ export class BillPage {
         : [],
       rows: progress
         ? breakdownRows(bill, currency)
-        : [
-            { label: 'Retention released', amount: money(bill.grossMinor) },
-            { label: 'The client pays', amount: money(bill.netReceivableMinor), total: true },
-          ],
+        : bill.kind === 'Advance'
+          ? advanceRows(bill, currency)
+          : [
+              { label: 'Retention released', amount: money(bill.grossMinor) },
+              { label: 'The client pays', amount: money(bill.netReceivableMinor), total: true },
+            ],
       history,
       voidReason: bill.voidReason,
       payments: bill.payments.map((payment) => ({
@@ -219,6 +230,8 @@ export class BillPage {
         contractPriceMinor: billing.contractPriceMinor,
         billedToDateMinor: billing.billedToDateMinor,
         retentionHeldMinor: billing.retentionHeldMinor,
+        advanceBps: billing.terms.advanceBps,
+        advanceToBillMinor: billing.advanceToBillMinor,
       });
       this.editing.set(true);
     } catch (failure) {

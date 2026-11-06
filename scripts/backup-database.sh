@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Takes a verified backup of the CMS database.
+# Takes a verified backup of ConstructOPX database.
 #
 #   * COPY_ONLY, so it never disturbs the differential/log backup chain of any other backup job.
 #   * CHECKSUM, so page corruption is detected while writing; then RESTORE VERIFYONLY re-reads the file.
@@ -9,27 +9,27 @@
 # run scripts/verify-restore.sh on a schedule too (docs/operations/backup-and-restore.md).
 #
 # Configuration (environment; the password is never accepted as an argument and never printed):
-#   SQLCMDPASSWORD or CMS_DB_PASSWORD   the SQL login's password (required)
-#   CMS_SQL_SERVER        default localhost,1433
-#   CMS_SQL_USER          default sa (use a dedicated backup login in production)
-#   CMS_SQL_TRUST_CERT    default true (set false when the server has a certificate the client trusts)
-#   CMS_DB_NAME           default Cms
-#   CMS_BACKUP_DIR        directory as SQL Server sees it, default /var/opt/mssql/backup
-#   CMS_BACKUP_LOCAL_DIR  the same directory as this script sees it (differs when SQL Server runs in a container
-#                         with a mounted volume); default CMS_BACKUP_DIR
+#   SQLCMDPASSWORD or CONSTRUCTOPX_DB_PASSWORD   the SQL login's password (required)
+#   CONSTRUCTOPX_SQL_SERVER        default localhost,1433
+#   CONSTRUCTOPX_SQL_USER          default sa (use a dedicated backup login in production)
+#   CONSTRUCTOPX_SQL_TRUST_CERT    default true (set false when the server has a certificate the client trusts)
+#   CONSTRUCTOPX_DB_NAME           default ConstructOpx
+#   CONSTRUCTOPX_BACKUP_DIR        directory as SQL Server sees it, default /var/opt/mssql/backup
+#   CONSTRUCTOPX_BACKUP_LOCAL_DIR  the same directory as this script sees it (differs when SQL Server runs in a container
+#                         with a mounted volume); default CONSTRUCTOPX_BACKUP_DIR
 set -euo pipefail
 
-export SQLCMDPASSWORD="${SQLCMDPASSWORD:-${CMS_DB_PASSWORD:-}}"
-: "${SQLCMDPASSWORD:?Set SQLCMDPASSWORD or CMS_DB_PASSWORD}"
-SERVER="${CMS_SQL_SERVER:-localhost,1433}"
-LOGIN="${CMS_SQL_USER:-sa}"
-DB="${CMS_DB_NAME:-Cms}"
-DIR="${CMS_BACKUP_DIR:-/var/opt/mssql/backup}"
-LOCAL_DIR="${CMS_BACKUP_LOCAL_DIR:-$DIR}"
+export SQLCMDPASSWORD="${SQLCMDPASSWORD:-${CONSTRUCTOPX_DB_PASSWORD:-}}"
+: "${SQLCMDPASSWORD:?Set SQLCMDPASSWORD or CONSTRUCTOPX_DB_PASSWORD}"
+SERVER="${CONSTRUCTOPX_SQL_SERVER:-localhost,1433}"
+LOGIN="${CONSTRUCTOPX_SQL_USER:-sa}"
+DB="${CONSTRUCTOPX_DB_NAME:-ConstructOpx}"
+DIR="${CONSTRUCTOPX_BACKUP_DIR:-/var/opt/mssql/backup}"
+LOCAL_DIR="${CONSTRUCTOPX_BACKUP_LOCAL_DIR:-$DIR}"
 TRUST=()
-[ "${CMS_SQL_TRUST_CERT:-true}" = "true" ] && TRUST=(-C)
+[ "${CONSTRUCTOPX_SQL_TRUST_CERT:-true}" = "true" ] && TRUST=(-C)
 
-if ! [[ "$DB" =~ ^[A-Za-z0-9_]+$ ]]; then echo "CMS_DB_NAME may contain only letters, digits and underscores." >&2; exit 2; fi
+if ! [[ "$DB" =~ ^[A-Za-z0-9_]+$ ]]; then echo "CONSTRUCTOPX_DB_NAME may contain only letters, digits and underscores." >&2; exit 2; fi
 SQLCMD="$(command -v sqlcmd || echo /opt/mssql-tools18/bin/sqlcmd)"
 [ -x "$SQLCMD" ] || { echo "sqlcmd was not found. Install mssql-tools18." >&2; exit 2; }
 

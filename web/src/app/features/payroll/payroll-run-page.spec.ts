@@ -6,6 +6,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
+import { PageTitleState } from '../../core/layout/page-title-state';
 import { Permission } from '../../core/session/permissions';
 import { SessionState } from '../../core/session/session-state';
 import { Viewport } from '../../shared/ui/viewport/viewport';
@@ -130,7 +131,8 @@ describe('PayrollRunPage figures', () => {
     await settle(fixture);
 
     const detail = root.querySelector('.detail-row')!;
-    expect(texts(detail, '.detail__pairs dd')).toEqual(['₱4,000.00', '₱0.00']);
+    // Only the parts of the pay that are not zero: this worker has regular pay and nothing else.
+    expect(texts(detail, '.detail__pairs dd')).toEqual(['₱4,000.00']);
     expect(texts(detail, 'section[aria-label^="Deductions"] li')).toEqual([
       'SSS contribution ₱150.00',
     ]);
@@ -587,5 +589,96 @@ describe('PayrollRunPage contributions and tax', () => {
     expect(texts(root, '.remit__amount')).toEqual(['₱388.90', '₱25.77']);
     expect(root.querySelectorAll('.detail__adjust')).toHaveLength(0);
     expect(texts(root, 'button')).not.toContain('Recalculate');
+  });
+});
+
+describe('PayrollRunPage premiums and 13th-month pay', () => {
+  it('folds a worker’s premiums and night pay under the gross, leaving out what is zero', async () => {
+    const premium = run({
+      lines: [
+        line({
+          regularPayMinor: 160_000,
+          premiumPayMinor: 104_000,
+          overtimePayMinor: 33_800,
+          nightPayMinor: 2_600,
+          nightHours: 2,
+          grossPayMinor: 300_400,
+          netPayMinor: 300_400,
+        }),
+      ],
+    });
+    const { root, fixture } = await open(premium, READER);
+
+    expect(root.querySelector('.setup-line')).toBeNull();
+    root.querySelector<HTMLButtonElement>('tbody button[aria-expanded]')!.click();
+    await settle(fixture);
+    expect(texts(root, '.detail__pairs dt')).toEqual([
+      'Regular pay',
+      'Overtime and premium',
+      'Night differential 2 h at night',
+    ]);
+    expect(texts(root, '.detail__pairs dd')).toEqual(['₱1,600.00', '₱1,378.00', '₱26.00']);
+  });
+
+  it('says in one line that no holiday is entered for the year, only when the API says so', async () => {
+    const { root } = await open(run({ holidaysMissingForYear: 2026 }), READER);
+
+    expect(texts(root, '.setup-line')).toContain(
+      'No holidays are entered for 2026. Add them under Payroll, Holidays if any fall in this period.',
+    );
+  });
+
+  it('says in one line how many workers on archived projects were left out of holiday pay, only when there are any', async () => {
+    const { root } = await open(run({ workersOnArchivedProjectsLeftOut: 2 }), READER);
+
+    expect(texts(root, '.setup-line')).toContain(
+      '2 workers posted to archived projects were left out of holiday pay.',
+    );
+  });
+
+  it('offers a preparer one way to recalculate a draft, even without contribution tables', async () => {
+    const { root } = await open(
+      run(),
+      PREPARER,
+      {},
+      {
+        status: stub(() => of({ today: '2026-11-01', agencies: [] })),
+      },
+    );
+
+    expect(texts(root, 'button').filter((label) => label === 'Recalculate payroll')).toHaveLength(
+      1,
+    );
+  });
+
+  it('shows a 13th-month payroll by its year with each worker’s basic pay, and asks for no contributions', async () => {
+    const thirteenth = run({
+      kind: 'ThirteenthMonth',
+      year: 2026,
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      workerCount: 1,
+      lines: [
+        line({
+          regularHours: 0,
+          overtimeHours: 0,
+          regularPayMinor: 0,
+          overtimePayMinor: 0,
+          thirteenthMonthPayMinor: 20_000,
+          thirteenthMonthBasisMinor: 240_000,
+          grossPayMinor: 20_000,
+          netPayMinor: 20_000,
+        }),
+      ],
+    });
+    const status = stub(() => of(allSetUp()));
+    const runStatutory = stub(() => of(noRemittance('run1')));
+    const { root } = await open(thirteenth, PREPARER, {}, { status, runStatutory });
+
+    expect(TestBed.inject(PageTitleState).title()).toBe('13th-month pay 2026');
+    expect(texts(root, 'tbody tr:first-child td')[0]).toBe('Basic pay ₱2,400.00');
+    expect(status).not.toHaveBeenCalled();
+    expect(runStatutory).not.toHaveBeenCalled();
+    expect(root.querySelector('.setup-line')).toBeNull();
   });
 });

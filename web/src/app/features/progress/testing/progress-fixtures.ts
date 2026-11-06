@@ -70,6 +70,7 @@ export function progressFixture(overrides: Partial<Progress> = {}): Progress {
     hasProgress: true,
     lastUpdatedOn: '2026-10-20',
     earnedValue: earnedValueFixture(),
+    plannedFrom: 'ProjectDates',
     divisions: [
       divisionFixture(),
       {

@@ -50,6 +50,9 @@ export class WorkersPage {
   protected readonly choices = injectProjectChoices();
 
   protected readonly canManage = this.session.permit(Permission.workforceManage);
+  /** The time clock's review (and, from it, the badges) is one step away for the people who use it. */
+  protected readonly canReviewTimeClock = this.session.permit(Permission.timeClockReview);
+  protected readonly canIssueBadges = this.session.permit(Permission.timeClockManage);
   protected readonly filters = WORKER_FILTERS;
   protected readonly filterLabel = filterLabel;
 

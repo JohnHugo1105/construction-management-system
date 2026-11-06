@@ -13,7 +13,7 @@ import { signInForTest } from '../../testing/session-fixture';
 import { ruleViolation } from '../workforce/workforce.fixtures';
 import { BillPage } from './bill-page';
 import { BillingApi } from './billing-api';
-import { bill, issuedBill } from './billing.fixtures';
+import { WITH_ADVANCE, advanceBill, bill, issuedBill } from './billing.fixtures';
 import { Bill } from './billing.models';
 
 type Call = (...args: unknown[]) => Observable<unknown>;
@@ -53,6 +53,26 @@ async function open(
 const actions = (root: HTMLElement) => texts(root, '.head__actions .btn');
 
 describe('BillPage', () => {
+  it('shows a down payment bill as its share of the contract price, nothing withheld', async () => {
+    const { root } = await open(advanceBill(), READER);
+
+    expect(text(root, '.head__kind')).toBe('Down payment · 31 Oct 2026');
+    expect(texts(root, '.rows__row')).toEqual([
+      'Down payment, 15% of the contract price₱1,680,000.00',
+      'The client pays₱1,680,000.00',
+    ]);
+  });
+
+  it('adds the VAT withheld and the down payment recovered to a progress bill’s breakdown', async () => {
+    const { root } = await open(bill({ ...WITH_ADVANCE }), READER);
+
+    expect(texts(root, '.rows__row').slice(-3)).toEqual([
+      'VAT withheld, 5% of the amount before VAT-₱150,000.00',
+      'Down payment recovered-₱504,000.00',
+      'The client pays₱2,310,000.00',
+    ]);
+  });
+
   it('shows a draft’s breakdown from the server and lets an approver issue it', async () => {
     const issue = stub(() => of(issuedBill()));
     const { root, fixture } = await open(bill(), APPROVER, { issue });
@@ -90,6 +110,30 @@ describe('BillPage', () => {
     const stale = await open(bill({ isStale: true }), APPROVER);
     expect(actions(stale.root)).toEqual(['Change draft', 'Discard draft']);
     expect(text(stale.root, 'app-alert .alert__title')).toBe('This draft is out of date');
+    expect(text(stale.root, 'app-alert')).toContain('Another bill was issued or voided');
+  });
+
+  it('holds back a down payment draft the contract price or the terms made out of date', async () => {
+    const { root } = await open(advanceBill({ status: 'Draft', isStale: true }), APPROVER);
+
+    expect(actions(root)).toEqual(['Change draft', 'Discard draft']);
+    expect(text(root, 'app-alert .alert__title')).toBe('This draft is out of date');
+    expect(text(root, 'app-alert')).toContain(
+      'The contract price or the down payment in the billing terms changed after it was prepared.',
+    );
+  });
+
+  it('offers only discarding a down payment draft once a progress bill is issued, and says why', async () => {
+    const { root } = await open(
+      advanceBill({ status: 'Draft', isStale: true, canOnlyBeDiscarded: true }),
+      APPROVER,
+    );
+
+    expect(actions(root)).toEqual(['Discard draft']);
+    expect(root.querySelector('app-alert')).toBeNull();
+    expect(text(root, '.stack > p.text-muted')).toBe(
+      'A progress bill has been issued, so this down payment can no longer be billed. Discard this draft.',
+    );
   });
 
   it('shows the refusal in plain words when issuing fails', async () => {

@@ -1,0 +1,69 @@
+<app-page-header title="Needs your action" />
+
+<div class="stack">
+  @if (error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="reload()"
+    />
+  }
+
+  @if (loading()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading what needs your action" />
+  } @else if (empty()) {
+    <app-empty-state
+      icon="check-circle"
+      title="Nothing needs your action right now."
+      message="This page lists what is waiting on you, such as approvals, overdue bills and deliveries still to come."
+    />
+  } @else {
+    @for (group of groups(); track group.key) {
+      <section class="card group" [attr.aria-labelledby]="'group-' + group.key">
+        <h2 class="group__heading" [id]="'group-' + group.key">
+          <span>{{ group.heading }}</span>
+          <span class="group__count">{{ group.count }}</span>
+        </h2>
+
+        <ul class="group__rows">
+          @for (row of group.rows; track row.key) {
+            <li class="item">
+              <div class="item__text">
+                <p class="item__label">{{ row.label }}</p>
+                @if (row.project) {
+                  <p class="text-small text-muted">{{ row.project }}</p>
+                }
+                <p class="text-small">{{ row.detail }}</p>
+              </div>
+              <div class="item__side">
+                @if (row.urgent; as chip) {
+                  <app-status-chip [label]="chip.label" [tone]="chip.tone" [icon]="chip.icon" />
+                }
+                @if (row.amount) {
+                  <span class="money item__amount">{{ row.amount }}</span>
+                }
+                <a
+                  appButton
+                  [variant]="row.primary ? 'primary' : 'secondary'"
+                  [routerLink]="row.link"
+                  [queryParams]="row.queryParams"
+                  [attr.aria-label]="row.openLabel"
+                  >Open</a
+                >
+              </div>
+            </li>
+          }
+        </ul>
+
+        @if (group.seeAll; as list) {
+          <p class="group__more">
+            <a [routerLink]="list.link" [queryParams]="list.queryParams">{{ list.label }}</a>
+          </p>
+        } @else if (group.totalNote) {
+          <p class="group__more text-small text-muted">{{ group.totalNote }}</p>
+        }
+      </section>
+    }
+  }
+</div>

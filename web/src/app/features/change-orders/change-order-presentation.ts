@@ -6,6 +6,7 @@ import {
   ChangeOrderLineKind,
   ChangeOrderReason,
   ChangeOrderStatus,
+  GovernmentLimit,
 } from './change-orders.models';
 
 export const REASON_LABELS: Record<ChangeOrderReason, string> = {
@@ -52,6 +53,16 @@ export function statusLook(
         ? { label: 'Voided', tone: 'warning', icon: 'restore' }
         : { label: 'Discarded', tone: 'neutral', icon: 'archive' };
   }
+}
+
+/**
+ * The one line a government project shows when added work passes the agency's limit, or null. The server decides whether it
+ * passes; approval is still allowed (the agency's approval is a person's act outside the system).
+ */
+export function governmentLimitNotice(limit: GovernmentLimit | null | undefined): string | null {
+  return limit?.applies && limit.exceeds
+    ? 'Added work on this government project passes 10% of the original contract price. Check that the agency has approved it.'
+    : null;
 }
 
 /** A signed change of money: "+₱1,000.00", "-₱560.00", or "No change". */

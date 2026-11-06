@@ -6,7 +6,7 @@ effort: high
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
-Act as a pragmatic Product Owner and Business Analyst for the CMS.
+Act as a pragmatic Product Owner and Business Analyst for ConstructOPX.
 
 Determine the required user or business outcome before discussing implementation.
 

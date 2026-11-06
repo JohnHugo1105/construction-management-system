@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  // The timeline appears when this view itself is wide enough, whatever the screen (a side rail can take a laptop's room).
+  container-type: inline-size;
+}
+
+// The sentences that explain the plan. A warning is also in the words ("behind"), never colour alone.
+.facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.facts__icon {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}
+
+.facts__icon--warning {
+  color: var(--color-warning);
+}
+
+.actions,
+.activity__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.actions {
+  margin-top: var(--space-4);
+}
+
+.activities {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity p {
+  margin: 0;
+}
+
+.activity__note {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.activity__late {
+  font-weight: 600;
+}
+
+// The timeline: a bar per activity on one date axis, filled to its percent complete, with today as a line. Phones get the plain
+// list above; the same dates and percent are written in words on every card, so the drawing is decoration (aria-hidden).
+.track {
+  display: none;
+  position: relative;
+  height: 22px;
+  margin-top: var(--space-1);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--color-surface-2);
+}
+
+@container (min-width: 40rem) {
+  .track {
+    display: block;
+  }
+}
+
+.track__bar {
+  position: absolute;
+  top: 3px;
+  height: 12px;
+  border: 1px solid var(--color-brand);
+  border-radius: 3px;
+  background: var(--color-surface);
+  overflow: clip;
+}
+
+.track__fill {
+  display: block;
+  height: 100%;
+  background: var(--color-brand);
+}
+
+.track__baseline {
+  position: absolute;
+  bottom: 2px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-text-muted);
+}
+
+.track__today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed var(--color-text);
+}

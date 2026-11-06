@@ -1,6 +1,6 @@
 # UI/UX Design Standards
 
-Default design guidance for every CMS user-facing change, adapted from the DriveOPX standards. `AGENTS.md` section 10
+Default design guidance for every ConstructOPX user-facing change, adapted from the DriveOPX standards. `AGENTS.md` section 10
 summarizes the must-haves; this reference holds the full checklist. Apply it when creating or changing Angular
 components, templates, styles, UI copy, forms or navigation. The `ui-presentation-audit` skill answers the five
 end-user presentation questions first. The `ui-ux-pro` skill runs that audit, then continues with accessibility,

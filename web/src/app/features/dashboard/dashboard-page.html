@@ -101,13 +101,21 @@
                     <a class="row-link" [routerLink]="item.link">{{ item.row.name }}</a>
                     <span class="cell-sub">{{ item.status }}</span>
                     <app-commitment-line [commitments]="item.row.commitments" />
+                    @if (item.forecastOver !== null) {
+                      <app-forecast-chip
+                        [projectId]="item.row.id"
+                        [overMinor]="item.forecastOver"
+                      />
+                    }
                   </th>
                   <td>
-                    <app-status-chip
-                      [label]="item.health.label"
-                      [tone]="item.health.tone"
-                      [icon]="item.health.icon"
-                    />
+                    <div class="flags">
+                      <app-status-chip
+                        [label]="item.health.label"
+                        [tone]="item.health.tone"
+                        [icon]="item.health.icon"
+                      />
+                    </div>
                   </td>
                   @if (item.idle) {
                     <td class="idle" colspan="4">Nothing budgeted or spent yet</td>
@@ -148,6 +156,9 @@
                   [icon]="item.health.icon"
                 />
               </div>
+              @if (item.forecastOver !== null) {
+                <app-forecast-chip [projectId]="item.row.id" [overMinor]="item.forecastOver" />
+              }
               <p class="text-muted text-small">{{ item.status }}</p>
               @if (item.idle) {
                 <p class="text-muted text-small">Nothing budgeted or spent yet.</p>

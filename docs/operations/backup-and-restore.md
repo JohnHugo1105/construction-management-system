@@ -6,8 +6,8 @@ when it has actually been restored. Do both on a schedule.
 ## Taking a backup
 
 ```bash
-export CMS_DB_PASSWORD='...'           # from the password manager; never typed into a command line
-scripts/backup-database.sh            # database Cms on localhost,1433 by default; see the script header for every setting
+export CONSTRUCTOPX_DB_PASSWORD='...'           # from the password manager; never typed into a command line
+scripts/backup-database.sh            # database ConstructOpx on localhost,1433 by default; see the script header for every setting
 ```
 
 What it does, each step checked:
@@ -17,12 +17,20 @@ What it does, each step checked:
 3. Writes `<file>.bak.sha256`, so any copy can later be proven identical.
 
 With the compose files the backup folder is `./backups` on the host (mounted into the SQL container at `/var/opt/mssql/backup`). Set
-`CMS_BACKUP_DIR=/var/opt/mssql/backup` (as SQL Server sees it) and `CMS_BACKUP_LOCAL_DIR=./backups` (as the script sees it).
+`CONSTRUCTOPX_BACKUP_DIR=/var/opt/mssql/backup` (as SQL Server sees it) and `CONSTRUCTOPX_BACKUP_LOCAL_DIR=./backups` (as the script sees it).
 The script needs `sqlcmd` (the `mssql-tools18` package, or run it inside the SQL container).
 
 The session keys (the `api-keys` volume, or wherever `DataProtection__KeysPath` points) are not in the database. Losing them only signs
 everyone out, so they need no special care beyond being kept private; back them up with the rest if you want sessions to survive a
 rebuilt server.
+
+**Document files.** Project documents uploaded as files are kept on disk, not in the database: the `api-files` volume, or wherever
+`FileStorage__RootPath` points. The database holds each file's name, size, SHA-256 and its place in the folder, so the two must be backed up
+**together**, on the same schedule, and restored together. Back up the files folder right after the database backup (for example
+`docker run --rm -v constructopx_api-files:/files:ro -v "$PWD/backups:/out" alpine tar czf /out/files-$(date -u +%Y%m%dT%H%M%SZ).tar.gz -C /files .`
+and a `sha256sum` of the archive). Files are only ever added, never changed, so a file backup taken a little after the database backup
+holds every file that backup refers to. A document whose file is missing after a restore downloads as "missing from file storage" and
+the rest of the system keeps working; restore the files archive to bring it back.
 
 **Schedule:** nightly. Copy each file and its `.sha256` to storage on **another machine** (object storage or a second server) with a
 credential that can write backups but cannot read or delete the live data. Keep 14 days at least, longer for month ends.
@@ -53,7 +61,7 @@ Alerts without a named owner do not count: write down who receives them.
 1. Stop the API (`docker compose stop api web`) so nothing writes.
 2. **Take a fresh backup of what is there now**, even if it is damaged: you may need it.
 3. Verify the SHA-256 of the backup you will use, then `RESTORE VERIFYONLY ... WITH CHECKSUM`.
-4. Restore into a **new database name** first (`Cms_Restored`), inspect it (`select count(*)` on `Projects`, `CostEntries`; the latest
+4. Restore into a **new database name** first (and the document files archive into a **new folder** next to the live one) (`ConstructOpx_Restored`), inspect it (`select count(*)` on `Projects`, `CostEntries`; the latest
    `__EFMigrationsHistory` row), and only then decide: either point the API at the new database (change the connection string) or,
    if you must replace the live one, rename the damaged database first (`ALTER DATABASE ... MODIFY NAME`) instead of overwriting it.
 5. Start the API and check `GET /health/ready` and `GET /health/version`.
@@ -64,6 +72,6 @@ read. The retired desktop app restored by running a whole file as SQL after drop
 
 ## What a backup does not contain
 
-The API keeps no state outside the database (sessions are cookies re-validated against the database), so the database is the only
-thing to back up, together with the secrets in the password manager. Recovery-time and recovery-point targets are not claimed until a
+The API keeps two kinds of state outside the database: the session keys (see above) and the **document files** folder
+(`FileStorage__RootPath`). Back up the database and the document files together, with the secrets in the password manager. Recovery-time and recovery-point targets are not claimed until a
 rehearsal on a replacement server has been done and timed.

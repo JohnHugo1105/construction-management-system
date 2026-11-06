@@ -1,7 +1,13 @@
+import { formatDate } from '../../shared/presentation/business-time';
 import { formatMoney } from '../../shared/presentation/money';
 import { IconName } from '../../shared/ui/icon/icon';
 import { ChipTone } from '../../shared/ui/status-chip/status-chip';
-import { OpenPurchaseOrderLine, PurchaseOrderStatus } from './purchasing.models';
+import {
+  DeliveryState,
+  OpenPurchaseOrderLine,
+  PurchaseOrderLine,
+  PurchaseOrderStatus,
+} from './purchasing.models';
 
 export interface StatusPresentation {
   readonly label: string;
@@ -79,6 +85,73 @@ export function invoicedSummary(
   return line.remainingGrossMinor === 0
     ? 'Fully invoiced'
     : `${formatMoney(line.remainingGrossMinor, currencyCode)} remaining`;
+}
+
+// ---- Deliveries ------------------------------------------------------------------------------------------------------------
+
+export interface DeliveryPresentation {
+  readonly label: string;
+  readonly tone: ChipTone;
+  readonly icon: IconName;
+}
+
+/** How an order's delivery state reads, in one place: the list, the project tab and the order page always agree. */
+export const DELIVERY_STATE: Record<DeliveryState, DeliveryPresentation> = {
+  NotReceived: { label: 'Nothing delivered yet', tone: 'neutral', icon: 'clock' },
+  PartlyReceived: { label: 'Partly delivered', tone: 'info', icon: 'clock' },
+  FullyReceived: { label: 'Delivered in full', tone: 'success', icon: 'check-circle' },
+};
+
+/** The word for a delivery state this client does not know, so a new one never breaks a page. */
+export function presentDelivery(state: string): DeliveryPresentation {
+  return Object.hasOwn(DELIVERY_STATE, state)
+    ? DELIVERY_STATE[state as DeliveryState]
+    : { label: state, tone: 'neutral', icon: 'info' };
+}
+
+/**
+ * The delivery chip an orders list shows, or null when none applies. Only an approved order has one, and only once something has
+ * arrived or the order says when it is expected: a draft, a closed order or an order nobody is waiting on shows nothing.
+ */
+export function listDeliveryChip(order: {
+  status: PurchaseOrderStatus;
+  deliveryState: DeliveryState | null;
+  expectedDate: string | null;
+}): DeliveryPresentation | null {
+  if (order.status !== 'Approved' || order.deliveryState === null) return null;
+  if (order.deliveryState !== 'NotReceived') return presentDelivery(order.deliveryState);
+  return order.expectedDate
+    ? { label: `Expected ${formatDate(order.expectedDate)}`, tone: 'neutral', icon: 'clock' }
+    : null;
+}
+
+/** A quantity as a person says it: no trailing zeros, at most four decimals ("2.5", "10"). */
+export function formatQuantity(quantity: number): string {
+  return quantity.toLocaleString('en-US', { maximumFractionDigits: 4 });
+}
+
+/** "Ordered 10 pc · Received 4 pc · Invoiced ₱2,000.00": the three honest numbers of one line. */
+export function lineFlow(
+  line: Pick<PurchaseOrderLine, 'quantity' | 'unit' | 'receivedQuantity' | 'invoicedGrossMinor'>,
+  currencyCode: string,
+): string {
+  return [
+    `Ordered ${formatQuantity(line.quantity)} ${line.unit}`,
+    `Received ${formatQuantity(line.receivedQuantity)} ${line.unit}`,
+    `Invoiced ${formatMoney(line.invoicedGrossMinor, currencyCode)}`,
+  ].join(' · ');
+}
+
+/** The advisory on a line invoiced for more than what has arrived is worth, or null when it does not apply. */
+export function aheadOfDeliveryNote(
+  line: Pick<
+    PurchaseOrderLine,
+    'invoicedAheadOfDelivery' | 'invoicedGrossMinor' | 'receivedValueGrossMinor'
+  >,
+  currencyCode: string,
+): string | null {
+  if (!line.invoicedAheadOfDelivery) return null;
+  return `Invoiced ahead of delivery: ${formatMoney(line.invoicedGrossMinor, currencyCode)} invoiced, ${formatMoney(line.receivedValueGrossMinor, currencyCode)} delivered so far. The invoice stands.`;
 }
 
 /** The firm's kind in words: "Supplier", "Subcontractor" or "Supplier and subcontractor". */

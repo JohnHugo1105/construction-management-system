@@ -69,6 +69,18 @@ describe('scheduleSentence', () => {
   it('says nothing without a schedule to measure against', () => {
     expect(scheduleSentence(null)).toBeNull();
   });
+
+  it('says the plan is the schedule when the planned value follows the project schedule', () => {
+    expect(scheduleSentence(7900, 'Schedule')?.text).toBe(
+      'Behind schedule: the work done is 79% of what the schedule planned by today.',
+    );
+    expect(scheduleSentence(10000, 'Schedule')?.text).toBe(
+      'On schedule: the work done matches what the schedule planned for today.',
+    );
+    expect(scheduleSentence(13333, 'ProjectDates')?.text).toBe(
+      'Ahead of schedule: the work done is 133% of what was planned by today.',
+    );
+  });
 });
 
 describe('forecastSentence', () => {

@@ -17,7 +17,7 @@ import { ProjectContext } from '../../projects/project-context';
 import { CostingApi } from '../costing-api';
 import { costSummaryExportUrl, budgetLinesExportUrl } from '../costing-exports';
 import { CostingReferenceState } from '../costing-reference';
-import { BudgetLine } from '../costing.models';
+import { BudgetLine, isForecastOver } from '../costing.models';
 import { describeBasis } from '../figures';
 import { CostPosition } from '../ui/cost-position';
 import { FilterToggle } from '../ui/filter-toggle';
@@ -100,6 +100,20 @@ export class ProjectBudgetTab {
   protected readonly hasPosition = computed(() => {
     const summary = this.state.summary();
     return summary !== undefined && summary.position.health !== 'NoActivity';
+  });
+
+  /**
+   * Where the work done says the project will finish, when that is over the budget: the Progress tab's own figure, which the server sends
+   * on the summary. Nothing otherwise, so a project that is not forecast over carries no extra line.
+   */
+  protected readonly forecast = computed(() => {
+    const forecast = this.state.summary()?.progressForecast;
+    if (!forecast || !isForecastOver(forecast)) return null;
+    const currency = this.session.currencyCode();
+    return {
+      estimate: formatMoney(forecast.estimateAtCompletionMinor, currency),
+      over: formatMoney(forecast.overBudgetMinor, currency),
+    };
   });
 
   /** The margins, worked out by the server, when the project has a contract price. */

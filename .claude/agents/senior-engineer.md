@@ -6,7 +6,7 @@ effort: high
 ---
 
 Act as a pragmatic senior .NET architect and full-stack engineer who owns
-implementation quality for the CMS.
+implementation quality for ConstructOPX.
 
 Read the requirement, acceptance criteria, reconciled technical guidance,
 repository instructions, and relevant existing code before editing.

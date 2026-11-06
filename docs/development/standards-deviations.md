@@ -8,7 +8,7 @@ Drive handbooks. This page records what was carried over, what was adapted, and 
 
 | Standard | Where it lives here |
 | --- | --- |
-| Monolith-first Clean Architecture: Domain, Application, Infrastructure, Api, with feature folders inside each layer; dependencies point inward | `AGENTS.md` sections 5 and 12, `tests/Cms.ArchitectureTests` |
+| Monolith-first Clean Architecture: Domain, Application, Infrastructure, Api, with feature folders inside each layer; dependencies point inward | `AGENTS.md` sections 5 and 12, `tests/ConstructOPX.ArchitectureTests` |
 | Stack: Angular 22, ASP.NET Core 10 Minimal APIs, EF Core 10, SQL Server 2022 | `README.md`, `global.json`, `Directory.Build.props` |
 | OOP, SOLID, DRY, KISS, YAGNI, DDD vocabulary; Decision Priorities; first-principles reasoning; independent judgment | `AGENTS.md` |
 | Small / Normal / Complex tiers, delivery evidence, independent final review for Complex work | `AGENTS.md` section 15 |
@@ -19,7 +19,7 @@ Drive handbooks. This page records what was carried over, what was adapted, and 
 | Minimal APIs with endpoint groups, anti-forgery on writes, central problem-details mapping, `private, no-store` | `AGENTS.md` section 11 |
 | Money as minor units, void instead of delete, `ClientRequestId` idempotency, UTC `DateTimeOffset`, tenant filtering everywhere | `AGENTS.md` sections 6, 7, 9 |
 | PBKDF2 password hashing, cookie sessions, rate-limited sign-in | `AGENTS.md` section 9 |
-| NuGet lock files (`RestorePackagesWithLockFile`), architecture tests that locate the repo root through `AGENTS.md` | `Directory.Build.props`, `tests/Cms.ArchitectureTests` |
+| NuGet lock files (`RestorePackagesWithLockFile`), architecture tests that locate the repo root through `AGENTS.md` | `Directory.Build.props`, `tests/ConstructOPX.ArchitectureTests` |
 | Claude subagent roles and the "Opus decides, Sonnet builds, Haiku extracts" routing | `.claude/agents/`, `CLAUDE.md` |
 | `ui-presentation-audit` and `ui-ux-pro` skills | `.claude/skills/` |
 
@@ -28,7 +28,6 @@ Drive handbooks. This page records what was carried over, what was adapted, and 
 | DriveOPX | Here | Why |
 | --- | --- | --- |
 | Product personas: Renter, Host, Partner, Platform | Administrator, Project Manager, Cost Engineer, Site Engineer, HR Officer, Warehouse Keeper, Accountant | Different product |
-| `DriveOPX.*` namespaces and `DriveOPX.sln` | `Cms.*` namespaces and `ConstructionManagementSystem.sln` | The legacy projects were already `Cms*` |
 | CRLF line endings | LF everywhere (`.editorconfig`, `.gitattributes`); `.cmd` and `.bat` stay CRLF | DriveOPX is developed only on Windows. This repository is built on Windows and Linux (CI, cloud sessions), and mixed endings create churn |
 | `global.json` pins SDK 10.0.302 | Pins 10.0.403 | The version verified to build this repository |
 | Lock files enforced locally | `RestoreLockedMode` and `TreatWarningsAsErrors` only when `CI=true` | Keeps the inner loop fast while CI stays strict |
@@ -40,7 +39,7 @@ Drive handbooks. This page records what was carried over, what was adapted, and 
 
 | DriveOPX item | Reason |
 | --- | --- |
-| **Pre-beta credential posture** (agents may read, print, pass and commit credentials to the repository) | It is a decision by DriveOPX's owner for a private, pre-launch repository. It is unsafe as a default here: the retired desktop application committed a signing key (`CmsUI/*TemporaryKey.pfx`), a database file and commented-out connection strings with credentials. They left the tree when the app was deleted, but remain in git history `AGENTS.md` section 9 forbids committing credentials instead |
+| **Pre-beta credential posture** (agents may read, print, pass and commit credentials to the repository) | It is a decision by DriveOPX's owner for a private, pre-launch repository. It is unsafe as a default here: the retired desktop application committed a signing key (`ConstructOpxUI/*TemporaryKey.pfx`), a database file and commented-out connection strings with credentials. They left the tree when the app was deleted, but remain in git history `AGENTS.md` section 9 forbids committing credentials instead |
 | Pre-beta renter history sharing | DriveOPX product decision, unrelated |
 | DevFlow MCP checkpoints, Azure DevOps and Azure Boards workflow, `.mcp.json` | Tooling specific to the DriveOPX owner's accounts |
 | Codex, Cursor, ZCode directories and model tables | Claude Code is the tool in use here; `AGENTS.md` stays tool-neutral |
@@ -64,13 +63,13 @@ same folder also holds credential and identity-document files; those were delibe
 
 | Practice | Where it lands here |
 | --- | --- |
-| `/health/live` (process only), `/health/ready` (database reachable and migrations current), `/health/version` (service, version, commit SHA, build time, environment) | `Cms.Api` health endpoints, `docs/operations/readiness-and-observability.md` |
+| `/health/live` (process only), `/health/ready` (database reachable and migrations current), `/health/version` (service, version, commit SHA, build time, environment) | `ConstructOPX.Api` health endpoints, `docs/operations/readiness-and-observability.md` |
 | Errors return problem details with a trace id and never expose SQL, EF or stack text | `ApiExceptionHandler` |
 | Immutable images tagged with the commit SHA; deploy by exact SHA; roll back to the previous image only when post-deploy health fails; an application rollback does not reverse a migration | `docs/operations/deployment.md`, `deploy/` |
 | Migrations are additive first; keep the idempotent SQL script and run the "no pending model changes" check before applying | `docs/operations/database-and-migrations.md`, `.github/workflows/ci.yml` |
 | Backups are `COPY_ONLY` with checksum and `RESTORE VERIFYONLY`; a backup is not a recovery point without a checksum, and not restore evidence without a test restore; alert when none exists for 26 hours; never restore over the live database to diagnose | `docs/operations/backup-and-restore.md`, `scripts/backup-database.sh` |
 | Secrets live only in a password manager, protected CI secrets or root-only server files; prove existence without printing; keep separate application and admin database credentials | `docs/operations/secrets-and-access.md` |
-| Tenant scope on every operation including background work; append-only audit trail; XSRF on writes; rate limiting on sign-in | `AGENTS.md` section 9, `Cms.Domain.Features.Audit` |
+| Tenant scope on every operation including background work; append-only audit trail; XSRF on writes; rate limiting on sign-in | `AGENTS.md` section 9, `ConstructOPX.Domain.Features.Audit` |
 | Honest evidence vocabulary: never mark PASS from local evidence alone; a dependency that is not configured is BLOCKED, not a pass | `AGENTS.md` Delivery Evidence |
 | UI findings that generalize: one scroller per dialog with focus restore, 44 px targets, no page-level horizontal overflow, disable an action only with a stated reason | `.agents/references/ui-ux-design-standards.md` |
 

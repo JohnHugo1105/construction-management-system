@@ -29,6 +29,27 @@
   }
 }
 
+// The forecast sits under the committed line: a warning icon and one plain sentence, with the way to the Progress tab.
+.forecast-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+.forecast-line__icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-warning);
+}
+
 .margins__negative {
   color: var(--color-danger);
 }

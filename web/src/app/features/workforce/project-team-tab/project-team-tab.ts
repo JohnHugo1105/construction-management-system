@@ -24,8 +24,9 @@ import { Skeleton } from '../../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../../shared/ui/status-chip/status-chip';
 import { Viewport } from '../../../shared/ui/viewport/viewport';
 import { ProjectContext } from '../../projects/project-context';
+import { TeamTimeClockNotice } from '../../timeclock/team-time-clock-notice';
 import { AttendanceSheetState } from '../attendance-sheet-state';
-import { hoursWords } from '../attendance-sheet';
+import { dayTypeChip, holidayLine, hoursWords } from '../attendance-sheet';
 import { HoursField } from '../hours-field';
 import { VoidAttendanceDialog } from '../void-attendance-dialog';
 import { AttendanceEntry } from '../workforce.models';
@@ -50,6 +51,7 @@ import { AttendanceEntry } from '../workforce.models';
     Skeleton,
     StatusChip,
     VoidAttendanceDialog,
+    TeamTimeClockNotice,
   ],
   providers: [AttendanceSheetState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -89,11 +91,19 @@ export class ProjectTeamTab {
   protected readonly entries = computed(() =>
     (this.state.sheet()?.entries ?? []).map((entry) => ({
       entry,
-      hours: hoursWords(entry.regularHours, entry.overtimeHours),
+      hours: hoursWords(entry.regularHours, entry.overtimeHours, entry.nightHours),
       place: entry.subProjectName,
       editable: this.canRecord() && !entry.isLocked,
+      // A rest day or holiday for this worker, as the server decided it; nothing on an ordinary day.
+      day: dayTypeChip(entry.dayType),
     })),
   );
+
+  /** The company holiday on the day, in one chip; nothing on an ordinary day. */
+  protected readonly holiday = computed(() => {
+    const sheet = this.state.sheet();
+    return sheet ? holidayLine(sheet) : null;
+  });
   protected readonly anyLocked = computed(() => this.entries().some((item) => item.entry.isLocked));
 
   protected readonly crewLabel = computed(() => {

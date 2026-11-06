@@ -21,6 +21,7 @@ import { Skeleton } from '../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../shared/ui/status-chip/status-chip';
 import { ChangeStatusDialog } from './change-status-dialog';
 import { ReinstateDialog } from './reinstate-dialog';
+import { WorkerBadgePanel } from '../timeclock/worker-badge-panel';
 import { WorkerAttendancePanel } from './worker-attendance-panel';
 import { WorkerCasesPanel } from './worker-cases-panel';
 import { WorkerDetailState } from './worker-detail-state';
@@ -50,6 +51,7 @@ import { WorkerDetail } from './workforce.models';
     WorkerPayPanel,
     WorkerAttendancePanel,
     WorkerCasesPanel,
+    WorkerBadgePanel,
   ],
   providers: [WorkerDetailState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -121,6 +123,8 @@ export class WorkerDetailPage {
   ): readonly { readonly label: string; readonly value: string }[] {
     const rows: { label: string; value: string | null }[] = [
       { label: 'Hired', value: formatDate(worker.dateHired) },
+      // Shown only when one is set: "no fixed rest day" is the default and needs no line.
+      { label: 'Rest day', value: worker.restDay ?? null },
       { label: 'Contact number', value: worker.contactNumber },
       { label: 'Date of birth', value: worker.dateOfBirth ? formatDate(worker.dateOfBirth) : null },
       { label: 'Marital status', value: worker.maritalStatus },

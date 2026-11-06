@@ -1,243 +1,256 @@
 <div class="stack stack--loose">
-  @if (state.error(); as problem) {
-    <app-api-error-alert
-      [error]="problem"
-      [allowRetry]="true"
-      reloadLabel="Try again"
-      (reload)="state.reload()"
+  @if (canSchedule()) {
+    <app-segmented-control
+      label="What to show"
+      [options]="viewOptions()"
+      [value]="view()"
+      (selected)="show($event)"
     />
   }
 
-  @if (state.loadingFirst()) {
-    <app-skeleton variant="card" [lines]="3" label="Loading progress" />
-  } @else if (state.report(); as report) {
-    @if (noLines()) {
-      <app-empty-state
-        icon="construction"
-        title="No budget lines yet"
-        message="Progress is recorded against budget lines. Add the project's budget first, then come back to record how far along each part is."
+  @if (view() === 'schedule') {
+    <app-schedule-view />
+  } @else {
+    @if (state.error(); as problem) {
+      <app-api-error-alert
+        [error]="problem"
+        [allowRetry]="true"
+        reloadLabel="Try again"
+        (reload)="state.reload()"
       />
-    } @else {
-      @if (report.hasProgress && summary(); as figures) {
-        <section class="card" aria-labelledby="progress-heading">
-          <div class="panel-head">
-            <h2 id="progress-heading" class="card__title">How far along the project is</h2>
-            <p class="text-muted text-small">{{ updatedLine() }} · {{ basisLine() }}</p>
-          </div>
+    }
 
-          @if (figures.headline) {
-            <p class="headline">{{ figures.headline }}</p>
-            <div class="bar" aria-hidden="true">
-              <span class="bar__fill" [style.width.%]="figures.barPercent"></span>
-            </div>
-          }
-
-          <ul class="facts">
-            <li class="facts__item">
-              <app-icon [class]="'facts__icon facts__icon--' + figures.spent.tone" [name]="toneIcon(figures.spent.tone)" [size]="18" />
-              <span>{{ figures.spent.text }}</span>
-            </li>
-            <li class="facts__item">
-              <app-icon [class]="'facts__icon facts__icon--' + figures.forecast.tone" [name]="toneIcon(figures.forecast.tone)" [size]="18" />
-              <span>{{ figures.forecast.text }}</span>
-            </li>
-            @if (figures.margin; as margin) {
-              <li class="facts__item">
-                <app-icon
-                  [class]="'facts__icon facts__icon--' + (margin.negative ? 'warning' : 'good')"
-                  [name]="margin.negative ? 'warning' : 'check-circle'"
-                  [size]="18"
-                />
-                <span>
-                  Forecast margin on the contract price:
-                  <strong class="money">{{ margin.text }}</strong>
-                </span>
-              </li>
-            }
-            @for (sentence of figures.extras; track sentence.text) {
-              <li class="facts__item">
-                <app-icon [class]="'facts__icon facts__icon--' + sentence.tone" [name]="toneIcon(sentence.tone)" [size]="18" />
-                <span>{{ sentence.text }}</span>
-              </li>
-            }
-          </ul>
-        </section>
-      } @else {
+    @if (state.loadingFirst()) {
+      <app-skeleton variant="card" [lines]="3" label="Loading progress" />
+    } @else if (state.report(); as report) {
+      @if (noLines()) {
         <app-empty-state
           icon="construction"
-          title="Record progress to see how far along the project is"
-          [message]="
-            canWrite()
-              ? 'Set how much of each line is done below, then save. The summary of work done against money spent appears here.'
-              : 'No progress has been recorded yet. A project manager or cost engineer can record it.'
-          "
-        >
-          @if (archivedNote()) {
-            <p class="text-muted">This project is archived, so progress can't be recorded.</p>
-          }
-        </app-empty-state>
-      }
+          title="No budget lines yet"
+          message="Progress is recorded against budget lines. Add the project's budget first, then come back to record how far along each part is."
+        />
+      } @else {
+        @if (report.hasProgress && summary(); as figures) {
+          <section class="card" aria-labelledby="progress-heading">
+            <div class="panel-head">
+              <h2 id="progress-heading" class="card__title">How far along the project is</h2>
+              <p class="text-muted text-small">{{ updatedLine() }} · {{ basisLine() }}</p>
+            </div>
 
-      <section class="stack" aria-labelledby="lines-heading">
-        <div class="panel-head">
-          <h2 id="lines-heading" class="card__title">
-            {{ canWrite() ? 'Update progress by line' : 'Progress by line' }}
-          </h2>
-          @if (archivedNote() && report.hasProgress) {
-            <p class="text-muted text-small">Archived: progress can't be changed.</p>
-          }
-        </div>
-
-        @for (item of divisions(); track item.key) {
-          <section class="division" [attr.aria-label]="item.division.name">
-            <h3 class="division__title">
-              <button
-                class="division__head"
-                type="button"
-                [attr.aria-expanded]="item.open"
-                [attr.aria-controls]="'lines-' + item.key"
-                (click)="toggle(item.key, item.open)"
-              >
-                <app-icon
-                  class="division__chevron"
-                  [class.division__chevron--open]="item.open"
-                  name="chevron-down"
-                  [size]="20"
-                />
-                <span class="division__name">{{ item.division.name }}</span>
-                <span class="division__figure">{{ whole(item.division.percentBps) }}</span>
-                <span class="division__sub text-muted text-small">
-                  {{ money(item.division.earnedMinor) }} worth of {{ money(item.division.budgetMinor) }}
-                  · {{ item.division.lines.length }}
-                  {{ item.division.lines.length === 1 ? 'line' : 'lines' }}
-                </span>
-              </button>
-            </h3>
-
-            @if (item.open) {
-              <ul class="lines" [id]="'lines-' + item.key">
-                @for (line of item.shown; track line.budgetLineId) {
-                  <li class="line" [class.line--edited]="edited(line)">
-                    <div class="line__top">
-                      <div class="line__text">
-                        <p class="line__name">{{ line.description }}</p>
-                        <p class="line__meta text-muted text-small">
-                          @if (line.wbsCode) {
-                            {{ line.wbsCode }} ·
-                          }
-                          {{ money(line.budgetMinor) }} budget ·
-                          {{ line.lastUpdatedOn ? 'Updated ' + date(line.lastUpdatedOn) : 'Not updated yet' }}
-                        </p>
-                      </div>
-                      <button
-                        appButton
-                        variant="ghost"
-                        type="button"
-                        [attr.aria-label]="'History of ' + line.description"
-                        (click)="historyOf.set({ id: line.budgetLineId, description: line.description })"
-                      >
-                        <app-icon name="clock" [size]="18" />
-                        History
-                      </button>
-                    </div>
-
-                    @if (canWrite()) {
-                      <div class="line__edit">
-                        <button
-                          appButton
-                          type="button"
-                          [icon]="true"
-                          [attr.aria-label]="'Lower ' + line.description + ' by 5%'"
-                          (click)="state.step(line, -1)"
-                        >
-                          −
-                        </button>
-                        <app-form-field
-                          class="line__field"
-                          [label]="'Percent complete, ' + line.description"
-                          [error]="percentProblem(line)"
-                        >
-                          <div class="input-group">
-                            <input
-                              appControl
-                              type="text"
-                              inputmode="decimal"
-                              autocomplete="off"
-                              [value]="text(line)"
-                              (input)="typed(line, $event)"
-                            />
-                            <span class="input-group__affix input-group__affix--end" aria-hidden="true">%</span>
-                          </div>
-                        </app-form-field>
-                        <button
-                          appButton
-                          type="button"
-                          [icon]="true"
-                          [attr.aria-label]="'Raise ' + line.description + ' by 5%'"
-                          (click)="state.step(line, 1)"
-                        >
-                          +
-                        </button>
-                      </div>
-                      @if (lowering(line) || noteProblem(line)) {
-                        <app-form-field
-                          label="Why did it go down?"
-                          hint="For example, rework after an inspection."
-                          [error]="noteProblem(line)"
-                        >
-                          <textarea
-                            appControl
-                            rows="2"
-                            maxlength="300"
-                            [value]="noteOf(line)"
-                            (input)="noted(line, $event)"
-                          ></textarea>
-                        </app-form-field>
-                      }
-                    } @else {
-                      <p class="line__read">
-                        <strong>{{ percent(line.percentBps) }}</strong>
-                        complete
-                      </p>
-                    }
-                  </li>
-                }
-              </ul>
-              @if (item.hidden > 0) {
-                <button appButton type="button" class="division__more" (click)="showMore(item.key, item.shown.length)">
-                  Show more lines ({{ item.hidden }} left)
-                </button>
-              }
+            @if (figures.headline) {
+              <p class="headline">{{ figures.headline }}</p>
+              <div class="bar" aria-hidden="true">
+                <span class="bar__fill" [style.width.%]="figures.barPercent"></span>
+              </div>
             }
+
+            <ul class="facts">
+              <li class="facts__item">
+                <app-icon [class]="'facts__icon facts__icon--' + figures.spent.tone" [name]="toneIcon(figures.spent.tone)" [size]="18" />
+                <span>{{ figures.spent.text }}</span>
+              </li>
+              <li class="facts__item">
+                <app-icon [class]="'facts__icon facts__icon--' + figures.forecast.tone" [name]="toneIcon(figures.forecast.tone)" [size]="18" />
+                <span>{{ figures.forecast.text }}</span>
+              </li>
+              @if (figures.margin; as margin) {
+                <li class="facts__item">
+                  <app-icon
+                    [class]="'facts__icon facts__icon--' + (margin.negative ? 'warning' : 'good')"
+                    [name]="margin.negative ? 'warning' : 'check-circle'"
+                    [size]="18"
+                  />
+                  <span>
+                    Forecast margin on the contract price:
+                    <strong class="money">{{ margin.text }}</strong>
+                  </span>
+                </li>
+              }
+              @for (sentence of figures.extras; track sentence.text) {
+                <li class="facts__item">
+                  <app-icon [class]="'facts__icon facts__icon--' + sentence.tone" [name]="toneIcon(sentence.tone)" [size]="18" />
+                  <span>{{ sentence.text }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        } @else {
+          <app-empty-state
+            icon="construction"
+            title="Record progress to see how far along the project is"
+            [message]="
+              canWrite()
+                ? 'Set how much of each line is done below, then save. The summary of work done against money spent appears here.'
+                : 'No progress has been recorded yet. A project manager or cost engineer can record it.'
+            "
+          >
+            @if (archivedNote()) {
+              <p class="text-muted">This project is archived, so progress can't be recorded.</p>
+            }
+          </app-empty-state>
+        }
+
+        <section class="stack" aria-labelledby="lines-heading">
+          <div class="panel-head">
+            <h2 id="lines-heading" class="card__title">
+              {{ canWrite() ? 'Update progress by line' : 'Progress by line' }}
+            </h2>
+            @if (archivedNote() && report.hasProgress) {
+              <p class="text-muted text-small">Archived: progress can't be changed.</p>
+            }
+          </div>
+
+          @for (item of divisions(); track item.key) {
+            <section class="division" [attr.aria-label]="item.division.name">
+              <h3 class="division__title">
+                <button
+                  class="division__head"
+                  type="button"
+                  [attr.aria-expanded]="item.open"
+                  [attr.aria-controls]="'lines-' + item.key"
+                  (click)="toggle(item.key, item.open)"
+                >
+                  <app-icon
+                    class="division__chevron"
+                    [class.division__chevron--open]="item.open"
+                    name="chevron-down"
+                    [size]="20"
+                  />
+                  <span class="division__name">{{ item.division.name }}</span>
+                  <span class="division__figure">{{ whole(item.division.percentBps) }}</span>
+                  <span class="division__sub text-muted text-small">
+                    {{ money(item.division.earnedMinor) }} worth of {{ money(item.division.budgetMinor) }}
+                    · {{ item.division.lines.length }}
+                    {{ item.division.lines.length === 1 ? 'line' : 'lines' }}
+                  </span>
+                </button>
+              </h3>
+
+              @if (item.open) {
+                <ul class="lines" [id]="'lines-' + item.key">
+                  @for (line of item.shown; track line.budgetLineId) {
+                    <li class="line" [class.line--edited]="edited(line)">
+                      <div class="line__top">
+                        <div class="line__text">
+                          <p class="line__name">{{ line.description }}</p>
+                          <p class="line__meta text-muted text-small">
+                            @if (line.wbsCode) {
+                              {{ line.wbsCode }} ·
+                            }
+                            {{ money(line.budgetMinor) }} budget ·
+                            {{ line.lastUpdatedOn ? 'Updated ' + date(line.lastUpdatedOn) : 'Not updated yet' }}
+                          </p>
+                        </div>
+                        <button
+                          appButton
+                          variant="ghost"
+                          type="button"
+                          [attr.aria-label]="'History of ' + line.description"
+                          (click)="historyOf.set({ id: line.budgetLineId, description: line.description })"
+                        >
+                          <app-icon name="clock" [size]="18" />
+                          History
+                        </button>
+                      </div>
+
+                      @if (canWrite()) {
+                        <div class="line__edit">
+                          <button
+                            appButton
+                            type="button"
+                            [icon]="true"
+                            [attr.aria-label]="'Lower ' + line.description + ' by 5%'"
+                            (click)="state.step(line, -1)"
+                          >
+                            −
+                          </button>
+                          <app-form-field
+                            class="line__field"
+                            [label]="'Percent complete, ' + line.description"
+                            [error]="percentProblem(line)"
+                          >
+                            <div class="input-group">
+                              <input
+                                appControl
+                                type="text"
+                                inputmode="decimal"
+                                autocomplete="off"
+                                [value]="text(line)"
+                                (input)="typed(line, $event)"
+                              />
+                              <span class="input-group__affix input-group__affix--end" aria-hidden="true">%</span>
+                            </div>
+                          </app-form-field>
+                          <button
+                            appButton
+                            type="button"
+                            [icon]="true"
+                            [attr.aria-label]="'Raise ' + line.description + ' by 5%'"
+                            (click)="state.step(line, 1)"
+                          >
+                            +
+                          </button>
+                        </div>
+                        @if (lowering(line) || noteProblem(line)) {
+                          <app-form-field
+                            label="Why did it go down?"
+                            hint="For example, rework after an inspection."
+                            [error]="noteProblem(line)"
+                          >
+                            <textarea
+                              appControl
+                              rows="2"
+                              maxlength="300"
+                              [value]="noteOf(line)"
+                              (input)="noted(line, $event)"
+                            ></textarea>
+                          </app-form-field>
+                        }
+                      } @else {
+                        <p class="line__read">
+                          <strong>{{ percent(line.percentBps) }}</strong>
+                          complete
+                        </p>
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (item.hidden > 0) {
+                  <button appButton type="button" class="division__more" (click)="showMore(item.key, item.shown.length)">
+                    Show more lines ({{ item.hidden }} left)
+                  </button>
+                }
+              }
+            </section>
+          }
+        </section>
+
+        @if (canWrite() && state.changedCount() > 0) {
+          <section class="card savebar" aria-label="Save progress">
+            <p class="savebar__count" role="status">{{ countLabel() }}</p>
+            @if (state.saveError(); as problem) {
+              <app-api-error-alert [error]="problem" reloadLabel="Reload progress" (reload)="state.reload()" />
+            }
+            @for (message of state.formProblems(); track message) {
+              <p class="savebar__problem" role="alert">{{ message }}</p>
+            }
+            <app-form-field label="Progress as of">
+              <input
+                appControl
+                type="date"
+                [value]="state.asOfDate()"
+                [max]="state.today()"
+                (input)="dated($event)"
+              />
+            </app-form-field>
+            <div class="savebar__actions">
+              <button appButton variant="ghost" type="button" (click)="state.discardAll()">Discard changes</button>
+              <button appButton variant="primary" type="button" [busy]="state.saving()" (click)="save()">
+                Save progress
+              </button>
+            </div>
           </section>
         }
-      </section>
-
-      @if (canWrite() && state.changedCount() > 0) {
-        <section class="card savebar" aria-label="Save progress">
-          <p class="savebar__count" role="status">{{ countLabel() }}</p>
-          @if (state.saveError(); as problem) {
-            <app-api-error-alert [error]="problem" reloadLabel="Reload progress" (reload)="state.reload()" />
-          }
-          @for (message of state.formProblems(); track message) {
-            <p class="savebar__problem" role="alert">{{ message }}</p>
-          }
-          <app-form-field label="Progress as of">
-            <input
-              appControl
-              type="date"
-              [value]="state.asOfDate()"
-              [max]="state.today()"
-              (input)="dated($event)"
-            />
-          </app-form-field>
-          <div class="savebar__actions">
-            <button appButton variant="ghost" type="button" (click)="state.discardAll()">Discard changes</button>
-            <button appButton variant="primary" type="button" [busy]="state.saving()" (click)="save()">
-              Save progress
-            </button>
-          </div>
-        </section>
       }
     }
   }

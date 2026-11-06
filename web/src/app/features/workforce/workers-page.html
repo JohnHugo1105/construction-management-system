@@ -1,4 +1,10 @@
-<app-page-header title="Workers" />
+<app-page-header title="Workers">
+  @if (canReviewTimeClock()) {
+    <a appButton routerLink="/time-clock">Time clock scans</a>
+  } @else if (canIssueBadges()) {
+    <a appButton routerLink="/time-clock/badges">Badges</a>
+  }
+</app-page-header>
 
 <div class="stack">
   @if (!nothingYet()) {

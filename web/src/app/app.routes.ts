@@ -29,6 +29,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/setup-page').then((m) => m.SetupPage),
   },
   {
+    // The time clock kiosk at the site gate: no signed-in person and no menu. It proves itself with the device key kept on the tablet.
+    path: 'kiosk',
+    title: 'Time clock',
+    loadComponent: () => import('./features/timeclock/kiosk-page').then((m) => m.KioskPage),
+  },
+  {
     path: '',
     component: Shell,
     canActivate: [authGuard],
@@ -47,6 +53,12 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
       {
+        path: 'needs-action',
+        canActivate: [permissionGuard(Permission.actionsRead)],
+        loadChildren: () =>
+          import('./features/needs-action/needs-action.routes').then((m) => m.NEEDS_ACTION_ROUTES),
+      },
+      {
         path: 'projects',
         canActivate: [permissionGuard(Permission.projectsRead)],
         loadChildren: () =>
@@ -59,6 +71,12 @@ export const routes: Routes = [
           import('./features/workforce/workforce.routes').then((m) => m.WORKFORCE_ROUTES),
       },
       {
+        path: 'time-clock',
+        canActivate: [permissionGuard(Permission.timeClockReview, Permission.timeClockManage)],
+        loadChildren: () =>
+          import('./features/timeclock/timeclock.routes').then((m) => m.TIME_CLOCK_ROUTES),
+      },
+      {
         path: 'payroll',
         canActivate: [permissionGuard(Permission.payrollRead)],
         loadChildren: () =>
@@ -69,6 +87,12 @@ export const routes: Routes = [
         canActivate: [permissionGuard(Permission.inventoryRead)],
         loadChildren: () =>
           import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
+      },
+      {
+        path: 'receiving',
+        canActivate: [permissionGuard(Permission.receivingRecord)],
+        loadChildren: () =>
+          import('./features/receiving/receiving.routes').then((m) => m.RECEIVING_ROUTES),
       },
       {
         path: 'purchasing',
@@ -87,6 +111,25 @@ export const routes: Routes = [
         canActivate: [permissionGuard(Permission.billingRead)],
         loadChildren: () =>
           import('./features/billing/billing.routes').then((m) => m.BILLING_ROUTES),
+      },
+      {
+        path: 'tasks',
+        canActivate: [permissionGuard(Permission.tasksUse)],
+        loadChildren: () =>
+          import('./features/collaboration/tasks.routes').then((m) => m.TASK_ROUTES),
+      },
+      {
+        path: 'notifications',
+        canActivate: [permissionGuard(Permission.notificationsRead)],
+        loadChildren: () =>
+          import('./features/collaboration/notifications.routes').then(
+            (m) => m.NOTIFICATION_ROUTES,
+          ),
+      },
+      {
+        path: 'bonds',
+        canActivate: [permissionGuard(Permission.bondsRead)],
+        loadChildren: () => import('./features/bonds/bonds.routes').then((m) => m.BONDS_ROUTES),
       },
       {
         path: 'admin',

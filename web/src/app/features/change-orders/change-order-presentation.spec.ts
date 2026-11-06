@@ -2,10 +2,11 @@ import {
   allowedActions,
   baselineView,
   effectSummary,
+  governmentLimitNotice,
   signedMoney,
   statusLook,
 } from './change-order-presentation';
-import { baselineFixture } from './change-orders.fixtures';
+import { baselineFixture, changeOrderFixture } from './change-orders.fixtures';
 
 describe('change order presentation', () => {
   it('writes a change of money with its sign, and no change in words', () => {
@@ -18,6 +19,30 @@ describe('change order presentation', () => {
     expect(effectSummary(99_999, 150_000, 'PHP')).toBe('Budget +₱999.99 · Price +₱1,500.00');
     expect(effectSummary(-56_000, 0, 'PHP')).toBe('Budget -₱560.00');
     expect(effectSummary(0, 0, 'PHP')).toBe('No change to the budget or the price');
+  });
+
+  it('warns in one line only when added work on a government project passes the limit', () => {
+    expect(
+      governmentLimitNotice({
+        applies: true,
+        limitMinor: 5_000_000,
+        usedMinor: 5_000_100,
+        exceeds: true,
+      }),
+    ).toBe(
+      'Added work on this government project passes 10% of the original contract price. Check that the agency has approved it.',
+    );
+    expect(
+      governmentLimitNotice({
+        applies: true,
+        limitMinor: 5_000_000,
+        usedMinor: 5_000_000,
+        exceeds: false,
+      }),
+    ).toBeNull();
+    expect(changeOrderFixture().governmentLimit.applies).toBe(false);
+    expect(governmentLimitNotice(changeOrderFixture().governmentLimit)).toBeNull();
+    expect(governmentLimitNotice(undefined)).toBeNull();
   });
 
   it('tells a discarded order from a voided one', () => {

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const applicationRoot = resolve(root, "web/src/app");
-const apiRoot = resolve(root, "src/Cms.Api");
+const apiRoot = resolve(root, "src/ConstructOPX.Api");
 const sourceExtensions = new Set([".html", ".ts"]);
 const sources = [];
 

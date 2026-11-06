@@ -8,11 +8,11 @@ import { Observable, of } from 'rxjs';
 import type { Mock } from 'vitest';
 import { Permission } from '../../core/session/permissions';
 import { SessionState } from '../../core/session/session-state';
-import { buttonNamed, settle, text, texts } from '../../testing/dom';
+import { buttonNamed, settle, text, texts, type } from '../../testing/dom';
 import { signInForTest } from '../../testing/session-fixture';
 import { OrderPage } from './order-page';
 import { PurchasingApi } from './purchasing-api';
-import { approvedOrder, orderFixture, orderLine } from './purchasing.fixtures';
+import { approvedOrder, orderFixture, orderLine, receiptFixture } from './purchasing.fixtures';
 import { PurchaseOrder } from './purchasing.models';
 
 @Component({ template: '', changeDetection: ChangeDetectionStrategy.OnPush })
@@ -64,7 +64,7 @@ describe('OrderPage', () => {
   });
 
   it('shows what the server says is allowed: an approved order can be closed, and one with invoices cannot be cancelled', async () => {
-    const { root } = await open(approvedOrder({ canCancel: false, invoiceCount: 1 }));
+    const { root } = await open(approvedOrder({ canCancel: false, invoiceCount: 1, canReceive: false }));
 
     expect(texts(root, '.summary__actions .btn')).toEqual(['Close order']);
   });
@@ -116,5 +116,129 @@ describe('OrderPage', () => {
 
     expect(text(root, '.reason')).toBe('Reason: Re-tender');
     expect(text(root, '.history')).toContain('Cancelled by Ana');
+  });
+
+  describe('deliveries', () => {
+    const PARTLY = approvedOrder({
+      deliveryState: 'PartlyReceived',
+      receiptCount: 2,
+      receipts: [
+        receiptFixture({ id: 'receipt-2', receivedDate: '2026-10-30', deliveryReceiptNumber: null, note: 'Gate 2', version: 3 }),
+        receiptFixture({
+          id: 'receipt-1',
+          status: 'Void',
+          canVoid: false,
+          voidedByName: 'Alma Accountant',
+          voidedAtUtc: '2026-10-29T03:00:00Z',
+          voidReason: 'Counted the wrong truck',
+        }),
+      ],
+      lines: [orderLine({ receivedQuantity: 4, toReceiveQuantity: 6, invoicedGrossMinor: 200_000, remainingGrossMinor: 300_000 })],
+    });
+
+    it('leads an approved order that still has something to receive with Record delivery, quieter steps after it', async () => {
+      const { root } = await open(approvedOrder());
+
+      expect(text(root, '.summary__actions .btn--primary')).toBe('Record delivery');
+      expect(texts(root, '.summary__actions .btn--primary')).toHaveLength(1);
+      expect(texts(root, '.summary__actions .btn')).toEqual(['Record delivery', 'Close order', 'Cancel order']);
+    });
+
+    it('offers no delivery to someone who may not receive, and none when the server says nothing is left or the project is archived', async () => {
+      const reader = await open(approvedOrder(), [...READER, Permission.purchasingApprove]);
+      expect(texts(reader.root, '.summary__actions .btn')).toEqual(['Close order', 'Cancel order']);
+      TestBed.resetTestingModule();
+
+      const complete = await open(approvedOrder({ canReceive: false }));
+      expect(texts(complete.root, '.summary__actions .btn')).toEqual(['Close order', 'Cancel order']);
+      TestBed.resetTestingModule();
+
+      const archived = await open(approvedOrder({ canReceive: false, projectArchived: true, canClose: false, canCancel: false }));
+      expect(archived.root.querySelector('.summary__actions')).toBeNull();
+    });
+
+    it('shows nothing about deliveries until one has been recorded', async () => {
+      const { root } = await open(approvedOrder());
+
+      expect(root.querySelector('[aria-labelledby="order-deliveries"]')).toBeNull();
+      expect(root.querySelector('.line__flow')).toBeNull();
+      expect(text(root, '.summary__info')).not.toContain('delivered');
+    });
+
+    it('lists the deliveries, newest first, a voided one muted with who voided it and why', async () => {
+      const { root } = await open(PARTLY);
+
+      expect(text(root, '.summary__info')).toContain('Partly delivered');
+      const rows = root.querySelectorAll('[aria-labelledby="order-deliveries"] .line');
+      expect(rows).toHaveLength(2);
+      expect(text(rows[0]!, '.line__description')).toBe('30 Oct 2026');
+      expect(text(rows[0]!, '.line__text')).toContain('4 pc Rebar 16 mm');
+      expect(text(rows[0]!, '.line__text')).toContain('Gate 2');
+      expect(text(rows[0]!, '.line__text')).toContain('Recorded by Wally Warehouse');
+      expect(text(rows[1]!, '.line__description')).toBe('28 Oct 2026 · DR-0012 Voided');
+      expect(text(rows[1]!, '.line__text')).toContain('Voided by Alma Accountant');
+      expect(text(rows[1]!, '.line__text')).toContain('Counted the wrong truck');
+      // Only a delivery that still stands can be voided.
+      expect(texts(rows[0]!, 'button')).toEqual(['Void delivery']);
+      expect(rows[1]!.querySelector('button')).toBeNull();
+    });
+
+    it('shows ordered, received and invoiced on the line once something has arrived', async () => {
+      const { root } = await open(PARTLY);
+
+      expect(text(root, '.line__flow')).toBe('Ordered 10 pc · Received 4 pc · Invoiced ₱2,000.00');
+      expect(root.querySelector('.line__ahead')).toBeNull();
+    });
+
+    it('says an invoice ran ahead of delivery only on the line it applies to, and the invoice stands', async () => {
+      const { root } = await open(
+        approvedOrder({
+          lines: [
+            orderLine({ invoicedGrossMinor: 300_000, remainingGrossMinor: 200_000, invoicedAheadOfDelivery: true, receivedValueGrossMinor: 0 }),
+            orderLine({ id: 'line-2', lineNumber: 2, description: 'Tie wire' }),
+          ],
+        }),
+      );
+
+      const notes = texts(root, '.line__ahead');
+      expect(notes).toEqual(['Invoiced ahead of delivery: ₱3,000.00 invoiced, ₱0.00 delivered so far. The invoice stands.']);
+    });
+
+    it('voids a delivery with a reason and the version it opened, then shows the order again', async () => {
+      const voidDelivery = stub(() => of(approvedOrder()));
+      const { harness, root, getOrder } = await open(PARTLY, null, { voidDelivery });
+
+      buttonNamed(root, 'Void delivery').click();
+      await settle(harness.fixture);
+      expect(document.body.textContent).toContain('Void this delivery?');
+      const dialog = document.querySelector('app-reason-dialog')!;
+      type(dialog, 'textarea', 'Counted the wrong truck');
+      (dialog.querySelector('button[type="submit"]') as HTMLButtonElement).click();
+      await settle(harness.fixture);
+
+      expect(voidDelivery).toHaveBeenCalledWith('order-1', 'receipt-2', 'Counted the wrong truck', 3);
+      expect(getOrder).toHaveBeenCalledTimes(2);
+    });
+
+    it('records a delivery from the dialog and shows the order the server sends back, without asking for it again', async () => {
+      const recordDelivery = stub(() => of({ ...PARTLY, version: 9 }));
+      const { harness, root, getOrder } = await open(approvedOrder(), null, { recordDelivery });
+
+      buttonNamed(root, 'Record delivery').click();
+      await settle(harness.fixture);
+      expect(document.body.textContent).toContain('Record a delivery');
+      const submit = Array.from(document.querySelectorAll<HTMLButtonElement>('app-record-delivery-dialog button[type="submit"]'))[0]!;
+      submit.click();
+      await settle(harness.fixture);
+
+      expect(recordDelivery).toHaveBeenCalledWith(
+        'order-1',
+        expect.objectContaining({ lines: [{ purchaseOrderLineId: 'line-1', quantity: 10 }] }),
+        expect.any(String),
+      );
+      expect(getOrder).toHaveBeenCalledTimes(1);
+      expect(root.querySelector('[aria-labelledby="order-deliveries"]')).not.toBeNull();
+      expect(document.querySelector('app-record-delivery-dialog')).toBeNull();
+    });
   });
 });

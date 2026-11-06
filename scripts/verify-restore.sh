@@ -2,21 +2,21 @@
 # Proves a backup can be restored: restores it into a temporary database next to the real one, compares what it contains with the
 # source database, then drops the temporary database. Never restores over a live database.
 #
-# Usage: scripts/verify-restore.sh [path-to-backup.bak]     (default: the newest backup of CMS_DB_NAME in CMS_BACKUP_DIR)
+# Usage: scripts/verify-restore.sh [path-to-backup.bak]     (default: the newest backup of CONSTRUCTOPX_DB_NAME in CONSTRUCTOPX_BACKUP_DIR)
 # Same environment as scripts/backup-database.sh.
 set -euo pipefail
 
-export SQLCMDPASSWORD="${SQLCMDPASSWORD:-${CMS_DB_PASSWORD:-}}"
-: "${SQLCMDPASSWORD:?Set SQLCMDPASSWORD or CMS_DB_PASSWORD}"
-SERVER="${CMS_SQL_SERVER:-localhost,1433}"
-LOGIN="${CMS_SQL_USER:-sa}"
-DB="${CMS_DB_NAME:-Cms}"
-DIR="${CMS_BACKUP_DIR:-/var/opt/mssql/backup}"
-LOCAL_DIR="${CMS_BACKUP_LOCAL_DIR:-$DIR}"
+export SQLCMDPASSWORD="${SQLCMDPASSWORD:-${CONSTRUCTOPX_DB_PASSWORD:-}}"
+: "${SQLCMDPASSWORD:?Set SQLCMDPASSWORD or CONSTRUCTOPX_DB_PASSWORD}"
+SERVER="${CONSTRUCTOPX_SQL_SERVER:-localhost,1433}"
+LOGIN="${CONSTRUCTOPX_SQL_USER:-sa}"
+DB="${CONSTRUCTOPX_DB_NAME:-ConstructOpx}"
+DIR="${CONSTRUCTOPX_BACKUP_DIR:-/var/opt/mssql/backup}"
+LOCAL_DIR="${CONSTRUCTOPX_BACKUP_LOCAL_DIR:-$DIR}"
 TRUST=()
-[ "${CMS_SQL_TRUST_CERT:-true}" = "true" ] && TRUST=(-C)
+[ "${CONSTRUCTOPX_SQL_TRUST_CERT:-true}" = "true" ] && TRUST=(-C)
 
-if ! [[ "$DB" =~ ^[A-Za-z0-9_]+$ ]]; then echo "CMS_DB_NAME may contain only letters, digits and underscores." >&2; exit 2; fi
+if ! [[ "$DB" =~ ^[A-Za-z0-9_]+$ ]]; then echo "CONSTRUCTOPX_DB_NAME may contain only letters, digits and underscores." >&2; exit 2; fi
 SQLCMD="$(command -v sqlcmd || echo /opt/mssql-tools18/bin/sqlcmd)"
 [ -x "$SQLCMD" ] || { echo "sqlcmd was not found. Install mssql-tools18." >&2; exit 2; }
 run_sql() { "$SQLCMD" -S "$SERVER" -U "$LOGIN" "${TRUST[@]}" -b -h -1 -W -s "|" -Q "SET NOCOUNT ON; $1"; }

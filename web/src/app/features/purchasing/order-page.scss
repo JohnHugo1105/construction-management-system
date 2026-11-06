@@ -108,6 +108,27 @@
   font-weight: 600;
 }
 
+// An invoice that ran ahead of the delivery is advice, not an error: it is said in words and bold, in the normal text colour.
+.line__ahead {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.line__flow {
+  overflow-wrap: anywhere;
+}
+
+.line--void .line__description,
+.line--void .line__text > p {
+  color: var(--color-text-muted);
+}
+
+.line__void {
+  margin-left: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
 .history {
   display: grid;
   gap: var(--space-1);

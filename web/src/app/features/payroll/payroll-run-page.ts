@@ -26,7 +26,8 @@ import { hoursWords } from '../workforce/attendance-sheet';
 import { ApproveRunDialog } from './approve-run-dialog';
 import { DeductionsDialog } from './deductions-dialog';
 import { payrollExportUrl } from './payroll-api';
-import { PAYROLL_STATUS, periodLabel, runActions } from './payroll-rules';
+import { PAYROLL_STATUS, runActions } from './payroll-rules';
+import { archivedPostingsNote, holidayNote, payBreakdown, runTitle } from './premium-rules';
 import { PayrollRunState } from './payroll-run-state';
 import { LineView, PayrollLineDetail } from './payroll-line-detail';
 import { PayrollDeduction, PayrollLine, PayrollRun } from './payroll.models';
@@ -89,9 +90,21 @@ export class PayrollRunPage {
   protected readonly expanded = signal<ReadonlySet<string>>(new Set());
 
   protected readonly title = computed(() =>
-    this.state.status() === 'ready'
-      ? `Payroll ${periodLabel(this.state.run().periodStart, this.state.run().periodEnd)}`
-      : 'Payroll run',
+    this.state.status() === 'ready' ? runTitle(this.state.run()) : 'Payroll run',
+  );
+
+  protected readonly thirteenthMonth = computed(
+    () => this.state.status() === 'ready' && this.state.run().kind === 'ThirteenthMonth',
+  );
+
+  /** One quiet line when the company has no holiday entered for the payroll's year (the API decides). */
+  protected readonly holidayNote = computed(() =>
+    this.state.status() === 'ready' ? holidayNote(this.state.run()) : null,
+  );
+
+  /** One quiet line when the server left workers posted to archived projects out of holiday pay. */
+  protected readonly archivedNote = computed(() =>
+    this.state.status() === 'ready' ? archivedPostingsNote(this.state.run()) : null,
   );
 
   protected readonly actions = computed(() =>
@@ -141,12 +154,14 @@ export class PayrollRunPage {
       id: line.workerId,
       name: line.workerName,
       sub: `${line.employeeNumber} · ${line.designation}`,
-      hours: hoursWords(line.regularHours, line.overtimeHours),
+      hours:
+        (line.thirteenthMonthPayMinor ?? 0) > 0
+          ? `Basic pay ${money(line.thirteenthMonthBasisMinor ?? 0)}`
+          : hoursWords(line.regularHours, line.overtimeHours),
       gross: money(line.grossPayMinor),
       deductions: money(line.deductionsMinor),
       net: money(line.netPayMinor),
-      regularPay: money(line.regularPayMinor),
-      overtimePay: money(line.overtimePayMinor),
+      breakdown: payBreakdown(line, money),
       deductionRows: line.deductions.map((item) => ({
         id: item.id,
         description: item.description,
@@ -189,17 +204,15 @@ export class PayrollRunPage {
 
   /** One quiet line per agency that is not worked out yet; only on a draft, where it can still be entered. */
   protected readonly setupLines = computed(() =>
-    this.state.status() === 'ready' && this.state.run().status === 'Draft'
+    this.state.status() === 'ready' &&
+    this.state.run().status === 'Draft' &&
+    !this.thirteenthMonth()
       ? needsSetupLines(this.statutoryStatus())
       : [],
   );
 
-  protected readonly canRecalculate = computed(
-    () =>
-      this.actions().editDeductions &&
-      (this.statutoryStatus()?.agencies.some((agency) => agency.state === 'Available') ||
-        (this.statutory()?.agencies.length ?? 0) > 0),
-  );
+  /** A draft is worked out again from the current pay rules, holidays and tables by whoever prepares payroll. */
+  protected readonly canRecalculate = computed(() => this.actions().editDeductions);
 
   constructor() {
     effect(() => {
@@ -210,6 +223,8 @@ export class PayrollRunPage {
     effect(() => {
       if (this.state.status() !== 'ready') return;
       const run = this.state.run();
+      // 13th-month pay carries no contributions or tax, so there is nothing to ask about.
+      if (run.kind === 'ThirteenthMonth') return;
       untracked(() => void this.loadStatutory(run));
     });
   }
@@ -234,7 +249,7 @@ export class PayrollRunPage {
   protected recalculated(run: PayrollRun): void {
     this.recalculating.set(false);
     this.state.replace(run);
-    this.toast.success('Contributions and tax recalculated.');
+    this.toast.success('Payroll recalculated.');
   }
 
   protected isOpen(workerId: string): boolean {

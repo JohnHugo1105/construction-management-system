@@ -1,0 +1,141 @@
+<div class="stack">
+  @if (context.isArchived()) {
+    <app-alert tone="info" title="Documents on an archived project">
+      Nothing can be added or changed until the project is restored. Every document can still be
+      opened.
+    </app-alert>
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="3" label="Loading documents" />
+  } @else if (state.result()) {
+    @if ((canAdd() && state.items().length > 0) || showFilter()) {
+      <div class="toolbar">
+        @if (canAdd() && state.items().length > 0) {
+          <button appButton variant="primary" type="button" (click)="start('add')">
+            <app-icon name="plus" [size]="18" />
+            Add document
+          </button>
+        }
+        @if (showFilter()) {
+          <label class="toolbar__filter">
+            <span class="visually-hidden">Kind of document</span>
+            <select class="input" (change)="chooseKind($event)">
+              <option value="" [selected]="kind() === ''">Every kind</option>
+              @for (choice of kinds(); track choice.value) {
+                <option [value]="choice.value" [selected]="choice.value === kind()">
+                  {{ choice.heading }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+      </div>
+    }
+
+    @if (state.items().length > 0) {
+      <div
+        class="groups"
+        [class.groups--refreshing]="state.refreshing()"
+        [attr.aria-busy]="state.refreshing()"
+      >
+        @for (group of activeGroups(); track group.key) {
+          <section class="group" [attr.aria-labelledby]="'documents-' + group.key">
+            <h2 class="group__title" [id]="'documents-' + group.key">{{ group.heading }}</h2>
+            <ul class="card-list">
+              @for (row of group.rows; track row.item.id) {
+                <li app-document-row [row]="row" (chosen)="start($event, row.item)"></li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (voidGroup(); as group) {
+          <details class="voided">
+            <summary class="voided__summary">Voided ({{ group.rows.length }})</summary>
+            <ul class="card-list">
+              @for (row of group.rows; track row.item.id) {
+                <li app-document-row [row]="row" (chosen)="start($event, row.item)"></li>
+              }
+            </ul>
+          </details>
+        }
+      </div>
+
+      <app-pager
+        [page]="state.query.values().page"
+        [pageSize]="state.pageSize"
+        [total]="state.total()"
+        noun="documents"
+        (pageChange)="state.query.setPage($event)"
+      />
+    } @else if (!state.error()) {
+      <app-empty-state icon="contract" [title]="emptyTitle()" [message]="emptyMessage()">
+        @if (kind()) {
+          <button appButton type="button" (click)="setKind('')">Show every document</button>
+        } @else if (canAdd()) {
+          <button appButton variant="primary" type="button" (click)="start('add')">
+            <app-icon name="plus" [size]="18" />
+            Add document
+          </button>
+        }
+      </app-empty-state>
+    }
+  }
+</div>
+
+@if (open(); as current) {
+  @switch (current.step) {
+    @case ('add') {
+      @if (state.uploads(); as uploads) {
+        <app-document-add-dialog
+          [projectId]="context.project().id"
+          [uploads]="uploads"
+          (saved)="done('Document added.')"
+          (dismissed)="close()"
+          (reloaded)="reloadAll()"
+        />
+      }
+    }
+    @case ('version') {
+      @if (state.uploads(); as uploads) {
+        <app-document-add-dialog
+          [projectId]="context.project().id"
+          [document]="current.document"
+          [uploads]="uploads"
+          (saved)="done('New version added.')"
+          (dismissed)="close()"
+          (reloaded)="reloadAll()"
+        />
+      }
+    }
+    @case ('details') {
+      <app-document-details-dialog
+        [document]="current.document!"
+        (saved)="done('Changes saved.')"
+        (dismissed)="close()"
+        (reloaded)="reloadAll()"
+      />
+    }
+    @case ('void') {
+      <app-document-void-dialog
+        [document]="current.document!"
+        (done)="done('Document voided.')"
+        (dismissed)="close()"
+        (reloaded)="reloadAll()"
+      />
+    }
+    @case ('versions') {
+      <app-document-versions-dialog [document]="current.document!" (dismissed)="close()" />
+    }
+  }
+}

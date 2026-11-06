@@ -23,7 +23,11 @@ import { describeFormFailure } from '../workforce/form-failure';
 import { BillingApi } from './billing-api';
 import { BillingTerms } from './billing.models';
 
-/** Edits how a project is billed. The new terms apply to bills prepared from now on; bills already made keep theirs. */
+/**
+ * Edits how a project is billed: retention, both withholdings, payment terms, the down payment and whether the client is a
+ * government agency. The new terms apply to bills prepared from now on; bills already made keep theirs, and a down payment already
+ * billed is recovered as billed, in proportion to the work.
+ */
 @Component({
   selector: 'app-terms-dialog',
   imports: [
@@ -70,6 +74,14 @@ import { BillingTerms } from './billing.models';
             <app-percent-input formControlName="creditableWithholdingBps" />
           </app-form-field>
           <app-form-field
+            label="VAT withheld by the client (%)"
+            hint="The share of the amount before VAT the client withholds as VAT and covers with its own certificate. Up to 12%."
+            [control]="form.controls.vatWithholdingBps"
+            requiredMessage="Enter the VAT withheld, or 0 for none."
+          >
+            <app-percent-input formControlName="vatWithholdingBps" />
+          </app-form-field>
+          <app-form-field
             label="Payment due"
             hint="Days after the billing date, up to 180."
             [control]="form.controls.paymentTermsDays"
@@ -77,6 +89,24 @@ import { BillingTerms } from './billing.models';
           >
             <app-number-input formControlName="paymentTermsDays" [decimals]="0" unit="days" />
           </app-form-field>
+          <app-form-field
+            label="Down payment (% of contract price)"
+            hint="Billed before the first progress bill, then recovered from each progress bill. Up to 50%, or 15% for a government client."
+            [control]="form.controls.advanceBps"
+            requiredMessage="Enter the down payment, or 0 for none."
+          >
+            <app-percent-input formControlName="advanceBps" />
+          </app-form-field>
+          <label class="choice">
+            <input type="checkbox" formControlName="isGovernmentClient" />
+            <span class="choice__text">
+              <span class="choice__label">Government client</span>
+              <span class="choice__hint"
+                >Caps the down payment at 15% and flags added work over 10% of the original contract
+                price.</span
+              >
+            </span>
+          </label>
         </form>
       </div>
       <div dialogActions class="dialog-actions">
@@ -119,6 +149,18 @@ export class TermsDialog implements OnInit {
       Validators.min(0),
       Validators.max(180),
     ]),
+    vatWithholdingBps: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(1_200),
+    ]),
+    // The 15% cap for a government client is the server's rule; its refusal shows under this field.
+    advanceBps: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(5_000),
+    ]),
+    isGovernmentClient: new FormControl(false, { nonNullable: true }),
   });
   protected readonly saving = signal(false);
   protected readonly error = signal<ApiError | null>(null);
@@ -130,6 +172,9 @@ export class TermsDialog implements OnInit {
       retentionBps: terms.retentionBps,
       creditableWithholdingBps: terms.creditableWithholdingBps,
       paymentTermsDays: terms.paymentTermsDays,
+      vatWithholdingBps: terms.vatWithholdingBps,
+      advanceBps: terms.advanceBps,
+      isGovernmentClient: terms.isGovernmentClient,
     });
   }
 
@@ -155,6 +200,9 @@ export class TermsDialog implements OnInit {
             retentionBps: value.retentionBps ?? 0,
             creditableWithholdingBps: value.creditableWithholdingBps ?? 0,
             paymentTermsDays: value.paymentTermsDays ?? 0,
+            vatWithholdingBps: value.vatWithholdingBps ?? 0,
+            advanceBps: value.advanceBps ?? 0,
+            isGovernmentClient: value.isGovernmentClient,
             version: this.terms().version,
           }),
         ),

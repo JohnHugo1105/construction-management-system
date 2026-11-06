@@ -7,7 +7,14 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiError, asApiError } from '../../../core/api/api-error';
 import { ToastService } from '../../../core/notifications/toast-service';
@@ -32,7 +39,28 @@ import { Organization, VarianceBasis } from './organization.models';
 const SERVER_FIELD_NAMES = {
   vatRateBps: 'vatRate',
   overtimeMultiplierBps: 'overtimeRate',
+  timeClockDayStartMinutes: 'timeClockDayStart',
 } as const;
+
+/** "04:00" from 240 minutes after midnight. */
+export function minutesToTime(minutes: number): string {
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+/** 240 from "04:00"; null for anything that isn't a time. */
+export function timeToMinutes(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
+/** The day can start from midnight up to noon. */
+function dayStartValidator(control: AbstractControl): ValidationErrors | null {
+  const minutes = timeToMinutes(String(control.value ?? ''));
+  if (control.value === '' || control.value === null) return null;
+  return minutes !== null && minutes <= 720
+    ? null
+    : { message: 'Choose a day start between midnight and noon.' };
+}
 
 function knownTimeZones(): readonly string[] {
   try {
@@ -110,6 +138,30 @@ export class CompanySettingsPage implements OnInit {
     varianceBasis: new FormControl<VarianceBasis | null>(null, {
       validators: [Validators.required],
     }),
+    timeClockDayStart: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, dayStartValidator],
+    }),
+    unpaidBreakMinutes: new FormControl<number | null>(null, {
+      validators: [
+        Validators.required,
+        numberBetween(
+          0,
+          180,
+          'Enter an unpaid break from 0 to 180 minutes. Use 0 to take no break off.',
+        ),
+      ],
+    }),
+    punchRoundingMinutes: new FormControl<number | null>(null, {
+      validators: [
+        Validators.required,
+        numberBetween(
+          0,
+          60,
+          'Enter rounding from 0 to 60 minutes. Use 0 to keep the exact minutes.',
+        ),
+      ],
+    }),
   });
 
   protected readonly loaded = signal<Organization | null>(null);
@@ -156,6 +208,10 @@ export class CompanySettingsPage implements OnInit {
           overtimeMultiplierBps: value.overtimeRate ?? 0,
           varianceBasis: value.varianceBasis ?? 'IncludingVat',
           payrollRunsPerMonth: value.payrollRunsPerMonth ?? current.payrollRunsPerMonth,
+          timeClockDayStartMinutes:
+            timeToMinutes(value.timeClockDayStart) ?? current.timeClockDayStartMinutes,
+          unpaidBreakMinutes: value.unpaidBreakMinutes ?? current.unpaidBreakMinutes,
+          punchRoundingMinutes: value.punchRoundingMinutes ?? current.punchRoundingMinutes,
           version: current.version,
         }),
       );
@@ -195,6 +251,9 @@ export class CompanySettingsPage implements OnInit {
       overtimeRate: organization.overtimeMultiplierBps,
       payrollRunsPerMonth: organization.payrollRunsPerMonth,
       varianceBasis: organization.varianceBasis,
+      timeClockDayStart: minutesToTime(organization.timeClockDayStartMinutes),
+      unpaidBreakMinutes: organization.unpaidBreakMinutes,
+      punchRoundingMinutes: organization.punchRoundingMinutes,
     });
   }
 }

@@ -117,6 +117,43 @@
         </div>
       </section>
 
+      <section class="form__section" aria-labelledby="time-clock-heading">
+        <h2 id="time-clock-heading">Time clock</h2>
+
+        <div class="form__row">
+          <app-form-field
+            label="Work day starts at"
+            hint="A scan before this time counts for the day before, so a night shift that ends at 2 am is one day."
+            [control]="form.controls.timeClockDayStart"
+            requiredMessage="Choose when the work day starts."
+          >
+            <input appControl type="time" formControlName="timeClockDayStart" />
+          </app-form-field>
+
+          <app-form-field
+            label="Unpaid break"
+            hint="Taken off once from a stretch of 5 hours or more without a scan out. When a worker scans out for the break, that gap is used instead."
+            [control]="form.controls.unpaidBreakMinutes"
+            requiredMessage="Enter the unpaid break, or 0 for none."
+          >
+            <app-number-input formControlName="unpaidBreakMinutes" [decimals]="0" unit="minutes" />
+          </app-form-field>
+
+          <app-form-field
+            label="Round worked time to"
+            hint="The day's total is rounded to the nearest this many minutes, once. Use 0 to keep the exact minutes."
+            [control]="form.controls.punchRoundingMinutes"
+            requiredMessage="Enter the rounding, or 0 for none."
+          >
+            <app-number-input
+              formControlName="punchRoundingMinutes"
+              [decimals]="0"
+              unit="minutes"
+            />
+          </app-form-field>
+        </div>
+      </section>
+
       <app-field-group
         label="Compare budgets and costs"
         [control]="form.controls.varianceBasis"

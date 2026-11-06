@@ -7,6 +7,7 @@
         <app-icon name="plus" [size]="18" />
         New payroll run
       </a>
+      <a appButton routerLink="/payroll/thirteenth-month">13th-month pay</a>
     </div>
   }
 
@@ -123,7 +124,9 @@
     </app-empty-state>
   }
 
-  <p>
+  <p class="quiet-links">
+    <a class="quiet-link" routerLink="/payroll/rules">Pay rules</a>
+    <a class="quiet-link" routerLink="/payroll/holidays">Holidays</a>
     <a class="quiet-link" routerLink="/payroll/statutory">Contribution and tax tables</a>
   </p>
 </div>

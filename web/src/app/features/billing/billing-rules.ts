@@ -32,6 +32,7 @@ export function billStatus(
 export const BILL_KIND: Record<BillKind, string> = {
   Progress: 'Progress bill',
   RetentionRelease: 'Retention release',
+  Advance: 'Down payment',
 };
 
 export const PAYMENT_METHODS: readonly { readonly value: PaymentMethod; readonly label: string }[] =
@@ -83,14 +84,16 @@ export function billActions(bill: Bill, who: BillPermissions): BillActions {
   if (bill.projectStatus === 'Archived') return NOTHING;
   const draft = bill.status === 'Draft';
   const issued = bill.status === 'Issued';
+  // A down payment draft left over once progress is billed can only be discarded: the server refuses issuing or changing it.
+  const open = draft && !bill.canOnlyBeDiscarded;
   return {
-    issue: draft && who.canApprove && !bill.isStale,
-    edit: draft && who.canManage,
+    issue: open && who.canApprove && !bill.isStale,
+    edit: open && who.canManage,
     discard: draft && who.canManage,
     recordPayment: issued && who.canManage && bill.outstandingMinor > 0,
     void: issued && who.canApprove && bill.isLatestIssued && bill.paidMinor === 0,
     voidPayment: issued && who.canApprove,
-    approverNote: draft && who.canManage && !who.canApprove,
+    approverNote: open && who.canManage && !who.canApprove,
   };
 }
 

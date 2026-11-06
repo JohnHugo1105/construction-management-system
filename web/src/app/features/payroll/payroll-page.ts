@@ -13,11 +13,14 @@ import { Skeleton } from '../../shared/ui/skeleton/skeleton';
 import { StatusChip } from '../../shared/ui/status-chip/status-chip';
 import { Viewport } from '../../shared/ui/viewport/viewport';
 import { PayrollListState } from './payroll-list-state';
-import { PAYROLL_STATUS, periodLabel } from './payroll-rules';
+import { PAYROLL_STATUS } from './payroll-rules';
+import { runLabel } from './premium-rules';
 
 /**
- * The payroll runs, newest first: a table on wide screens and cards on phones, paged by the server. Each shows its period, its
- * state and the API's totals. Only people who prepare payroll are offered "New payroll run".
+ * The payroll runs, newest first: a table on wide screens and cards on phones, paged by the server. Each shows its period (or the
+ * year of a 13th-month payroll), its state and the API's totals. Only people who prepare payroll are offered "New payroll run", the
+ * primary action, and "13th-month pay" beside it once there are payrolls to work it out from. The pay rules, the holiday calendar and
+ * the contribution tables are quiet links at the foot.
  */
 @Component({
   selector: 'app-payroll-page',
@@ -53,7 +56,7 @@ export class PayrollPage {
     const currency = this.session.currencyCode();
     return this.state.items().map((run) => ({
       id: run.id,
-      period: periodLabel(run.periodStart, run.periodEnd),
+      period: runLabel(run),
       status: PAYROLL_STATUS[run.status],
       workers: run.workerCount === 1 ? '1 worker' : `${run.workerCount} workers`,
       gross: formatMoney(run.totalGrossMinor, currency),

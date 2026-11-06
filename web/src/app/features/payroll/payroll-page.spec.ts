@@ -106,6 +106,32 @@ describe('PayrollPage', () => {
     expect(texts(reader.root, 'a, button')).not.toContain('New payroll run');
   });
 
+  it('names a 13th-month payroll by its year and offers it as a secondary action next to the payroll run', async () => {
+    const { root } = await open(
+      [
+        listRun({
+          id: 'run13',
+          kind: 'ThirteenthMonth',
+          year: 2026,
+          periodStart: '2026-01-01',
+          periodEnd: '2026-12-31',
+        }),
+      ],
+      PREPARER,
+    );
+
+    expect(text(root, 'tbody th')).toBe('13th-month pay 2026');
+    expect(buttonNamed(root, 'New payroll run').className).toContain('primary');
+    const thirteenth = buttonNamed(root, '13th-month pay');
+    expect(thirteenth.getAttribute('href')).toBe('/payroll/thirteenth-month');
+    expect(thirteenth.className).not.toContain('primary');
+    expect(texts(root, '.quiet-link')).toEqual([
+      'Pay rules',
+      'Holidays',
+      'Contribution and tax tables',
+    ]);
+  });
+
   it('offers the one next step once when there are no runs yet', async () => {
     const { root } = await open([], PREPARER);
 

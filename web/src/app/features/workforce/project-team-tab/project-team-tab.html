@@ -34,6 +34,10 @@
     </app-alert>
   }
 
+  @if (context.project(); as project) {
+    <app-team-time-clock-notice [projectId]="project.id" />
+  }
+
   @if (state.futureDate()) {
     <app-alert tone="warning" title="That day hasn't happened yet">
       Attendance can only be recorded for today or an earlier day.
@@ -51,6 +55,15 @@
   } @else if (state.loading() && !state.sheet()) {
     <app-skeleton variant="card" [lines]="3" label="Loading the day" />
   } @else if (state.sheet()) {
+    @if (holiday(); as line) {
+      <p class="holiday-line">
+        <app-status-chip
+          [label]="line"
+          [tone]="state.sheet()?.holidayType === 'Regular' ? 'warning' : 'info'"
+          icon="calendar"
+        />
+      </p>
+    }
     @if (state.error(); as problem) {
       <app-api-error-alert
         [error]="problem"
@@ -141,8 +154,26 @@
                         </p>
                       }
                     </div>
+                    @if (row.remarksOpen || row.remarks || row.night) {
+                      <div class="line__field">
+                        <span class="line__label">Night hours</span>
+                        <app-hours-field
+                          [value]="row.night"
+                          [label]="'Night hours for ' + row.name"
+                          [max]="(row.regular ?? 0) + (row.overtime ?? 0)"
+                          [invalid]="!!problem?.night"
+                          [disabled]="state.saving()"
+                          (valueChange)="state.updateRow(row.workerId, { night: $event })"
+                        />
+                        @if (problem?.night; as message) {
+                          <p class="field__error" role="alert">
+                            <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                          </p>
+                        }
+                      </div>
+                    }
                     <div class="line__remarks">
-                      @if (row.remarksOpen || row.remarks) {
+                      @if (row.remarksOpen || row.remarks || row.night) {
                         <input
                           class="input"
                           type="text"
@@ -160,7 +191,7 @@
                           type="button"
                           (click)="state.updateRow(row.workerId, { remarksOpen: true })"
                         >
-                          Add a remark
+                          Add night hours or a remark
                         </button>
                       }
                       @if (problem?.remarks; as message) {
@@ -217,9 +248,14 @@
                       }
                     </span>
                   </span>
-                  @if (item.entry.isLocked) {
-                    <app-status-chip label="In a payroll run" tone="neutral" icon="lock" />
-                  }
+                  <span class="line__chips">
+                    @if (item.day; as day) {
+                      <app-status-chip [label]="day.label" [tone]="day.tone" [icon]="day.icon" />
+                    }
+                    @if (item.entry.isLocked) {
+                      <app-status-chip label="In a payroll run" tone="neutral" icon="lock" />
+                    }
+                  </span>
                 </div>
 
                 @if (state.editing()?.entry?.id === item.entry.id) {
@@ -251,6 +287,22 @@
                       (valueChange)="state.updateEdit({ overtime: $event })"
                     />
                     @if (edit.problems.overtime; as message) {
+                      <p class="field__error" role="alert">
+                        <app-icon name="error" [size]="16" /><span>{{ message }}</span>
+                      </p>
+                    }
+                  </div>
+                  <div class="line__field">
+                    <span class="line__label">Night hours</span>
+                    <app-hours-field
+                      [value]="edit.night"
+                      [label]="'Night hours for ' + item.entry.workerName"
+                      [max]="(edit.regular ?? 0) + (edit.overtime ?? 0)"
+                      [invalid]="!!edit.problems.night"
+                      [disabled]="edit.saving"
+                      (valueChange)="state.updateEdit({ night: $event })"
+                    />
+                    @if (edit.problems.night; as message) {
                       <p class="field__error" role="alert">
                         <app-icon name="error" [size]="16" /><span>{{ message }}</span>
                       </p>
@@ -303,6 +355,9 @@
                   <div class="line__summary">
                     <p class="line__hours">
                       {{ item.hours }}
+                      @if (item.entry.source === 'TimeClock') {
+                        <span class="text-muted text-small"> · From the time clock</span>
+                      }
                       @if (item.entry.remarks) {
                         <span class="text-muted text-small"> · {{ item.entry.remarks }}</span>
                       }

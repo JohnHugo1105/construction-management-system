@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Permission } from '../../../core/session/permissions';
 import { SessionState } from '../../../core/session/session-state';
 import { formatDate } from '../../../shared/presentation/business-time';
@@ -12,7 +13,9 @@ import { FormField } from '../../../shared/ui/form-field/form-field';
 import { Icon, IconName } from '../../../shared/ui/icon/icon';
 import { Skeleton } from '../../../shared/ui/skeleton/skeleton';
 import { describeBasis } from '../../costing/figures';
+import { SegmentOption, SegmentedControl } from '../../costing/ui/segmented-control';
 import { ProjectContext } from '../../projects/project-context';
+import { ScheduleView } from '../../schedule/schedule-view/schedule-view';
 import { fieldText, isLowering } from '../progress-draft';
 import {
   Sentence,
@@ -26,6 +29,7 @@ import {
   wholePercent,
 } from '../progress-presentation';
 import { ProgressState } from '../progress-state';
+import { ProgressView, injectProgressView } from '../progress-view';
 import { ProgressDivision, ProgressLine } from '../progress.models';
 import { ProgressHistoryDialog } from '../ui/progress-history-dialog';
 
@@ -39,6 +43,9 @@ const OPEN_ALL_UP_TO = 25;
  * for work worth, forecast, margin), then the lines grouped by division (each folds). People with `progress.write` set a percent
  * per line (typed or with the 5% stepper) and save everything changed together with one Save progress; everyone else sees the
  * figures. An archived project is read-only. The server works out every figure; this tab only shows them.
+ *
+ * People who may read the schedule switch between "Update progress" and "Schedule" (the router keeps the choice in `?view=`);
+ * the Schedule view lists the planned activities and draws the S-curve.
  */
 @Component({
   selector: 'app-project-progress-tab',
@@ -51,6 +58,8 @@ const OPEN_ALL_UP_TO = 25;
     Icon,
     Skeleton,
     ProgressHistoryDialog,
+    ScheduleView,
+    SegmentedControl,
   ],
   providers: [ProgressState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,11 +70,21 @@ export class ProjectProgressTab {
   protected readonly state = inject(ProgressState);
   private readonly context = inject(ProjectContext);
   private readonly session = inject(SessionState);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  protected readonly view = injectProgressView();
+  protected readonly canSchedule = this.session.permit(Permission.scheduleRead);
 
   private readonly mayWrite = this.session.permit(Permission.progressWrite);
   protected readonly canWrite = computed(() => this.mayWrite() && !this.context.isArchived());
   /** Says why the editing is missing, to the people who would otherwise have it. */
   protected readonly archivedNote = computed(() => this.mayWrite() && this.context.isArchived());
+  /** "Update progress" for the people who record it, plain "Progress" for those who only read it. */
+  protected readonly viewOptions = computed<readonly SegmentOption<ProgressView>[]>(() => [
+    { value: 'progress', label: this.canWrite() ? 'Update progress' : 'Progress' },
+    { value: 'schedule', label: 'Schedule' },
+  ]);
 
   protected readonly noLines = computed(() => {
     const report = this.state.report();
@@ -88,7 +107,7 @@ export class ProjectProgressTab {
     if (!report) return null;
     const value = report.earnedValue;
     const currency = this.session.currencyCode();
-    const extras = [costIndexSentence(value.cpiBps, value.spentMinor), scheduleSentence(value.spiBps)].filter(
+    const extras = [costIndexSentence(value.cpiBps, value.spentMinor), scheduleSentence(value.spiBps, report.plannedFrom ?? null)].filter(
       (sentence): sentence is Sentence => sentence !== null,
     );
     return {
@@ -203,6 +222,14 @@ export class ProjectProgressTab {
 
   protected dated(event: Event): void {
     this.state.setDate((event.target as HTMLInputElement).value);
+  }
+
+  protected show(view: ProgressView): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: view === 'schedule' ? 'schedule' : null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected save(): void {

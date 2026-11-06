@@ -38,6 +38,7 @@ import {
 import { SubcontractState } from './subcontract-state';
 import { SubcontractsApi } from './subcontracts-api';
 import { Subcontract, SubcontractClaim, SubcontractPayment } from './subcontracts.models';
+import { Discussion } from '../collaboration/discussion';
 
 type OpenDialog =
   | { readonly kind: 'award' | 'complete' | 'cancel' | 'variation' | 'release' }
@@ -68,6 +69,7 @@ type OpenDialog =
     VariationDialog,
     ClaimDialog,
     PaymentDialog,
+    Discussion,
   ],
   providers: [SubcontractState],
   changeDetection: ChangeDetectionStrategy.OnPush,

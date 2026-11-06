@@ -18,6 +18,21 @@ export const PAYROLL_ROUTES: Routes = [
     canActivate: [permissionGuard(Permission.payrollRun)],
     loadComponent: () => import('./payroll-new-page').then((m) => m.PayrollNewPage),
   },
+  // The 13th-month pay is prepared with payroll.run; it is then a payroll like any other (`:id`).
+  {
+    path: 'thirteenth-month',
+    canActivate: [permissionGuard(Permission.payrollRun)],
+    loadComponent: () => import('./thirteenth-month-page').then((m) => m.ThirteenthMonthPage),
+  },
+  // The pay rules and the holiday calendar: read with payroll.read, changed with payrollrules.manage (the pages hide the controls).
+  {
+    path: 'rules',
+    loadComponent: () => import('./pay-rules-page').then((m) => m.PayRulesPage),
+  },
+  {
+    path: 'holidays',
+    loadComponent: () => import('./holidays-page').then((m) => m.HolidaysPage),
+  },
   // The contribution and tax tables: read with payroll.read, added and changed with statutory.manage (the API checks the same).
   {
     path: 'statutory',

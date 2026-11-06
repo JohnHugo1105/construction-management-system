@@ -1,0 +1,80 @@
+<app-page-header title="Receiving" description="Deliveries that are still to come." />
+
+<div class="stack">
+  @if (!bare()) {
+    <app-search-box
+      label="Search deliveries by order number, supplier or project"
+      placeholder="Search deliveries"
+      [value]="state.query.values().search"
+      (searched)="state.query.set({ search: $event }, { replace: true })"
+    />
+  }
+
+  @if (state.error(); as problem) {
+    <app-api-error-alert
+      [error]="problem"
+      [allowRetry]="true"
+      reloadLabel="Try again"
+      (reload)="state.reload()"
+    />
+  }
+
+  @if (state.loadingFirst()) {
+    <app-skeleton variant="card" [lines]="4" label="Loading deliveries" />
+  } @else if (rows().length > 0) {
+    <ul
+      class="card-list"
+      aria-label="Deliveries still to come"
+      [class.results--refreshing]="state.refreshing()"
+      [attr.aria-busy]="state.refreshing()"
+    >
+      @for (row of rows(); track row.id) {
+        <li class="row-card">
+          <div class="row-card__head">
+            <h2 class="row-card__title">{{ row.supplier }}</h2>
+            <app-status-chip
+              [label]="row.delivery.label"
+              [tone]="row.delivery.tone"
+              [icon]="row.delivery.icon"
+            />
+          </div>
+          <p class="text-muted text-small">{{ row.number }} · {{ row.place }}</p>
+          <p class="text-small">{{ row.expected }}</p>
+          <p>
+            <a
+              appButton
+              variant="primary"
+              [routerLink]="['/receiving', row.id]"
+              [attr.aria-label]="'Open ' + row.number + ' from ' + row.supplier"
+              >Open</a
+            >
+          </p>
+        </li>
+      }
+    </ul>
+
+    <app-pager
+      [page]="state.query.values().page"
+      [pageSize]="state.pageSize"
+      [total]="state.orderCount()"
+      noun="deliveries"
+      (pageChange)="state.query.setPage($event)"
+    />
+  } @else if (!state.error()) {
+    @if (state.query.isFiltered()) {
+      <app-empty-state
+        icon="search"
+        title="No deliveries match"
+        message="Try the order number, the supplier’s name or the project’s name."
+      >
+        <button appButton type="button" (click)="state.query.reset()">Show every delivery</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="stock"
+        title="Nothing is waiting to be delivered"
+        message="An order shows up here once the office approves it, and stays until everything on it has arrived. Check again when a supplier is due."
+      />
+    }
+  }
+</div>

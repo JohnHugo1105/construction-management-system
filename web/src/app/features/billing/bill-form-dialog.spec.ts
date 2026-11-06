@@ -9,10 +9,10 @@ import { Permission } from '../../core/session/permissions';
 import { SessionState } from '../../core/session/session-state';
 import { settle, text, texts, type } from '../../testing/dom';
 import { signInForTest } from '../../testing/session-fixture';
-import { validationError } from '../workforce/workforce.fixtures';
+import { ruleViolation, validationError } from '../workforce/workforce.fixtures';
 import { BillFormContext, BillFormDialog } from './bill-form-dialog';
 import { BillingApi } from './billing-api';
-import { bill, preview } from './billing.fixtures';
+import { WITH_ADVANCE, advanceBill, bill, preview } from './billing.fixtures';
 import { Bill } from './billing.models';
 
 type Call = (...args: unknown[]) => Observable<unknown>;
@@ -23,6 +23,8 @@ const CONTEXT: BillFormContext = {
   contractPriceMinor: 1_120_000_000,
   billedToDateMinor: 224_000_000,
   retentionHeldMinor: 22_400_000,
+  advanceBps: 0,
+  advanceToBillMinor: null,
 };
 
 @Component({
@@ -34,7 +36,52 @@ class Host {
   readonly saved = signal<Bill | null>(null);
 }
 
-async function open(api: Record<string, Mock<Call>>, permissions: readonly string[]) {
+/** A project whose terms take a 15% down payment that hasn't been billed: the server says it comes to ₱1,680,000.00. */
+@Component({
+  imports: [BillFormDialog],
+  template: `<app-bill-form-dialog
+    [context]="context"
+    kind="Advance"
+    (saved)="saved.set($event)"
+  />`,
+})
+class AdvanceHost {
+  readonly context: BillFormContext = {
+    ...CONTEXT,
+    billedToDateMinor: 0,
+    retentionHeldMinor: 0,
+    advanceBps: 1_500,
+    advanceToBillMinor: 168_000_000,
+  };
+  readonly saved = signal<Bill | null>(null);
+}
+
+/** A down payment draft at 20% after the terms changed to 15%: its own figures are out of date. */
+@Component({
+  imports: [BillFormDialog],
+  template: `<app-bill-form-dialog
+    [context]="context"
+    [bill]="draft"
+    (saved)="saved.set($event)"
+  />`,
+})
+class StaleAdvanceHost {
+  readonly context: BillFormContext = { ...CONTEXT, billedToDateMinor: 0, advanceBps: 1_500 };
+  readonly draft = advanceBill({
+    status: 'Draft',
+    isStale: true,
+    advanceBps: 2_000,
+    grossMinor: 224_000_000,
+    netReceivableMinor: 224_000_000,
+  });
+  readonly saved = signal<Bill | null>(null);
+}
+
+async function open(
+  api: Record<string, Mock<Call>>,
+  permissions: readonly string[],
+  host: typeof Host | typeof AdvanceHost | typeof StaleAdvanceHost = Host,
+) {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   TestBed.configureTestingModule({
     providers: [
@@ -47,7 +94,7 @@ async function open(api: Record<string, Mock<Call>>, permissions: readonly strin
     roles: ['Custom'],
     permissions,
   });
-  const fixture = TestBed.createComponent(Host);
+  const fixture = TestBed.createComponent<Host | AdvanceHost | StaleAdvanceHost>(host);
   await settle(fixture);
   return { fixture, dialog: () => document.querySelector('app-bill-form-dialog')! };
 }
@@ -108,6 +155,81 @@ describe('BillFormDialog', () => {
       "Work completed to date can't be more than the contract price.",
     );
     expect(dialog().querySelector('.breakdown__row')).toBeNull();
+  });
+
+  it('shows the VAT withheld and the down payment recovered in the server’s breakdown', async () => {
+    const { fixture, dialog } = await open(
+      { preview: stub(() => of(preview({ ...WITH_ADVANCE }))) },
+      MANAGER,
+    );
+
+    await typeWork(fixture, '5,600,000');
+
+    expect(texts(dialog(), '.breakdown__row')).toEqual([
+      'This bill (VAT included)₱3,360,000.00',
+      'VAT 12%, included₱360,000.00',
+      'Retention 10%, held by the client-₱336,000.00',
+      'Withholding tax 2% of the amount before VAT-₱60,000.00',
+      'VAT withheld, 5% of the amount before VAT-₱150,000.00',
+      'Down payment recovered-₱504,000.00',
+      'The client pays₱2,310,000.00',
+    ]);
+  });
+
+  it('shows a refusal of the figures, such as deductions more than the bill, under the field', async () => {
+    const message =
+      'The deductions are more than this bill. Check the down payment, retention and withholding rates.';
+    const { fixture, dialog } = await open(
+      { preview: stub(() => throwError(() => ruleViolation(message))) },
+      MANAGER,
+    );
+
+    await typeWork(fixture, '2,250,000');
+
+    expect(text(dialog(), '.field__error')).toBe(message);
+    expect(dialog().querySelector('.breakdown__row')).toBeNull();
+  });
+
+  it('bills the down payment the server worked out, with no amount to type', async () => {
+    const create = stub(() => of(advanceBill()));
+    const previewCall = stub(() => of(preview()));
+    const { fixture, dialog } = await open(
+      { preview: previewCall, create },
+      MANAGER,
+      AdvanceHost,
+    );
+
+    expect(text(dialog(), 'h2')).toBe('Bill the down payment');
+    expect(dialog().querySelector('app-money-input')).toBeNull();
+    expect(texts(dialog(), '.breakdown__row')).toEqual([
+      'Down payment, 15% of the contract price₱1,680,000.00',
+      'The client pays₱1,680,000.00',
+    ]);
+
+    (dialog().querySelector('button[type="submit"]') as HTMLButtonElement).click();
+    await settle(fixture);
+
+    expect(previewCall).not.toHaveBeenCalled();
+    expect(create).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({
+        kind: 'Advance',
+        cumulativeWorkMinor: null,
+        amountMinor: null,
+        description: 'Down payment',
+      }),
+    );
+    expect(fixture.componentInstance.saved()?.kind).toBe('Advance');
+  });
+
+  it('does not show an out-of-date down payment draft’s old figures: saving works them out again', async () => {
+    const { dialog } = await open({}, MANAGER, StaleAdvanceHost);
+
+    expect(text(dialog(), 'h2')).toBe('Change draft bill');
+    expect(dialog().querySelector('.breakdown__row')).toBeNull();
+    expect(text(dialog(), '.breakdown')).toContain(
+      'Worked out from the contract price and the billing terms when you save.',
+    );
   });
 
   it('suggests the percent complete when progress answers, and says nothing when it refuses', async () => {
